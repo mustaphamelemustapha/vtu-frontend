@@ -22,17 +22,42 @@
     </div>
 
     <nav class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#developer">Developer</a>
-      <a href="#ecosystem">Ecosystem</a>
-      <a href="#pricing">Pricing</a>
+      <a href="#features"><span data-feather="grid"></span> Features</a>
+      <a href="#developer"><span data-feather="code"></span> Developer</a>
+      <a href="#ecosystem"><span data-feather="layers"></span> Ecosystem</a>
+      <a href="#pricing"><span data-feather="credit-card"></span> Pricing</a>
     </nav>
 
-    <div class="nav-cta">
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+        <span data-feather="moon"></span>
+      </button>
+      <button class="icon-btn" id="menuToggle" aria-label="Open menu">
+        <span data-feather="menu"></span>
+      </button>
+      <div class="nav-cta">
+        <a class="btn ghost" href="/app/">Open App</a>
+        <a class="btn" href="/app/">Sign In</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-header">
+      <span>Menu</span>
+      <button class="icon-btn" id="menuClose" aria-label="Close menu">
+        <span data-feather="x"></span>
+      </button>
+    </div>
+    <a href="#features"><span data-feather="grid"></span> Features</a>
+    <a href="#developer"><span data-feather="code"></span> Developer</a>
+    <a href="#ecosystem"><span data-feather="layers"></span> Ecosystem</a>
+    <a href="#pricing"><span data-feather="credit-card"></span> Pricing</a>
+    <div class="mobile-actions">
       <a class="btn ghost" href="/app/">Open App</a>
       <a class="btn" href="/app/">Sign In</a>
     </div>
-  </header>
+  </div>
 
   <section class="hero">
     <div class="hero-copy">
@@ -245,5 +270,25 @@
       <a href="#pricing">Pricing</a>
     </div>
   </footer>
+
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
+    const menuToggle = document.getElementById("menuToggle");
+    const menuClose = document.getElementById("menuClose");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const themeToggle = document.getElementById("themeToggle");
+
+    menuToggle.addEventListener("click", () => mobileMenu.classList.add("open"));
+    menuClose.addEventListener("click", () => mobileMenu.classList.remove("open"));
+    mobileMenu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => mobileMenu.classList.remove("open"));
+    });
+
+    themeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("light");
+    });
+
+    feather.replace();
+  </script>
 </body>
 </html>
