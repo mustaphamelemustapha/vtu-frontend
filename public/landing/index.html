@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NairaConnect — VTU Platform for Nigeria</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <header class="nav">
+    <div class="brand">
+      <div class="brand-mark">NC</div>
+      <div>
+        <div class="brand-title">NairaConnect</div>
+        <div class="brand-sub">Virtual Top‑Up Platform</div>
+      </div>
+    </div>
+
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#developer">Developer</a>
+      <a href="#ecosystem">Ecosystem</a>
+      <a href="#agents">Agents</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+
+    <div class="nav-cta">
+      <a class="btn ghost" href="https://vtu-frontend-beta.vercel.app">Open App</a>
+      <a class="btn" href="https://vtu-frontend-beta.vercel.app">Sign In</a>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="pill">Nigeria‑ready VTU SaaS</span>
+      <h1>All your VTU services in one clean, fast platform.</h1>
+      <p>
+        NairaConnect lets you sell data, airtime, and bills with a secure wallet, reseller pricing, and instant delivery.
+        Built for scale, designed for trust, and ready for production.
+      </p>
+      <div class="hero-actions">
+        <a class="btn" href="https://vtu-frontend-beta.vercel.app">Launch App</a>
+        <a class="btn ghost" href="#features">See Features</a>
+      </div>
+      <div class="hero-meta">
+        <div>
+          <div class="metric">Instant</div>
+          <div class="muted">delivery & receipts</div>
+        </div>
+        <div>
+          <div class="metric">Wallet</div>
+          <div class="muted">credits + ledger</div>
+        </div>
+        <div>
+          <div class="metric">RBAC</div>
+          <div class="muted">admin + reseller</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <div class="hero-card-header">
+        <h3>Realtime Overview</h3>
+        <span class="status">Healthy</span>
+      </div>
+      <div class="hero-grid">
+        <div class="mini-card">
+          <div class="label">Today’s Revenue</div>
+          <div class="value">₦ 1,284,500</div>
+        </div>
+        <div class="mini-card">
+          <div class="label">Transactions</div>
+          <div class="value">2,614</div>
+        </div>
+        <div class="mini-card">
+          <div class="label">Success Rate</div>
+          <div class="value">98.9%</div>
+        </div>
+        <div class="mini-card">
+          <div class="label">Pending</div>
+          <div class="value">11</div>
+        </div>
+      </div>
+      <div class="hero-list">
+        <div class="hero-row">
+          <span>MTN 1GB / 30d</span>
+          <span class="chip">₦ 350</span>
+        </div>
+        <div class="hero-row">
+          <span>GLO 2GB / 30d</span>
+          <span class="chip">₦ 500</span>
+        </div>
+      </div>
+      <a class="btn full" href="https://vtu-frontend-beta.vercel.app">Open Admin Console</a>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="section-head">
+      <h2>Core features built for profit and reliability</h2>
+      <p>Everything you need to run VTU in Nigeria — from wallets to pricing controls.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Unified Wallet</h3>
+        <p>One wallet for all services with immutable ledger entries and auto‑refunds on failure.</p>
+      </div>
+      <div class="card">
+        <h3>Smart Pricing</h3>
+        <p>Set margins by network and role. Resellers get discounted rates automatically.</p>
+      </div>
+      <div class="card">
+        <h3>Secure Checkout</h3>
+        <p>Paystack funding with signature verification and webhook protection.</p>
+      </div>
+      <div class="card">
+        <h3>Admin Control</h3>
+        <p>Monitor revenue, API health, transactions, and user growth from one dashboard.</p>
+      </div>
+      <div class="card">
+        <h3>Fast Fulfilment</h3>
+        <p>Instant delivery with retries, timeouts, and detailed API logging.</p>
+      </div>
+      <div class="card">
+        <h3>Role‑Based Access</h3>
+        <p>JWT auth with access + refresh tokens, and clear user/reseller/admin permissions.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="developer" class="section alt">
+    <div class="section-head">
+      <h2>Developer‑ready VTU API</h2>
+      <p>Authenticate with your API key and sell data directly inside your app or website.</p>
+    </div>
+    <div class="dev-grid">
+      <div class="dev-card">
+        <h3>Simple JSON</h3>
+        <p>Send network, phone, plan, and reference. Get instant response with status.</p>
+        <div class="code">
+          <code>{
+  "network": "mtn",
+  "phone_number": "08031234567",
+  "plan_code": "MTN_1GB_30D",
+  "reference": "DATA_abc123"
+}</code>
+        </div>
+      </div>
+      <div class="dev-card">
+        <h3>Instant Fulfilment</h3>
+        <p>Built‑in retries and safe failure handling keep your customers protected.</p>
+        <ul class="ticks">
+          <li>Token‑based auth</li>
+          <li>Webhook receipts</li>
+          <li>Plan caching</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="ecosystem" class="section">
+    <div class="section-head">
+      <h2>One wallet. Multiple services.</h2>
+      <p>Expand beyond data into airtime, electricity, and cable without redesigning your system.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Data</h3>
+        <p>High‑volume daily transactions with strong repeat usage.</p>
+      </div>
+      <div class="card">
+        <h3>Airtime</h3>
+        <p>Fast top‑ups with reliable confirmations.</p>
+      </div>
+      <div class="card">
+        <h3>Electricity</h3>
+        <p>Pay bills instantly with clear receipt history.</p>
+      </div>
+      <div class="card">
+        <h3>Cable TV</h3>
+        <p>Subscription renewals in seconds, no manual steps.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="agents" class="section alt">
+    <div class="section-head">
+      <h2>Agent‑powered growth</h2>
+      <p>Empower agents with discounted plans, live earnings, and transparent reporting.</p>
+    </div>
+    <div class="agent-wrap">
+      <div class="agent-panel">
+        <h3>Become an agent</h3>
+        <p>Earn by selling data and bills to your community with instant settlements.</p>
+        <div class="agent-stats">
+          <div>
+            <div class="metric">Live earnings</div>
+            <div class="muted">updated in seconds</div>
+          </div>
+          <div>
+            <div class="metric">Instant payout</div>
+            <div class="muted">no delays</div>
+          </div>
+        </div>
+        <a class="btn" href="https://vtu-frontend-beta.vercel.app">Join as Agent</a>
+      </div>
+      <div class="agent-panel light">
+        <h3>Agent dashboard preview</h3>
+        <div class="agent-card">
+          <div class="agent-row">
+            <span>Today’s Sales</span>
+            <strong>₦ 124,900</strong>
+          </div>
+          <div class="agent-row">
+            <span>Commission</span>
+            <strong>₦ 8,240</strong>
+          </div>
+          <div class="agent-row">
+            <span>Active Customers</span>
+            <strong>164</strong>
+          </div>
+        </div>
+        <p class="muted">Everything an agent needs in one view.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section">
+    <div class="section-head">
+      <h2>Pricing built for growth</h2>
+      <p>Start free and scale to enterprise without changing your stack.</p>
+    </div>
+    <div class="pricing">
+      <div class="price-card">
+        <h3>Starter</h3>
+        <div class="price">₦ 0<span>/month</span></div>
+        <ul>
+          <li>Unlimited users</li>
+          <li>Paystack integration</li>
+          <li>Basic analytics</li>
+        </ul>
+        <a class="btn ghost full" href="https://vtu-frontend-beta.vercel.app">Get Started</a>
+      </div>
+      <div class="price-card featured">
+        <h3>Growth</h3>
+        <div class="price">₦ 25,000<span>/month</span></div>
+        <ul>
+          <li>Reseller pricing rules</li>
+          <li>Advanced reporting</li>
+          <li>Priority support</li>
+        </ul>
+        <a class="btn full" href="https://vtu-frontend-beta.vercel.app">Start Trial</a>
+      </div>
+      <div class="price-card">
+        <h3>Enterprise</h3>
+        <div class="price">Custom</div>
+        <ul>
+          <li>Dedicated infra</li>
+          <li>Custom SLA</li>
+          <li>Security audits</li>
+        </ul>
+        <a class="btn ghost full" href="#contact">Talk to Sales</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="cta">
+    <div>
+      <h2>Launch your VTU business today</h2>
+      <p>We help you go live fast with a proven stack and reliable payments.</p>
+    </div>
+    <div class="cta-actions">
+      <a class="btn" href="https://vtu-frontend-beta.vercel.app">Create Account</a>
+      <a class="btn ghost" href="mailto:hello@nairaconnect.app">Contact Sales</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div>© 2026 NairaConnect. Built for Nigeria VTU.</div>
+    <div class="footer-links">
+      <a href="#features">Features</a>
+      <a href="#developer">Developers</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+  </footer>
+</body>
+</html>
