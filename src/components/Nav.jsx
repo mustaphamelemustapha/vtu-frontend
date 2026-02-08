@@ -11,6 +11,7 @@ export default function Nav({ onLogout }) {
         </div>
       </div>
       <nav>
+        <a href="/landing/" target="_blank" rel="noreferrer">Marketing</a>
         <NavLink to="/" end>Dashboard</NavLink>
         <NavLink to="/wallet">Wallet</NavLink>
         <NavLink to="/data">Data</NavLink>
