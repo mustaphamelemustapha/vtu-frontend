@@ -300,6 +300,27 @@ input, select {
   margin-top: 8px;
 }
 
+.error.inline {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 4px;
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .notice {
   margin-top: 12px;
   background: rgba(15, 118, 110, 0.12);
