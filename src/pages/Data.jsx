@@ -5,6 +5,7 @@ export default function Data() {
   const [plans, setPlans] = useState([]);
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("all");
+  const [ported, setPorted] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -16,7 +17,7 @@ export default function Data() {
     try {
       const res = await apiFetch("/data/purchase", {
         method: "POST",
-        body: JSON.stringify({ plan_code: planCode, phone_number: phone })
+        body: JSON.stringify({ plan_code: planCode, phone_number: phone, ported_number: ported })
       });
       setMessage(`Purchase ${res.status}`);
     } catch (err) {
@@ -51,6 +52,10 @@ export default function Data() {
                 <option value="airtel">Airtel</option>
                 <option value="9mobile">9mobile</option>
               </select>
+            </label>
+            <label className="check">
+              <input type="checkbox" checked={ported} onChange={(e) => setPorted(e.target.checked)} />
+              Ported number
             </label>
           </div>
         </div>
