@@ -205,8 +205,17 @@ a {
 
 .ghost {
   background: transparent;
-  border: 1px solid var(--stroke);
+  border: none;
   color: var(--ink);
+}
+
+button {
+  border: none;
+  outline: none;
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2);
 }
 
 .link {
