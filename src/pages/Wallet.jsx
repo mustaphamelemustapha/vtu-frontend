@@ -28,21 +28,36 @@ export default function Wallet() {
   };
 
   return (
-    <div>
-      <h2>Wallet</h2>
-      <div className="card">
-        <div className="label">Balance</div>
-        <div className="value">₦ {wallet?.balance || "0.00"}</div>
-      </div>
-      <div className="card">
-        <h3>Fund Wallet</h3>
-        <form onSubmit={fund} className="form-row">
-          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} min="100" />
-          <input value={callback} onChange={(e) => setCallback(e.target.value)} />
-          <button className="primary" type="submit">Pay with Paystack</button>
-        </form>
-        {message && <div className="error">{message}</div>}
-      </div>
+    <div className="page">
+      <section className="hero-card">
+        <div>
+          <div className="label">Available Balance</div>
+          <div className="hero-value">₦ {wallet?.balance || "0.00"}</div>
+          <div className="muted">Keep your wallet funded for quick purchases.</div>
+        </div>
+        <div className="hero-actions">
+          <button className="primary" onClick={() => setAmount(2000)}>+ ₦2,000</button>
+          <button className="ghost" onClick={() => setAmount(5000)}>+ ₦5,000</button>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card">
+          <h3>Fund Wallet</h3>
+          <form onSubmit={fund} className="form-grid">
+            <label>
+              Amount (₦)
+              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} min="100" />
+            </label>
+            <label>
+              Callback URL
+              <input value={callback} onChange={(e) => setCallback(e.target.value)} />
+            </label>
+            <button className="primary" type="submit">Pay with Paystack</button>
+          </form>
+          {message && <div className="error">{message}</div>}
+        </div>
+      </section>
     </div>
   );
 }

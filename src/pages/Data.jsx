@@ -4,6 +4,7 @@ import { apiFetch } from "../services/api";
 export default function Data() {
   const [plans, setPlans] = useState([]);
   const [phone, setPhone] = useState("");
+  const [network, setNetwork] = useState("all");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -23,18 +24,43 @@ export default function Data() {
     }
   };
 
+  const filtered = network === "all"
+    ? plans
+    : plans.filter((plan) => (plan.network || "").toLowerCase() === network);
+
   return (
-    <div>
-      <h2>Data Plans</h2>
-      <div className="card">
-        <input
-          placeholder="Recipient phone number"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        <div className="grid">
-          {plans.map((plan) => (
-            <div className="card" key={plan.plan_code}>
+    <div className="page">
+      <section className="section">
+        <div className="card">
+          <h3>Recipient</h3>
+          <div className="form-grid">
+            <label>
+              Phone Number
+              <input
+                placeholder="08012345678"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </label>
+            <label>
+              Network
+              <select value={network} onChange={(e) => setNetwork(e.target.value)}>
+                <option value="all">All Networks</option>
+                <option value="mtn">MTN</option>
+                <option value="glo">Glo</option>
+                <option value="airtel">Airtel</option>
+                <option value="9mobile">9mobile</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <h3>Data Plans</h3>
+        <div className="grid-3">
+          {filtered.map((plan) => (
+            <div className="card plan-card" key={plan.plan_code}>
               <div className="label">{plan.plan_name}</div>
               <div className="value">₦ {plan.price}</div>
               <div className="muted">{plan.data_size} • {plan.validity}</div>
@@ -43,7 +69,7 @@ export default function Data() {
           ))}
         </div>
         {message && <div className="notice">{message}</div>}
-      </div>
+      </section>
     </div>
   );
 }
