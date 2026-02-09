@@ -8,6 +8,7 @@ export default function Wallet() {
     typeof window !== "undefined" ? `${window.location.origin}/app/wallet` : ""
   );
   const [message, setMessage] = useState("");
+  const [method, setMethod] = useState("monnify");
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
@@ -17,13 +18,18 @@ export default function Wallet() {
     e.preventDefault();
     setMessage("");
     try {
-      const res = await apiFetch("/wallet/fund", {
+      const path = method === "monnify" ? "/wallet/monnify/init" : "/wallet/fund";
+      const res = await apiFetch(path, {
         method: "POST",
         body: JSON.stringify({ amount: Number(amount), callback_url: callback })
       });
-      if (res?.data?.authorization_url) {
-        window.location.href = res.data.authorization_url;
-      }
+      const paystackUrl = res?.data?.authorization_url;
+      const monnifyUrl =
+        res?.responseBody?.checkoutUrl ||
+        res?.responseBody?.paymentUrl ||
+        res?.responseBody?.paymentPageUrl;
+      const url = paystackUrl || monnifyUrl;
+      if (url) window.location.href = url;
     } catch (err) {
       setMessage(err.message);
     }
@@ -48,6 +54,13 @@ export default function Wallet() {
           <h3>Fund Wallet</h3>
           <form onSubmit={fund} className="form-grid">
             <label>
+              Funding Method
+              <select value={method} onChange={(e) => setMethod(e.target.value)}>
+                <option value="monnify">Monnify (Bank/Card/USSD)</option>
+                <option value="paystack">Paystack (Card)</option>
+              </select>
+            </label>
+            <label>
               Amount (₦)
               <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} min="100" />
             </label>
@@ -55,7 +68,9 @@ export default function Wallet() {
               Callback URL
               <input value={callback} onChange={(e) => setCallback(e.target.value)} />
             </label>
-            <button className="primary" type="submit">Pay with Paystack</button>
+            <button className="primary" type="submit">
+              {method === "monnify" ? "Pay with Monnify" : "Pay with Paystack"}
+            </button>
           </form>
           {message && <div className="error">{message}</div>}
         </div>
