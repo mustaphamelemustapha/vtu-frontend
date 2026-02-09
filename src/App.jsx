@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Nav from "./components/Nav.jsx";
 import Login from "./pages/Login.jsx";
@@ -13,11 +13,7 @@ export default function App() {
   const [authenticated, setAuthenticated] = useState(!!getToken());
   const location = useLocation();
 
-  if (!authenticated) {
-    return <Login onAuth={() => setAuthenticated(true)} />;
-  }
-
-  const pageTitle = useMemo(() => {
+  const pageTitle = (() => {
     const path = location.pathname;
     if (path === "/") return "Dashboard";
     if (path.startsWith("/wallet")) return "Wallet";
@@ -25,7 +21,11 @@ export default function App() {
     if (path.startsWith("/transactions")) return "Transactions";
     if (path.startsWith("/admin")) return "Admin";
     return "Dashboard";
-  }, [location.pathname]);
+  })();
+
+  if (!authenticated) {
+    return <Login onAuth={() => setAuthenticated(true)} />;
+  }
 
   return (
     <div className="app-shell">
