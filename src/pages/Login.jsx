@@ -5,10 +5,14 @@ export default function Login({ onAuth }) {
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ email: "", password: "", full_name: "" });
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
+    setNotice("");
+    setLoading(true);
     try {
       if (mode === "register") {
         await apiFetch("/auth/register", {
@@ -19,6 +23,11 @@ export default function Login({ onAuth }) {
             full_name: form.full_name
           })
         });
+        setNotice("Account created. Please log in.");
+        setMode("login");
+        setForm({ email: form.email, password: "", full_name: "" });
+        setLoading(false);
+        return;
       }
       const data = await apiFetch("/auth/login", {
         method: "POST",
@@ -28,6 +37,8 @@ export default function Login({ onAuth }) {
       onAuth();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,14 +68,25 @@ export default function Login({ onAuth }) {
             placeholder="Password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
+            maxLength={72}
             required
           />
+          <div className="hint">Password max 72 characters.</div>
           {error && <div className="error">{error}</div>}
+          {notice && <div className="notice">{notice}</div>}
           <button className="primary" type="submit">
-            {mode === "login" ? "Login" : "Register"}
+            {loading ? "Please wait..." : mode === "login" ? "Login" : "Register"}
           </button>
         </form>
-        <button className="link" onClick={() => setMode(mode === "login" ? "register" : "login")}>
+        <button
+          className="link"
+          disabled={loading}
+          onClick={() => {
+            setError("");
+            setNotice("");
+            setMode(mode === "login" ? "register" : "login");
+          }}
+        >
           {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
         </button>
       </div>

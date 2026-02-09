@@ -21,7 +21,15 @@ export async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data.detail || "Request failed");
+    let message = "Request failed";
+    if (Array.isArray(data?.detail)) {
+      message = data.detail.map((item) => item?.msg || item).join(", ");
+    } else if (typeof data?.detail === "string") {
+      message = data.detail;
+    } else if (typeof data?.message === "string") {
+      message = data.message;
+    }
+    throw new Error(message);
   }
   return data;
 }
