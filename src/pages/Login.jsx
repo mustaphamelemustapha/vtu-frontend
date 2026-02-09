@@ -18,6 +18,8 @@ export default function Login({ onAuth }) {
   const [rememberMe, setRememberMe] = useState(true);
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [resetMode, setResetMode] = useState(false);
+  const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
 
   const validateField = (name, value) => {
     let message = "";
@@ -39,6 +41,15 @@ export default function Login({ onAuth }) {
     }
     setFieldErrors((prev) => ({ ...prev, [name]: message }));
     return message;
+  };
+
+  const passwordStrength = (value) => {
+    let score = 0;
+    if (value.length >= 8) score += 1;
+    if (/[A-Z]/.test(value)) score += 1;
+    if (/[0-9]/.test(value)) score += 1;
+    if (/[^A-Za-z0-9]/.test(value)) score += 1;
+    return score; // 0-4
   };
 
   const validateAll = () => {
@@ -73,6 +84,39 @@ export default function Login({ onAuth }) {
       });
       setNotice("If the email exists, a reset link will be sent.");
       setForgotMode(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitReset = async (e) => {
+    e.preventDefault();
+    setError("");
+    setNotice("");
+    if (!resetForm.token || !resetForm.password) {
+      setError("All fields are required");
+      return;
+    }
+    if (resetForm.password !== resetForm.confirm) {
+      setError("Passwords do not match");
+      return;
+    }
+    if (resetForm.password.length > 72) {
+      setError("Password max 72 characters");
+      return;
+    }
+    setLoading(true);
+    try {
+      await apiFetch("/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({ token: resetForm.token, new_password: resetForm.password })
+      });
+      setNotice("Password reset successful. Please log in.");
+      setResetMode(false);
+      setMode("login");
+      setResetForm({ token: "", password: "", confirm: "" });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -127,7 +171,75 @@ export default function Login({ onAuth }) {
       <div className="auth-card">
         <h1>{mode === "login" ? "Welcome back" : "Create account"}</h1>
         <p className="muted">Secure VTU platform for data and wallet payments.</p>
-        {forgotMode ? (
+        {resetMode ? (
+          <form onSubmit={submitReset} className="auth-wide">
+            <div className="field">
+              <label>Reset token</label>
+              <input
+                placeholder="Paste reset token"
+                value={resetForm.token}
+                onChange={(e) => setResetForm({ ...resetForm, token: e.target.value })}
+                required
+              />
+            </div>
+            <div className="field">
+              <label>New password</label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="New password"
+                  value={resetForm.password}
+                  onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
+                  maxLength={72}
+                  required
+                />
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              <div className="strength">
+                <div className={`bar s${passwordStrength(resetForm.password)}`} />
+                <span>
+                  {["Too weak", "Weak", "Okay", "Strong", "Excellent"][passwordStrength(resetForm.password)]}
+                </span>
+              </div>
+            </div>
+            <div className="field">
+              <label>Confirm password</label>
+              <div className="input-group">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  placeholder="Confirm password"
+                  value={resetForm.confirm}
+                  onChange={(e) => setResetForm({ ...resetForm, confirm: e.target.value })}
+                  maxLength={72}
+                  required
+                />
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  aria-label={showConfirm ? "Hide password" : "Show password"}
+                >
+                  {showConfirm ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+            {error && <div className="error">{error}</div>}
+            {notice && <div className="notice">{notice}</div>}
+            <button className="primary" type="submit">
+              {loading ? "Please wait..." : "Reset password"}
+            </button>
+            <button className="link" type="button" onClick={() => setResetMode(false)}>
+              Back to login
+            </button>
+          </form>
+        ) : forgotMode ? (
           <form onSubmit={submitForgot}>
             <div className="field">
               <label>Email</label>
@@ -144,6 +256,9 @@ export default function Login({ onAuth }) {
             <button className="primary" type="submit">
               {loading ? "Please wait..." : "Send reset link"}
             </button>
+            <button className="link" type="button" onClick={() => { setForgotMode(false); setResetMode(true); }}>
+              I have a reset token
+            </button>
             <button className="link" type="button" onClick={() => setForgotMode(false)}>
               Back to login
             </button>
@@ -156,7 +271,10 @@ export default function Login({ onAuth }) {
               <input
                 placeholder="Full name"
                 value={form.full_name}
-                onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, full_name: e.target.value });
+                  validateField("full_name", e.target.value);
+                }}
                 onBlur={(e) => validateField("full_name", e.target.value)}
                 required
               />
@@ -165,14 +283,17 @@ export default function Login({ onAuth }) {
           )}
           <div className="field">
             <label>Email</label>
-            <input
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              onBlur={(e) => validateField("email", e.target.value)}
-              required
-            />
+              <input
+                type="email"
+                placeholder="Email"
+                value={form.email}
+                onChange={(e) => {
+                  setForm({ ...form, email: e.target.value });
+                  validateField("email", e.target.value);
+                }}
+                onBlur={(e) => validateField("email", e.target.value)}
+                required
+              />
             {fieldErrors.email && <div className="error inline">{fieldErrors.email}</div>}
           </div>
           <div className="field">
@@ -182,7 +303,10 @@ export default function Login({ onAuth }) {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, password: e.target.value });
+                  validateField("password", e.target.value);
+                }}
                 onBlur={(e) => validateField("password", e.target.value)}
                 maxLength={72}
                 required
@@ -196,6 +320,12 @@ export default function Login({ onAuth }) {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
+            <div className="strength">
+              <div className={`bar s${passwordStrength(form.password)}`} />
+              <span>
+                {["Too weak", "Weak", "Okay", "Strong", "Excellent"][passwordStrength(form.password)]}
+              </span>
+            </div>
             {fieldErrors.password && <div className="error inline">{fieldErrors.password}</div>}
           </div>
           {mode === "register" && (
@@ -206,7 +336,10 @@ export default function Login({ onAuth }) {
                   type={showConfirm ? "text" : "password"}
                   placeholder="Confirm password"
                   value={form.confirm_password}
-                  onChange={(e) => setForm({ ...form, confirm_password: e.target.value })}
+                  onChange={(e) => {
+                    setForm({ ...form, confirm_password: e.target.value });
+                    validateField("confirm_password", e.target.value);
+                  }}
                   onBlur={(e) => validateField("confirm_password", e.target.value)}
                   maxLength={72}
                   required

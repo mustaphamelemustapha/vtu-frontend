@@ -321,6 +321,47 @@ input, select {
   color: var(--muted);
 }
 
+.strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 2px;
+}
+
+.strength .bar {
+  height: 6px;
+  flex: 1;
+  background: var(--panel-light);
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+}
+
+.strength .bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: #ef4444;
+  transition: width 0.2s ease;
+}
+
+.strength .bar.s1::after { width: 25%; background: #ef4444; }
+.strength .bar.s2::after { width: 50%; background: #f59e0b; }
+.strength .bar.s3::after { width: 75%; background: #22c55e; }
+.strength .bar.s4::after { width: 100%; background: #16a34a; }
+
+.strength span {
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 90px;
+}
+
+.auth-wide {
+  display: grid;
+  gap: 6px;
+}
+
 .notice {
   margin-top: 12px;
   background: rgba(15, 118, 110, 0.12);
