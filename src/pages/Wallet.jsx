@@ -4,7 +4,9 @@ import { apiFetch } from "../services/api";
 export default function Wallet() {
   const [wallet, setWallet] = useState(null);
   const [amount, setAmount] = useState(1000);
-  const [callback, setCallback] = useState("http://localhost:5173/wallet");
+  const [callback, setCallback] = useState(
+    typeof window !== "undefined" ? `${window.location.origin}/app/wallet` : ""
+  );
   const [message, setMessage] = useState("");
 
   useEffect(() => {
