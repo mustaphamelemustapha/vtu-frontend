@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap");
 
 :root {
   --bg: #f7f6f2;
@@ -10,15 +10,30 @@
   --accent: #0f766e;
   --accent-2: #f59e0b;
   --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Sora", "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-body);
   background: radial-gradient(circle at 20% 10%, rgba(15, 118, 110, 0.08), transparent 40%),
               radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.12), transparent 45%),
               var(--bg);
   color: var(--ink);
+}
+
+h1, h2, h3, .brand-title, .hello, .plan-name {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+p, .muted, .subtle, .label, .value, .pill, .chip, .notice, .error {
+  letter-spacing: 0.001em;
+}
+
+.topbar h1 {
+  letter-spacing: -0.02em;
 }
 
 a {
