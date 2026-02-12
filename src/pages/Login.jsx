@@ -158,8 +158,8 @@ export default function Login({ onAuth }) {
         method: "POST",
         body: JSON.stringify({ email: form.email, password: form.password })
       });
-      const nameFromEmail = form.email.split("@")[0].replace(/[._-]/g, " ");
-      setProfile({ full_name: nameFromEmail, email: form.email });
+      const profile = await apiFetch("/auth/me");
+      setProfile({ full_name: profile.full_name, email: profile.email });
       setToken(data.access_token, rememberMe);
       onAuth();
     } catch (err) {
