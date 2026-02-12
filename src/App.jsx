@@ -158,15 +158,22 @@ export default function App() {
       <Nav onLogout={() => { clearToken(); setAuthenticated(false); }} />
       <main className="main">
         <header className="topbar">
-          <div className="top-left">
-            <div className="avatar">
-              <span>{initials}</span>
+          {location.pathname === "/" ? (
+            <div className="top-left">
+              <div className="avatar">
+                <span>{initials}</span>
+              </div>
+              <div>
+                <div className="hello">Hi, {fullName}</div>
+                <div className="subtle">AxisVTU</div>
+              </div>
             </div>
-            <div>
-              <div className="hello">Hi, {fullName}</div>
-              <div className="subtle">AxisVTU</div>
+          ) : (
+            <div className="page-head">
+              <div className="eyebrow">AxisVTU</div>
+              <h1>{pageTitle}</h1>
             </div>
-          </div>
+          )}
           <div className="top-actions">
             <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
               <svg viewBox="0 0 24 24" fill="none">
