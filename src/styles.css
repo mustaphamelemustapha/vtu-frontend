@@ -173,6 +173,16 @@ a {
   font-size: 26px;
 }
 
+.page-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.topbar .page-head {
+  min-width: 180px;
+}
+
 .eyebrow {
   font-size: 12px;
   letter-spacing: 0.12em;
