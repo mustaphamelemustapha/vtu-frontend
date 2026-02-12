@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
 
 export default function Wallet() {
@@ -9,11 +10,20 @@ export default function Wallet() {
   );
   const [message, setMessage] = useState("");
   const [lastReference, setLastReference] = useState("");
+  const [searchParams] = useSearchParams();
   const [method, setMethod] = useState("monnify");
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const ref = searchParams.get("reference") || searchParams.get("trxref");
+    if (ref) {
+      setLastReference(ref);
+      verifyPayment(ref);
+    }
+  }, [searchParams]);
 
   const fund = async (e) => {
     e.preventDefault();
@@ -38,14 +48,15 @@ export default function Wallet() {
     }
   };
 
-  const verifyPayment = async () => {
-    if (!lastReference) {
+  const verifyPayment = async (refOverride) => {
+    const reference = refOverride || lastReference;
+    if (!reference) {
       setMessage("No recent transaction reference found.");
       return;
     }
     setMessage("");
     try {
-      const res = await apiFetch(`/wallet/paystack/verify?reference=${lastReference}`);
+      const res = await apiFetch(`/wallet/paystack/verify?reference=${reference}`);
       if (res.status === "success") {
         setMessage("Wallet funded successfully.");
         apiFetch("/wallet/me").then(setWallet).catch(() => {});
