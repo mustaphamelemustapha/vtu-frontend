@@ -32,17 +32,20 @@ export default function Admin() {
     <div className="page">
       <section className="section">
         <div className="grid-3">
-          <div className="card">
+          <div className="card stat-card">
             <div className="label">Total Revenue</div>
             <div className="value">₦ {analytics?.total_revenue || 0}</div>
+            <div className="muted">All time earnings</div>
           </div>
-          <div className="card">
+          <div className="card stat-card">
             <div className="label">Total Users</div>
             <div className="value">{analytics?.total_users || 0}</div>
+            <div className="muted">Registered accounts</div>
           </div>
-          <div className="card">
+          <div className="card stat-card">
             <div className="label">API Success</div>
             <div className="value">{analytics?.api_success || 0}</div>
+            <div className="muted">Successful deliveries</div>
           </div>
         </div>
       </section>
@@ -69,6 +72,15 @@ export default function Admin() {
             <button className="primary" type="submit">Update</button>
           </form>
           {message && <div className="notice">{message}</div>}
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card">
+          <h3>Admin Notes</h3>
+          <div className="muted">
+            Use pricing rules to manage reseller margins per network. Changes apply instantly to new purchases.
+          </div>
         </div>
       </section>
     </div>

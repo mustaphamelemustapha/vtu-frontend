@@ -646,6 +646,64 @@ a {
   font-weight: 700;
 }
 
+.onboard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 12, 0.6);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  z-index: 80;
+}
+
+.onboard-card {
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  border-radius: 22px;
+  padding: 26px;
+  width: min(560px, 92vw);
+  box-shadow: var(--shadow);
+  animation: pop 0.35s ease;
+}
+
+.onboard-title {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.onboard-sub {
+  color: var(--muted);
+  margin-top: 6px;
+  margin-bottom: 16px;
+}
+
+.onboard-list {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.onboard-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  background: var(--panel-light);
+}
+
+.onboard-step {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(15, 118, 110, 0.15);
+  color: var(--accent);
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+
 .toast {
   position: fixed;
   right: 20px;

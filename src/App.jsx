@@ -17,6 +17,7 @@ export default function App() {
   const [profileState, setProfileState] = useState(getProfile());
   const [darkMode, setDarkMode] = useState(false);
   const [notifItems, setNotifItems] = useState([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const pageTitle = (() => {
     const path = location.pathname;
@@ -40,6 +41,10 @@ export default function App() {
     if (authenticated) {
       fetchProfile();
       fetchNotifications();
+      const onboarded = localStorage.getItem("vtu_onboarded");
+      if (!onboarded) {
+        setShowOnboarding(true);
+      }
     }
   }, [authenticated]);
 
@@ -107,6 +112,49 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {showOnboarding && (
+        <div className="onboard-overlay" role="dialog" aria-live="polite">
+          <div className="onboard-card">
+            <div className="onboard-title">Welcome to AxisVTU</div>
+            <div className="onboard-sub">Your quick start checklist.</div>
+            <div className="onboard-list">
+              <div className="onboard-item">
+                <span className="onboard-step">1</span>
+                <div>
+                  <div className="label">Fund your wallet</div>
+                  <div className="muted">Add funds via Paystack to start.</div>
+                </div>
+              </div>
+              <div className="onboard-item">
+                <span className="onboard-step">2</span>
+                <div>
+                  <div className="label">Buy a data plan</div>
+                  <div className="muted">Pick MTN or Glo and deliver instantly.</div>
+                </div>
+              </div>
+              <div className="onboard-item">
+                <span className="onboard-step">3</span>
+                <div>
+                  <div className="label">Track receipts</div>
+                  <div className="muted">View status and receipts in Transactions.</div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="ghost" onClick={() => setShowOnboarding(false)}>Later</button>
+              <button
+                className="primary"
+                onClick={() => {
+                  localStorage.setItem("vtu_onboarded", "true");
+                  setShowOnboarding(false);
+                }}
+              >
+                Start Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Nav onLogout={() => { clearToken(); setAuthenticated(false); }} />
       <main className="main">
         <header className="topbar">
