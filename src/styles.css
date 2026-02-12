@@ -142,9 +142,17 @@ a {
   gap: 16px;
 }
 
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+
 .plan-card {
   text-align: left;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  position: relative;
 }
 
 .plan-card:hover {
@@ -178,6 +186,47 @@ a {
 .plan-meta .price {
   color: var(--ink);
   font-weight: 700;
+}
+
+.best-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--accent);
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+  animation: shimmer 1.2s infinite;
+}
+
+.skeleton-line {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--panel-light);
+  margin-bottom: 12px;
+}
+
+.w-40 { width: 40%; }
+.w-60 { width: 60%; }
+.w-80 { width: 80%; }
+
+@keyframes shimmer {
+  to { transform: translateX(100%); }
 }
 
 .badge {
@@ -605,6 +654,9 @@ input, select {
   }
   .grid-2,
   .grid-3 {
+    grid-template-columns: 1fr;
+  }
+  .filter-bar {
     grid-template-columns: 1fr;
   }
   .hero-card {

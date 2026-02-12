@@ -10,9 +10,16 @@ export default function Data() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("recommended");
+  const [loadingPlans, setLoadingPlans] = useState(true);
 
   useEffect(() => {
-    apiFetch("/data/plans").then(setPlans).catch(() => {});
+    setLoadingPlans(true);
+    apiFetch("/data/plans")
+      .then(setPlans)
+      .catch(() => {})
+      .finally(() => setLoadingPlans(false));
   }, []);
 
   const buy = async (planCode) => {
@@ -36,9 +43,31 @@ export default function Data() {
     }
   };
 
-  const filtered = network === "all"
-    ? plans
-    : plans.filter((plan) => (plan.network || "").toLowerCase() === network);
+  const filtered = plans.filter((plan) => {
+    const matchesNetwork = network === "all" ? true : (plan.network || "").toLowerCase() === network;
+    const haystack = `${plan.plan_name} ${plan.data_size} ${plan.validity}`.toLowerCase();
+    const matchesQuery = query ? haystack.includes(query.toLowerCase()) : true;
+    return matchesNetwork && matchesQuery;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sort === "price_low") return Number(a.price) - Number(b.price);
+    if (sort === "price_high") return Number(b.price) - Number(a.price);
+    if (sort === "data_high") {
+      const aVal = parseFloat(String(a.data_size));
+      const bVal = parseFloat(String(b.data_size));
+      return bVal - aVal;
+    }
+    return 0;
+  });
+
+  const bestValue = sorted.reduce((best, plan) => {
+    const size = parseFloat(String(plan.data_size));
+    if (!size || !plan.price) return best;
+    const ratio = Number(plan.price) / size;
+    if (!best || ratio < best.ratio) return { ratio, plan_code: plan.plan_code };
+    return best;
+  }, null);
 
   return (
     <div className="page">
@@ -75,10 +104,30 @@ export default function Data() {
       <section className="section">
         <div className="section-head">
           <h3>Data Plans</h3>
-          <div className="muted">{filtered.length} plans</div>
+          <div className="muted">{sorted.length} plans</div>
+        </div>
+        <div className="filter-bar">
+          <input
+            placeholder="Search plans (e.g. 1GB, 30d)"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="recommended">Recommended</option>
+            <option value="price_low">Price: Low to High</option>
+            <option value="price_high">Price: High to Low</option>
+            <option value="data_high">Data: High to Low</option>
+          </select>
         </div>
         <div className="plan-grid">
-          {filtered.map((plan) => (
+          {loadingPlans && Array.from({ length: 6 }).map((_, idx) => (
+            <div className="card plan-card skeleton" key={`s-${idx}`}>
+              <div className="skeleton-line w-40" />
+              <div className="skeleton-line w-60" />
+              <div className="skeleton-line w-80" />
+            </div>
+          ))}
+          {!loadingPlans && sorted.map((plan) => (
             <button
               type="button"
               className="card plan-card"
@@ -94,6 +143,9 @@ export default function Data() {
                 <span>Validity {plan.validity}</span>
                 <span className="price">₦ {plan.price}</span>
               </div>
+              {bestValue && bestValue.plan_code === plan.plan_code && (
+                <div className="best-badge">Best Value</div>
+              )}
             </button>
           ))}
         </div>
