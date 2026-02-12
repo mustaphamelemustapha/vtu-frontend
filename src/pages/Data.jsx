@@ -18,6 +18,15 @@ export default function Data() {
   const [success, setSuccess] = useState(null);
   const [fieldError, setFieldError] = useState("");
 
+  const parseSize = (value) => {
+    if (!value) return null;
+    const str = String(value).toLowerCase();
+    const num = parseFloat(str);
+    if (Number.isNaN(num)) return null;
+    if (str.includes("mb")) return num / 1024;
+    return num;
+  };
+
   useEffect(() => {
     setLoadingPlans(true);
     apiFetch("/data/plans")
@@ -125,6 +134,24 @@ export default function Data() {
           <h3>Data Plans</h3>
           <div className="muted">{sorted.length} plans</div>
         </div>
+        <div className="tab-row">
+          {[
+            { id: "all", label: "All" },
+            { id: "mtn", label: "MTN" },
+            { id: "glo", label: "Glo" },
+            { id: "airtel", label: "Airtel" },
+            { id: "9mobile", label: "9mobile" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`pill tab ${network === item.id ? "active" : ""}`}
+              onClick={() => setNetwork(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
         <div className="filter-bar">
           <input
             placeholder="Search plans (e.g. 1GB, 30d)"
@@ -167,6 +194,17 @@ export default function Data() {
               <div className="plan-meta">
                 <span>Validity {plan.validity}</span>
                 <span className="price">₦ {plan.price}</span>
+              </div>
+              <div className="plan-foot">
+                <span className="muted">
+                  {(() => {
+                    const sizeGb = parseSize(plan.data_size);
+                    if (!sizeGb) return "—";
+                    const rate = Number(plan.price) / sizeGb;
+                    return `₦ ${rate.toFixed(0)} / GB`;
+                  })()}
+                </span>
+                <span className="pill">Tap to buy</span>
               </div>
               {bestValue && bestValue.plan_code === plan.plan_code && (
                 <div className="best-badge">Best Value</div>

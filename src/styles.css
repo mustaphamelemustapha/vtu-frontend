@@ -477,6 +477,27 @@ a {
   font-weight: 700;
 }
 
+.plan-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.tab-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 6px;
+}
+
+.tab.active {
+  background: rgba(15, 118, 110, 0.15);
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .best-badge {
   position: absolute;
   top: 12px;
