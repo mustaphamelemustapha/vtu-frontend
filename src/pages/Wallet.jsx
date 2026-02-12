@@ -8,6 +8,7 @@ export default function Wallet() {
     typeof window !== "undefined" ? `${window.location.origin}/app/wallet` : ""
   );
   const [message, setMessage] = useState("");
+  const [lastReference, setLastReference] = useState("");
   const [method, setMethod] = useState("monnify");
 
   useEffect(() => {
@@ -24,12 +25,33 @@ export default function Wallet() {
         body: JSON.stringify({ amount: Number(amount), callback_url: callback })
       });
       const paystackUrl = res?.data?.authorization_url;
+      const paystackRef = res?.data?.reference;
       const monnifyUrl =
         res?.responseBody?.checkoutUrl ||
         res?.responseBody?.paymentUrl ||
         res?.responseBody?.paymentPageUrl;
+      if (paystackRef) setLastReference(paystackRef);
       const url = paystackUrl || monnifyUrl;
       if (url) window.location.href = url;
+    } catch (err) {
+      setMessage(err.message);
+    }
+  };
+
+  const verifyPayment = async () => {
+    if (!lastReference) {
+      setMessage("No recent transaction reference found.");
+      return;
+    }
+    setMessage("");
+    try {
+      const res = await apiFetch(`/wallet/paystack/verify?reference=${lastReference}`);
+      if (res.status === "success") {
+        setMessage("Wallet funded successfully.");
+        apiFetch("/wallet/me").then(setWallet).catch(() => {});
+      } else {
+        setMessage("Payment pending. Please wait and try again.");
+      }
     } catch (err) {
       setMessage(err.message);
     }
@@ -72,6 +94,11 @@ export default function Wallet() {
               {method === "monnify" ? "Pay with Monnify" : "Pay with Paystack"}
             </button>
           </form>
+          {method === "paystack" && (
+            <button className="ghost" type="button" onClick={verifyPayment}>
+              Verify Paystack Payment
+            </button>
+          )}
           {message && <div className="error">{message}</div>}
         </div>
       </section>
