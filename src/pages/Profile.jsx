@@ -5,6 +5,7 @@ export default function Profile() {
   const [profile, setProfileState] = useState(getProfile());
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const [prefs, setPrefs] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("vtu_prefs") || "{}");
@@ -12,6 +13,14 @@ export default function Profile() {
       return {};
     }
   });
+
+  const initials = (profile.full_name || "User")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   useEffect(() => {
     apiFetch("/auth/me")
@@ -36,6 +45,7 @@ export default function Profile() {
       // backend currently does not support updates; store locally for now
       setProfile(profile);
       setNotice("Profile saved locally. Server updates coming soon.");
+      setEditMode(false);
     } finally {
       setLoading(false);
     }
@@ -49,15 +59,44 @@ export default function Profile() {
   return (
     <div className="page">
       <section className="section">
-        <div className="card">
-          <h3>Profile</h3>
-          <form className="form-grid" onSubmit={updateProfile}>
+        <div className="card profile-card">
+          <div className="profile-head">
+            <div className="profile-avatar">{initials}</div>
+            <div>
+              <div className="profile-name">{profile.full_name || "User"}</div>
+              <div className="muted">{profile.email || "email@example.com"}</div>
+            </div>
+            <div className="profile-actions">
+              <button className="ghost" onClick={() => setEditMode(!editMode)}>
+                {editMode ? "Cancel" : "Edit"}
+              </button>
+              <button className="primary" onClick={updateProfile} disabled={loading || !editMode}>
+                {loading ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+          <div className="info-grid">
+            <div className="info-card">
+              <div className="label">Role</div>
+              <div className="value">User</div>
+            </div>
+            <div className="info-card">
+              <div className="label">Status</div>
+              <div className="value">Active</div>
+            </div>
+            <div className="info-card">
+              <div className="label">Member Since</div>
+              <div className="value">2026</div>
+            </div>
+          </div>
+          <form className="form-grid">
             <label>
               Full name
               <input
                 value={profile.full_name || ""}
                 onChange={(e) => setProfileState({ ...profile, full_name: e.target.value })}
                 placeholder="Full name"
+                disabled={!editMode}
               />
             </label>
             <label>
@@ -67,11 +106,9 @@ export default function Profile() {
                 onChange={(e) => setProfileState({ ...profile, email: e.target.value })}
                 placeholder="Email address"
                 type="email"
+                disabled={!editMode}
               />
             </label>
-            <button className="primary" type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
             {notice && <div className="notice">{notice}</div>}
           </form>
         </div>

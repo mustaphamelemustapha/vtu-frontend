@@ -254,6 +254,76 @@ a {
   background: #0f766e;
 }
 
+.mini-chart {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+  gap: 12px;
+  align-items: end;
+  min-height: 120px;
+}
+
+.bar-wrap {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.bar {
+  width: 100%;
+  max-width: 48px;
+  border-radius: 12px 12px 6px 6px;
+  background: linear-gradient(180deg, rgba(15, 118, 110, 0.9), rgba(15, 118, 110, 0.3));
+}
+
+.profile-card {
+  display: grid;
+  gap: 18px;
+}
+
+.profile-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.profile-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.info-card {
+  background: var(--panel-light);
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  padding: 12px;
+}
+
 .nav {
   background: var(--panel);
   border-right: 1px solid var(--stroke);

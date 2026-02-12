@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../services/api";
 
@@ -10,6 +10,16 @@ export default function Dashboard() {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/transactions/me").then(setTxs).catch(() => {});
   }, []);
+
+  const chartData = useMemo(() => {
+    const recent = [...txs].slice(0, 7).reverse();
+    const max = Math.max(1, ...recent.map((t) => Number(t.amount || 0)));
+    return recent.map((t) => ({
+      amount: Number(t.amount || 0),
+      height: Math.max(12, Math.round((Number(t.amount || 0) / max) * 60)),
+      label: t.tx_type,
+    }));
+  }, [txs]);
 
   return (
     <div className="page">
@@ -43,6 +53,24 @@ export default function Dashboard() {
               {txs.length === 0 ? "0%" : `${Math.round((txs.filter((t) => t.status === "SUCCESS").length / txs.length) * 100)}%`}
             </div>
             <div className="muted">Last 30 days</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card">
+          <div className="section-head">
+            <h3>Weekly Activity</h3>
+            <span className="muted">Last 7 transactions</span>
+          </div>
+          <div className="mini-chart">
+            {chartData.length === 0 && <div className="empty">No activity yet.</div>}
+            {chartData.map((bar, idx) => (
+              <div className="bar-wrap" key={`${bar.label}-${idx}`}>
+                <div className="bar" style={{ height: `${bar.height}px` }} />
+                <span>{bar.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>

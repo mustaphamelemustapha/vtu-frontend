@@ -8,7 +8,7 @@ import Data from "./pages/Data.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Admin from "./pages/Admin.jsx";
 import Profile from "./pages/Profile.jsx";
-import { getToken, clearToken, getProfile, setProfile } from "./services/api";
+import { apiFetch, getToken, clearToken, getProfile, setProfile } from "./services/api";
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(!!getToken());
@@ -16,6 +16,7 @@ export default function App() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileState, setProfileState] = useState(getProfile());
   const [darkMode, setDarkMode] = useState(false);
+  const [notifItems, setNotifItems] = useState([]);
 
   const pageTitle = (() => {
     const path = location.pathname;
@@ -38,6 +39,7 @@ export default function App() {
   useEffect(() => {
     if (authenticated) {
       fetchProfile();
+      fetchNotifications();
     }
   }, [authenticated]);
 
@@ -54,6 +56,26 @@ export default function App() {
       }
     } catch {
       // ignore
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const [wallet, txs] = await Promise.all([
+        apiFetch("/wallet/me"),
+        apiFetch("/transactions/me"),
+      ]);
+      const recent = (txs || []).slice(0, 3).map((tx) => ({
+        id: tx.reference,
+        text: `${tx.tx_type} ${tx.status.toLowerCase()} — ₦ ${tx.amount}`,
+      }));
+      const base = [
+        { id: "welcome", text: "Welcome to AxisVTU 👋" },
+        { id: "balance", text: `Wallet balance: ₦ ${wallet?.balance || "0.00"}` },
+      ];
+      setNotifItems([...base, ...recent]);
+    } catch {
+      setNotifItems([{ id: "welcome", text: "Welcome to AxisVTU 👋" }]);
     }
   };
 
@@ -115,9 +137,9 @@ export default function App() {
               {notificationsOpen && (
                 <div className="notif-panel">
                   <div className="notif-title">Notifications</div>
-                  <div className="notif-item">Welcome, {fullName.split(" ")[0]} 👋</div>
-                  <div className="notif-item">Wallet funding is live via Paystack.</div>
-                  <div className="notif-item">Buy Data plans updated today.</div>
+                  {notifItems.map((item) => (
+                    <div className="notif-item" key={item.id}>{item.text}</div>
+                  ))}
                 </div>
               )}
             </div>
