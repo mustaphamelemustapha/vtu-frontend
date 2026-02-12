@@ -1128,14 +1128,15 @@ input, select {
     padding: 16px 16px 90px;
   }
   .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
   .top-actions {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+    width: auto;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    margin-left: auto;
   }
   .top-actions .primary,
   .top-actions .ghost {

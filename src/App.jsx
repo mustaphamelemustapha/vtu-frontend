@@ -157,51 +157,43 @@ export default function App() {
       )}
       <Nav onLogout={() => { clearToken(); setAuthenticated(false); }} />
       <main className="main">
-        <header className="topbar">
-          {location.pathname === "/" ? (
+        {location.pathname === "/" && (
+          <header className="topbar">
             <div className="top-left">
               <div className="avatar">
                 <span>{initials}</span>
               </div>
               <div>
                 <div className="hello">Hi, {fullName}</div>
-                <div className="subtle">AxisVTU</div>
               </div>
             </div>
-          ) : (
-            <div className="page-head">
-              <div className="eyebrow">AxisVTU</div>
-              <h1>{pageTitle}</h1>
-            </div>
-          )}
-          <div className="top-actions">
-            <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
-                <path d="M12 6.5v2.2M12 15.3v2.2M6.5 12h2.2M15.3 12h2.2M7.9 7.9l1.6 1.6M14.5 14.5l1.6 1.6M7.9 16.1l1.6-1.6M14.5 9.5l1.6-1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-            <div className="notif-wrap">
-              <button className="icon-btn" aria-label="Notifications" onClick={() => setNotificationsOpen(!notificationsOpen)}>
-                <span className="notif-dot" />
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6" stroke="currentColor" strokeWidth="1.6"/>
-                <path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.6"/>
-              </svg>
+            <div className="top-actions">
+              <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
+                  <path d="M12 6.5v2.2M12 15.3v2.2M6.5 12h2.2M15.3 12h2.2M7.9 7.9l1.6 1.6M14.5 14.5l1.6 1.6M7.9 16.1l1.6-1.6M14.5 9.5l1.6-1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </button>
-              {notificationsOpen && (
-                <div className="notif-panel">
-                  <div className="notif-title">Notifications</div>
-                  {notifItems.map((item) => (
-                    <div className="notif-item" key={item.id}>{item.text}</div>
-                  ))}
-                </div>
-              )}
+              <div className="notif-wrap">
+                <button className="icon-btn" aria-label="Notifications" onClick={() => setNotificationsOpen(!notificationsOpen)}>
+                  <span className="notif-dot" />
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6" stroke="currentColor" strokeWidth="1.6"/>
+                  <path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.6"/>
+                </svg>
+                </button>
+                {notificationsOpen && (
+                  <div className="notif-panel">
+                    <div className="notif-title">Notifications</div>
+                    {notifItems.map((item) => (
+                      <div className="notif-item" key={item.id}>{item.text}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <a className="ghost" href="/landing/" target="_blank" rel="noreferrer">Marketing</a>
-            <button className="primary" onClick={() => { clearToken(); setAuthenticated(false); }}>Logout</button>
-          </div>
-        </header>
+          </header>
+        )}
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/wallet" element={<Wallet />} />
