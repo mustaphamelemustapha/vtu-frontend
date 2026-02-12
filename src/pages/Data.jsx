@@ -13,6 +13,7 @@ export default function Data() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("recommended");
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [compare, setCompare] = useState([]);
 
   useEffect(() => {
     setLoadingPlans(true);
@@ -68,6 +69,15 @@ export default function Data() {
     if (!best || ratio < best.ratio) return { ratio, plan_code: plan.plan_code };
     return best;
   }, null);
+
+  const toggleCompare = (plan) => {
+    setCompare((prev) => {
+      const exists = prev.find((p) => p.plan_code === plan.plan_code);
+      if (exists) return prev.filter((p) => p.plan_code !== plan.plan_code);
+      if (prev.length >= 2) return prev;
+      return [...prev, plan];
+    });
+  };
 
   return (
     <div className="page">
@@ -135,7 +145,10 @@ export default function Data() {
               onClick={() => setSelected(plan)}
             >
               <div className="plan-top">
-                <span className={`badge ${plan.network}`}>{plan.network?.toUpperCase()}</span>
+                <span className={`badge ${plan.network}`}>
+                  <span className={`logo ${plan.network}`} />
+                  {plan.network?.toUpperCase()}
+                </span>
                 <span className="plan-cap">{plan.data_size}</span>
               </div>
               <div className="plan-name">{plan.plan_name}</div>
@@ -146,11 +159,42 @@ export default function Data() {
               {bestValue && bestValue.plan_code === plan.plan_code && (
                 <div className="best-badge">Best Value</div>
               )}
+              <div className="compare-row">
+                <button
+                  type="button"
+                  className={`pill ${compare.find((p) => p.plan_code === plan.plan_code) ? "active" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleCompare(plan);
+                  }}
+                >
+                  Compare
+                </button>
+              </div>
             </button>
           ))}
         </div>
         {message && <div className="notice">{message}</div>}
       </section>
+
+      {compare.length === 2 && (
+        <div className="compare-card card">
+          <div className="section-head">
+            <h3>Plan Comparison</h3>
+            <button className="ghost" onClick={() => setCompare([])}>Clear</button>
+          </div>
+          <div className="compare-grid">
+            {compare.map((plan) => (
+              <div key={plan.plan_code} className="compare-item">
+                <div className="plan-name">{plan.plan_name}</div>
+                <div className="muted">{plan.network?.toUpperCase()}</div>
+                <div className="value">₦ {plan.price}</div>
+                <div className="muted">{plan.data_size} • {plan.validity}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {selected && (
         <div className="modal-backdrop">

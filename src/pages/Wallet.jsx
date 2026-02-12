@@ -10,6 +10,7 @@ export default function Wallet() {
   );
   const [message, setMessage] = useState("");
   const [lastReference, setLastReference] = useState("");
+  const [successModal, setSuccessModal] = useState(false);
   const [searchParams] = useSearchParams();
   const [method, setMethod] = useState("monnify");
 
@@ -58,7 +59,8 @@ export default function Wallet() {
     try {
       const res = await apiFetch(`/wallet/paystack/verify?reference=${reference}`);
       if (res.status === "success") {
-        setMessage("Wallet funded successfully.");
+        setMessage("");
+        setSuccessModal(true);
         apiFetch("/wallet/me").then(setWallet).catch(() => {});
       } else {
         setMessage("Payment pending. Please wait and try again.");
@@ -113,6 +115,34 @@ export default function Wallet() {
           {message && <div className="error">{message}</div>}
         </div>
       </section>
+
+      {successModal && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <div className="modal-head">
+              <div>
+                <div className="label">Payment Successful</div>
+                <h3>Wallet Funded</h3>
+              </div>
+              <button className="ghost" onClick={() => setSuccessModal(false)}>Close</button>
+            </div>
+            <div className="modal-body">
+              <div className="list-card">
+                <div>
+                  <div className="list-title">Current Balance</div>
+                  <div className="muted">Ready to buy data</div>
+                </div>
+                <div className="list-meta">
+                  <div className="value">₦ {wallet?.balance || "0.00"}</div>
+                </div>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="primary" onClick={() => setSuccessModal(false)}>Continue</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
