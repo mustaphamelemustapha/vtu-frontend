@@ -7,6 +7,7 @@ const LAST_FUND_KEY = "vtu_last_fund";
 export default function Wallet() {
   const navigate = useNavigate();
   const [wallet, setWallet] = useState(null);
+  const [ledger, setLedger] = useState([]);
   const [amount, setAmount] = useState(1000);
   const [callback, setCallback] = useState(
     typeof window !== "undefined" ? `${window.location.origin}/app/wallet` : ""
@@ -18,15 +19,19 @@ export default function Wallet() {
   const [searchParams] = useSearchParams();
   const [method, setMethod] = useState("paystack");
   const [verifying, setVerifying] = useState(false);
+  const [pendingRef, setPendingRef] = useState("");
+  const [pollCount, setPollCount] = useState(0);
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
+    apiFetch("/wallet/ledger").then(setLedger).catch(() => {});
   }, []);
 
   useEffect(() => {
     const ref = searchParams.get("reference") || searchParams.get("trxref");
     if (ref) {
       setLastReference(ref);
+      setPendingRef(ref);
       const stored = JSON.parse(localStorage.getItem(LAST_FUND_KEY) || "{}");
       if (stored?.amount) setLastAmount(stored.amount);
       verifyPayment(ref);
@@ -40,6 +45,15 @@ export default function Wallet() {
     }, 1800);
     return () => clearTimeout(timer);
   }, [successModal]);
+
+  useEffect(() => {
+    if (!pendingRef || successModal || pollCount >= 5) return;
+    const timer = setTimeout(() => {
+      verifyPayment(pendingRef);
+      setPollCount((c) => c + 1);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [pendingRef, successModal, pollCount]);
 
   const fund = async (e) => {
     e.preventDefault();
@@ -64,6 +78,8 @@ export default function Wallet() {
         setLastReference(paystackRef);
         setLastAmount(Number(amount));
         localStorage.setItem(LAST_FUND_KEY, JSON.stringify({ reference: paystackRef, amount: Number(amount) }));
+        setPendingRef(paystackRef);
+        setPollCount(0);
       }
       const url = paystackUrl || monnifyUrl;
       if (url) window.location.href = url;
@@ -86,6 +102,8 @@ export default function Wallet() {
         setMessage("");
         setSuccessModal(true);
         apiFetch("/wallet/me").then(setWallet).catch(() => {});
+        apiFetch("/wallet/ledger").then(setLedger).catch(() => {});
+        setPendingRef("");
       } else {
         setMessage("Payment pending. Please wait and try again.");
       }
@@ -171,6 +189,45 @@ export default function Wallet() {
           </div>
         </div>
       )}
+
+      {pendingRef && !successModal && (
+        <div className="card pending-card">
+          <div>
+            <div className="label">Payment Pending</div>
+            <div className="value">Reference: {pendingRef}</div>
+            <div className="muted">We are confirming your payment. Webhooks can take a minute.</div>
+          </div>
+          <button className="ghost" type="button" onClick={() => verifyPayment(pendingRef)}>
+            {verifying ? "Checking..." : "Check Status"}
+          </button>
+        </div>
+      )}
+
+      <section className="section">
+        <div className="section-head">
+          <h3>Wallet Ledger</h3>
+          <span className="muted">Latest credits and debits</span>
+        </div>
+        <div className="card-list">
+          {ledger.map((entry) => (
+            <div className="list-card" key={entry.id}>
+              <div>
+                <div className="list-title">{entry.entry_type}</div>
+                <div className="muted">{entry.description || entry.reference}</div>
+              </div>
+              <div className="list-meta">
+                <div className="value">₦ {entry.amount}</div>
+                <span className={`pill ${entry.entry_type === "credit" ? "success" : "failed"}`}>
+                  {entry.entry_type}
+                </span>
+              </div>
+            </div>
+          ))}
+          {ledger.length === 0 && (
+            <div className="empty">No ledger entries yet.</div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
