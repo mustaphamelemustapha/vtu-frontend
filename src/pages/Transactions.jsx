@@ -6,6 +6,7 @@ export default function Transactions() {
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
+  const [copied, setCopied] = useState("");
 
   useEffect(() => {
     apiFetch("/transactions/me").then(setTxs).catch(() => {});
@@ -102,11 +103,30 @@ export default function Transactions() {
                   <div className="label">Status</div>
                   <div>{selected.status}</div>
                 </div>
+                <div>
+                  <div className="label">External Ref</div>
+                  <div>{selected.external_reference || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Failure Reason</div>
+                  <div>{selected.failure_reason || "—"}</div>
+                </div>
               </div>
             </div>
             <div className="modal-actions">
+              <button
+                className="ghost"
+                onClick={() => {
+                  navigator.clipboard?.writeText(selected.reference || "");
+                  setCopied("Reference copied");
+                  setTimeout(() => setCopied(""), 1200);
+                }}
+              >
+                Copy Reference
+              </button>
               <button className="primary" onClick={() => setSelected(null)}>Done</button>
             </div>
+            {copied && <div className="notice">{copied}</div>}
           </div>
         </div>
       )}

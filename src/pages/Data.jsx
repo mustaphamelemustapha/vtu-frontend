@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 
 export default function Data() {
+  const navigate = useNavigate();
   const [plans, setPlans] = useState([]);
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("all");
@@ -9,11 +11,12 @@ export default function Data() {
   const [message, setMessage] = useState("");
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState("");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("recommended");
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [compare, setCompare] = useState([]);
+  const [success, setSuccess] = useState(null);
+  const [fieldError, setFieldError] = useState("");
 
   useEffect(() => {
     setLoadingPlans(true);
@@ -27,15 +30,20 @@ export default function Data() {
     setMessage("");
     try {
       if (!phone) {
-        setMessage("Enter a valid phone number.");
+        setFieldError("Enter a valid phone number.");
         return;
       }
+      setFieldError("");
       setLoading(true);
       const res = await apiFetch("/data/purchase", {
         method: "POST",
         body: JSON.stringify({ plan_code: planCode, phone_number: phone, ported_number: ported })
       });
-      setToast(`Purchase ${res.status}`);
+      setSuccess({
+        reference: res.reference,
+        status: res.status,
+        plan: plans.find((p) => p.plan_code === planCode),
+      });
       setSelected(null);
     } catch (err) {
       setMessage(err.message);
@@ -108,6 +116,7 @@ export default function Data() {
               Ported number
             </label>
           </div>
+          {fieldError && <div className="error">{fieldError}</div>}
         </div>
       </section>
 
@@ -137,6 +146,9 @@ export default function Data() {
               <div className="skeleton-line w-80" />
             </div>
           ))}
+          {!loadingPlans && sorted.length === 0 && (
+            <div className="empty card">No plans found. Try another network or search term.</div>
+          )}
           {!loadingPlans && sorted.map((plan) => (
             <button
               type="button"
@@ -230,9 +242,38 @@ export default function Data() {
         </div>
       )}
 
-      {toast && (
-        <div className="toast" onAnimationEnd={() => setToast("")}>
-          {toast}
+      {success && (
+        <div className="success-screen" role="dialog" aria-live="polite">
+          <div className="success-card">
+            <div className="success-icon">✓</div>
+            <div className="success-title">
+              {success.status === "SUCCESS" ? "Data Purchase Successful" : "Purchase Pending"}
+            </div>
+            <div className="success-sub">
+              {success.status === "SUCCESS"
+                ? "Your data has been delivered."
+                : "We are processing your request. You can check status in transactions."}
+            </div>
+            <div className="success-grid">
+              <div>
+                <div className="label">Plan</div>
+                <div className="value">{success.plan?.plan_name || "—"}</div>
+              </div>
+              <div>
+                <div className="label">Recipient</div>
+                <div className="muted">{phone}</div>
+              </div>
+              <div>
+                <div className="label">Reference</div>
+                <div className="muted">{success.reference}</div>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="ghost" onClick={() => setSuccess(null)}>Close</button>
+              <button className="primary" onClick={() => navigate("/transactions")}>View Receipt</button>
+              <button className="ghost" onClick={() => navigate("/wallet")}>Fund Wallet</button>
+            </div>
+          </div>
         </div>
       )}
     </div>
