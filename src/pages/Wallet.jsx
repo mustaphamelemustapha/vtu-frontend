@@ -116,7 +116,7 @@ export default function Wallet() {
 
   return (
     <div className="page">
-      <section className="hero-card">
+      <section className="hero-card wallet-hero">
         <div>
           <div className="label">Available Balance</div>
           <div className="hero-value">₦ {wallet?.balance || "0.00"}</div>
@@ -130,7 +130,10 @@ export default function Wallet() {
 
       <section className="section">
         <div className="card">
-          <h3>Fund Wallet</h3>
+          <div className="section-head">
+            <h3>Fund Wallet</h3>
+            <span className="muted">Paystack checkout</span>
+          </div>
           <form onSubmit={fund} className="form-grid">
             <label>
               Funding Method

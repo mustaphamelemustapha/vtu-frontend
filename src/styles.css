@@ -808,6 +808,14 @@ a {
   gap: 20px;
 }
 
+.wallet-hero {
+  align-items: center;
+}
+
+.wallet-hero .hero-actions {
+  gap: 8px;
+}
+
 .hero-value {
   font-size: 32px;
   font-weight: 800;
