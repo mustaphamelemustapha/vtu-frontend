@@ -17,6 +17,7 @@ export default function Data() {
   const [compare, setCompare] = useState([]);
   const [success, setSuccess] = useState(null);
   const [fieldError, setFieldError] = useState("");
+  const [wallet, setWallet] = useState(null);
 
   const parseSize = (value) => {
     if (!value) return null;
@@ -33,6 +34,7 @@ export default function Data() {
       .then(setPlans)
       .catch(() => {})
       .finally(() => setLoadingPlans(false));
+    apiFetch("/wallet/me").then(setWallet).catch(() => {});
   }, []);
 
   const buy = async (planCode) => {
@@ -267,12 +269,37 @@ export default function Data() {
                   <span className="pill">{selected.validity}</span>
                 </div>
               </div>
-              <div className="muted">Network: {selected.network?.toUpperCase()}</div>
-              <div className="muted">Ported number: {ported ? "Yes" : "No"}</div>
+              <div className="receipt-grid">
+                <div>
+                  <div className="label">Network</div>
+                  <div>{selected.network?.toUpperCase()}</div>
+                </div>
+                <div>
+                  <div className="label">Ported</div>
+                  <div>{ported ? "Yes" : "No"}</div>
+                </div>
+                <div>
+                  <div className="label">Wallet Balance</div>
+                  <div>₦ {wallet?.balance || "0.00"}</div>
+                </div>
+                <div>
+                  <div className="label">Plan Code</div>
+                  <div>{selected.plan_code}</div>
+                </div>
+              </div>
+              {wallet && Number(wallet.balance) < Number(selected.price) && (
+                <div className="notice">
+                  Insufficient balance. Please fund your wallet to continue.
+                </div>
+              )}
             </div>
             <div className="modal-actions">
               <button className="ghost" onClick={() => setSelected(null)}>Cancel</button>
-              <button className="primary" disabled={loading} onClick={() => buy(selected.plan_code)}>
+              <button
+                className="primary"
+                disabled={loading || (wallet && Number(wallet.balance) < Number(selected.price))}
+                onClick={() => buy(selected.plan_code)}
+              >
                 {loading ? "Processing..." : "Confirm & Buy"}
               </button>
             </div>

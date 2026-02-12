@@ -20,8 +20,36 @@ export default function Transactions() {
     return matchesFilter && matchesQuery;
   });
 
+  const counts = {
+    all: txs.length,
+    success: txs.filter((t) => t.status === "SUCCESS").length,
+    pending: txs.filter((t) => t.status === "PENDING").length,
+    failed: txs.filter((t) => t.status === "FAILED").length,
+  };
+
   return (
     <div className="page">
+      <section className="section">
+        <div className="stats-grid">
+          <div className="card stat-card">
+            <div className="label">All</div>
+            <div className="value">{counts.all}</div>
+          </div>
+          <div className="card stat-card">
+            <div className="label">Success</div>
+            <div className="value">{counts.success}</div>
+          </div>
+          <div className="card stat-card">
+            <div className="label">Pending</div>
+            <div className="value">{counts.pending}</div>
+          </div>
+          <div className="card stat-card">
+            <div className="label">Failed</div>
+            <div className="value">{counts.failed}</div>
+          </div>
+        </div>
+      </section>
+
       <section className="section">
         <div className="card">
           <div className="filter-row">

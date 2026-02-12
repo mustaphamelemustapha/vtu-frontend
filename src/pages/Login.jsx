@@ -143,7 +143,7 @@ export default function Login({ onAuth }) {
             full_name: form.full_name
           })
         });
-        setProfile({ full_name: form.full_name, email: form.email });
+        setProfile({ full_name: form.full_name, email: form.email, role: "user" });
         setNotice("Account created. Please log in.");
         setMode("login");
         setForm({ email: form.email, password: "", confirm_password: "", full_name: "" });
@@ -160,8 +160,13 @@ export default function Login({ onAuth }) {
       });
       setToken(data.access_token, rememberMe);
       const profile = await apiFetch("/auth/me");
-      setProfile({ full_name: profile.full_name, email: profile.email });
+      setProfile({ full_name: profile.full_name, email: profile.email, role: profile.role });
       onAuth();
+      if ((profile.role || "").toLowerCase() === "admin") {
+        window.location.href = "/app/admin";
+      } else {
+        window.location.href = "/app/";
+      }
     } catch (err) {
       setError(err.message);
     } finally {

@@ -39,7 +39,7 @@ const ProfileIcon = () => (
   </svg>
 );
 
-export default function Nav({ onLogout }) {
+export default function Nav({ onLogout, isAdmin }) {
   return (
     <>
     <aside className="nav">
@@ -56,7 +56,7 @@ export default function Nav({ onLogout }) {
         <NavLink to="/data"><Icon><DataIcon /></Icon>Buy Data</NavLink>
         <NavLink to="/transactions"><Icon><TxIcon /></Icon>Transactions</NavLink>
         <NavLink to="/profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
-        <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>
+        {isAdmin && <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
       </nav>
       <button className="ghost" onClick={onLogout}>Logout</button>
     </aside>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Nav from "./components/Nav.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -56,8 +56,8 @@ export default function App() {
       });
       if (res.ok) {
         const data = await res.json();
-        setProfile({ full_name: data.full_name, email: data.email });
-        setProfileState({ full_name: data.full_name, email: data.email });
+        setProfile({ full_name: data.full_name, email: data.email, role: data.role });
+        setProfileState({ full_name: data.full_name, email: data.email, role: data.role });
       }
     } catch {
       // ignore
@@ -98,6 +98,7 @@ export default function App() {
 
   const profile = profileState || {};
   const fullName = profile.full_name || "User";
+  const isAdmin = (profile.role || "").toLowerCase() === "admin";
   const initials = fullName
     .split(" ")
     .filter(Boolean)
@@ -155,7 +156,7 @@ export default function App() {
           </div>
         </div>
       )}
-      <Nav onLogout={() => { clearToken(); setAuthenticated(false); }} />
+      <Nav onLogout={() => { clearToken(); setAuthenticated(false); }} isAdmin={isAdmin} />
       <main className="main">
         {location.pathname === "/" && (
           <header className="topbar">
@@ -200,7 +201,7 @@ export default function App() {
           <Route path="/data" element={<Data />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={isAdmin ? <Admin /> : <Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
