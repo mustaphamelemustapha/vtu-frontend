@@ -38,7 +38,7 @@
     </div>
   </header>
 
-  <section class="hero">
+  <section class="hero reveal">
     <div class="hero-copy">
       <span class="pill">Nigeria‑ready VTU</span>
       <h1>Fast, reliable VTU platform for data sales and wallet funding.</h1>
@@ -102,7 +102,7 @@
     </div>
   </section>
 
-  <section id="features" class="section">
+  <section id="features" class="section reveal">
     <div class="section-head">
       <h2>Everything you need to sell data</h2>
       <p>Focused features that match what’s inside the app today.</p>
@@ -135,7 +135,7 @@
     </div>
   </section>
 
-  <section id="how" class="section alt">
+  <section id="how" class="section alt reveal">
     <div class="section-head">
       <h2>How it works</h2>
       <p>Three simple steps to start selling.</p>
@@ -156,7 +156,7 @@
     </div>
   </section>
 
-  <section id="trust" class="section">
+  <section id="trust" class="section reveal">
     <div class="section-head">
       <h2>Why MMTech</h2>
       <p>Built for reliability, speed, and scale.</p>
@@ -177,7 +177,7 @@
     </div>
   </section>
 
-  <section class="cta">
+  <section class="cta reveal">
     <div>
       <h2>Ready to launch?</h2>
       <p>Open the app and start selling today.</p>
@@ -199,10 +199,26 @@
   <script>
     window.addEventListener("load", () => {
       const overlay = document.getElementById("landingWelcome");
-      if (!overlay) return;
-      setTimeout(() => {
-        overlay.classList.add("hide");
-      }, 2000);
+      if (overlay) {
+        setTimeout(() => {
+          overlay.classList.add("hide");
+        }, 2000);
+      }
+
+      const hero = document.querySelector(".hero");
+      if (hero) hero.classList.add("intro");
+
+      const reveals = document.querySelectorAll(".reveal");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      reveals.forEach((el) => observer.observe(el));
     });
   </script>
 </body>

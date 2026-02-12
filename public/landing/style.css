@@ -181,6 +181,46 @@ a {
   padding: 60px 8vw 80px;
 }
 
+.hero.intro .hero-copy > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-copy > * {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.hero-copy > *:nth-child(1) { transition-delay: 0.1s; }
+.hero-copy > *:nth-child(2) { transition-delay: 0.2s; }
+.hero-copy > *:nth-child(3) { transition-delay: 0.3s; }
+.hero-copy > *:nth-child(4) { transition-delay: 0.4s; }
+.hero-copy > *:nth-child(5) { transition-delay: 0.5s; }
+.hero-copy > *:nth-child(6) { transition-delay: 0.6s; }
+
+.hero.intro .hero-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero-card {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease 0.35s, transform 0.6s ease 0.35s;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .hero-copy h1 {
   font-size: clamp(2.2rem, 3.4vw, 3.5rem);
   margin: 16px 0;
