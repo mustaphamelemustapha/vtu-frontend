@@ -1,6 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000/api/v1";
 const TOKEN_KEY = "vtu_access_token";
 const SESSION_KEY = "vtu_access_token_session";
+const PROFILE_KEY = "vtu_profile";
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(SESSION_KEY);
@@ -19,6 +20,18 @@ export function setToken(token, persist = true) {
 export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(SESSION_KEY);
+}
+
+export function setProfile(profile) {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+}
+
+export function getProfile() {
+  try {
+    return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+  } catch {
+    return {};
+  }
 }
 
 export async function apiFetch(path, options = {}) {

@@ -38,9 +38,9 @@ export default function Nav({ onLogout }) {
     <>
     <aside className="nav">
       <div className="brand">
-        <div className="brand-mark">MM</div>
+        <div className="brand-mark">AV</div>
         <div>
-          <div className="brand-title">MMTech</div>
+          <div className="brand-title">AxisVTU</div>
           <div className="brand-sub">VTU Platform</div>
         </div>
       </div>
