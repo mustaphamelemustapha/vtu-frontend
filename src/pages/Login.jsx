@@ -158,9 +158,9 @@ export default function Login({ onAuth }) {
         method: "POST",
         body: JSON.stringify({ email: form.email, password: form.password })
       });
+      setToken(data.access_token, rememberMe);
       const profile = await apiFetch("/auth/me");
       setProfile({ full_name: profile.full_name, email: profile.email });
-      setToken(data.access_token, rememberMe);
       onAuth();
     } catch (err) {
       setError(err.message);
