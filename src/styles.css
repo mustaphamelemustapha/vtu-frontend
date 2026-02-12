@@ -131,6 +131,38 @@ a {
   border-bottom: none;
 }
 
+.welcome-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 14px 18px;
+  z-index: 50;
+  animation: fade-in 0.3s ease, fade-out 0.3s ease 1.7s forwards;
+  text-align: center;
+}
+
+.welcome-title {
+  font-weight: 800;
+}
+
+.welcome-sub {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translate(-50%, -6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes fade-out {
+  to { opacity: 0; transform: translate(-50%, -6px); }
+}
 @keyframes pop {
   from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
