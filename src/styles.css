@@ -95,11 +95,21 @@ a {
   display: grid;
   place-items: center;
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .icon-btn svg {
   width: 18px;
   height: 18px;
+}
+
+.icon-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+}
+
+.icon-btn:active {
+  transform: translateY(0);
 }
 
 .notif-wrap {
@@ -450,15 +460,16 @@ a {
 }
 
 .plan-name {
-  margin: 10px 0 6px;
+  margin: 12px 0 6px;
   font-weight: 700;
+  font-size: 15px;
 }
 
 .plan-meta {
   display: flex;
   justify-content: space-between;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .plan-meta .price {
@@ -745,8 +756,14 @@ a {
   background: var(--panel);
   border: 1px solid var(--stroke);
   border-radius: 16px;
-  padding: 16px;
+  padding: 18px;
   box-shadow: var(--shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
 }
 
 .label {
@@ -762,7 +779,7 @@ a {
 .hero-card {
   background: linear-gradient(135deg, rgba(15, 118, 110, 0.1), rgba(245, 158, 11, 0.12));
   border: 1px solid rgba(15, 118, 110, 0.2);
-  padding: 24px;
+  padding: 26px;
   border-radius: 20px;
   display: flex;
   justify-content: space-between;
@@ -806,12 +823,14 @@ a {
   padding: 10px 16px;
   border-radius: 12px;
   cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
 
 .ghost {
   background: transparent;
   border: none;
   color: var(--ink);
+  transition: transform 0.12s ease, background 0.12s ease;
 }
 
 button {
@@ -821,6 +840,24 @@ button {
 
 button:focus-visible {
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.2);
+}
+
+.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(15, 118, 110, 0.25);
+}
+
+.primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.ghost:hover {
+  background: rgba(15, 118, 110, 0.08);
+}
+
+.ghost:active {
+  transform: translateY(0);
 }
 
 .link {
@@ -1002,6 +1039,12 @@ input, select {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.list-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.12);
 }
 
 .list-title {
@@ -1087,6 +1130,17 @@ input, select {
   .topbar {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
+  }
+  .top-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  .top-actions .primary,
+  .top-actions .ghost {
+    padding: 8px 12px;
+    font-size: 12px;
   }
   .grid-2,
   .grid-3 {
