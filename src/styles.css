@@ -131,60 +131,6 @@ a {
   border-bottom: none;
 }
 
-.welcome-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(5, 8, 12, 0.65);
-  backdrop-filter: blur(8px);
-  display: grid;
-  place-items: center;
-  z-index: 60;
-  animation: fade-in 0.25s ease, fade-out 0.35s ease 1.65s forwards;
-}
-
-.welcome-card {
-  background: var(--panel);
-  border: 1px solid var(--stroke);
-  border-radius: 22px;
-  box-shadow: var(--shadow);
-  padding: 26px 28px;
-  text-align: center;
-  min-width: min(320px, 90vw);
-  animation: pop 0.35s ease;
-}
-
-.welcome-logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: white;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  margin: 0 auto 12px;
-  letter-spacing: 0.06em;
-}
-
-.welcome-title {
-  font-weight: 800;
-  font-size: 18px;
-}
-
-.welcome-sub {
-  color: var(--muted);
-  font-size: 13px;
-  margin-top: 6px;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fade-out {
-  to { opacity: 0; }
-}
 @keyframes pop {
   from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }

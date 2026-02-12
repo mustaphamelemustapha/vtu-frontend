@@ -15,7 +15,6 @@ export default function App() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileState, setProfileState] = useState(getProfile());
   const [darkMode, setDarkMode] = useState(false);
-  const [welcomeVisible, setWelcomeVisible] = useState(true);
 
   const pageTitle = (() => {
     const path = location.pathname;
@@ -41,11 +40,6 @@ export default function App() {
     }
   }, [authenticated]);
 
-  useEffect(() => {
-    if (!authenticated) return;
-    const timer = setTimeout(() => setWelcomeVisible(false), 2000);
-    return () => clearTimeout(timer);
-  }, [authenticated]);
 
   const fetchProfile = async () => {
     try {
@@ -90,15 +84,6 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {welcomeVisible && (
-        <div className="welcome-overlay" aria-live="polite">
-          <div className="welcome-card">
-            <div className="welcome-logo">AV</div>
-            <div className="welcome-title">Welcome to AxisVTU</div>
-            <div className="welcome-sub">Our central hub for data and top‑ups.</div>
-          </div>
-        </div>
-      )}
       <Nav onLogout={() => { clearToken(); setAuthenticated(false); }} />
       <main className="main">
         <header className="topbar">

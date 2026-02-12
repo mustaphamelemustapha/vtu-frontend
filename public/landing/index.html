@@ -11,6 +11,13 @@
 </head>
 <body>
   <div class="bg-glow"></div>
+  <div class="landing-welcome" id="landingWelcome" aria-live="polite">
+    <div class="landing-welcome-card">
+      <div class="landing-welcome-logo">AV</div>
+      <div class="landing-welcome-title">Welcome to Axis VTU</div>
+      <div class="landing-welcome-sub">Our central hub for data and top‑ups.</div>
+    </div>
+  </div>
 
   <header class="nav">
     <div class="brand">
@@ -189,5 +196,14 @@
       <a href="#trust">Why MMTech</a>
     </div>
   </footer>
+  <script>
+    window.addEventListener("load", () => {
+      const overlay = document.getElementById("landingWelcome");
+      if (!overlay) return;
+      setTimeout(() => {
+        overlay.classList.add("hide");
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
