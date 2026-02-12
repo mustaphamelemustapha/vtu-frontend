@@ -32,6 +32,12 @@ const AdminIcon = () => (
     <path d="M12 3l8 3v6c0 4.4-3 7.7-8 9-5-1.3-8-4.6-8-9V6l8-3z" stroke="currentColor" strokeWidth="1.6" />
   </svg>
 );
+const ProfileIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="1.6" />
+  </svg>
+);
 
 export default function Nav({ onLogout }) {
   return (
@@ -49,6 +55,7 @@ export default function Nav({ onLogout }) {
         <NavLink to="/wallet"><Icon><WalletIcon /></Icon>Wallet</NavLink>
         <NavLink to="/data"><Icon><DataIcon /></Icon>Buy Data</NavLink>
         <NavLink to="/transactions"><Icon><TxIcon /></Icon>Transactions</NavLink>
+        <NavLink to="/profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
         <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>
       </nav>
       <button className="ghost" onClick={onLogout}>Logout</button>
@@ -58,6 +65,7 @@ export default function Nav({ onLogout }) {
       <NavLink to="/wallet"><Icon><WalletIcon /></Icon><span>Wallet</span></NavLink>
       <NavLink to="/data"><Icon><DataIcon /></Icon><span>Data</span></NavLink>
       <NavLink to="/transactions"><Icon><TxIcon /></Icon><span>History</span></NavLink>
+      <NavLink to="/profile"><Icon><ProfileIcon /></Icon><span>Profile</span></NavLink>
     </nav>
     </>
   );

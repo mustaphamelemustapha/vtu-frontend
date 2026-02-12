@@ -7,6 +7,7 @@ import Wallet from "./pages/Wallet.jsx";
 import Data from "./pages/Data.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Admin from "./pages/Admin.jsx";
+import Profile from "./pages/Profile.jsx";
 import { getToken, clearToken, getProfile, setProfile } from "./services/api";
 
 export default function App() {
@@ -114,8 +115,9 @@ export default function App() {
               {notificationsOpen && (
                 <div className="notif-panel">
                   <div className="notif-title">Notifications</div>
-                  <div className="notif-item">Welcome to AxisVTU 👋</div>
-                  <div className="notif-item">Wallet funding enabled.</div>
+                  <div className="notif-item">Welcome, {fullName.split(" ")[0]} 👋</div>
+                  <div className="notif-item">Wallet funding is live via Paystack.</div>
+                  <div className="notif-item">Buy Data plans updated today.</div>
                 </div>
               )}
             </div>
@@ -128,6 +130,7 @@ export default function App() {
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/data" element={<Data />} />
           <Route path="/transactions" element={<Transactions />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </main>

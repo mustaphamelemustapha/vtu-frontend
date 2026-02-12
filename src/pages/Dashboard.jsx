@@ -26,6 +26,28 @@ export default function Dashboard() {
       </section>
 
       <section className="section">
+        <div className="stats-grid">
+          <div className="card stat-card">
+            <div className="label">Monthly Spend</div>
+            <div className="value">₦ {txs.reduce((sum, tx) => sum + Number(tx.amount || 0), 0).toFixed(2)}</div>
+            <div className="muted">Across data purchases</div>
+          </div>
+          <div className="card stat-card">
+            <div className="label">Transactions</div>
+            <div className="value">{txs.length}</div>
+            <div className="muted">All time</div>
+          </div>
+          <div className="card stat-card">
+            <div className="label">Success Rate</div>
+            <div className="value">
+              {txs.length === 0 ? "0%" : `${Math.round((txs.filter((t) => t.status === "SUCCESS").length / txs.length) * 100)}%`}
+            </div>
+            <div className="muted">Last 30 days</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
         <h3>Quick Actions</h3>
         <div className="grid-2">
           <Link className="card action-card" to="/data">
