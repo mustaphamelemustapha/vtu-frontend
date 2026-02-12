@@ -91,9 +91,12 @@ export default function App() {
   return (
     <div className="app-shell">
       {welcomeVisible && (
-        <div className="welcome-toast">
-          <div className="welcome-title">Welcome to AxisVTU</div>
-          <div className="welcome-sub">Our central hub for data and top‑ups.</div>
+        <div className="welcome-overlay" aria-live="polite">
+          <div className="welcome-card">
+            <div className="welcome-logo">AV</div>
+            <div className="welcome-title">Welcome to AxisVTU</div>
+            <div className="welcome-sub">Our central hub for data and top‑ups.</div>
+          </div>
         </div>
       )}
       <Nav onLogout={() => { clearToken(); setAuthenticated(false); }} />
@@ -111,7 +114,8 @@ export default function App() {
           <div className="top-actions">
             <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
               <svg viewBox="0 0 24 24" fill="none">
-                <path d="M14 3a8 8 0 1 0 7 11.5A9 9 0 0 1 14 3z" stroke="currentColor" strokeWidth="1.6"/>
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M12 6.5v2.2M12 15.3v2.2M6.5 12h2.2M15.3 12h2.2M7.9 7.9l1.6 1.6M14.5 14.5l1.6 1.6M7.9 16.1l1.6-1.6M14.5 9.5l1.6-1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </button>
             <div className="notif-wrap">
