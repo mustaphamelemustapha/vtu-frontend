@@ -8,6 +8,7 @@ import Data from "./pages/Data.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Admin from "./pages/Admin.jsx";
 import Profile from "./pages/Profile.jsx";
+import AdminLogin from "./pages/AdminLogin.jsx";
 import { apiFetch, getToken, clearToken, getProfile, setProfile } from "./services/api";
 
 export default function App() {
@@ -108,7 +109,12 @@ export default function App() {
     .toUpperCase();
 
   if (!authenticated) {
-    return <Login onAuth={() => setAuthenticated(true)} />;
+    return (
+      <Routes>
+        <Route path="/admin-login" element={<AdminLogin onAuth={() => setAuthenticated(true)} />} />
+        <Route path="*" element={<Login onAuth={() => setAuthenticated(true)} />} />
+      </Routes>
+    );
   }
 
   return (
@@ -202,6 +208,7 @@ export default function App() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={isAdmin ? <Admin /> : <Navigate to="/" replace />} />
+          <Route path="/admin-login" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>
