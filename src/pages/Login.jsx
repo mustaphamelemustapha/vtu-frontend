@@ -181,9 +181,49 @@ export default function Login({ onAuth }) {
 
   return (
     <div className="auth">
-      <div className="auth-card">
-        <h1>{mode === "login" ? "Welcome back" : "Create account"}</h1>
-        <p className="muted">Secure VTU platform for data and wallet payments.</p>
+      <div className="auth-shell">
+        <div className="auth-left">
+          <div className="auth-left-inner">
+            <div className="auth-brand">
+              <div className="auth-mark">AV</div>
+              <div>
+                <div className="auth-brand-title">AxisVTU</div>
+                <div className="auth-brand-sub">Fast VTU. Clean receipts. Wallet-first.</div>
+              </div>
+            </div>
+            <h2 className="auth-pitch">A premium VTU dashboard built for speed.</h2>
+            <p className="muted">
+              Fund your wallet, deliver data instantly, and track every transaction with receipts and status.
+            </p>
+            <div className="auth-bullets">
+              <div className="auth-bullet">
+                <span className="dot" aria-hidden="true" />
+                <div>
+                  <div className="auth-bullet-title">Wallet funding</div>
+                  <div className="muted">Paystack checkout with verification flow.</div>
+                </div>
+              </div>
+              <div className="auth-bullet">
+                <span className="dot" aria-hidden="true" />
+                <div>
+                  <div className="auth-bullet-title">Buy data</div>
+                  <div className="muted">MTN and Glo plans, simple confirmations.</div>
+                </div>
+              </div>
+              <div className="auth-bullet">
+                <span className="dot" aria-hidden="true" />
+                <div>
+                  <div className="auth-bullet-title">Receipts</div>
+                  <div className="muted">Copy references, track history, stay audit-ready.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="auth-right">
+          <div className="auth-card">
+            <h1>{mode === "login" ? "Welcome back" : "Create account"}</h1>
+            <p className="muted">Secure VTU platform for data and wallet payments.</p>
         {resetMode ? (
           <form onSubmit={submitReset} className="auth-wide">
             <div className="field">
@@ -404,6 +444,8 @@ export default function Login({ onAuth }) {
         >
           {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
         </button>
+          </div>
+        </div>
       </div>
     </div>
   );
