@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch, setAuthTokens, setProfile } from "../services/api";
 
@@ -22,6 +22,24 @@ export default function Login({ onAuth }) {
   const [forgotEmail, setForgotEmail] = useState("");
   const [resetMode, setResetMode] = useState(false);
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
+
+  useEffect(() => {
+    // Email reset link support: /app/?reset=1&token=...
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const token = params.get("token") || params.get("reset_token");
+      const wantsReset = params.get("reset") === "1" || params.get("reset") === "true";
+      if (token && (wantsReset || token.length > 10)) {
+        setForgotMode(false);
+        setMode("login");
+        setResetMode(true);
+        setResetForm({ token, password: "", confirm: "" });
+        setNotice("Set a new password to finish resetting your account.");
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const validateField = (name, value) => {
     let message = "";
