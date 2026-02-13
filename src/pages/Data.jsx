@@ -28,6 +28,13 @@ export default function Data() {
     return num;
   };
 
+  const networkClass = (value) => {
+    const raw = String(value || "").toLowerCase();
+    if (!raw) return "";
+    if (raw === "9mobile") return "network-9mobile";
+    return raw.replace(/[^a-z0-9_-]/g, "-");
+  };
+
   useEffect(() => {
     setLoadingPlans(true);
     apiFetch("/data/plans")
@@ -74,15 +81,15 @@ export default function Data() {
     if (sort === "price_low") return Number(a.price) - Number(b.price);
     if (sort === "price_high") return Number(b.price) - Number(a.price);
     if (sort === "data_high") {
-      const aVal = parseFloat(String(a.data_size));
-      const bVal = parseFloat(String(b.data_size));
+      const aVal = parseSize(a.data_size) || 0;
+      const bVal = parseSize(b.data_size) || 0;
       return bVal - aVal;
     }
     return 0;
   });
 
   const bestValue = sorted.reduce((best, plan) => {
-    const size = parseFloat(String(plan.data_size));
+    const size = parseSize(plan.data_size);
     if (!size || !plan.price) return best;
     const ratio = Number(plan.price) / size;
     if (!best || ratio < best.ratio) return { ratio, plan_code: plan.plan_code };
@@ -186,8 +193,8 @@ export default function Data() {
               onClick={() => setSelected(plan)}
             >
               <div className="plan-top">
-                <span className={`badge ${plan.network}`}>
-                  <span className={`logo ${plan.network}`} />
+                <span className={`badge ${networkClass(plan.network)}`}>
+                  <span className={`logo ${networkClass(plan.network)}`} />
                   {plan.network?.toUpperCase()}
                 </span>
                 <span className="plan-cap">{plan.data_size}</span>
@@ -312,10 +319,10 @@ export default function Data() {
           <div className="success-card">
             <div className="success-icon">✓</div>
             <div className="success-title">
-              {success.status === "SUCCESS" ? "Data Purchase Successful" : "Purchase Pending"}
+              {(success.status || "").toLowerCase() === "success" ? "Data Purchase Successful" : "Purchase Pending"}
             </div>
             <div className="success-sub">
-              {success.status === "SUCCESS"
+              {(success.status || "").toLowerCase() === "success"
                 ? "Your data has been delivered."
                 : "We are processing your request. You can check status in transactions."}
             </div>

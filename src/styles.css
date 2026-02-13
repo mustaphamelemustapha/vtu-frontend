@@ -560,12 +560,12 @@ a {
 .logo.mtn { background: #fbbf24; }
 .logo.glo { background: #22c55e; }
 .logo.airtel { background: #ef4444; }
-.logo.9mobile { background: #10b981; }
+.logo.network-9mobile { background: #10b981; }
 
 .badge.mtn { background: rgba(255, 199, 0, 0.2); color: #a16207; }
 .badge.glo { background: rgba(34, 197, 94, 0.2); color: #15803d; }
 .badge.airtel { background: rgba(239, 68, 68, 0.2); color: #b91c1c; }
-.badge.9mobile { background: rgba(16, 185, 129, 0.2); color: #047857; }
+.badge.network-9mobile { background: rgba(16, 185, 129, 0.2); color: #047857; }
 
 .compare-row {
   margin-top: 12px;

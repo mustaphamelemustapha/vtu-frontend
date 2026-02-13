@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch, setProfile, setToken } from "../services/api";
 
 export default function AdminLogin({ onAuth }) {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,7 +26,7 @@ export default function AdminLogin({ onAuth }) {
       }
       setProfile({ full_name: profile.full_name, email: profile.email, role: profile.role });
       onAuth();
-      window.location.href = "/app/admin";
+      navigate("/admin", { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
