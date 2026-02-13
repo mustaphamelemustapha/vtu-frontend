@@ -3,211 +3,219 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MMTech — VTU Platform</title>
+  <title>AxisVTU</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="/landing/style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="bg-glow"></div>
-  <div class="landing-welcome" id="landingWelcome" aria-live="polite">
-    <div class="landing-welcome-card">
-      <div class="landing-welcome-logo">AV</div>
-      <div class="landing-welcome-title">Welcome to Axis VTU</div>
-      <div class="landing-welcome-sub">Our central hub for data and top‑ups.</div>
+  <div class="chrome">
+    <div class="wrap">
+      <header class="nav" aria-label="Primary navigation">
+        <a class="brand" href="/landing/">
+          <div class="brand-mark" aria-hidden="true">AV</div>
+          <div>
+            <div class="brand-title">AxisVTU</div>
+            <div class="brand-sub">Wallet-first VTU platform</div>
+          </div>
+        </a>
+        <nav class="nav-links">
+          <a href="#features">Features</a>
+          <a href="#flow">Flow</a>
+          <a href="#trust">Trust</a>
+        </nav>
+        <div class="nav-cta">
+          <a class="btn ghost" href="/app/">Open App</a>
+          <a class="btn" href="/app/">Sign In</a>
+        </div>
+      </header>
     </div>
   </div>
 
-  <header class="nav">
-    <div class="brand">
-      <div class="brand-mark">MM</div>
-      <div>
-        <div class="brand-title">MMTech</div>
-        <div class="brand-sub">VTU Platform</div>
-      </div>
-    </div>
-    <nav class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#how">How it works</a>
-      <a href="#trust">Why MMTech</a>
-    </nav>
-    <div class="nav-cta">
-      <a class="btn ghost" href="/app/">Open App</a>
-      <a class="btn" href="/app/">Sign In</a>
-    </div>
-  </header>
+  <main>
+    <section class="hero reveal">
+      <div class="wrap">
+        <div class="hero-grid">
+          <div>
+            <div class="kicker"><span class="pill" aria-hidden="true"></span>Built for speed and clear receipts</div>
+            <h1>Sell data and fund wallets with a dashboard that feels trustworthy.</h1>
+            <p>
+              AxisVTU keeps the flow simple: fund wallet, buy data, view receipt. Clean UI, predictable status,
+              and a history you can reconcile.
+            </p>
+            <div class="hero-actions">
+              <a class="btn" href="/app/">Open Dashboard</a>
+              <a class="btn ghost" href="#features">See Features</a>
+            </div>
+            <div class="hero-proof">
+              <div class="proof">
+                <div class="metric">Wallet-first</div>
+                <div class="muted">Fast top-ups and balance view</div>
+              </div>
+              <div class="proof">
+                <div class="metric">Receipts</div>
+                <div class="muted">Reference copy and status</div>
+              </div>
+              <div class="proof">
+                <div class="metric">Admin</div>
+                <div class="muted">Pricing rules by role/network</div>
+              </div>
+            </div>
+          </div>
 
-  <section class="hero reveal">
-    <div class="hero-copy">
-      <span class="pill">AxisVTU by MMTechGlobe</span>
-      <h1>Sell data & top up wallets with confidence.</h1>
-      <p>
-        AxisVTU is a clean, fast VTU platform built for Nigeria. Fund wallets, deliver data instantly,
-        and track every transaction with receipts and real-time status.
-      </p>
-      <div class="hero-actions">
-        <a class="btn" href="/app/">Open Dashboard</a>
-        <a class="btn ghost" href="#features">See What You Get</a>
-      </div>
-      <div class="hero-meta">
-        <div>
-          <div class="metric">Instant</div>
-          <div class="muted">data delivery</div>
-        </div>
-        <div>
-          <div class="metric">Secure</div>
-          <div class="muted">wallet funding</div>
-        </div>
-        <div>
-          <div class="metric">Admin</div>
-          <div class="muted">controls</div>
-        </div>
-      </div>
-    </div>
-    <div class="hero-card">
-      <div class="hero-card-header">
-        <h3>Live Snapshot</h3>
-        <span class="status">Active</span>
-      </div>
-      <div class="hero-grid">
-        <div class="mini-card">
-          <div class="label">Wallet Balance</div>
-          <div class="value">₦ 0.00</div>
-        </div>
-        <div class="mini-card">
-          <div class="label">Transactions</div>
-          <div class="value">0</div>
-        </div>
-        <div class="mini-card">
-          <div class="label">Success Rate</div>
-          <div class="value">99%</div>
-        </div>
-        <div class="mini-card">
-          <div class="label">Networks</div>
-          <div class="value">MTN, Glo</div>
+          <aside class="panel" aria-label="Snapshot panel">
+            <div class="panel-head">
+              <h3>Live Snapshot</h3>
+              <span class="status">Active</span>
+            </div>
+            <div class="snap-grid">
+              <div class="mini">
+                <div class="label">Wallet Balance</div>
+                <div class="value">₦ 0.00</div>
+              </div>
+              <div class="mini">
+                <div class="label">Transactions</div>
+                <div class="value">0</div>
+              </div>
+              <div class="mini">
+                <div class="label">Success Rate</div>
+                <div class="value">99%</div>
+              </div>
+              <div class="mini">
+                <div class="label">Networks</div>
+                <div class="value">MTN, Glo</div>
+              </div>
+            </div>
+            <div class="list" aria-label="Sample plans">
+              <div class="row">
+                <span>MTN 1GB / 30d</span>
+                <span class="chip">₦ 429</span>
+              </div>
+              <div class="row">
+                <span>Glo 2GB / 30d</span>
+                <span class="chip">₦ 799</span>
+              </div>
+            </div>
+            <a class="btn" href="/app/">Get Started</a>
+          </aside>
         </div>
       </div>
-      <div class="hero-list">
-        <div class="hero-row">
-          <span>MTN 1GB / 30d</span>
-          <span class="chip">₦ 429</span>
-        </div>
-        <div class="hero-row">
-          <span>Glo 2GB / 30d</span>
-          <span class="chip">₦ 799</span>
-        </div>
-      </div>
-      <a class="btn full" href="/app/">Get Started</a>
-    </div>
-  </section>
+    </section>
 
-  <section id="features" class="section reveal">
-    <div class="section-head">
-      <h2>Everything you need to run VTU, beautifully</h2>
-      <p>Only the essentials — fast, reliable, and conversion‑focused.</p>
-    </div>
-    <div class="grid">
-      <div class="card">
-        <h3>Wallet Funding</h3>
-        <p>Secure Paystack funding with instant balance updates.</p>
+    <section id="features" class="section reveal">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Everything you need to run VTU, with a premium feel</h2>
+          <p>Only the essentials. Built for speed, clarity, and fewer support messages.</p>
+        </div>
+        <div class="grid">
+          <div class="card">
+            <h3>Wallet Funding</h3>
+            <p>Paystack checkout with a clear verification flow.</p>
+          </div>
+          <div class="card">
+            <h3>Buy Data</h3>
+            <p>Choose a plan, confirm, and deliver with predictable status.</p>
+          </div>
+          <div class="card">
+            <h3>Receipts</h3>
+            <p>Transaction modal with copyable references and details.</p>
+          </div>
+          <div class="card">
+            <h3>Reseller Pricing</h3>
+            <p>Admin pricing rules by role and network.</p>
+          </div>
+          <div class="card">
+            <h3>Secure Sessions</h3>
+            <p>Refresh token session recovery and clean expiry handling.</p>
+          </div>
+          <div class="card">
+            <h3>Mobile-First</h3>
+            <p>Bottom navigation for fast daily workflows.</p>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <h3>Data Purchase</h3>
-        <p>MTN & Glo plans with reliable delivery and clear receipts.</p>
-      </div>
-      <div class="card">
-        <h3>Transaction History</h3>
-        <p>Every purchase is tracked with receipts and status.</p>
-      </div>
-      <div class="card">
-        <h3>Reseller Pricing</h3>
-        <p>Set margins by role and network in Admin.</p>
-      </div>
-      <div class="card">
-        <h3>Secure Access</h3>
-        <p>Protected sessions, clean auth, and role access.</p>
-      </div>
-      <div class="card">
-        <h3>Clean UX</h3>
-        <p>Mobile‑first flow designed for speed and clarity.</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="how" class="section alt reveal">
-    <div class="section-head">
-      <h2>How it works</h2>
-      <p>From zero to first sale in minutes.</p>
-    </div>
-    <div class="grid">
-      <div class="card">
-        <h3>1. Create account</h3>
-        <p>Sign in and access your dashboard instantly.</p>
+    <section id="flow" class="section reveal">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>A flow you can teach in 10 seconds</h2>
+          <p>Create account, fund wallet, buy data, view receipt. Repeat.</p>
+        </div>
+        <div class="grid">
+          <div class="card">
+            <h3>1. Sign in</h3>
+            <p>Access dashboard instantly and keep sessions stable.</p>
+          </div>
+          <div class="card">
+            <h3>2. Fund wallet</h3>
+            <p>Use Paystack, verify payment, see balance update.</p>
+          </div>
+          <div class="card">
+            <h3>3. Buy data</h3>
+            <p>Select a plan, confirm purchase, get a receipt.</p>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <h3>2. Fund wallet</h3>
-        <p>Add funds via Paystack and get credited fast.</p>
-      </div>
-      <div class="card">
-        <h3>3. Buy data</h3>
-        <p>Select a plan and deliver to customers right away.</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="trust" class="section reveal">
-    <div class="section-head">
-      <h2>Why AxisVTU</h2>
-      <p>Reliability, speed, and a UI your customers trust.</p>
-    </div>
-    <div class="grid">
-      <div class="card">
-        <h3>Fast delivery</h3>
-        <p>Optimized flow for instant fulfillment.</p>
+    <section id="trust" class="section reveal">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Designed for trust</h2>
+          <p>Clear UI and clean records matter when money is involved.</p>
+        </div>
+        <div class="grid">
+          <div class="card">
+            <h3>Transparent records</h3>
+            <p>Status, reference, and history you can reconcile.</p>
+          </div>
+          <div class="card">
+            <h3>Less friction</h3>
+            <p>Fewer clicks and fewer confusing screens.</p>
+          </div>
+          <div class="card">
+            <h3>Ready to grow</h3>
+            <p>Extend into airtime and bills when you want.</p>
+          </div>
+        </div>
       </div>
-      <div class="card">
-        <h3>Transparent records</h3>
-        <p>Receipts, statuses, and audit‑ready logs.</p>
-      </div>
-      <div class="card">
-        <h3>Ready to grow</h3>
-        <p>Scale to airtime, bills, and more when ready.</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="cta reveal">
-    <div>
-      <h2>Launch in minutes</h2>
-      <p>Open the dashboard and start selling today.</p>
-    </div>
-    <div class="cta-actions">
-      <a class="btn" href="/app/">Create Account</a>
-      <a class="btn ghost" href="/app/">Sign In</a>
-    </div>
-  </section>
+    <section class="cta reveal" aria-label="Call to action">
+      <div class="wrap">
+        <div class="cta-inner">
+          <div>
+            <h2>Launch in minutes</h2>
+            <p class="muted">Open the app and start selling today.</p>
+          </div>
+          <div class="nav-cta">
+            <a class="btn" href="/app/">Create Account</a>
+            <a class="btn ghost" href="/app/">Sign In</a>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <footer class="footer">
-    <div>© 2026 MMTech. Built for Nigeria VTU.</div>
-    <div class="footer-links">
-      <a href="#features">Features</a>
-      <a href="#how">How it works</a>
-      <a href="#trust">Why MMTech</a>
-    </div>
-  </footer>
+    <footer class="footer">
+      <div class="wrap" style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+        <div>© 2026 AxisVTU</div>
+        <div class="footer-links">
+          <a href="#features">Features</a>
+          <a href="#flow">Flow</a>
+          <a href="#trust">Trust</a>
+        </div>
+      </div>
+    </footer>
+  </main>
+
   <script>
     window.addEventListener("load", () => {
-      const overlay = document.getElementById("landingWelcome");
-      if (overlay) {
-        setTimeout(() => {
-          overlay.classList.add("hide");
-        }, 2000);
-      }
-
-      const hero = document.querySelector(".hero");
-      if (hero) hero.classList.add("intro");
-
       const reveals = document.querySelectorAll(".reveal");
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
@@ -223,3 +231,4 @@
   </script>
 </body>
 </html>
+
