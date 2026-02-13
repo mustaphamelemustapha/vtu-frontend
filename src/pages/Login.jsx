@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch, setProfile, setToken } from "../services/api";
+import { apiFetch, setAuthTokens, setProfile } from "../services/api";
 
 export default function Login({ onAuth }) {
   const navigate = useNavigate();
@@ -160,7 +160,10 @@ export default function Login({ onAuth }) {
         method: "POST",
         body: JSON.stringify({ email: form.email, password: form.password })
       });
-      setToken(data.access_token, rememberMe);
+      if (!data?.access_token || !data?.refresh_token) {
+        throw new Error("Invalid authentication response");
+      }
+      setAuthTokens(data.access_token, data.refresh_token, rememberMe);
       const profile = await apiFetch("/auth/me");
       setProfile({ full_name: profile.full_name, email: profile.email, role: profile.role });
       onAuth();

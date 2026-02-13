@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch, setProfile, setToken } from "../services/api";
+import { apiFetch, clearToken, setAuthTokens, setProfile } from "../services/api";
 
 export default function AdminLogin({ onAuth }) {
   const navigate = useNavigate();
@@ -18,9 +18,13 @@ export default function AdminLogin({ onAuth }) {
         method: "POST",
         body: JSON.stringify({ email: form.email, password: form.password })
       });
-      setToken(data.access_token, rememberMe);
+      if (!data?.access_token || !data?.refresh_token) {
+        throw new Error("Invalid authentication response");
+      }
+      setAuthTokens(data.access_token, data.refresh_token, rememberMe);
       const profile = await apiFetch("/auth/me");
       if ((profile.role || "").toLowerCase() !== "admin") {
+        clearToken();
         setError("This account is not an admin.");
         return;
       }

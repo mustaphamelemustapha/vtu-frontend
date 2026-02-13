@@ -52,16 +52,15 @@ export default function App() {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE || "http://localhost:8000/api/v1"}/auth/me`, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile({ full_name: data.full_name, email: data.email, role: data.role });
-        setProfileState({ full_name: data.full_name, email: data.email, role: data.role });
+      const data = await apiFetch("/auth/me");
+      setProfile({ full_name: data.full_name, email: data.email, role: data.role });
+      setProfileState({ full_name: data.full_name, email: data.email, role: data.role });
+    } catch (err) {
+      if (err?.code === "AUTH_EXPIRED") {
+        clearToken();
+        setAuthenticated(false);
+        setProfileState({});
       }
-    } catch {
-      // ignore
     }
   };
 

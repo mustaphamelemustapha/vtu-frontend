@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch, clearToken, getProfile, setProfile } from "../services/api";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const [profile, setProfileState] = useState(getProfile());
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
@@ -53,7 +55,7 @@ export default function Profile() {
 
   const logout = () => {
     clearToken();
-    window.location.href = "/app/";
+    navigate("/", { replace: true });
   };
 
   return (
