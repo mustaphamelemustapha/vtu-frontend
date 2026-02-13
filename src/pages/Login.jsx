@@ -208,7 +208,7 @@ export default function Login({ onAuth }) {
                 />
                 <button
                   type="button"
-                  className="icon-btn"
+                  className="input-btn"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
@@ -235,7 +235,7 @@ export default function Login({ onAuth }) {
                 />
                 <button
                   type="button"
-                  className="icon-btn"
+                  className="input-btn"
                   onClick={() => setShowConfirm(!showConfirm)}
                   aria-label={showConfirm ? "Hide password" : "Show password"}
                 >
@@ -326,7 +326,7 @@ export default function Login({ onAuth }) {
               />
               <button
                 type="button"
-                className="icon-btn"
+                className="input-btn"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
@@ -359,7 +359,7 @@ export default function Login({ onAuth }) {
                 />
                 <button
                   type="button"
-                  className="icon-btn"
+                  className="input-btn"
                   onClick={() => setShowConfirm(!showConfirm)}
                   aria-label={showConfirm ? "Hide password" : "Show password"}
                 >
