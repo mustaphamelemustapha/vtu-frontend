@@ -80,12 +80,21 @@ export default function Login({ onAuth }) {
     }
     setLoading(true);
     try {
-      await apiFetch("/auth/forgot-password", {
+      const res = await apiFetch("/auth/forgot-password", {
         method: "POST",
         body: JSON.stringify({ email: forgotEmail })
       });
-      setNotice("If the email exists, a reset link will be sent.");
-      setForgotMode(false);
+      const message = res?.message || "If the email exists, a reset link will be sent.";
+      if (res?.reset_token) {
+        // Dev/test convenience: backend may return a token outside production.
+        setResetForm({ token: res.reset_token, password: "", confirm: "" });
+        setNotice("Reset token generated. Set a new password.");
+        setForgotMode(false);
+        setResetMode(true);
+      } else {
+        setNotice(message);
+        setForgotMode(false);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
