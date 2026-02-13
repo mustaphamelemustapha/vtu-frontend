@@ -14,6 +14,25 @@
   --radius-md: 16px;
   --radius-lg: 22px;
   --radius-xl: 28px;
+  /* Design tokens (type + spacing) */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 20px;
+  --text-3xl: 28px;
+  --text-4xl: 32px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 18px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 56px;
+  --space-10: 80px;
   --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Sora", "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -67,7 +86,7 @@ a:focus-visible {
 }
 
 .main {
-  padding: 32px 40px 80px;
+  padding: var(--space-7) var(--space-8) var(--space-10);
   max-width: 1160px;
   margin: 0 auto;
 }
@@ -198,7 +217,7 @@ a:focus-visible {
 
 .topbar h1 {
   margin: 4px 0 0;
-  font-size: 28px;
+  font-size: var(--text-3xl);
 }
 
 .page-head h1 {
@@ -660,6 +679,54 @@ a:focus-visible {
   gap: 16px;
 }
 
+.modal.modal-receipt {
+  width: min(640px, 100%);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2);
+  padding: 22px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(15, 118, 110, 0.10), transparent 55%),
+    radial-gradient(circle at 85% 5%, rgba(245, 158, 11, 0.10), transparent 55%),
+    var(--panel);
+}
+
+.modal.modal-receipt .modal-head h3 {
+  margin: 2px 0 0;
+}
+
+.modal.modal-receipt .receipt-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.modal.modal-receipt .receipt-grid > div {
+  border: 1px solid var(--stroke);
+  background: rgba(15, 118, 110, 0.06);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.modal.modal-receipt .receipt-grid .label {
+  font-size: var(--text-xs);
+}
+
+.modal.modal-receipt .list-card {
+  border-radius: var(--radius-lg);
+}
+
+.modal.modal-receipt .modal-actions {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.modal.modal-receipt .notice {
+  margin-top: 0;
+}
+
 .modal-head {
   display: flex;
   justify-content: space-between;
@@ -834,12 +901,12 @@ a:focus-visible {
 }
 
 .label {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 
 .value {
-  font-size: 20px;
+  font-size: var(--text-2xl);
   font-weight: 700;
 }
 
@@ -864,7 +931,7 @@ a:focus-visible {
 }
 
 .hero-value {
-  font-size: 32px;
+  font-size: var(--text-4xl);
   font-weight: 800;
 }
 
@@ -875,7 +942,7 @@ a:focus-visible {
 }
 
 .section {
-  margin-top: 24px;
+  margin-top: var(--space-6);
 }
 
 .section h3 {
@@ -954,7 +1021,7 @@ input, select {
   padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid var(--stroke);
-  font-size: 14px;
+  font-size: var(--text-md);
   background: var(--panel-light);
   color: var(--ink);
 }
@@ -967,12 +1034,12 @@ input, select {
 .form-grid label {
   display: grid;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
 .hint {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--muted);
   margin-top: 6px;
 }
@@ -1163,7 +1230,7 @@ input, select {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--muted);
 }
 
@@ -1198,7 +1265,7 @@ input, select {
 .strength .bar.s4::after { width: 100%; background: #16a34a; }
 
 .strength span {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--muted);
   min-width: 90px;
 }

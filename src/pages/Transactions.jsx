@@ -95,7 +95,7 @@ export default function Transactions() {
 
       {selected && (
         <div className="modal-backdrop">
-          <div className="modal">
+          <div className="modal modal-receipt">
             <div className="modal-head">
               <div>
                 <div className="label">Transaction Receipt</div>
