@@ -107,6 +107,12 @@ export default function App() {
     .join("")
     .toUpperCase();
 
+  const handleLogout = () => {
+    clearToken();
+    setProfileState({});
+    setAuthenticated(false);
+  };
+
   if (!authenticated) {
     return (
       <Routes>
@@ -161,7 +167,7 @@ export default function App() {
           </div>
         </div>
       )}
-      <Nav onLogout={() => { clearToken(); setAuthenticated(false); }} isAdmin={isAdmin} />
+      <Nav onLogout={handleLogout} isAdmin={isAdmin} />
       <main className="main">
         {location.pathname === "/" && (
           <header className="topbar">
@@ -205,7 +211,7 @@ export default function App() {
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/data" element={<Data />} />
           <Route path="/transactions" element={<Transactions />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<Profile onLogout={handleLogout} />} />
           <Route path="/admin" element={isAdmin ? <Admin /> : <Navigate to="/" replace />} />
           <Route path="/admin-login" element={<Navigate to="/" replace />} />
         </Routes>
