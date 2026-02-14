@@ -30,6 +30,16 @@ export default function Dashboard() {
     }));
   }, [txs]);
 
+  const statusKey = (value) => String(value || "").toLowerCase();
+  const statusLabel = (value) => {
+    const key = statusKey(value);
+    if (key === "success") return "Success";
+    if (key === "pending") return "Pending";
+    if (key === "failed") return "Failed";
+    if (key === "refunded") return "Refunded";
+    return String(value || "—");
+  };
+
   const quickBuyLink = lastRecipient?.phone
     ? `/data?phone=${encodeURIComponent(lastRecipient.phone)}&ported=${lastRecipient.ported ? "1" : "0"}`
     : "/data";
@@ -72,7 +82,7 @@ export default function Dashboard() {
           <div className="card stat-card">
             <div className="label">Success Rate</div>
             <div className="value">
-              {txs.length === 0 ? "0%" : `${Math.round((txs.filter((t) => t.status === "SUCCESS").length / txs.length) * 100)}%`}
+              {txs.length === 0 ? "0%" : `${Math.round((txs.filter((t) => statusKey(t.status) === "success").length / txs.length) * 100)}%`}
             </div>
             <div className="muted">Last 30 days</div>
           </div>
@@ -129,7 +139,7 @@ export default function Dashboard() {
               </div>
               <div className="list-meta">
                 <div className="value">₦ {tx.amount}</div>
-                <span className={`pill ${tx.status}`}>{tx.status}</span>
+                <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
               </div>
             </div>
           ))}
