@@ -57,7 +57,7 @@ export default function Admin() {
   const [analytics, setAnalytics] = useState(null);
 
   // Pricing
-  const [pricingForm, setPricingForm] = useState({ network: "mtn", role: "user", margin: 0 });
+  const [pricingForm, setPricingForm] = useState({ network: "mtn", margin: 0 });
   const [pricingBusy, setPricingBusy] = useState(false);
 
   // Transactions
@@ -129,7 +129,7 @@ export default function Admin() {
         method: "POST",
         body: JSON.stringify({
           network: pricingForm.network,
-          role: pricingForm.role,
+          role: "user",
           margin: Number(pricingForm.margin),
         }),
       });
@@ -248,9 +248,26 @@ export default function Admin() {
               <div className="muted">Successful transactions</div>
             </div>
             <div className="card stat-card">
+              <div className="label">Gross Profit (Est.)</div>
+              <div className="value">₦ {analytics?.gross_profit_estimate || 0}</div>
+              <div className="muted">{analytics?.gross_margin_pct || 0}% margin on data</div>
+            </div>
+            <div className="card stat-card">
               <div className="label">Total Users</div>
               <div className="value">{analytics?.total_users || 0}</div>
               <div className="muted">Registered accounts</div>
+            </div>
+          </div>
+          <div className="grid-3" style={{ marginTop: 16 }}>
+            <div className="card stat-card">
+              <div className="label">Data Revenue</div>
+              <div className="value">₦ {analytics?.data_revenue || 0}</div>
+              <div className="muted">Successful data purchases</div>
+            </div>
+            <div className="card stat-card">
+              <div className="label">Data Cost (Est.)</div>
+              <div className="value">₦ {analytics?.data_cost_estimate || 0}</div>
+              <div className="muted">From current base prices</div>
             </div>
             <div className="card stat-card">
               <div className="label">API Success</div>
@@ -545,13 +562,6 @@ export default function Admin() {
                 />
               </label>
               <label>
-                Role
-                <select value={pricingForm.role} onChange={(e) => setPricingForm({ ...pricingForm, role: e.target.value })}>
-                  <option value="user">User</option>
-                  <option value="reseller">Reseller</option>
-                </select>
-              </label>
-              <label>
                 Margin (₦)
                 <input
                   type="number"
@@ -564,7 +574,7 @@ export default function Admin() {
               </button>
             </form>
             <div className="muted">
-              Tip: set a margin per network for normal users vs resellers.
+              Tip: set a margin per network for normal users (reseller pricing is disabled for now).
             </div>
           </div>
         </section>
@@ -684,4 +694,3 @@ export default function Admin() {
     </div>
   );
 }
-
