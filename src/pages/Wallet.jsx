@@ -23,6 +23,11 @@ export default function Wallet() {
   const [pendingRef, setPendingRef] = useState("");
   const [pollCount, setPollCount] = useState(0);
   const { showToast } = useToast();
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferBusy, setTransferBusy] = useState(false);
+  const [transferAccounts, setTransferAccounts] = useState([]);
+  const [transferNeedsKyc, setTransferNeedsKyc] = useState(false);
+  const [transferForm, setTransferForm] = useState({ bvn: "", nin: "" });
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
@@ -120,6 +125,52 @@ export default function Wallet() {
     }
   };
 
+  const openTransfer = async () => {
+    setTransferOpen(true);
+    setTransferBusy(true);
+    try {
+      const res = await apiFetch("/wallet/bank-transfer-accounts");
+      setTransferAccounts(res?.accounts || []);
+      setTransferNeedsKyc(!!res?.requires_kyc);
+    } catch (err) {
+      showToast(err.message || "Failed to load bank transfer accounts.", "error");
+      setTransferAccounts([]);
+      setTransferNeedsKyc(true);
+    } finally {
+      setTransferBusy(false);
+    }
+  };
+
+  const createTransfer = async (e) => {
+    e.preventDefault();
+    setTransferBusy(true);
+    try {
+      const res = await apiFetch("/wallet/bank-transfer-accounts", {
+        method: "POST",
+        body: JSON.stringify({
+          bvn: transferForm.bvn || null,
+          nin: transferForm.nin || null,
+        }),
+      });
+      setTransferAccounts(res?.accounts || []);
+      setTransferNeedsKyc(!!res?.requires_kyc);
+      showToast("Bank transfer accounts generated.", "success");
+    } catch (err) {
+      showToast(err.message || "Unable to generate accounts.", "error");
+    } finally {
+      setTransferBusy(false);
+    }
+  };
+
+  const copyText = async (value) => {
+    try {
+      await navigator.clipboard?.writeText(String(value || ""));
+      showToast("Copied.", "success");
+    } catch {
+      showToast("Copy failed.", "error");
+    }
+  };
+
   return (
     <div className="page">
       <section className="hero-card wallet-hero">
@@ -131,6 +182,9 @@ export default function Wallet() {
         <div className="hero-actions">
           <button className="primary" onClick={() => setAmount(2000)}>+ ₦2,000</button>
           <button className="ghost" onClick={() => setAmount(5000)}>+ ₦5,000</button>
+          <button className="ghost" type="button" onClick={openTransfer}>
+            Add Balance (Transfer)
+          </button>
         </div>
       </section>
 
@@ -165,6 +219,11 @@ export default function Wallet() {
               {verifying ? "Verifying..." : "Verify Paystack Payment"}
             </button>
           )}
+          <div style={{ marginTop: 10 }}>
+            <button className="ghost" type="button" onClick={openTransfer}>
+              Add money via mobile or internet banking
+            </button>
+          </div>
           {message && <div className="error">{message}</div>}
         </div>
       </section>
@@ -237,6 +296,86 @@ export default function Wallet() {
           )}
         </div>
       </section>
+
+      {transferOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal modal-receipt">
+            <div className="modal-head">
+              <div>
+                <div className="label">Bank Transfer</div>
+                <h3>Add money via mobile or internet banking</h3>
+              </div>
+              <button className="ghost" type="button" onClick={() => setTransferOpen(false)}>
+                Close
+              </button>
+            </div>
+
+            {transferBusy && <div className="notice">Loading...</div>}
+
+            {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && (
+              <div className="card">
+                <div className="muted">
+                  To generate your dedicated bank account numbers, Monnify requires BVN or NIN once.
+                  We do not store it; it is only used to create the accounts.
+                </div>
+                <form onSubmit={createTransfer} className="form-grid" style={{ marginTop: 12 }}>
+                  <label>
+                    BVN (optional)
+                    <input
+                      value={transferForm.bvn}
+                      onChange={(e) => setTransferForm({ ...transferForm, bvn: e.target.value })}
+                      placeholder="Enter BVN"
+                    />
+                  </label>
+                  <label>
+                    NIN (optional)
+                    <input
+                      value={transferForm.nin}
+                      onChange={(e) => setTransferForm({ ...transferForm, nin: e.target.value })}
+                      placeholder="Enter NIN"
+                    />
+                  </label>
+                  <button className="primary" type="submit" disabled={transferBusy}>
+                    {transferBusy ? "Generating..." : "Generate Account Numbers"}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {!transferBusy && transferAccounts.length > 0 && (
+              <div className="receipt-grid">
+                {transferAccounts.map((acc, idx) => (
+                  <div key={`${acc.bank_name}-${acc.account_number}-${idx}`}>
+                    <div className="label">{acc.bank_name}</div>
+                    <div className="value" style={{ fontSize: 18 }}>{acc.account_number}</div>
+                    <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
+                    <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <button className="ghost" type="button" onClick={() => copyText(acc.account_number)}>
+                        Copy Account
+                      </button>
+                      <button className="ghost" type="button" onClick={() => copyText(acc.bank_name)}>
+                        Copy Bank
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!transferBusy && transferAccounts.length > 0 && (
+              <div className="notice">
+                Make a transfer to any of the accounts above from PalmPay, 9PSB, or any bank app. Your wallet will be credited automatically.
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button className="ghost" type="button" onClick={() => setTransferOpen(false)}>
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
