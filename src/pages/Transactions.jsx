@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../services/api";
+import { useToast } from "../context/toast.jsx";
 
 export default function Transactions() {
   const [txs, setTxs] = useState([]);
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
-  const [copied, setCopied] = useState("");
+  const { showToast } = useToast();
 
   useEffect(() => {
     apiFetch("/transactions/me").then(setTxs).catch(() => {});
@@ -155,15 +156,13 @@ export default function Transactions() {
                 className="ghost"
                 onClick={() => {
                   navigator.clipboard?.writeText(selected.reference || "");
-                  setCopied("Reference copied");
-                  setTimeout(() => setCopied(""), 1200);
+                  showToast("Reference copied.", "success");
                 }}
               >
                 Copy Reference
               </button>
               <button className="primary" onClick={() => setSelected(null)}>Done</button>
             </div>
-            {copied && <div className="notice">{copied}</div>}
           </div>
         </div>
       )}

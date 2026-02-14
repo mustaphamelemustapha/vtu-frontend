@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { useToast } from "../context/toast.jsx";
 
 const LAST_FUND_KEY = "vtu_last_fund";
 
@@ -21,6 +22,7 @@ export default function Wallet() {
   const [verifying, setVerifying] = useState(false);
   const [pendingRef, setPendingRef] = useState("");
   const [pollCount, setPollCount] = useState(0);
+  const { showToast } = useToast();
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
@@ -60,7 +62,7 @@ export default function Wallet() {
     setMessage("");
     try {
       if (method === "monnify") {
-        setMessage("Monnify is coming soon. Please use Paystack for now.");
+        showToast("Monnify is coming soon. Please use Paystack for now.", "warning");
         return;
       }
       const path = "/wallet/fund";
@@ -85,13 +87,14 @@ export default function Wallet() {
       if (url) window.location.href = url;
     } catch (err) {
       setMessage(err.message);
+      showToast(err.message || "Wallet funding failed.", "error");
     }
   };
 
   const verifyPayment = async (refOverride) => {
     const reference = refOverride || lastReference;
     if (!reference) {
-      setMessage("No recent transaction reference found.");
+      showToast("No recent transaction reference found.", "error");
       return;
     }
     setMessage("");
@@ -101,14 +104,17 @@ export default function Wallet() {
       if (res.status === "success") {
         setMessage("");
         setSuccessModal(true);
+        showToast("Wallet funded successfully.", "success");
         apiFetch("/wallet/me").then(setWallet).catch(() => {});
         apiFetch("/wallet/ledger").then(setLedger).catch(() => {});
         setPendingRef("");
       } else {
         setMessage("Payment pending. Please wait and try again.");
+        showToast("Payment pending. Please wait and try again.", "info");
       }
     } catch (err) {
       setMessage(err.message);
+      showToast(err.message || "Verification failed.", "error");
     } finally {
       setVerifying(false);
     }

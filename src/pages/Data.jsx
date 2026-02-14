@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { useToast } from "../context/toast.jsx";
 
 export default function Data() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState([]);
   const [phone, setPhone] = useState("");
   const [network, setNetwork] = useState("all");
@@ -18,6 +20,7 @@ export default function Data() {
   const [success, setSuccess] = useState(null);
   const [fieldError, setFieldError] = useState("");
   const [wallet, setWallet] = useState(null);
+  const { showToast } = useToast();
 
   const parseSize = (value) => {
     if (!value) return null;
@@ -53,19 +56,32 @@ export default function Data() {
     } catch {
       // ignore
     }
+    try {
+      const qpPhone = searchParams.get("phone");
+      const qpPorted = searchParams.get("ported");
+      if (qpPhone) {
+        const nextPorted = qpPorted === "1" || qpPorted === "true";
+        setPhone(qpPhone);
+        setPorted(nextPorted);
+        saveRecipient({ phone: qpPhone, ported: nextPorted });
+      }
+    } catch {
+      // ignore
+    }
     setLoadingPlans(true);
     apiFetch("/data/plans")
       .then(setPlans)
       .catch(() => {})
       .finally(() => setLoadingPlans(false));
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
-  }, []);
+  }, [searchParams]);
 
   const buy = async (planCode) => {
     setMessage("");
     try {
       if (!phone) {
         setFieldError("Enter a valid phone number.");
+        showToast("Enter a valid phone number.", "error");
         return;
       }
       setFieldError("");
@@ -80,8 +96,10 @@ export default function Data() {
         plan: plans.find((p) => p.plan_code === planCode),
       });
       setSelected(null);
+      showToast("Purchase successful.", "success");
     } catch (err) {
       setMessage(err.message);
+      showToast(err.message || "Purchase failed.", "error");
     } finally {
       setLoading(false);
     }

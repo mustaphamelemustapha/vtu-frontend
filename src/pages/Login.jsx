@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch, setAuthTokens, setProfile } from "../services/api";
+import { useToast } from "../context/toast.jsx";
 
 export default function Login({ onAuth }) {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ export default function Login({ onAuth }) {
   const [forgotEmail, setForgotEmail] = useState("");
   const [resetMode, setResetMode] = useState(false);
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
+  const { showToast } = useToast();
 
   useEffect(() => {
     // Email reset link support: /app/?reset=1&token=...
@@ -94,6 +96,7 @@ export default function Login({ onAuth }) {
     setNotice("");
     if (!forgotEmail) {
       setError("Enter your email to reset password");
+      showToast("Enter your email to reset password", "error");
       return;
     }
     setLoading(true);
@@ -107,14 +110,17 @@ export default function Login({ onAuth }) {
         // Dev/test convenience: backend may return a token outside production.
         setResetForm({ token: res.reset_token, password: "", confirm: "" });
         setNotice("Reset token generated. Set a new password.");
+        showToast("Reset token generated. Set a new password.", "success");
         setForgotMode(false);
         setResetMode(true);
       } else {
         setNotice(message);
+        showToast(message, "info");
         setForgotMode(false);
       }
     } catch (err) {
       setError(err.message);
+      showToast(err.message || "Password reset request failed.", "error");
     } finally {
       setLoading(false);
     }
@@ -126,14 +132,17 @@ export default function Login({ onAuth }) {
     setNotice("");
     if (!resetForm.token || !resetForm.password) {
       setError("All fields are required");
+      showToast("All fields are required", "error");
       return;
     }
     if (resetForm.password !== resetForm.confirm) {
       setError("Passwords do not match");
+      showToast("Passwords do not match", "error");
       return;
     }
     if (resetForm.password.length > 72) {
       setError("Password max 72 characters");
+      showToast("Password max 72 characters", "error");
       return;
     }
     setLoading(true);
@@ -143,11 +152,13 @@ export default function Login({ onAuth }) {
         body: JSON.stringify({ token: resetForm.token, new_password: resetForm.password })
       });
       setNotice("Password reset successful. Please log in.");
+      showToast("Password reset successful. Please log in.", "success");
       setResetMode(false);
       setMode("login");
       setResetForm({ token: "", password: "", confirm: "" });
     } catch (err) {
       setError(err.message);
+      showToast(err.message || "Password reset failed.", "error");
     } finally {
       setLoading(false);
     }
@@ -162,6 +173,7 @@ export default function Login({ onAuth }) {
       if (mode === "register") {
         if (!validateAll()) {
           setLoading(false);
+          showToast("Please fix the highlighted fields.", "error");
           return;
         }
         await apiFetch("/auth/register", {
@@ -174,6 +186,7 @@ export default function Login({ onAuth }) {
         });
         setProfile({ full_name: form.full_name, email: form.email, role: "user" });
         setNotice("Account created. Please log in.");
+        showToast("Account created. Please log in.", "success");
         setMode("login");
         setForm({ email: form.email, password: "", confirm_password: "", full_name: "" });
         setLoading(false);
@@ -181,6 +194,7 @@ export default function Login({ onAuth }) {
       }
       if (!validateAll()) {
         setLoading(false);
+        showToast("Please fix the highlighted fields.", "error");
         return;
       }
       const data = await apiFetch("/auth/login", {
@@ -201,6 +215,7 @@ export default function Login({ onAuth }) {
       }
     } catch (err) {
       setError(err.message);
+      showToast(err.message || "Login failed.", "error");
     } finally {
       setLoading(false);
     }

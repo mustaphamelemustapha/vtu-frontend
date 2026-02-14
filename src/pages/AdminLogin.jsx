@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch, clearToken, setAuthTokens, setProfile } from "../services/api";
+import { useToast } from "../context/toast.jsx";
 
 export default function AdminLogin({ onAuth }) {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ export default function AdminLogin({ onAuth }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const { showToast } = useToast();
 
   const submit = async (e) => {
     e.preventDefault();
@@ -26,6 +28,7 @@ export default function AdminLogin({ onAuth }) {
       if ((profile.role || "").toLowerCase() !== "admin") {
         clearToken();
         setError("This account is not an admin.");
+        showToast("This account is not an admin.", "error");
         return;
       }
       setProfile({ full_name: profile.full_name, email: profile.email, role: profile.role });
@@ -33,6 +36,7 @@ export default function AdminLogin({ onAuth }) {
       navigate("/admin", { replace: true });
     } catch (err) {
       setError(err.message);
+      showToast(err.message || "Admin login failed.", "error");
     } finally {
       setLoading(false);
     }

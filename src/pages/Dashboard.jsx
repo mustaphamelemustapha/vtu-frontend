@@ -5,10 +5,19 @@ import { apiFetch } from "../services/api";
 export default function Dashboard() {
   const [wallet, setWallet] = useState(null);
   const [txs, setTxs] = useState([]);
+  const [lastRecipient, setLastRecipient] = useState(null);
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/transactions/me").then(setTxs).catch(() => {});
+    try {
+      const stored = JSON.parse(localStorage.getItem("vtu_last_recipient") || "null");
+      if (stored && typeof stored === "object" && typeof stored.phone === "string" && stored.phone.trim()) {
+        setLastRecipient({ phone: stored.phone.trim(), ported: !!stored.ported });
+      }
+    } catch {
+      // ignore
+    }
   }, []);
 
   const chartData = useMemo(() => {
@@ -21,6 +30,16 @@ export default function Dashboard() {
     }));
   }, [txs]);
 
+  const quickBuyLink = lastRecipient?.phone
+    ? `/data?phone=${encodeURIComponent(lastRecipient.phone)}&ported=${lastRecipient.ported ? "1" : "0"}`
+    : "/data";
+
+  const maskPhone = (value) => {
+    const raw = String(value || "").replace(/\s+/g, "");
+    if (raw.length < 7) return raw || "—";
+    return `${raw.slice(0, 4)}•••${raw.slice(-3)}`;
+  };
+
   return (
     <div className="page">
       <section className="hero-card">
@@ -32,6 +51,9 @@ export default function Dashboard() {
         <div className="hero-actions">
           <Link className="primary" to="/wallet">Fund Wallet</Link>
           <Link className="ghost" to="/data">Buy Data</Link>
+          <Link className="ghost" to={quickBuyLink}>
+            Quick Buy
+          </Link>
         </div>
       </section>
 
@@ -78,10 +100,12 @@ export default function Dashboard() {
       <section className="section">
         <h3>Quick Actions</h3>
         <div className="grid-2">
-          <Link className="card action-card" to="/data">
-            <div className="label">Buy Data</div>
-            <div className="value">All Networks</div>
-            <div className="muted">Fast, reliable delivery</div>
+          <Link className="card action-card" to={quickBuyLink}>
+            <div className="label">{lastRecipient?.phone ? "Quick Buy" : "Buy Data"}</div>
+            <div className="value">{lastRecipient?.phone ? maskPhone(lastRecipient.phone) : "All Networks"}</div>
+            <div className="muted">
+              {lastRecipient?.phone ? "Use your last recipient instantly" : "Fast, reliable delivery"}
+            </div>
           </Link>
           <Link className="card action-card" to="/wallet">
             <div className="label">Fund Wallet</div>

@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../services/api";
+import { useToast } from "../context/toast.jsx";
 
 export default function Admin() {
   const [analytics, setAnalytics] = useState(null);
   const [form, setForm] = useState({ network: "mtn", role: "user", margin: 0 });
   const [message, setMessage] = useState("");
+  const { showToast } = useToast();
 
   useEffect(() => {
     apiFetch("/admin/analytics").then(setAnalytics).catch(() => {});
@@ -23,8 +25,10 @@ export default function Admin() {
         })
       });
       setMessage("Pricing updated");
+      showToast("Pricing updated.", "success");
     } catch (err) {
       setMessage(err.message);
+      showToast(err.message || "Pricing update failed.", "error");
     }
   };
 
