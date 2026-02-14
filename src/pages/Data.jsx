@@ -35,7 +35,24 @@ export default function Data() {
     return raw.replace(/[^a-z0-9_-]/g, "-");
   };
 
+  const saveRecipient = (next) => {
+    try {
+      localStorage.setItem("vtu_last_recipient", JSON.stringify(next));
+    } catch {
+      // ignore storage errors (private mode, quota, etc.)
+    }
+  };
+
   useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("vtu_last_recipient") || "null");
+      if (stored && typeof stored === "object") {
+        if (typeof stored.phone === "string") setPhone(stored.phone);
+        if (typeof stored.ported === "boolean") setPorted(stored.ported);
+      }
+    } catch {
+      // ignore
+    }
     setLoadingPlans(true);
     apiFetch("/data/plans")
       .then(setPlans)
@@ -116,7 +133,11 @@ export default function Data() {
               <input
                 placeholder="08012345678"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const nextPhone = e.target.value;
+                  setPhone(nextPhone);
+                  saveRecipient({ phone: nextPhone, ported });
+                }}
               />
             </label>
             <label>
@@ -130,7 +151,15 @@ export default function Data() {
               </select>
             </label>
             <label className="check">
-              <input type="checkbox" checked={ported} onChange={(e) => setPorted(e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={ported}
+                onChange={(e) => {
+                  const nextPorted = e.target.checked;
+                  setPorted(nextPorted);
+                  saveRecipient({ phone, ported: nextPorted });
+                }}
+              />
               Ported number
             </label>
           </div>

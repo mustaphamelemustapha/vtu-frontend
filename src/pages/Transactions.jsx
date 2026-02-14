@@ -12,8 +12,17 @@ export default function Transactions() {
     apiFetch("/transactions/me").then(setTxs).catch(() => {});
   }, []);
 
+  const statusKey = (value) => String(value || "").toLowerCase();
+  const statusLabel = (value) => {
+    const key = statusKey(value);
+    if (key === "success") return "Success";
+    if (key === "pending") return "Pending";
+    if (key === "failed") return "Failed";
+    return String(value || "—");
+  };
+
   const filtered = txs.filter((tx) => {
-    const matchesFilter = filter === "all" ? true : tx.status === filter;
+    const matchesFilter = filter === "all" ? true : statusKey(tx.status) === filter;
     const matchesQuery = query
       ? `${tx.reference} ${tx.tx_type}`.toLowerCase().includes(query.toLowerCase())
       : true;
@@ -22,9 +31,9 @@ export default function Transactions() {
 
   const counts = {
     all: txs.length,
-    success: txs.filter((t) => t.status === "SUCCESS").length,
-    pending: txs.filter((t) => t.status === "PENDING").length,
-    failed: txs.filter((t) => t.status === "FAILED").length,
+    success: txs.filter((t) => statusKey(t.status) === "success").length,
+    pending: txs.filter((t) => statusKey(t.status) === "pending").length,
+    failed: txs.filter((t) => statusKey(t.status) === "failed").length,
   };
 
   return (
@@ -65,7 +74,7 @@ export default function Transactions() {
                   className={`pill ${filter === status ? "active" : ""}`}
                   onClick={() => setFilter(status)}
                 >
-                  {status}
+                  {status === "all" ? "All" : statusLabel(status)}
                 </button>
               ))}
             </div>
@@ -83,7 +92,7 @@ export default function Transactions() {
               </div>
               <div className="list-meta">
                 <div className="value">₦ {tx.amount}</div>
-                <span className={`pill ${tx.status}`}>{tx.status}</span>
+                <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
               </div>
             </button>
           ))}
@@ -111,7 +120,7 @@ export default function Transactions() {
                 </div>
                 <div className="list-meta">
                   <div className="value">₦ {selected.amount}</div>
-                  <span className={`pill ${selected.status}`}>{selected.status}</span>
+                  <span className={`pill ${statusKey(selected.status)}`}>{statusLabel(selected.status)}</span>
                 </div>
               </div>
               <div className="receipt-grid">
@@ -129,7 +138,7 @@ export default function Transactions() {
                 </div>
                 <div>
                   <div className="label">Status</div>
-                  <div>{selected.status}</div>
+                  <div>{statusLabel(selected.status)}</div>
                 </div>
                 <div>
                   <div className="label">External Ref</div>

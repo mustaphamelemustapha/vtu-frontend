@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { apiFetch, getProfile, setProfile } from "../services/api";
+import { useToast } from "../context/toast.jsx";
 
-export default function Profile({ onLogout }) {
+export default function Profile({ onLogout, onProfileUpdate }) {
   const [profile, setProfileState] = useState(getProfile());
   const [loading, setLoading] = useState(false);
-  const [notice, setNotice] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwForm, setPwForm] = useState({ current_password: "", new_password: "" });
+  const { showToast } = useToast();
   const [prefs, setPrefs] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("vtu_prefs") || "{}");
@@ -25,9 +29,10 @@ export default function Profile({ onLogout }) {
   useEffect(() => {
     apiFetch("/auth/me")
       .then((data) => {
-        const next = { full_name: data.full_name, email: data.email };
+        const next = { full_name: data.full_name, email: data.email, role: data.role };
         setProfile(next);
         setProfileState(next);
+        onProfileUpdate?.(next);
       })
       .catch(() => {});
   }, []);
@@ -39,15 +44,55 @@ export default function Profile({ onLogout }) {
 
   const updateProfile = async (e) => {
     e.preventDefault();
-    setNotice("");
     setLoading(true);
     try {
-      // backend currently does not support updates; store locally for now
-      setProfile(profile);
-      setNotice("Profile saved locally. Server updates coming soon.");
+      const payload = { full_name: (profile.full_name || "").trim() };
+      if (!payload.full_name) {
+        showToast("Full name is required.", "error");
+        return;
+      }
+      const data = await apiFetch("/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const next = { full_name: data.full_name, email: data.email, role: data.role };
+      setProfile(next);
+      setProfileState(next);
+      onProfileUpdate?.(next);
+      showToast("Profile updated.", "success");
       setEditMode(false);
+    } catch (err) {
+      showToast(err?.message || "Profile update failed.", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const submitPassword = async (e) => {
+    e.preventDefault();
+    if (!pwForm.current_password || !pwForm.new_password) {
+      showToast("Enter current and new password.", "error");
+      return;
+    }
+    if (pwForm.new_password.length < 8) {
+      showToast("New password must be at least 8 characters.", "error");
+      return;
+    }
+    setPwLoading(true);
+    try {
+      await apiFetch("/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pwForm),
+      });
+      showToast("Password updated.", "success");
+      setPwOpen(false);
+      setPwForm({ current_password: "", new_password: "" });
+    } catch (err) {
+      showToast(err?.message || "Password update failed.", "error");
+    } finally {
+      setPwLoading(false);
     }
   };
 
@@ -77,7 +122,7 @@ export default function Profile({ onLogout }) {
           <div className="info-grid">
             <div className="info-card">
               <div className="label">Role</div>
-              <div className="value">User</div>
+              <div className="value">{(profile.role || "User").toString()}</div>
             </div>
             <div className="info-card">
               <div className="label">Status</div>
@@ -102,13 +147,11 @@ export default function Profile({ onLogout }) {
               Email
               <input
                 value={profile.email || ""}
-                onChange={(e) => setProfileState({ ...profile, email: e.target.value })}
                 placeholder="Email address"
                 type="email"
-                disabled={!editMode}
+                disabled
               />
             </label>
-            {notice && <div className="notice">{notice}</div>}
           </form>
         </div>
       </section>
@@ -158,7 +201,9 @@ export default function Profile({ onLogout }) {
                 <div className="label">Password</div>
                 <div className="muted">Use strong passwords to keep your account safe.</div>
               </div>
-              <button className="ghost" type="button">Change Password</button>
+              <button className="ghost" type="button" onClick={() => setPwOpen(true)}>
+                Change Password
+              </button>
             </div>
             <div className="setting-row">
               <div>
@@ -172,6 +217,49 @@ export default function Profile({ onLogout }) {
           </div>
         </div>
       </section>
+
+      {pwOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal modal-receipt">
+            <div className="modal-head">
+              <h3>Change Password</h3>
+              <button className="icon-btn" aria-label="Close" onClick={() => setPwOpen(false)}>
+                X
+              </button>
+            </div>
+            <form onSubmit={submitPassword} className="form-grid">
+              <label>
+                Current password
+                <input
+                  type="password"
+                  value={pwForm.current_password}
+                  onChange={(e) => setPwForm({ ...pwForm, current_password: e.target.value })}
+                  placeholder="Current password"
+                  autoComplete="current-password"
+                />
+              </label>
+              <label>
+                New password
+                <input
+                  type="password"
+                  value={pwForm.new_password}
+                  onChange={(e) => setPwForm({ ...pwForm, new_password: e.target.value })}
+                  placeholder="New password (min 8 chars)"
+                  autoComplete="new-password"
+                />
+              </label>
+              <div className="modal-actions">
+                <button className="ghost" type="button" onClick={() => setPwOpen(false)} disabled={pwLoading}>
+                  Cancel
+                </button>
+                <button className="primary" type="submit" disabled={pwLoading}>
+                  {pwLoading ? "Updating..." : "Update Password"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
