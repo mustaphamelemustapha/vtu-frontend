@@ -4,6 +4,9 @@ import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
 const LAST_FUND_KEY = "vtu_last_fund";
+const ENABLE_BANK_TRANSFER = ["1", "true", "yes", "on"].includes(
+  String(import.meta.env.VITE_ENABLE_BANK_TRANSFER || "").toLowerCase()
+);
 
 export default function Wallet() {
   const navigate = useNavigate();
@@ -182,9 +185,11 @@ export default function Wallet() {
         <div className="hero-actions">
           <button className="primary" onClick={() => setAmount(2000)}>+ ₦2,000</button>
           <button className="ghost" onClick={() => setAmount(5000)}>+ ₦5,000</button>
-          <button className="ghost" type="button" onClick={openTransfer}>
-            Add Balance (Transfer)
-          </button>
+          {ENABLE_BANK_TRANSFER && (
+            <button className="ghost" type="button" onClick={openTransfer}>
+              Add Balance (Transfer)
+            </button>
+          )}
         </div>
       </section>
 
@@ -219,11 +224,13 @@ export default function Wallet() {
               {verifying ? "Verifying..." : "Verify Paystack Payment"}
             </button>
           )}
-          <div style={{ marginTop: 10 }}>
-            <button className="ghost" type="button" onClick={openTransfer}>
-              Add money via mobile or internet banking
-            </button>
-          </div>
+          {ENABLE_BANK_TRANSFER && (
+            <div style={{ marginTop: 10 }}>
+              <button className="ghost" type="button" onClick={openTransfer}>
+                Add money via mobile or internet banking
+              </button>
+            </div>
+          )}
           {message && <div className="error">{message}</div>}
         </div>
       </section>
@@ -297,7 +304,7 @@ export default function Wallet() {
         </div>
       </section>
 
-      {transferOpen && (
+      {ENABLE_BANK_TRANSFER && transferOpen && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal modal-receipt">
             <div className="modal-head">

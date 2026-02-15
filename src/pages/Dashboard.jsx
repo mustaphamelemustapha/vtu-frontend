@@ -61,9 +61,6 @@ export default function Dashboard() {
         <div className="hero-actions">
           <Link className="primary" to="/wallet">Fund Wallet</Link>
           <Link className="ghost" to="/data">Buy Data</Link>
-          <Link className="ghost" to={quickBuyLink}>
-            Quick Buy
-          </Link>
         </div>
       </section>
 
