@@ -56,7 +56,9 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
     <>
     <aside className="nav">
       <div className="brand">
-        <div className="brand-mark">AV</div>
+        <div className="brand-mark">
+          <img src="/pwa/pwa-192.png" alt="AxisVTU" />
+        </div>
         <div>
           <div className="brand-title">AxisVTU</div>
           <div className="brand-sub">VTU Platform</div>

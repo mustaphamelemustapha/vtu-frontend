@@ -227,7 +227,9 @@ export default function Login({ onAuth }) {
         <div className="auth-left">
           <div className="auth-left-inner">
             <div className="auth-brand">
-              <div className="auth-mark">AV</div>
+              <div className="auth-mark">
+                <img src="/pwa/pwa-192.png" alt="AxisVTU" />
+              </div>
               <div>
                 <div className="auth-brand-title">AxisVTU</div>
                 <div className="auth-brand-sub">Fast VTU. Clean receipts. Wallet-first.</div>
