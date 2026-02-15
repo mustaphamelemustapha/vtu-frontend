@@ -5,6 +5,11 @@ import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Wallet from "./pages/Wallet.jsx";
 import Data from "./pages/Data.jsx";
+import Services from "./pages/Services.jsx";
+import Airtime from "./pages/Airtime.jsx";
+import Cable from "./pages/Cable.jsx";
+import Electricity from "./pages/Electricity.jsx";
+import Exam from "./pages/Exam.jsx";
 import Transactions from "./pages/Transactions.jsx";
 import Admin from "./pages/Admin.jsx";
 import Profile from "./pages/Profile.jsx";
@@ -269,6 +274,11 @@ export default function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/wallet" element={<Wallet />} />
               <Route path="/data" element={<Data />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/airtime" element={<Airtime />} />
+              <Route path="/cable" element={<Cable />} />
+              <Route path="/electricity" element={<Electricity />} />
+              <Route path="/exam" element={<Exam />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route
                 path="/profile"

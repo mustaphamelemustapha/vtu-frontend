@@ -106,7 +106,7 @@ export default function Dashboard() {
 
       <section className="section">
         <h3>Quick Actions</h3>
-        <div className="grid-2">
+        <div className="grid-3">
           <Link className="card action-card" to={quickBuyLink}>
             <div className="label">{lastRecipient?.phone ? "Quick Buy" : "Buy Data"}</div>
             <div className="value">{lastRecipient?.phone ? maskPhone(lastRecipient.phone) : "All Networks"}</div>
@@ -118,6 +118,11 @@ export default function Dashboard() {
             <div className="label">Fund Wallet</div>
             <div className="value">Paystack</div>
             <div className="muted">Card / Bank transfer</div>
+          </Link>
+          <Link className="card action-card" to="/services">
+            <div className="label">More Services</div>
+            <div className="value">Airtime</div>
+            <div className="muted">Cable, electricity, exams</div>
           </Link>
         </div>
       </section>

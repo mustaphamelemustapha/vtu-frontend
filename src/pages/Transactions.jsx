@@ -19,7 +19,54 @@ export default function Transactions() {
     if (key === "success") return "Success";
     if (key === "pending") return "Pending";
     if (key === "failed") return "Failed";
+    if (key === "refunded") return "Refunded";
     return String(value || "—");
+  };
+
+  const typeKey = (value) => String(value || "").toLowerCase();
+  const typeLabel = (tx) => {
+    const t = typeKey(tx?.tx_type);
+    if (t === "wallet_fund") return "Wallet Funding";
+    if (t === "data") return "Data Purchase";
+    if (t === "airtime") return "Airtime";
+    if (t === "cable") return "Cable TV";
+    if (t === "electricity") return "Electricity";
+    if (t === "exam") return "Exam Pins";
+    return String(tx?.tx_type || "Transaction");
+  };
+
+  const receiptFields = (tx) => {
+    const meta = tx?.meta || {};
+    const t = typeKey(tx?.tx_type);
+    const fields = [];
+
+    if (t === "data") {
+      fields.push({ label: "Network", value: tx.network || "—" });
+      fields.push({ label: "Plan", value: tx.data_plan_code || "—" });
+    } else if (t === "airtime") {
+      fields.push({ label: "Network", value: (meta.network || tx.network || "—").toString() });
+      fields.push({ label: "Phone", value: meta.phone_number || meta.phone || "—" });
+    } else if (t === "cable") {
+      fields.push({ label: "Provider", value: meta.provider || tx.network || "—" });
+      fields.push({ label: "Smartcard", value: meta.smartcard_number || meta.smartcard || "—" });
+      fields.push({ label: "Package", value: meta.package_code || tx.data_plan_code || "—" });
+    } else if (t === "electricity") {
+      fields.push({ label: "Disco", value: meta.disco || tx.network || "—" });
+      fields.push({ label: "Meter", value: meta.meter_number || meta.meter || "—" });
+      fields.push({ label: "Meter Type", value: meta.meter_type || "—" });
+      fields.push({ label: "Token", value: meta.token || "—" });
+    } else if (t === "exam") {
+      fields.push({ label: "Exam", value: meta.exam || tx.network || "—" });
+      fields.push({ label: "Quantity", value: meta.quantity ?? "—" });
+      const pins = Array.isArray(meta.pins) ? meta.pins.join(", ") : null;
+      if (pins) fields.push({ label: "Pins", value: pins });
+    }
+
+    fields.push({ label: "Tx Type", value: typeLabel(tx) });
+    fields.push({ label: "Status", value: statusLabel(tx.status) });
+    fields.push({ label: "External Ref", value: tx.external_reference || "—" });
+    fields.push({ label: "Failure Reason", value: tx.failure_reason || "—" });
+    return fields;
   };
 
   const filtered = txs.filter((tx) => {
@@ -88,7 +135,7 @@ export default function Transactions() {
           {filtered.map((tx) => (
             <button className="list-card" key={tx.id} type="button" onClick={() => setSelected(tx)}>
               <div>
-                <div className="list-title">{tx.tx_type}</div>
+                <div className="list-title">{typeLabel(tx)}</div>
                 <div className="muted">{tx.reference}</div>
               </div>
               <div className="list-meta">
@@ -109,7 +156,7 @@ export default function Transactions() {
             <div className="modal-head">
               <div>
                 <div className="label">Transaction Receipt</div>
-                <h3>{selected.tx_type}</h3>
+                <h3>{typeLabel(selected)}</h3>
               </div>
               <button className="ghost" onClick={() => setSelected(null)}>Close</button>
             </div>
@@ -125,30 +172,12 @@ export default function Transactions() {
                 </div>
               </div>
               <div className="receipt-grid">
-                <div>
-                  <div className="label">Network</div>
-                  <div>{selected.network || "—"}</div>
-                </div>
-                <div>
-                  <div className="label">Plan</div>
-                  <div>{selected.data_plan_code || "—"}</div>
-                </div>
-                <div>
-                  <div className="label">Type</div>
-                  <div>{selected.tx_type}</div>
-                </div>
-                <div>
-                  <div className="label">Status</div>
-                  <div>{statusLabel(selected.status)}</div>
-                </div>
-                <div>
-                  <div className="label">External Ref</div>
-                  <div>{selected.external_reference || "—"}</div>
-                </div>
-                <div>
-                  <div className="label">Failure Reason</div>
-                  <div>{selected.failure_reason || "—"}</div>
-                </div>
+                {receiptFields(selected).map((item, idx) => (
+                  <div key={`${item.label}-${idx}`}>
+                    <div className="label">{item.label}</div>
+                    <div>{item.value}</div>
+                  </div>
+                ))}
               </div>
             </div>
             <div className="modal-actions">

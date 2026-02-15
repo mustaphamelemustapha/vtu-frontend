@@ -23,6 +23,14 @@ const DataIcon = () => (
     <path d="M9 18c0-2 1.5-3.5 3-3.5S15 16 15 18" stroke="currentColor" strokeWidth="1.6" />
   </svg>
 );
+const ServicesIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M4 6.5a2 2 0 0 1 2-2h3.5a2 2 0 0 1 2 2V10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6.5z" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M14.5 6.5a2 2 0 0 1 2-2H18a2 2 0 0 1 2 2V10a2 2 0 0 1-2 2h-1.5a2 2 0 0 1-2-2V6.5z" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M4 15a2 2 0 0 1 2-2h3.5a2 2 0 0 1 2 2v2.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V15z" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M14.5 15a2 2 0 0 1 2-2H18a2 2 0 0 1 2 2v2.5a2 2 0 0 1-2 2h-1.5a2 2 0 0 1-2-2V15z" stroke="currentColor" strokeWidth="1.6" />
+  </svg>
+);
 const TxIcon = () => (
   <svg viewBox="0 0 24 24" fill="none">
     <path d="M4 7h16M4 12h10M4 17h13" stroke="currentColor" strokeWidth="1.6" />
@@ -68,6 +76,7 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
         <NavLink to="/" end><Icon><HomeIcon /></Icon>Dashboard</NavLink>
         <NavLink to="/wallet"><Icon><WalletIcon /></Icon>Wallet</NavLink>
         <NavLink to="/data"><Icon><DataIcon /></Icon>Buy Data</NavLink>
+        <NavLink to="/services"><Icon><ServicesIcon /></Icon>Services</NavLink>
         <NavLink to="/transactions"><Icon><TxIcon /></Icon>Transactions</NavLink>
         <NavLink to="/profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
         {isAdmin && <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
