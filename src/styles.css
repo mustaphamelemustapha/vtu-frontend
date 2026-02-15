@@ -1621,6 +1621,33 @@ input, select {
   .admin-overview-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Profile page: prevent overflow and keep actions usable on small screens */
+  .profile-head {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 12px;
+  }
+  .profile-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .profile-actions .ghost,
+  .profile-actions .primary {
+    flex: 1 1 140px;
+  }
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  .setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .setting-row > button,
+  .setting-row > .switch {
+    align-self: flex-end;
+  }
 }
 
 @media (max-width: 980px) {
