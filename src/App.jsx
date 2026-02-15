@@ -21,6 +21,8 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [notifItems, setNotifItems] = useState([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [canInstall, setCanInstall] = useState(false);
 
   const pageTitle = (() => {
     const path = location.pathname;
@@ -31,6 +33,53 @@ export default function App() {
     if (path.startsWith("/admin")) return "Admin";
     return "Dashboard";
   })();
+
+  useEffect(() => {
+    // PWA install prompt (supported browsers only)
+    const isStandalone = (() => {
+      try {
+        return (
+          window.matchMedia?.("(display-mode: standalone)")?.matches ||
+          window.navigator?.standalone === true
+        );
+      } catch {
+        return false;
+      }
+    })();
+    if (isStandalone) {
+      setCanInstall(false);
+      return;
+    }
+
+    const onBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setCanInstall(true);
+    };
+    const onAppInstalled = () => {
+      setInstallPrompt(null);
+      setCanInstall(false);
+    };
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    window.addEventListener("appinstalled", onAppInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", onAppInstalled);
+    };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return { outcome: "unavailable" };
+    try {
+      await installPrompt.prompt();
+      const choice = await installPrompt.userChoice;
+      setInstallPrompt(null);
+      setCanInstall(false);
+      return choice || { outcome: "dismissed" };
+    } catch {
+      return { outcome: "dismissed" };
+    }
+  };
 
   useEffect(() => {
     const theme = localStorage.getItem("theme");
@@ -168,7 +217,12 @@ export default function App() {
               </div>
             </div>
           )}
-          <Nav onLogout={handleLogout} isAdmin={isAdmin} />
+          <Nav
+            onLogout={handleLogout}
+            isAdmin={isAdmin}
+            canInstall={canInstall}
+            onInstall={handleInstall}
+          />
           <main className="main">
             {location.pathname === "/" && (
               <header className="topbar">

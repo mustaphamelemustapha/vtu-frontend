@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useToast } from "../context/toast.jsx";
 
 const Icon = ({ children }) => (
   <span className="icon" aria-hidden="true">{children}</span>
@@ -39,7 +40,18 @@ const ProfileIcon = () => (
   </svg>
 );
 
-export default function Nav({ onLogout, isAdmin }) {
+export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
+  const { showToast } = useToast();
+
+  const install = async () => {
+    const res = await onInstall?.();
+    if (res?.outcome === "accepted") {
+      showToast("AxisVTU installed.", "success");
+    } else if (res?.outcome === "dismissed") {
+      showToast("Install dismissed.", "info");
+    }
+  };
+
   return (
     <>
     <aside className="nav">
@@ -58,6 +70,11 @@ export default function Nav({ onLogout, isAdmin }) {
         <NavLink to="/profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
         {isAdmin && <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
       </nav>
+      {canInstall && (
+        <button className="ghost" type="button" onClick={install}>
+          Install AxisVTU
+        </button>
+      )}
       <button className="ghost" onClick={onLogout}>Logout</button>
     </aside>
     <nav className="bottom-nav">
