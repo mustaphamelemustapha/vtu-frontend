@@ -29,7 +29,12 @@ export default function Services() {
 
       <section className="section">
         <h3>Services</h3>
-        <div className="grid-2">
+        <div className="grid-3">
+          <Link className="card action-card" to="/data">
+            <div className="label">Data</div>
+            <div className="value">Buy</div>
+            <div className="muted">Plans and quick buy</div>
+          </Link>
           <Link className="card action-card" to="/airtime">
             <div className="label">Airtime</div>
             <div className="value">Top up</div>
@@ -83,4 +88,3 @@ export default function Services() {
     </div>
   );
 }
-
