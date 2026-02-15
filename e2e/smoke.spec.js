@@ -204,7 +204,8 @@ test("wallet funding smoke", async ({ page }) => {
   await page.getByRole("button", { name: "Pay with Paystack" }).click();
   await page.getByRole("button", { name: "Verify Paystack Payment" }).click();
 
-  await expect(page.getByText("Wallet Funded")).toBeVisible();
+  // Disambiguate from toast + hero copy that also contain "wallet funded".
+  await expect(page.locator(".success-card .success-title")).toHaveText("Wallet Funded");
   await expect(page.getByText("Your payment was successful.")).toBeVisible();
 });
 
