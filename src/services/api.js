@@ -42,6 +42,20 @@ export function clearToken() {
   localStorage.removeItem(PROFILE_KEY);
 }
 
+export function getAuthPersisted() {
+  // true => tokens live in localStorage (remember me)
+  // false => tokens live in sessionStorage
+  return !!localStorage.getItem(TOKEN_KEY) || !!localStorage.getItem(REFRESH_KEY);
+}
+
+export function setAuthPersisted(persist) {
+  // Move existing tokens between storages without changing token values.
+  const access = getToken();
+  const refresh = getRefreshToken();
+  if (!access) return;
+  setAuthTokens(access, refresh || null, !!persist);
+}
+
 export function setProfile(profile) {
   localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 }

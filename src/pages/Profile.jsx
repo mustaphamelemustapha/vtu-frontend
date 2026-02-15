@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { apiFetch, getProfile, setProfile } from "../services/api";
+import { apiFetch, getAuthPersisted, getProfile, setAuthPersisted, setProfile } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
-export default function Profile({ onLogout, onProfileUpdate }) {
+export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleTheme, canInstall, onInstall }) {
   const [profile, setProfileState] = useState(getProfile());
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [pwForm, setPwForm] = useState({ current_password: "", new_password: "" });
+  const [persisted, setPersisted] = useState(getAuthPersisted());
+  const [exporting, setExporting] = useState(false);
   const { showToast } = useToast();
   const [prefs, setPrefs] = useState(() => {
     try {
@@ -100,6 +102,100 @@ export default function Profile({ onLogout, onProfileUpdate }) {
     onLogout?.();
   };
 
+  const copyText = async (value, label = "Copied") => {
+    try {
+      await navigator.clipboard?.writeText(String(value || ""));
+      showToast(`${label}.`, "success");
+    } catch {
+      showToast("Copy failed.", "error");
+    }
+  };
+
+  const togglePersisted = (next) => {
+    try {
+      setAuthPersisted(!!next);
+      setPersisted(!!next);
+      showToast(next ? "Keep me signed in enabled." : "Keep me signed in disabled.", "success");
+    } catch {
+      showToast("Unable to update session preference.", "error");
+    }
+  };
+
+  const installApp = async () => {
+    if (!canInstall || !onInstall) {
+      showToast("Install is not available on this device/browser.", "info");
+      return;
+    }
+    const res = await onInstall();
+    if (res?.outcome === "accepted") showToast("AxisVTU installed.", "success");
+    else if (res?.outcome === "dismissed") showToast("Install dismissed.", "info");
+    else showToast("Install unavailable.", "info");
+  };
+
+  const exportTransactions = async () => {
+    setExporting(true);
+    try {
+      const txs = await apiFetch("/transactions/me");
+      const rows = Array.isArray(txs) ? txs : [];
+      if (rows.length === 0) {
+        showToast("No transactions to export yet.", "info");
+        return;
+      }
+
+      const columns = [
+        "reference",
+        "tx_type",
+        "status",
+        "amount",
+        "network",
+        "data_plan_code",
+        "external_reference",
+        "failure_reason",
+        "created_at",
+      ].filter((k) => rows.some((r) => r && r[k] != null && String(r[k]).trim() !== ""));
+
+      const esc = (v) => {
+        const s = String(v ?? "");
+        if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+        return s;
+      };
+
+      const csv = [
+        columns.join(","),
+        ...rows.map((r) => columns.map((c) => esc(r?.[c])).join(",")),
+      ].join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `axisvtu-transactions-${stamp}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast("Transactions exported.", "success");
+    } catch (err) {
+      showToast(err?.message || "Export failed.", "error");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const clearDeviceData = () => {
+    try {
+      localStorage.removeItem("vtu_last_recipient");
+      localStorage.removeItem("vtu_last_fund");
+      localStorage.removeItem("vtu_prefs");
+      localStorage.removeItem("vtu_onboarded");
+      setPrefs({});
+      showToast("Saved device data cleared.", "success");
+    } catch {
+      showToast("Unable to clear device data.", "error");
+    }
+  };
+
   return (
     <div className="page">
       <section className="section">
@@ -111,10 +207,13 @@ export default function Profile({ onLogout, onProfileUpdate }) {
               <div className="muted">{profile.email || "email@example.com"}</div>
             </div>
             <div className="profile-actions">
-              <button className="ghost" onClick={() => setEditMode(!editMode)}>
+              <button className="ghost" type="button" onClick={() => copyText(profile.email || "", "Email copied")}>
+                Copy Email
+              </button>
+              <button className="ghost" type="button" onClick={() => setEditMode(!editMode)}>
                 {editMode ? "Cancel" : "Edit"}
               </button>
-              <button className="primary" onClick={updateProfile} disabled={loading || !editMode}>
+              <button className="primary" type="button" onClick={updateProfile} disabled={loading || !editMode}>
                 {loading ? "Saving..." : "Save"}
               </button>
             </div>
@@ -162,6 +261,16 @@ export default function Profile({ onLogout, onProfileUpdate }) {
           <div className="settings-grid">
             <div className="setting-row">
               <div>
+                <div className="label">Dark Mode</div>
+                <div className="muted">Switch between light and dark theme.</div>
+              </div>
+              <label className="switch">
+                <input type="checkbox" checked={!!darkMode} onChange={() => onToggleTheme?.()} />
+                <span className="slider" />
+              </label>
+            </div>
+            <div className="setting-row">
+              <div>
                 <div className="label">Notifications</div>
                 <div className="muted">Product updates and payments</div>
               </div>
@@ -187,6 +296,51 @@ export default function Profile({ onLogout, onProfileUpdate }) {
                 />
                 <span className="slider" />
               </label>
+            </div>
+            <div className="setting-row">
+              <div>
+                <div className="label">Keep me signed in</div>
+                <div className="muted">Use this on your personal device only.</div>
+              </div>
+              <label className="switch">
+                <input type="checkbox" checked={!!persisted} onChange={(e) => togglePersisted(e.target.checked)} />
+                <span className="slider" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card">
+          <h3>Tools</h3>
+          <div className="settings-grid">
+            <div className="setting-row">
+              <div>
+                <div className="label">Export Transactions</div>
+                <div className="muted">Download your transaction history as CSV.</div>
+              </div>
+              <button className="ghost" type="button" onClick={exportTransactions} disabled={exporting}>
+                {exporting ? "Exporting..." : "Export CSV"}
+              </button>
+            </div>
+            <div className="setting-row">
+              <div>
+                <div className="label">Install App</div>
+                <div className="muted">Add AxisVTU to your home screen.</div>
+              </div>
+              <button className="ghost" type="button" onClick={installApp} disabled={!canInstall}>
+                {canInstall ? "Install" : "Unavailable"}
+              </button>
+            </div>
+            <div className="setting-row">
+              <div>
+                <div className="label">Clear saved device data</div>
+                <div className="muted">Resets onboarding and saved form preferences.</div>
+              </div>
+              <button className="ghost danger" type="button" onClick={clearDeviceData}>
+                Clear
+              </button>
             </div>
           </div>
         </div>

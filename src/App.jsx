@@ -276,6 +276,10 @@ export default function App() {
                   <Profile
                     onLogout={handleLogout}
                     onProfileUpdate={(next) => setProfileState(next)}
+                    darkMode={darkMode}
+                    onToggleTheme={toggleTheme}
+                    canInstall={canInstall}
+                    onInstall={handleInstall}
                   />
                 }
               />
