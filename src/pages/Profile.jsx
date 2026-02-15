@@ -11,6 +11,8 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
   const [pwForm, setPwForm] = useState({ current_password: "", new_password: "" });
   const [persisted, setPersisted] = useState(getAuthPersisted());
   const [exporting, setExporting] = useState(false);
+  const [installHelpOpen, setInstallHelpOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const { showToast } = useToast();
   const [prefs, setPrefs] = useState(() => {
     try {
@@ -37,6 +39,23 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
         onProfileUpdate?.(next);
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    // Detect PWA standalone mode (iOS + modern browsers).
+    const check = () => {
+      try {
+        const standalone =
+          window.matchMedia?.("(display-mode: standalone)")?.matches ||
+          window.navigator?.standalone === true;
+        setIsStandalone(!!standalone);
+      } catch {
+        setIsStandalone(false);
+      }
+    };
+    check();
+    window.addEventListener?.("visibilitychange", check);
+    return () => window.removeEventListener?.("visibilitychange", check);
   }, []);
 
   const savePrefs = (next) => {
@@ -122,15 +141,31 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
   };
 
   const installApp = async () => {
-    if (!canInstall || !onInstall) {
-      showToast("Install is not available on this device/browser.", "info");
+    if (isStandalone) {
+      showToast("AxisVTU is already installed.", "info");
       return;
     }
-    const res = await onInstall();
-    if (res?.outcome === "accepted") showToast("AxisVTU installed.", "success");
-    else if (res?.outcome === "dismissed") showToast("Install dismissed.", "info");
-    else showToast("Install unavailable.", "info");
+
+    // Chrome/Edge/Android: we can prompt only if beforeinstallprompt is available.
+    if (canInstall && onInstall) {
+      const res = await onInstall();
+      if (res?.outcome === "accepted") showToast("AxisVTU installed.", "success");
+      else if (res?.outcome === "dismissed") showToast("Install dismissed.", "info");
+      else showToast("Install unavailable.", "info");
+      return;
+    }
+
+    // iOS Safari and some browsers: cannot prompt; show "Add to Home Screen" instructions.
+    setInstallHelpOpen(true);
   };
+
+  const platformHint = (() => {
+    const ua = String(navigator?.userAgent || "");
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
+    const isSafari = isIOS && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+    return { isIOS, isAndroid, isSafari };
+  })();
 
   const exportTransactions = async () => {
     setExporting(true);
@@ -329,8 +364,8 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
                 <div className="label">Install App</div>
                 <div className="muted">Add AxisVTU to your home screen.</div>
               </div>
-              <button className="ghost" type="button" onClick={installApp} disabled={!canInstall}>
-                {canInstall ? "Install" : "Unavailable"}
+              <button className="ghost" type="button" onClick={installApp}>
+                {isStandalone ? "Installed" : "Add to Home Screen"}
               </button>
             </div>
             <div className="setting-row">
@@ -411,6 +446,52 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {installHelpOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal modal-receipt">
+            <div className="modal-head">
+              <div>
+                <div className="label">Install</div>
+                <h3>Add AxisVTU to your home screen</h3>
+              </div>
+              <button className="ghost" type="button" onClick={() => setInstallHelpOpen(false)}>
+                Close
+              </button>
+            </div>
+            <div className="modal-body">
+              {platformHint.isIOS && platformHint.isSafari && (
+                <div className="notice">
+                  On iPhone Safari: tap the Share button, then select "Add to Home Screen".
+                </div>
+              )}
+              {platformHint.isIOS && !platformHint.isSafari && (
+                <div className="notice">
+                  On iPhone: open this site in Safari to use "Add to Home Screen".
+                </div>
+              )}
+              {platformHint.isAndroid && (
+                <div className="notice">
+                  On Android Chrome: open the browser menu and tap "Install app" or "Add to Home screen".
+                </div>
+              )}
+              {!platformHint.isIOS && !platformHint.isAndroid && (
+                <div className="notice">
+                  Use your browser menu and select "Install app" or "Add to Home screen".
+                </div>
+              )}
+              <div className="hint">
+                Note: Some browsers don’t allow automatic install prompts. This is a browser restriction, not an app issue.
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="primary" type="button" onClick={() => setInstallHelpOpen(false)}>
+                Got it
+              </button>
+            </div>
           </div>
         </div>
       )}
