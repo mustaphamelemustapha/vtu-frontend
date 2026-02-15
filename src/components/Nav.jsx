@@ -77,7 +77,7 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
           Install AxisVTU
         </button>
       )}
-      <button className="ghost" onClick={onLogout}>Logout</button>
+      <button className="ghost" type="button" onClick={onLogout}>Logout</button>
     </aside>
     <nav className="bottom-nav">
       <NavLink to="/" end><Icon><HomeIcon /></Icon><span>Home</span></NavLink>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import Nav from "./components/Nav.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -16,6 +16,7 @@ import ToastHost from "./components/ToastHost.jsx";
 export default function App() {
   const [authenticated, setAuthenticated] = useState(!!getToken());
   const location = useLocation();
+  const navigate = useNavigate();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileState, setProfileState] = useState(getProfile());
   const [darkMode, setDarkMode] = useState(false);
@@ -162,6 +163,9 @@ export default function App() {
     clearToken();
     setProfileState({});
     setAuthenticated(false);
+    setNotificationsOpen(false);
+    // Ensure we exit any deep route immediately (e.g. /profile) when logging out.
+    navigate("/", { replace: true });
   };
 
   return (
