@@ -135,7 +135,18 @@ a:focus-visible {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 0.10s cubic-bezier(0.2, 0.9, 0.2, 1),
+    box-shadow 0.14s ease,
+    background 0.14s ease,
+    filter 0.14s ease;
 }
 
 .icon-btn svg {
@@ -149,7 +160,28 @@ a:focus-visible {
 }
 
 .icon-btn:active {
-  transform: translateY(0);
+  transform: translateY(1px) scale(0.985);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+  filter: saturate(1.04);
+}
+
+.icon-btn::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(15, 118, 110, 0.18), transparent 60%);
+  opacity: 0;
+  transform: scale(0.55);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.icon-btn:active::after {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .notif-wrap {
@@ -1000,14 +1032,39 @@ a:focus-visible {
   padding: 10px 16px;
   border-radius: 14px;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 0.10s cubic-bezier(0.2, 0.9, 0.2, 1),
+    box-shadow 0.14s ease,
+    background 0.14s ease,
+    filter 0.14s ease;
 }
 
 .ghost {
   background: transparent;
   border: none;
   color: var(--ink);
-  transition: transform 0.12s ease, background 0.12s ease;
+  cursor: pointer;
+  padding: 10px 14px;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transform: translateZ(0);
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 0.10s cubic-bezier(0.2, 0.9, 0.2, 1),
+    box-shadow 0.14s ease,
+    background 0.14s ease,
+    filter 0.14s ease;
 }
 
 button {
@@ -1032,8 +1089,9 @@ select:focus-visible {
 }
 
 .primary:active {
-  transform: translateY(0);
-  box-shadow: none;
+  transform: translateY(1px) scale(0.985);
+  box-shadow: 0 6px 14px rgba(15, 118, 110, 0.22);
+  filter: saturate(1.04);
 }
 
 .ghost:hover {
@@ -1041,7 +1099,43 @@ select:focus-visible {
 }
 
 .ghost:active {
-  transform: translateY(0);
+  transform: translateY(1px) scale(0.985);
+  background: rgba(15, 118, 110, 0.12);
+  filter: saturate(1.04);
+}
+
+.primary::after,
+.ghost::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.35), transparent 60%);
+  opacity: 0;
+  transform: scale(0.55);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.primary:active::after,
+.ghost:active::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.primary:disabled,
+.ghost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.primary:disabled::after,
+.ghost:disabled::after {
+  opacity: 0 !important;
 }
 
 .link {
@@ -1376,6 +1470,49 @@ input, select {
   font-size: 12px;
   background: var(--panel-light);
   color: var(--muted);
+}
+
+button.pill,
+a.pill {
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  will-change: transform;
+  transition:
+    transform 0.10s cubic-bezier(0.2, 0.9, 0.2, 1),
+    background 0.14s ease,
+    filter 0.14s ease;
+}
+
+button.pill:active,
+a.pill:active {
+  transform: translateY(1px) scale(0.985);
+  filter: saturate(1.04);
+}
+
+button.pill::after,
+a.pill::after {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(15, 118, 110, 0.16), transparent 60%);
+  opacity: 0;
+  transform: scale(0.55);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+button.pill:active::after,
+a.pill:active::after {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .pill.success {
