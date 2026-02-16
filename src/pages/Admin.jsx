@@ -3,6 +3,13 @@ import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
 const DEFAULT_PAGE_SIZE = 50;
+const SERVICE_PROVIDER_OPTIONS = {
+  data: ["mtn", "glo", "airtel", "9mobile"],
+  airtime: ["mtn", "glo", "airtel", "9mobile"],
+  cable: ["dstv", "gotv", "startimes"],
+  electricity: ["ikeja", "eko", "abuja", "kano", "ibadan", "enugu", "portharcourt", "kaduna"],
+  exam: ["waec", "neco", "jamb"],
+};
 
 function statusKey(value) {
   return String(value || "").toLowerCase();
@@ -21,6 +28,10 @@ function typeLabel(value) {
   const key = String(value || "").toLowerCase();
   if (key === "wallet_fund") return "Wallet Fund";
   if (key === "data") return "Data";
+  if (key === "airtime") return "Airtime";
+  if (key === "cable") return "Cable";
+  if (key === "electricity") return "Electricity";
+  if (key === "exam") return "Exam";
   return String(value || "—");
 }
 
@@ -57,8 +68,10 @@ export default function Admin() {
   const [analytics, setAnalytics] = useState(null);
 
   // Pricing
-  const [pricingForm, setPricingForm] = useState({ network: "mtn", margin: 0 });
+  const [pricingForm, setPricingForm] = useState({ tx_type: "data", provider: "mtn", margin: 0 });
   const [pricingBusy, setPricingBusy] = useState(false);
+  const [pricingRules, setPricingRules] = useState([]);
+  const [pricingLoadBusy, setPricingLoadBusy] = useState(false);
 
   // Transactions
   const [txState, setTxState] = useState({ items: [], total: 0, page: 1, page_size: DEFAULT_PAGE_SIZE });
@@ -116,24 +129,46 @@ export default function Admin() {
     }
   };
 
+  const fetchPricingRules = async () => {
+    setPricingLoadBusy(true);
+    try {
+      const data = await apiFetch("/admin/pricing");
+      setPricingRules(Array.isArray(data?.items) ? data.items : []);
+    } catch (err) {
+      showToast(err?.message || "Failed to load pricing rules.", "error");
+    } finally {
+      setPricingLoadBusy(false);
+    }
+  };
+
   useEffect(() => {
     if (tab === "transactions" && txState.items.length === 0) fetchTransactions({ page: 1 });
     if (tab === "users" && userState.items.length === 0) fetchUsers({ page: 1 });
+    if (tab === "pricing" && pricingRules.length === 0) fetchPricingRules();
   }, [tab]);
 
   const updatePricing = async (e) => {
     e.preventDefault();
     setPricingBusy(true);
     try {
+      const txType = String(pricingForm.tx_type || "data").toLowerCase();
+      const provider = String(pricingForm.provider || "").trim().toLowerCase();
+      if (!provider) {
+        showToast("Provider/network is required.", "error");
+        return;
+      }
       await apiFetch("/admin/pricing", {
         method: "POST",
         body: JSON.stringify({
-          network: pricingForm.network,
+          tx_type: txType,
+          provider,
+          network: provider,
           role: "user",
           margin: Number(pricingForm.margin),
         }),
       });
       showToast("Pricing updated.", "success");
+      fetchPricingRules();
     } catch (err) {
       showToast(err?.message || "Pricing update failed.", "error");
     } finally {
@@ -270,6 +305,23 @@ export default function Admin() {
               <div className="muted">From current base prices</div>
             </div>
             <div className="card stat-card">
+              <div className="label">Service Revenue</div>
+              <div className="value">₦ {analytics?.service_revenue || 0}</div>
+              <div className="muted">Airtime, cable, electricity, exam</div>
+            </div>
+          </div>
+          <div className="grid-3" style={{ marginTop: 16 }}>
+            <div className="card stat-card">
+              <div className="label">Service Cost (Est.)</div>
+              <div className="value">₦ {analytics?.service_cost_estimate || 0}</div>
+              <div className="muted">From service base amounts</div>
+            </div>
+            <div className="card stat-card">
+              <div className="label">Service Profit (Est.)</div>
+              <div className="value">₦ {analytics?.service_profit_estimate || 0}</div>
+              <div className="muted">Revenue minus base estimate</div>
+            </div>
+            <div className="card stat-card">
               <div className="label">API Success</div>
               <div className="value">{analytics?.api_success || 0}</div>
               <div className="muted">Provider deliveries</div>
@@ -329,6 +381,10 @@ export default function Admin() {
               >
                 <option value="">All Types</option>
                 <option value="data">Data</option>
+                <option value="airtime">Airtime</option>
+                <option value="cable">Cable</option>
+                <option value="electricity">Electricity</option>
+                <option value="exam">Exam</option>
                 <option value="wallet_fund">Wallet Fund</option>
               </select>
               <button
@@ -555,11 +611,46 @@ export default function Admin() {
             <h3>Pricing Rules</h3>
             <form onSubmit={updatePricing} className="form-grid">
               <label>
-                Network
-                <input
-                  value={pricingForm.network}
-                  onChange={(e) => setPricingForm({ ...pricingForm, network: e.target.value })}
-                />
+                Service Type
+                <select
+                  value={pricingForm.tx_type}
+                  onChange={(e) => {
+                    const nextType = e.target.value;
+                    const defaults = SERVICE_PROVIDER_OPTIONS[nextType] || [];
+                    setPricingForm({
+                      ...pricingForm,
+                      tx_type: nextType,
+                      provider: defaults[0] || "",
+                    });
+                  }}
+                >
+                  <option value="data">Data</option>
+                  <option value="airtime">Airtime</option>
+                  <option value="cable">Cable</option>
+                  <option value="electricity">Electricity</option>
+                  <option value="exam">Exam</option>
+                </select>
+              </label>
+              <label>
+                Provider / Network
+                {Array.isArray(SERVICE_PROVIDER_OPTIONS[pricingForm.tx_type]) &&
+                SERVICE_PROVIDER_OPTIONS[pricingForm.tx_type].length > 0 ? (
+                  <select
+                    value={pricingForm.provider}
+                    onChange={(e) => setPricingForm({ ...pricingForm, provider: e.target.value })}
+                  >
+                    {SERVICE_PROVIDER_OPTIONS[pricingForm.tx_type].map((item) => (
+                      <option key={item} value={item}>
+                        {String(item).toUpperCase()}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    value={pricingForm.provider}
+                    onChange={(e) => setPricingForm({ ...pricingForm, provider: e.target.value })}
+                  />
+                )}
               </label>
               <label>
                 Margin (₦)
@@ -574,7 +665,47 @@ export default function Admin() {
               </button>
             </form>
             <div className="muted">
-              Tip: set a margin per network for normal users (reseller pricing is disabled for now).
+              Tip: margin applies to user charge amount (base amount + margin). Reseller pricing stays disabled.
+            </div>
+            <div className="section-head" style={{ marginTop: 16 }}>
+              <h3>Configured Rules</h3>
+              <button className="ghost" type="button" onClick={fetchPricingRules} disabled={pricingLoadBusy}>
+                {pricingLoadBusy ? "Refreshing..." : "Refresh"}
+              </button>
+            </div>
+            <div className="admin-table-wrap">
+              <table className="admin-table" aria-label="Pricing rules">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Provider</th>
+                    <th>Role</th>
+                    <th>Margin</th>
+                    <th>Key</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pricingRules
+                    .filter((r) => String(r.role || "").toLowerCase() === "user")
+                    .map((rule) => (
+                      <tr key={rule.id}>
+                        <td>{typeLabel(rule.tx_type)}</td>
+                        <td>{rule.provider || rule.network}</td>
+                        <td>{String(rule.role || "").toUpperCase()}</td>
+                        <td className="mono">₦ {formatMoney(rule.margin)}</td>
+                        <td className="mono">{rule.network}</td>
+                      </tr>
+                    ))}
+                  {!pricingLoadBusy &&
+                    pricingRules.filter((r) => String(r.role || "").toLowerCase() === "user").length === 0 && (
+                      <tr>
+                        <td colSpan={5}>
+                          <div className="empty">No pricing rules yet.</div>
+                        </td>
+                      </tr>
+                    )}
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
