@@ -1,4 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000/api/v1";
+const API_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 12000);
+const AUTH_PROFILE_RETRIES = Number(import.meta.env.VITE_AUTH_PROFILE_RETRIES || 2);
+const RETRY_BASE_DELAY_MS = Number(import.meta.env.VITE_API_RETRY_BASE_DELAY_MS || 450);
 const TOKEN_KEY = "vtu_access_token";
 const SESSION_KEY = "vtu_access_token_session";
 const REFRESH_KEY = "vtu_refresh_token";
@@ -87,6 +90,30 @@ function makeError(message, code) {
   return error;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function fetchWithTimeout(url, options = {}, timeoutMs = API_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), Math.max(1000, Number(timeoutMs) || 12000));
+  const next = { ...options, signal: controller.signal };
+  return fetch(url, next).finally(() => clearTimeout(timer));
+}
+
+function isAuthProfilePath(path) {
+  return path === "/auth/me" || path === "/auth/login" || path === "/auth/refresh";
+}
+
+function emitRetryEvent(path, attempt, maxAttempts, reason) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent("api:retry", {
+      detail: { path, attempt, maxAttempts, reason },
+    })
+  );
+}
+
 async function refreshAccessToken() {
   if (refreshInFlight) return refreshInFlight;
 
@@ -99,7 +126,7 @@ async function refreshAccessToken() {
     !!localStorage.getItem(TOKEN_KEY) || !!localStorage.getItem(REFRESH_KEY);
 
   refreshInFlight = (async () => {
-    const res = await fetch(`${API_BASE}/auth/refresh`, {
+    const res = await fetchWithTimeout(`${API_BASE}/auth/refresh`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh_token: refreshToken }),
@@ -118,32 +145,74 @@ async function refreshAccessToken() {
 }
 
 export async function apiFetch(path, options = {}) {
-  const headers = { ...(options.headers || {}) };
+  const {
+    _retry = false,
+    _suppressRetryToast = false,
+    ...requestOptions
+  } = options;
+  const headers = { ...(requestOptions.headers || {}) };
+  const method = String(requestOptions.method || "GET").toUpperCase();
   const token = getToken();
   if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
-  if (!headers["Content-Type"] && options.body) headers["Content-Type"] = "application/json";
+  if (!headers["Content-Type"] && requestOptions.body) headers["Content-Type"] = "application/json";
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-  const isRetry = options._retry === true;
+  const maxAttempts = isAuthProfilePath(path) ? Math.max(1, AUTH_PROFILE_RETRIES + 1) : 1;
+  let attempt = 0;
+  const url = `${API_BASE}${path}`;
   const refreshablePath = path !== "/auth/login" && path !== "/auth/refresh";
-  if (res.status === 401 && refreshablePath && !isRetry) {
+
+  while (attempt < maxAttempts) {
+    attempt += 1;
+    let res;
     try {
-      await refreshAccessToken();
-      return apiFetch(path, { ...options, _retry: true });
+      res = await fetchWithTimeout(url, { ...requestOptions, headers });
     } catch (err) {
-      clearToken();
+      const timedOut = err?.name === "AbortError";
+      const retryableNetworkError =
+        timedOut || err?.name === "TypeError" || /NetworkError/i.test(String(err?.message || ""));
+      if (retryableNetworkError && attempt < maxAttempts) {
+        if (!_suppressRetryToast) {
+          emitRetryEvent(path, attempt, maxAttempts, timedOut ? "timeout" : "network");
+        }
+        await sleep(RETRY_BASE_DELAY_MS * attempt);
+        continue;
+      }
+      if (timedOut) {
+        throw makeError("Request timed out. Please try again.");
+      }
       throw err;
     }
+
+    if (res.status === 401 && refreshablePath && !_retry) {
+      try {
+        await refreshAccessToken();
+        return apiFetch(path, { ...requestOptions, _retry: true, _suppressRetryToast: true });
+      } catch (err) {
+        clearToken();
+        throw err;
+      }
+    }
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const message = parseError(data);
+      const retryableStatus = res.status === 503 || res.status === 502 || res.status === 504 || res.status === 429;
+      if (retryableStatus && attempt < maxAttempts) {
+        if (!_suppressRetryToast) {
+          emitRetryEvent(path, attempt, maxAttempts, `http_${res.status}`);
+        }
+        await sleep(RETRY_BASE_DELAY_MS * attempt);
+        continue;
+      }
+      if (res.status === 401 && refreshablePath) {
+        clearToken();
+        throw makeError(message || "Session expired. Please log in again.", AUTH_EXPIRED);
+      }
+      throw makeError(message);
+    }
+
+    return data;
   }
 
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const message = parseError(data);
-    if (res.status === 401 && refreshablePath) {
-      clearToken();
-      throw makeError(message || "Session expired. Please log in again.", AUTH_EXPIRED);
-    }
-    throw makeError(message);
-  }
-  return data;
+  throw makeError(`Service is busy. Please try again in a moment. [${method} ${path}]`);
 }
