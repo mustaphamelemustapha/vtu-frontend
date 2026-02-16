@@ -1,34 +1,73 @@
-import { useEffect, useState } from "react";
-import { apiFetch, getAuthPersisted, getProfile, setAuthPersisted, setProfile } from "../services/api";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiFetch, getProfile, setProfile } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
-export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleTheme, canInstall, onInstall }) {
+const PHONE_KEY = "axisvtu_profile_phone";
+const JOINED_LABEL_KEY = "axisvtu_joined_label";
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || "1.0.0";
+
+function roleLabel(role) {
+  const raw = String(role || "user").toLowerCase();
+  if (raw === "admin") return "Admin";
+  if (raw === "reseller") return "Reseller";
+  return "User";
+}
+
+function getJoinedLabel() {
+  const existing = localStorage.getItem(JOINED_LABEL_KEY);
+  if (existing) return existing;
+  const now = new Date();
+  const month = now.toLocaleString("en-US", { month: "short" });
+  const label = `${month}, ${now.getFullYear()}`;
+  localStorage.setItem(JOINED_LABEL_KEY, label);
+  return label;
+}
+
+const AccountIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="1.7" />
+  </svg>
+);
+
+const SecurityIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 3l8 3v6c0 4.4-3 7.7-8 9-5-1.3-8-4.6-8-9V6l8-3z" stroke="currentColor" strokeWidth="1.7" />
+  </svg>
+);
+
+const AboutIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M12 10v6M12 7.2h.01" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+  </svg>
+);
+
+const HelpIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M9.5 9.5a2.6 2.6 0 1 1 4.3 2c-.7.6-1.5 1.1-1.8 2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    <path d="M12 17.3h.01" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+  </svg>
+);
+
+export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
+  const navigate = useNavigate();
+  const { showToast } = useToast();
   const [profile, setProfileState] = useState(getProfile());
-  const [loading, setLoading] = useState(false);
-  const [editMode, setEditMode] = useState(false);
+  const [joinedLabel] = useState(getJoinedLabel());
+  const [phoneNumber, setPhoneNumber] = useState(localStorage.getItem(PHONE_KEY) || "");
+  const [fullName, setFullName] = useState(getProfile()?.full_name || "");
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [securityOpen, setSecurityOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [pwForm, setPwForm] = useState({ current_password: "", new_password: "" });
-  const [persisted, setPersisted] = useState(getAuthPersisted());
-  const [exporting, setExporting] = useState(false);
-  const [installHelpOpen, setInstallHelpOpen] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
-  const { showToast } = useToast();
-  const [prefs, setPrefs] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("vtu_prefs") || "{}");
-    } catch {
-      return {};
-    }
-  });
-
-  const initials = (profile.full_name || "User")
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 
   useEffect(() => {
     apiFetch("/auth/me")
@@ -36,57 +75,52 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
         const next = { full_name: data.full_name, email: data.email, role: data.role };
         setProfile(next);
         setProfileState(next);
+        setFullName(next.full_name || "");
         onProfileUpdate?.(next);
       })
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    // Detect PWA standalone mode (iOS + modern browsers).
-    const check = () => {
-      try {
-        const standalone =
-          window.matchMedia?.("(display-mode: standalone)")?.matches ||
-          window.navigator?.standalone === true;
-        setIsStandalone(!!standalone);
-      } catch {
-        setIsStandalone(false);
-      }
-    };
-    check();
-    window.addEventListener?.("visibilitychange", check);
-    return () => window.removeEventListener?.("visibilitychange", check);
-  }, []);
+  const initials = useMemo(() => {
+    return (profile.full_name || "User")
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }, [profile.full_name]);
 
-  const savePrefs = (next) => {
-    setPrefs(next);
-    localStorage.setItem("vtu_prefs", JSON.stringify(next));
-  };
+  const saveAccountDetails = async () => {
+    const nextName = String(fullName || "").trim();
+    const nextPhone = String(phoneNumber || "").replace(/\D/g, "");
+    if (nextName.length < 2) {
+      showToast("Full name is too short.", "error");
+      return;
+    }
+    if (nextPhone && (nextPhone.length < 10 || nextPhone.length > 15)) {
+      showToast("Phone number must be 10 to 15 digits.", "error");
+      return;
+    }
 
-  const updateProfile = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     try {
-      const payload = { full_name: (profile.full_name || "").trim() };
-      if (!payload.full_name) {
-        showToast("Full name is required.", "error");
-        return;
-      }
       const data = await apiFetch("/auth/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ full_name: nextName }),
       });
-      const next = { full_name: data.full_name, email: data.email, role: data.role };
-      setProfile(next);
-      setProfileState(next);
-      onProfileUpdate?.(next);
-      showToast("Profile updated.", "success");
-      setEditMode(false);
+      const nextProfile = { full_name: data.full_name, email: data.email, role: data.role };
+      setProfile(nextProfile);
+      setProfileState(nextProfile);
+      setPhoneNumber(nextPhone);
+      localStorage.setItem(PHONE_KEY, nextPhone);
+      onProfileUpdate?.(nextProfile);
+      showToast("Account details saved.", "success");
     } catch (err) {
-      showToast(err?.message || "Profile update failed.", "error");
+      showToast(err?.message || "Unable to save details.", "error");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -107,9 +141,9 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(pwForm),
       });
-      showToast("Password updated.", "success");
-      setPwOpen(false);
       setPwForm({ current_password: "", new_password: "" });
+      setPwOpen(false);
+      showToast("Password changed.", "success");
     } catch (err) {
       showToast(err?.message || "Password update failed.", "error");
     } finally {
@@ -117,357 +151,209 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
     }
   };
 
-  const logout = () => {
-    onLogout?.();
-  };
-
-  const copyText = async (value, label = "Copied") => {
+  const deleteAccount = async () => {
+    const confirmed = window.confirm("Delete this account? You will be logged out immediately.");
+    if (!confirmed) return;
+    setDeleting(true);
     try {
-      await navigator.clipboard?.writeText(String(value || ""));
-      showToast(`${label}.`, "success");
-    } catch {
-      showToast("Copy failed.", "error");
-    }
-  };
-
-  const togglePersisted = (next) => {
-    try {
-      setAuthPersisted(!!next);
-      setPersisted(!!next);
-      showToast(next ? "Keep me signed in enabled." : "Keep me signed in disabled.", "success");
-    } catch {
-      showToast("Unable to update session preference.", "error");
-    }
-  };
-
-  const installApp = async () => {
-    if (isStandalone) {
-      showToast("AxisVTU is already installed.", "info");
-      return;
-    }
-
-    // Chrome/Edge/Android: we can prompt only if beforeinstallprompt is available.
-    if (canInstall && onInstall) {
-      const res = await onInstall();
-      if (res?.outcome === "accepted") showToast("AxisVTU installed.", "success");
-      else if (res?.outcome === "dismissed") showToast("Install dismissed.", "info");
-      else showToast("Install unavailable.", "info");
-      return;
-    }
-
-    // iOS Safari and some browsers: cannot prompt; show "Add to Home Screen" instructions.
-    setInstallHelpOpen(true);
-  };
-
-  const platformHint = (() => {
-    const ua = String(navigator?.userAgent || "");
-    const isIOS = /iPhone|iPad|iPod/i.test(ua);
-    const isAndroid = /Android/i.test(ua);
-    const isSafari = isIOS && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
-    return { isIOS, isAndroid, isSafari };
-  })();
-
-  const exportTransactions = async () => {
-    setExporting(true);
-    try {
-      const txs = await apiFetch("/transactions/me");
-      const rows = Array.isArray(txs) ? txs : [];
-      if (rows.length === 0) {
-        showToast("No transactions to export yet.", "info");
-        return;
-      }
-
-      const columns = [
-        "reference",
-        "tx_type",
-        "status",
-        "amount",
-        "network",
-        "data_plan_code",
-        "external_reference",
-        "failure_reason",
-        "created_at",
-      ].filter((k) => rows.some((r) => r && r[k] != null && String(r[k]).trim() !== ""));
-
-      const esc = (v) => {
-        const s = String(v ?? "");
-        if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-        return s;
-      };
-
-      const csv = [
-        columns.join(","),
-        ...rows.map((r) => columns.map((c) => esc(r?.[c])).join(",")),
-      ].join("\n");
-
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const stamp = new Date().toISOString().slice(0, 10);
-      a.href = url;
-      a.download = `axisvtu-transactions-${stamp}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      showToast("Transactions exported.", "success");
+      await apiFetch("/auth/delete-me", { method: "DELETE" });
+      showToast("Account deleted.", "success");
+      onLogout?.();
     } catch (err) {
-      showToast(err?.message || "Export failed.", "error");
+      showToast(err?.message || "Unable to delete account.", "error");
     } finally {
-      setExporting(false);
-    }
-  };
-
-  const clearDeviceData = () => {
-    try {
-      localStorage.removeItem("vtu_last_recipient");
-      localStorage.removeItem("vtu_last_fund");
-      localStorage.removeItem("vtu_prefs");
-      localStorage.removeItem("vtu_onboarded");
-      setPrefs({});
-      showToast("Saved device data cleared.", "success");
-    } catch {
-      showToast("Unable to clear device data.", "error");
+      setDeleting(false);
     }
   };
 
   return (
-    <div className="page">
+    <div className="page profile-ux">
       <section className="section">
-        <div className="card profile-card">
-          <div className="profile-head">
-            <div className="profile-avatar">{initials}</div>
-            <div>
-              <div className="profile-name">{profile.full_name || "User"}</div>
-              <div className="muted">{profile.email || "email@example.com"}</div>
-            </div>
-            <div className="profile-actions">
-              <button className="ghost" type="button" onClick={() => copyText(profile.email || "", "Email copied")}>
-                Copy Email
-              </button>
-              <button className="ghost" type="button" onClick={() => setEditMode(!editMode)}>
-                {editMode ? "Cancel" : "Edit"}
-              </button>
-              <button className="primary" type="button" onClick={updateProfile} disabled={loading || !editMode}>
-                {loading ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </div>
-          <div className="info-grid">
-            <div className="info-card">
-              <div className="label">Role</div>
-              <div className="value">{(profile.role || "User").toString()}</div>
-            </div>
-            <div className="info-card">
-              <div className="label">Status</div>
-              <div className="value">Active</div>
-            </div>
-            <div className="info-card">
-              <div className="label">Member Since</div>
-              <div className="value">2026</div>
-            </div>
-          </div>
-          <form className="form-grid">
-            <label>
-              Full name
-              <input
-                value={profile.full_name || ""}
-                onChange={(e) => setProfileState({ ...profile, full_name: e.target.value })}
-                placeholder="Full name"
-                disabled={!editMode}
-              />
-            </label>
-            <label>
-              Email
-              <input
-                value={profile.email || ""}
-                placeholder="Email address"
-                type="email"
-                disabled
-              />
-            </label>
-          </form>
+        <div className="profile-ux-topbar card">
+          <button className="ghost profile-ux-back" type="button" onClick={() => navigate("/")}>
+            ← Back
+          </button>
+          <button className="ghost profile-ux-gear" type="button" onClick={() => onToggleTheme?.()}>
+            ⚙
+          </button>
         </div>
       </section>
 
       <section className="section">
-        <div className="card">
-          <h3>Preferences</h3>
-          <div className="settings-grid">
-            <div className="setting-row">
-              <div>
-                <div className="label">Dark Mode</div>
-                <div className="muted">Switch between light and dark theme.</div>
-              </div>
-              <label className="switch">
-                <input type="checkbox" checked={!!darkMode} onChange={() => onToggleTheme?.()} />
-                <span className="slider" />
-              </label>
+        <div className="card profile-ux-user-card">
+          <div className="profile-ux-user-avatar">{initials}</div>
+          <div>
+            <div className="profile-ux-user-name">{profile.full_name || "User"}</div>
+            <div className="muted">Joined {joinedLabel}</div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="profile-ux-menu">
+          <button className="card profile-ux-menu-item" type="button" onClick={() => setAccountOpen(true)}>
+            <span className="profile-ux-menu-left">
+              <span className="profile-ux-icon"><AccountIcon /></span>
+              <span>Account</span>
+            </span>
+            <span className="profile-ux-chevron">›</span>
+          </button>
+
+          <button className="card profile-ux-menu-item" type="button" onClick={() => setSecurityOpen(true)}>
+            <span className="profile-ux-menu-left">
+              <span className="profile-ux-icon"><SecurityIcon /></span>
+              <span>Security</span>
+            </span>
+            <span className="profile-ux-chevron">›</span>
+          </button>
+
+          <button className="card profile-ux-menu-item" type="button" onClick={() => setAboutOpen(true)}>
+            <span className="profile-ux-menu-left">
+              <span className="profile-ux-icon"><AboutIcon /></span>
+              <span>About</span>
+            </span>
+            <span className="profile-ux-chevron">›</span>
+          </button>
+
+          <button className="card profile-ux-menu-item" type="button" onClick={() => setHelpOpen(true)}>
+            <span className="profile-ux-menu-left">
+              <span className="profile-ux-icon"><HelpIcon /></span>
+              <span>Help</span>
+            </span>
+            <span className="profile-ux-chevron">›</span>
+          </button>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card profile-ux-credit">
+          <div className="muted">Designed by</div>
+          <div className="profile-ux-brand">
+            <img src="/brand/mmtechglobe-logo.svg" alt="MMTechGlobe" />
+            <span>MMTechGlobe</span>
+          </div>
+          <div className="profile-ux-cac">
+            <img src="/brand/cac-logo.svg" alt="Certified by CAC" />
+            <span>Certified by CAC</span>
+          </div>
+        </div>
+      </section>
+
+      {accountOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal modal-receipt">
+            <div className="modal-head">
+              <h3>Account</h3>
+              <button className="ghost" type="button" onClick={() => setAccountOpen(false)}>Close</button>
             </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">Notifications</div>
-                <div className="muted">Product updates and payments</div>
-              </div>
-              <label className="switch">
+            <div className="form-grid">
+              <label>
+                Full Name
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </label>
+              <label>
+                Phone Number
                 <input
-                  type="checkbox"
-                  checked={!!prefs.notifications}
-                  onChange={(e) => savePrefs({ ...prefs, notifications: e.target.checked })}
+                  value={phoneNumber}
+                  inputMode="numeric"
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="08012345678"
                 />
-                <span className="slider" />
               </label>
-            </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">Security Alerts</div>
-                <div className="muted">Login and password changes</div>
-              </div>
-              <label className="switch">
-                <input
-                  type="checkbox"
-                  checked={!!prefs.security_alerts}
-                  onChange={(e) => savePrefs({ ...prefs, security_alerts: e.target.checked })}
-                />
-                <span className="slider" />
+              <label>
+                Account Type
+                <input value={roleLabel(profile.role)} disabled />
               </label>
-            </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">Keep me signed in</div>
-                <div className="muted">Use this on your personal device only.</div>
+              <div className="modal-actions">
+                <button className="primary" type="button" onClick={saveAccountDetails} disabled={saving}>
+                  {saving ? "Saving..." : "Save Details"}
+                </button>
+                <button className="ghost danger" type="button" onClick={deleteAccount} disabled={deleting}>
+                  {deleting ? "Deleting..." : "Delete Account"}
+                </button>
               </div>
-              <label className="switch">
-                <input type="checkbox" checked={!!persisted} onChange={(e) => togglePersisted(e.target.checked)} />
-                <span className="slider" />
-              </label>
             </div>
           </div>
         </div>
-      </section>
+      )}
 
-      <section className="section">
-        <div className="card">
-          <h3>Tools</h3>
-          <div className="settings-grid">
-            <div className="setting-row">
-              <div>
-                <div className="label">Export Transactions</div>
-                <div className="muted">Download your transaction history as CSV.</div>
-              </div>
-              <button className="ghost" type="button" onClick={exportTransactions} disabled={exporting}>
-                {exporting ? "Exporting..." : "Export CSV"}
-              </button>
+      {securityOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal modal-receipt">
+            <div className="modal-head">
+              <h3>Security</h3>
+              <button className="ghost" type="button" onClick={() => setSecurityOpen(false)}>Close</button>
             </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">Install App</div>
-                <div className="muted">Add AxisVTU to your home screen.</div>
+            <div className="settings-grid">
+              <div className="setting-row">
+                <div>
+                  <div className="label">Change Password</div>
+                  <div className="muted">Update your password anytime.</div>
+                </div>
+                <button className="primary" type="button" onClick={() => setPwOpen(true)}>
+                  Change
+                </button>
               </div>
-              <button className="ghost" type="button" onClick={installApp}>
-                {isStandalone ? "Installed" : "Add to Home Screen"}
-              </button>
-            </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">Clear saved device data</div>
-                <div className="muted">Resets onboarding and saved form preferences.</div>
+              <div className="setting-row">
+                <div>
+                  <div className="label">Logout</div>
+                  <div className="muted">Sign out of this session.</div>
+                </div>
+                <button className="ghost" type="button" onClick={onLogout}>Logout</button>
               </div>
-              <button className="ghost danger" type="button" onClick={clearDeviceData}>
-                Clear
-              </button>
             </div>
           </div>
         </div>
-      </section>
+      )}
 
-      <section className="section">
-        <div className="card">
-          <h3>Legal & Compliance</h3>
-          <div className="settings-grid">
-            <div className="setting-row">
-              <div>
-                <div className="label">Terms of Service</div>
-                <div className="muted">Usage terms that govern your account and transactions.</div>
-              </div>
-              <a className="ghost legal-link-btn" href="/landing/terms.html" target="_blank" rel="noreferrer">
-                Open
-              </a>
+      {aboutOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal modal-receipt">
+            <div className="modal-head">
+              <h3>About</h3>
+              <button className="ghost" type="button" onClick={() => setAboutOpen(false)}>Close</button>
             </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">Privacy Policy</div>
-                <div className="muted">How AxisVTU collects, uses, stores, and protects your data.</div>
-              </div>
-              <a className="ghost legal-link-btn" href="/landing/privacy.html" target="_blank" rel="noreferrer">
-                Open
-              </a>
-            </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">Refund Policy</div>
-                <div className="muted">Rules for failed transactions, reversals, and dispute handling.</div>
-              </div>
-              <a className="ghost legal-link-btn" href="/landing/refund-policy.html" target="_blank" rel="noreferrer">
-                Open
-              </a>
-            </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">KYC/AML Policy</div>
-                <div className="muted">Identity and anti-fraud controls for compliant platform operations.</div>
-              </div>
-              <a className="ghost legal-link-btn" href="/landing/kyc-aml.html" target="_blank" rel="noreferrer">
-                Open
-              </a>
+            <div className="profile-ux-about-card">
+              <div className="label">App Version</div>
+              <div className="value">{APP_VERSION}</div>
             </div>
           </div>
         </div>
-      </section>
+      )}
 
-      <section className="section">
-        <div className="card">
-          <h3>Security</h3>
-          <div className="settings-grid">
-            <div className="setting-row">
-              <div>
-                <div className="label">Password</div>
-                <div className="muted">Use strong passwords to keep your account safe.</div>
-              </div>
-              <button className="ghost" type="button" onClick={() => setPwOpen(true)}>
-                Change Password
-              </button>
+      {helpOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal modal-receipt">
+            <div className="modal-head">
+              <h3>Help</h3>
+              <button className="ghost" type="button" onClick={() => setHelpOpen(false)}>Close</button>
             </div>
-            <div className="setting-row">
-              <div>
-                <div className="label">Logout</div>
-                <div className="muted">End your current session.</div>
+            <div className="form-grid">
+              <div className="notice">
+                Need support? Email us at <a href="mailto:mmtechglobe@gmail.com">mmtechglobe@gmail.com</a>
               </div>
-              <button className="primary" type="button" onClick={logout}>
-                Logout
-              </button>
+              <a className="ghost legal-link-btn" href="/landing/terms.html" target="_blank" rel="noreferrer">Terms</a>
+              <a className="ghost legal-link-btn" href="/landing/privacy.html" target="_blank" rel="noreferrer">Privacy</a>
+              <a className="ghost legal-link-btn" href="/landing/refund-policy.html" target="_blank" rel="noreferrer">Refund Policy</a>
             </div>
           </div>
         </div>
-      </section>
+      )}
 
       {pwOpen && (
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal modal-receipt">
             <div className="modal-head">
               <h3>Change Password</h3>
-              <button className="icon-btn" aria-label="Close" onClick={() => setPwOpen(false)}>
-                X
-              </button>
+              <button className="ghost" type="button" onClick={() => setPwOpen(false)}>Close</button>
             </div>
-            <form onSubmit={submitPassword} className="form-grid">
+            <form className="form-grid" onSubmit={submitPassword}>
               <label>
                 Current password
                 <input
                   type="password"
                   value={pwForm.current_password}
                   onChange={(e) => setPwForm({ ...pwForm, current_password: e.target.value })}
-                  placeholder="Current password"
                   autoComplete="current-password"
                 />
               </label>
@@ -477,7 +363,6 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
                   type="password"
                   value={pwForm.new_password}
                   onChange={(e) => setPwForm({ ...pwForm, new_password: e.target.value })}
-                  placeholder="New password (min 8 chars)"
                   autoComplete="new-password"
                 />
               </label>
@@ -490,52 +375,6 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {installHelpOpen && (
-        <div className="modal-backdrop" role="dialog" aria-modal="true">
-          <div className="modal modal-receipt">
-            <div className="modal-head">
-              <div>
-                <div className="label">Install</div>
-                <h3>Add AxisVTU to your home screen</h3>
-              </div>
-              <button className="ghost" type="button" onClick={() => setInstallHelpOpen(false)}>
-                Close
-              </button>
-            </div>
-            <div className="modal-body">
-              {platformHint.isIOS && platformHint.isSafari && (
-                <div className="notice">
-                  On iPhone Safari: tap the Share button, then select "Add to Home Screen".
-                </div>
-              )}
-              {platformHint.isIOS && !platformHint.isSafari && (
-                <div className="notice">
-                  On iPhone: open this site in Safari to use "Add to Home Screen".
-                </div>
-              )}
-              {platformHint.isAndroid && (
-                <div className="notice">
-                  On Android Chrome: open the browser menu and tap "Install app" or "Add to Home screen".
-                </div>
-              )}
-              {!platformHint.isIOS && !platformHint.isAndroid && (
-                <div className="notice">
-                  Use your browser menu and select "Install app" or "Add to Home screen".
-                </div>
-              )}
-              <div className="hint">
-                Note: Some browsers don’t allow automatic install prompts. This is a browser restriction, not an app issue.
-              </div>
-            </div>
-            <div className="modal-actions">
-              <button className="primary" type="button" onClick={() => setInstallHelpOpen(false)}>
-                Got it
-              </button>
-            </div>
           </div>
         </div>
       )}
