@@ -9,6 +9,7 @@ export default function Airtime() {
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
   const [form, setForm] = useState({ network: "mtn", phone_number: "", amount: 200 });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
 
@@ -17,23 +18,42 @@ export default function Airtime() {
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
   }, []);
 
+  const validate = () => {
+    const nextErrors = {};
+    const network = String(form.network || "").trim().toLowerCase();
+    const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
+    const amount = Number(form.amount);
+
+    if (!network) nextErrors.network = "Select a network.";
+    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
+      nextErrors.phone_number = "Enter a valid phone number.";
+    }
+    if (!Number.isFinite(amount) || amount < 50) {
+      nextErrors.amount = "Minimum airtime amount is ₦50.";
+    } else if (amount > 500000) {
+      nextErrors.amount = "Maximum airtime amount is ₦500,000.";
+    }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return null;
+    return { network, phone_number: phoneNumber, amount };
+  };
+
   const buy = async (e) => {
     e.preventDefault();
+    const payload = validate();
+    if (!payload) return;
     setLoading(true);
     try {
       const res = await apiFetch("/services/airtime/purchase", {
         method: "POST",
-        body: JSON.stringify({
-          network: form.network,
-          phone_number: form.phone_number,
-          amount: Number(form.amount),
-        }),
+        body: JSON.stringify(payload),
       });
       setSuccess({
         reference: res.reference,
-        network: form.network,
-        phone: form.phone_number,
-        amount: form.amount,
+        network: payload.network,
+        phone: payload.phone_number,
+        amount: payload.amount,
       });
       showToast("Airtime successful.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
@@ -67,32 +87,49 @@ export default function Airtime() {
             <span className="muted">Balance: ₦ {wallet?.balance || "0.00"}</span>
           </div>
           <form className="form-grid" onSubmit={buy}>
-            <label>
+            <label className={errors.network ? "field-error" : ""}>
               Network
-              <select value={form.network} onChange={(e) => setForm({ ...form, network: e.target.value })}>
+              <select
+                value={form.network}
+                onChange={(e) => {
+                  setForm({ ...form, network: e.target.value });
+                  if (errors.network) setErrors((prev) => ({ ...prev, network: "" }));
+                }}
+              >
                 {networks.map((n) => (
                   <option key={n} value={n}>{String(n).toUpperCase()}</option>
                 ))}
               </select>
+              {errors.network && <div className="error inline">{errors.network}</div>}
             </label>
-            <label>
+            <label className={errors.phone_number ? "field-error" : ""}>
               Phone Number
               <input
                 placeholder="08012345678"
                 value={form.phone_number}
-                onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
+                inputMode="numeric"
+                autoComplete="tel"
+                onChange={(e) => {
+                  setForm({ ...form, phone_number: e.target.value });
+                  if (errors.phone_number) setErrors((prev) => ({ ...prev, phone_number: "" }));
+                }}
                 required
               />
+              {errors.phone_number && <div className="error inline">{errors.phone_number}</div>}
             </label>
-            <label>
+            <label className={errors.amount ? "field-error" : ""}>
               Amount (₦)
               <input
                 type="number"
                 min="50"
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, amount: e.target.value });
+                  if (errors.amount) setErrors((prev) => ({ ...prev, amount: "" }));
+                }}
                 required
               />
+              {errors.amount && <div className="error inline">{errors.amount}</div>}
             </label>
             <button className="primary" type="submit" disabled={loading}>
               {loading ? "Processing..." : "Buy Airtime"}
@@ -136,4 +173,3 @@ export default function Airtime() {
     </div>
   );
 }
-

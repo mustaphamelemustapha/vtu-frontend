@@ -9,6 +9,7 @@ export default function Cable() {
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
   const [form, setForm] = useState({ provider: "dstv", smartcard_number: "", package_code: "basic", amount: 5000 });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
 
@@ -17,25 +18,52 @@ export default function Cable() {
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
   }, []);
 
+  const validate = () => {
+    const nextErrors = {};
+    const provider = String(form.provider || "").trim().toLowerCase();
+    const smartcardNumber = String(form.smartcard_number || "").replace(/\s+/g, "");
+    const packageCode = String(form.package_code || "").trim().toLowerCase();
+    const amount = Number(form.amount);
+
+    if (!provider) nextErrors.provider = "Select a provider.";
+    if (!/^[a-zA-Z0-9]{5,20}$/.test(smartcardNumber)) {
+      nextErrors.smartcard_number = "Use 5-20 letters/numbers for smartcard.";
+    }
+    if (packageCode.length < 2 || packageCode.length > 64) {
+      nextErrors.package_code = "Enter a valid package code.";
+    }
+    if (!Number.isFinite(amount) || amount < 500) {
+      nextErrors.amount = "Minimum cable amount is ₦500.";
+    } else if (amount > 500000) {
+      nextErrors.amount = "Maximum cable amount is ₦500,000.";
+    }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return null;
+    return {
+      provider,
+      smartcard_number: smartcardNumber,
+      package_code: packageCode,
+      amount,
+    };
+  };
+
   const buy = async (e) => {
     e.preventDefault();
+    const payload = validate();
+    if (!payload) return;
     setLoading(true);
     try {
       const res = await apiFetch("/services/cable/purchase", {
         method: "POST",
-        body: JSON.stringify({
-          provider: form.provider,
-          smartcard_number: form.smartcard_number,
-          package_code: form.package_code,
-          amount: Number(form.amount),
-        }),
+        body: JSON.stringify(payload),
       });
       setSuccess({
         reference: res.reference,
-        provider: form.provider,
-        smartcard: form.smartcard_number,
-        package_code: form.package_code,
-        amount: form.amount,
+        provider: payload.provider,
+        smartcard: payload.smartcard_number,
+        package_code: payload.package_code,
+        amount: payload.amount,
       });
       showToast("Cable successful.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
@@ -73,41 +101,61 @@ export default function Cable() {
             <span className="muted">Balance: ₦ {wallet?.balance || "0.00"}</span>
           </div>
           <form className="form-grid" onSubmit={buy}>
-            <label>
+            <label className={errors.provider ? "field-error" : ""}>
               Provider
-              <select value={form.provider} onChange={(e) => setForm({ ...form, provider: e.target.value })}>
+              <select
+                value={form.provider}
+                onChange={(e) => {
+                  setForm({ ...form, provider: e.target.value });
+                  if (errors.provider) setErrors((prev) => ({ ...prev, provider: "" }));
+                }}
+              >
                 {providers.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
+              {errors.provider && <div className="error inline">{errors.provider}</div>}
             </label>
-            <label>
+            <label className={errors.smartcard_number ? "field-error" : ""}>
               Smartcard / IUC Number
               <input
                 placeholder="Enter smartcard number"
                 value={form.smartcard_number}
-                onChange={(e) => setForm({ ...form, smartcard_number: e.target.value })}
+                inputMode="numeric"
+                onChange={(e) => {
+                  setForm({ ...form, smartcard_number: e.target.value });
+                  if (errors.smartcard_number) setErrors((prev) => ({ ...prev, smartcard_number: "" }));
+                }}
                 required
               />
+              {errors.smartcard_number && <div className="error inline">{errors.smartcard_number}</div>}
             </label>
-            <label>
+            <label className={errors.package_code ? "field-error" : ""}>
               Package Code
               <input
                 placeholder="e.g. basic, premium"
                 value={form.package_code}
-                onChange={(e) => setForm({ ...form, package_code: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, package_code: e.target.value });
+                  if (errors.package_code) setErrors((prev) => ({ ...prev, package_code: "" }));
+                }}
                 required
               />
+              {errors.package_code && <div className="error inline">{errors.package_code}</div>}
             </label>
-            <label>
+            <label className={errors.amount ? "field-error" : ""}>
               Amount (₦)
               <input
                 type="number"
                 min="500"
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, amount: e.target.value });
+                  if (errors.amount) setErrors((prev) => ({ ...prev, amount: "" }));
+                }}
                 required
               />
+              {errors.amount && <div className="error inline">{errors.amount}</div>}
             </label>
             <button className="primary" type="submit" disabled={loading}>
               {loading ? "Processing..." : "Pay Cable"}
@@ -156,4 +204,3 @@ export default function Cable() {
     </div>
   );
 }
-

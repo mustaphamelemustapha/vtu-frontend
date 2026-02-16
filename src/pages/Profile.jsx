@@ -383,6 +383,50 @@ export default function Profile({ onLogout, onProfileUpdate, darkMode, onToggleT
 
       <section className="section">
         <div className="card">
+          <h3>Legal & Compliance</h3>
+          <div className="settings-grid">
+            <div className="setting-row">
+              <div>
+                <div className="label">Terms of Service</div>
+                <div className="muted">Usage terms that govern your account and transactions.</div>
+              </div>
+              <a className="ghost legal-link-btn" href="/landing/terms.html" target="_blank" rel="noreferrer">
+                Open
+              </a>
+            </div>
+            <div className="setting-row">
+              <div>
+                <div className="label">Privacy Policy</div>
+                <div className="muted">How AxisVTU collects, uses, stores, and protects your data.</div>
+              </div>
+              <a className="ghost legal-link-btn" href="/landing/privacy.html" target="_blank" rel="noreferrer">
+                Open
+              </a>
+            </div>
+            <div className="setting-row">
+              <div>
+                <div className="label">Refund Policy</div>
+                <div className="muted">Rules for failed transactions, reversals, and dispute handling.</div>
+              </div>
+              <a className="ghost legal-link-btn" href="/landing/refund-policy.html" target="_blank" rel="noreferrer">
+                Open
+              </a>
+            </div>
+            <div className="setting-row">
+              <div>
+                <div className="label">KYC/AML Policy</div>
+                <div className="muted">Identity and anti-fraud controls for compliant platform operations.</div>
+              </div>
+              <a className="ghost legal-link-btn" href="/landing/kyc-aml.html" target="_blank" rel="noreferrer">
+                Open
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card">
           <h3>Security</h3>
           <div className="settings-grid">
             <div className="setting-row">

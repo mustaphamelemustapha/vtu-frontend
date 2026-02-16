@@ -9,6 +9,7 @@ export default function Exam() {
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
   const [form, setForm] = useState({ exam: "waec", quantity: 1, phone_number: "" });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
 
@@ -17,22 +18,43 @@ export default function Exam() {
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
   }, []);
 
+  const validate = () => {
+    const nextErrors = {};
+    const exam = String(form.exam || "").trim().toLowerCase();
+    const quantity = Number(form.quantity);
+    const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
+
+    if (!exam) nextErrors.exam = "Select an exam type.";
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+      nextErrors.quantity = "Quantity must be between 1 and 10.";
+    }
+    if (phoneNumber && (phoneNumber.length < 10 || phoneNumber.length > 15)) {
+      nextErrors.phone_number = "Enter a valid phone number or leave blank.";
+    }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return null;
+    return {
+      exam,
+      quantity,
+      phone_number: phoneNumber || null,
+    };
+  };
+
   const buy = async (e) => {
     e.preventDefault();
+    const payload = validate();
+    if (!payload) return;
     setLoading(true);
     try {
       const res = await apiFetch("/services/exam/purchase", {
         method: "POST",
-        body: JSON.stringify({
-          exam: form.exam,
-          quantity: Number(form.quantity || 1),
-          phone_number: form.phone_number || null,
-        }),
+        body: JSON.stringify(payload),
       });
       setSuccess({
         reference: res.reference,
-        exam: form.exam,
-        quantity: form.quantity,
+        exam: payload.exam,
+        quantity: payload.quantity,
         pins: res.pins || [],
       });
       showToast("Pins generated.", "success");
@@ -77,31 +99,48 @@ export default function Exam() {
             <span className="muted">Balance: ₦ {wallet?.balance || "0.00"}</span>
           </div>
           <form className="form-grid" onSubmit={buy}>
-            <label>
+            <label className={errors.exam ? "field-error" : ""}>
               Exam Type
-              <select value={form.exam} onChange={(e) => setForm({ ...form, exam: e.target.value })}>
+              <select
+                value={form.exam}
+                onChange={(e) => {
+                  setForm({ ...form, exam: e.target.value });
+                  if (errors.exam) setErrors((prev) => ({ ...prev, exam: "" }));
+                }}
+              >
                 {exams.map((x) => (
                   <option key={x} value={x}>{String(x).toUpperCase()}</option>
                 ))}
               </select>
+              {errors.exam && <div className="error inline">{errors.exam}</div>}
             </label>
-            <label>
+            <label className={errors.quantity ? "field-error" : ""}>
               Quantity
               <input
                 type="number"
                 min="1"
                 max="10"
                 value={form.quantity}
-                onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, quantity: e.target.value });
+                  if (errors.quantity) setErrors((prev) => ({ ...prev, quantity: "" }));
+                }}
               />
+              {errors.quantity && <div className="error inline">{errors.quantity}</div>}
             </label>
-            <label>
+            <label className={errors.phone_number ? "field-error" : ""}>
               Phone Number (optional)
               <input
                 placeholder="08012345678"
                 value={form.phone_number}
-                onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
+                inputMode="numeric"
+                autoComplete="tel"
+                onChange={(e) => {
+                  setForm({ ...form, phone_number: e.target.value });
+                  if (errors.phone_number) setErrors((prev) => ({ ...prev, phone_number: "" }));
+                }}
               />
+              {errors.phone_number && <div className="error inline">{errors.phone_number}</div>}
             </label>
             <button className="primary" type="submit" disabled={loading}>
               {loading ? "Processing..." : "Buy Pins"}
@@ -146,4 +185,3 @@ export default function Exam() {
     </div>
   );
 }
-

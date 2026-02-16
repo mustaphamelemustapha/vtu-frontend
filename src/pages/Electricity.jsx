@@ -9,6 +9,7 @@ export default function Electricity() {
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
   const [form, setForm] = useState({ disco: "ikeja", meter_type: "prepaid", meter_number: "", amount: 2000 });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
 
@@ -17,25 +18,52 @@ export default function Electricity() {
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
   }, []);
 
+  const validate = () => {
+    const nextErrors = {};
+    const disco = String(form.disco || "").trim().toLowerCase();
+    const meterType = String(form.meter_type || "").trim().toLowerCase();
+    const meterNumber = String(form.meter_number || "").replace(/\D/g, "");
+    const amount = Number(form.amount);
+
+    if (!disco) nextErrors.disco = "Select a disco.";
+    if (!["prepaid", "postpaid"].includes(meterType)) {
+      nextErrors.meter_type = "Select a valid meter type.";
+    }
+    if (meterNumber.length < 6 || meterNumber.length > 13) {
+      nextErrors.meter_number = "Enter a valid meter number.";
+    }
+    if (!Number.isFinite(amount) || amount < 500) {
+      nextErrors.amount = "Minimum electricity amount is ₦500.";
+    } else if (amount > 500000) {
+      nextErrors.amount = "Maximum electricity amount is ₦500,000.";
+    }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return null;
+    return {
+      disco,
+      meter_type: meterType,
+      meter_number: meterNumber,
+      amount,
+    };
+  };
+
   const buy = async (e) => {
     e.preventDefault();
+    const payload = validate();
+    if (!payload) return;
     setLoading(true);
     try {
       const res = await apiFetch("/services/electricity/purchase", {
         method: "POST",
-        body: JSON.stringify({
-          disco: form.disco,
-          meter_type: form.meter_type,
-          meter_number: form.meter_number,
-          amount: Number(form.amount),
-        }),
+        body: JSON.stringify(payload),
       });
       setSuccess({
         reference: res.reference,
-        disco: form.disco,
-        meter_type: form.meter_type,
-        meter_number: form.meter_number,
-        amount: form.amount,
+        disco: payload.disco,
+        meter_type: payload.meter_type,
+        meter_number: payload.meter_number,
+        amount: payload.amount,
         token: res.token,
       });
       showToast("Electricity successful.", "success");
@@ -70,39 +98,62 @@ export default function Electricity() {
             <span className="muted">Balance: ₦ {wallet?.balance || "0.00"}</span>
           </div>
           <form className="form-grid" onSubmit={buy}>
-            <label>
+            <label className={errors.disco ? "field-error" : ""}>
               Disco
-              <select value={form.disco} onChange={(e) => setForm({ ...form, disco: e.target.value })}>
+              <select
+                value={form.disco}
+                onChange={(e) => {
+                  setForm({ ...form, disco: e.target.value });
+                  if (errors.disco) setErrors((prev) => ({ ...prev, disco: "" }));
+                }}
+              >
                 {discos.map((d) => (
                   <option key={d} value={d}>{String(d).toUpperCase()}</option>
                 ))}
               </select>
+              {errors.disco && <div className="error inline">{errors.disco}</div>}
             </label>
-            <label>
+            <label className={errors.meter_type ? "field-error" : ""}>
               Meter Type
-              <select value={form.meter_type} onChange={(e) => setForm({ ...form, meter_type: e.target.value })}>
+              <select
+                value={form.meter_type}
+                onChange={(e) => {
+                  setForm({ ...form, meter_type: e.target.value });
+                  if (errors.meter_type) setErrors((prev) => ({ ...prev, meter_type: "" }));
+                }}
+              >
                 <option value="prepaid">Prepaid</option>
                 <option value="postpaid">Postpaid</option>
               </select>
+              {errors.meter_type && <div className="error inline">{errors.meter_type}</div>}
             </label>
-            <label>
+            <label className={errors.meter_number ? "field-error" : ""}>
               Meter Number
               <input
                 placeholder="Enter meter number"
                 value={form.meter_number}
-                onChange={(e) => setForm({ ...form, meter_number: e.target.value })}
+                inputMode="numeric"
+                onChange={(e) => {
+                  setForm({ ...form, meter_number: e.target.value });
+                  if (errors.meter_number) setErrors((prev) => ({ ...prev, meter_number: "" }));
+                }}
                 required
               />
+              {errors.meter_number && <div className="error inline">{errors.meter_number}</div>}
             </label>
-            <label>
+            <label className={errors.amount ? "field-error" : ""}>
               Amount (₦)
               <input
                 type="number"
                 min="500"
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, amount: e.target.value });
+                  if (errors.amount) setErrors((prev) => ({ ...prev, amount: "" }));
+                }}
                 required
               />
+              {errors.amount && <div className="error inline">{errors.amount}</div>}
             </label>
             <button className="primary" type="submit" disabled={loading}>
               {loading ? "Processing..." : "Buy Electricity"}
@@ -154,4 +205,3 @@ export default function Electricity() {
     </div>
   );
 }
-

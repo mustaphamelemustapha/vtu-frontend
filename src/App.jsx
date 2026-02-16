@@ -18,6 +18,60 @@ import { apiFetch, getToken, clearToken, getProfile, setProfile } from "./servic
 import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 
+function AdminRouteGuard({ children, onProfileSync, onAuthExpired }) {
+  const [checking, setChecking] = useState(true);
+  const [allowed, setAllowed] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const verify = async () => {
+      setChecking(true);
+      try {
+        const profile = await apiFetch("/auth/me");
+        if (cancelled) return;
+        const nextProfile = {
+          full_name: profile?.full_name,
+          email: profile?.email,
+          role: profile?.role,
+        };
+        onProfileSync?.(nextProfile);
+        setAllowed(String(profile?.role || "").toLowerCase() === "admin");
+      } catch (err) {
+        if (cancelled) return;
+        if (err?.code === "AUTH_EXPIRED") {
+          clearToken();
+          onAuthExpired?.();
+        }
+        setAllowed(false);
+      } finally {
+        if (!cancelled) setChecking(false);
+      }
+    };
+
+    verify();
+    return () => {
+      cancelled = true;
+    };
+  }, [onAuthExpired, onProfileSync]);
+
+  if (checking) {
+    return (
+      <section className="section">
+        <div className="card">
+          <div className="muted">Verifying admin access...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!allowed) {
+    return <Navigate to="/" replace state={{ from: location.pathname }} />;
+  }
+  return children;
+}
+
 export default function App() {
   const [authenticated, setAuthenticated] = useState(!!getToken());
   const location = useLocation();
@@ -293,7 +347,23 @@ export default function App() {
                   />
                 }
               />
-              <Route path="/admin" element={isAdmin ? <Admin /> : <Navigate to="/" replace />} />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRouteGuard
+                    onProfileSync={(next) => {
+                      setProfile(next);
+                      setProfileState(next);
+                    }}
+                    onAuthExpired={() => {
+                      setProfileState({});
+                      setAuthenticated(false);
+                    }}
+                  >
+                    <Admin />
+                  </AdminRouteGuard>
+                }
+              />
               <Route path="/admin-login" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

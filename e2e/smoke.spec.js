@@ -46,7 +46,35 @@ async function installApiMocks(page) {
         price: "399.00",
       },
     ],
+    serviceCatalog: {
+      airtime_networks: ["mtn", "glo", "airtel", "9mobile"],
+      cable_providers: [
+        { id: "dstv", name: "DStv" },
+        { id: "gotv", name: "GOtv" },
+        { id: "startimes", name: "StarTimes" },
+      ],
+      electricity_discos: ["ikeja", "eko", "abuja", "kano"],
+      exam_types: ["waec", "neco", "jamb"],
+    },
     nextId: 2,
+  };
+
+  const recordServiceTx = ({ txType, amount, network, externalReference }) => {
+    const reference = `${txType}_E2E_${Date.now()}`;
+    const chargeAmount = Number(amount || 0);
+    state.walletBalance = Math.max(0, state.walletBalance - chargeAmount);
+    state.transactions.unshift({
+      id: state.nextId++,
+      reference,
+      tx_type: txType,
+      amount: chargeAmount.toFixed(2),
+      status: "SUCCESS",
+      network: network || null,
+      data_plan_code: null,
+      external_reference: externalReference || "BILLS_E2E",
+      failure_reason: null,
+    });
+    return reference;
   };
 
   await page.addInitScript(() => {
@@ -169,6 +197,64 @@ async function installApiMocks(page) {
       });
     }
 
+    if (method === "GET" && path === "/services/catalog") {
+      return json(route, state.serviceCatalog);
+    }
+
+    if (method === "POST" && path === "/services/airtime/purchase") {
+      const payload = request.postDataJSON();
+      const amount = Number(payload?.amount || 0);
+      const reference = recordServiceTx({
+        txType: "AIRTIME",
+        amount,
+        network: payload?.network || null,
+        externalReference: "AIRTIME_PROVIDER_E2E",
+      });
+      return json(route, { reference, status: "SUCCESS" });
+    }
+
+    if (method === "POST" && path === "/services/cable/purchase") {
+      const payload = request.postDataJSON();
+      const amount = Number(payload?.amount || 0);
+      const reference = recordServiceTx({
+        txType: "CABLE",
+        amount,
+        network: payload?.provider || null,
+        externalReference: "CABLE_PROVIDER_E2E",
+      });
+      return json(route, { reference, status: "SUCCESS" });
+    }
+
+    if (method === "POST" && path === "/services/electricity/purchase") {
+      const payload = request.postDataJSON();
+      const amount = Number(payload?.amount || 0);
+      const reference = recordServiceTx({
+        txType: "ELECTRICITY",
+        amount,
+        network: payload?.disco || null,
+        externalReference: "ELECTRICITY_PROVIDER_E2E",
+      });
+      return json(route, {
+        reference,
+        status: "SUCCESS",
+        token: `TOKEN_E2E_${Date.now()}`,
+      });
+    }
+
+    if (method === "POST" && path === "/services/exam/purchase") {
+      const payload = request.postDataJSON();
+      const quantity = Number(payload?.quantity || 1);
+      const amount = 2000 * quantity;
+      const reference = recordServiceTx({
+        txType: "EXAM",
+        amount,
+        network: payload?.exam || null,
+        externalReference: "EXAM_PROVIDER_E2E",
+      });
+      const pins = Array.from({ length: quantity }).map((_, idx) => `PIN_E2E_${Date.now()}_${idx + 1}`);
+      return json(route, { reference, status: "SUCCESS", pins });
+    }
+
     if (method === "GET" && path === "/transactions/me") {
       return json(route, state.transactions);
     }
@@ -223,4 +309,63 @@ test("data purchase smoke", async ({ page }) => {
 
   await expect(page).toHaveURL(/\/app\/transactions$/);
   await expect(page.getByText(/DATA_E2E_/)).toBeVisible();
+});
+
+test("airtime purchase smoke", async ({ page }) => {
+  await login(page);
+  await page.locator("aside.nav").getByRole("link", { name: "Services" }).click();
+  await expect(page).toHaveURL(/\/app\/services$/);
+  await page.locator("main").getByRole("link", { name: /Airtime/i }).first().click();
+  await expect(page).toHaveURL(/\/app\/airtime$/);
+
+  await page.getByLabel("Phone Number").fill("08012345678");
+  await page.getByLabel("Amount (₦)").fill("300");
+  await page.getByRole("button", { name: "Buy Airtime" }).click();
+
+  await expect(page.locator(".success-card .success-title")).toHaveText("Airtime Successful");
+});
+
+test("cable purchase smoke", async ({ page }) => {
+  await login(page);
+  await page.locator("aside.nav").getByRole("link", { name: "Services" }).click();
+  await expect(page).toHaveURL(/\/app\/services$/);
+  await page.locator("main").getByRole("link", { name: /Cable/i }).first().click();
+  await expect(page).toHaveURL(/\/app\/cable$/);
+
+  await page.getByLabel("Smartcard / IUC Number").fill("12345678901");
+  await page.getByLabel("Package Code").fill("basic");
+  await page.getByLabel("Amount (₦)").fill("5500");
+  await page.getByRole("button", { name: "Pay Cable" }).click();
+
+  await expect(page.locator(".success-card .success-title")).toHaveText("Cable Successful");
+});
+
+test("electricity purchase smoke", async ({ page }) => {
+  await login(page);
+  await page.locator("aside.nav").getByRole("link", { name: "Services" }).click();
+  await expect(page).toHaveURL(/\/app\/services$/);
+  await page.locator("main").getByRole("link", { name: /Electricity/i }).first().click();
+  await expect(page).toHaveURL(/\/app\/electricity$/);
+
+  await page.getByLabel("Meter Number").fill("12345678901");
+  await page.getByLabel("Amount (₦)").fill("2500");
+  await page.getByRole("button", { name: "Buy Electricity" }).click();
+
+  await expect(page.locator(".success-card .success-title")).toHaveText("Electricity Successful");
+  await expect(page.getByText(/TOKEN_E2E_/)).toBeVisible();
+});
+
+test("exam purchase smoke", async ({ page }) => {
+  await login(page);
+  await page.locator("aside.nav").getByRole("link", { name: "Services" }).click();
+  await expect(page).toHaveURL(/\/app\/services$/);
+  await page.locator("main").getByRole("link", { name: /Exam/i }).first().click();
+  await expect(page).toHaveURL(/\/app\/exam$/);
+
+  await page.getByLabel("Quantity").fill("2");
+  await page.getByLabel("Phone Number (optional)").fill("08012345678");
+  await page.getByRole("button", { name: "Buy Pins" }).click();
+
+  await expect(page.locator(".success-card .success-title")).toHaveText("Pins Ready");
+  await expect(page.getByText(/PIN_E2E_/)).toBeVisible();
 });
