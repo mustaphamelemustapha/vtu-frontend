@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
+
+const MIN_PURCHASE_LOADING_MS = 1200;
 
 export default function Electricity() {
   const navigate = useNavigate();
@@ -11,7 +13,10 @@ export default function Electricity() {
   const [form, setForm] = useState({ disco: "ikeja", meter_type: "prepaid", meter_number: "", amount: 2000 });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(null);
+  const [downloadBusy, setDownloadBusy] = useState(false);
+  const [renderReceiptSheet, setRenderReceiptSheet] = useState(false);
+  const [purchaseResult, setPurchaseResult] = useState(null);
+  const receiptCaptureRef = useRef(null);
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
@@ -48,30 +53,134 @@ export default function Electricity() {
     };
   };
 
+  const formatAmount = (value) => {
+    const num = Number(value ?? 0);
+    if (Number.isNaN(num)) return String(value ?? "0.00");
+    return num.toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const formatDateTime = (value) => {
+    if (!value) return "—";
+    try {
+      return new Date(value).toLocaleString("en-NG", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    } catch {
+      return String(value);
+    }
+  };
+
+  const statusKey = (value) => String(value || "").toLowerCase();
+  const statusLabel = (value) => {
+    const key = statusKey(value);
+    if (key === "success") return "Success";
+    if (key === "pending") return "Pending";
+    if (key === "failed") return "Failed";
+    return String(value || "—");
+  };
+
   const buy = async (e) => {
     e.preventDefault();
     const payload = validate();
     if (!payload) return;
+    const startedAt = Date.now();
     setLoading(true);
     try {
       const res = await apiFetch("/services/electricity/purchase", {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      setSuccess({
-        reference: res.reference,
+      setPurchaseResult({
+        ok: true,
+        reference: res.reference || `AXIS-ELECTRICITY-${Date.now()}`,
+        status: res.status || "success",
+        created_at: res.created_at || new Date().toISOString(),
         disco: payload.disco,
         meter_type: payload.meter_type,
         meter_number: payload.meter_number,
         amount: payload.amount,
-        token: res.token,
+        token: res.token || "",
+        failure_reason: "",
       });
       showToast("Electricity successful.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
-      showToast(err?.message || "Electricity failed.", "error");
+      const message = err?.message || "Electricity failed.";
+      setPurchaseResult({
+        ok: false,
+        reference: `AXIS-ELECTRICITY-ATTEMPT-${Date.now()}`,
+        status: "failed",
+        created_at: new Date().toISOString(),
+        disco: payload.disco,
+        meter_type: payload.meter_type,
+        meter_number: payload.meter_number,
+        amount: payload.amount,
+        token: "",
+        failure_reason: message,
+      });
+      showToast(message, "error");
     } finally {
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < MIN_PURCHASE_LOADING_MS) {
+        await new Promise((resolve) => setTimeout(resolve, MIN_PURCHASE_LOADING_MS - elapsed));
+      }
       setLoading(false);
+    }
+  };
+
+  const downloadReceipt = async () => {
+    if (!purchaseResult) return;
+    setDownloadBusy(true);
+    setRenderReceiptSheet(true);
+    try {
+      await new Promise((resolve) => {
+        if (typeof window !== "undefined" && window.requestAnimationFrame) {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+        } else {
+          setTimeout(resolve, 16);
+        }
+      });
+      if (!receiptCaptureRef.current) throw new Error("receipt_capture_unavailable");
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const canvas = await html2canvas(receiptCaptureRef.current, {
+        scale: 2,
+        backgroundColor: "#f4f7fb",
+        useCORS: true,
+        logging: false,
+      });
+      const imageData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const maxWidth = pageWidth - margin * 2;
+      const maxHeight = pageHeight - margin * 2;
+      const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
+      const renderWidth = canvas.width * ratio;
+      const renderHeight = canvas.height * ratio;
+      const x = (pageWidth - renderWidth) / 2;
+      const y = margin;
+      pdf.addImage(imageData, "PNG", x, y, renderWidth, renderHeight, undefined, "FAST");
+
+      const safeReference = String(purchaseResult.reference || "electricity").replace(/[^a-zA-Z0-9_-]/g, "_");
+      pdf.save(`axisvtu-electricity-receipt-${safeReference}.pdf`);
+      showToast("Receipt downloaded successfully.", "success");
+    } catch {
+      showToast("Failed to download receipt. Please try again.", "error");
+    } finally {
+      setRenderReceiptSheet(false);
+      setDownloadBusy(false);
     }
   };
 
@@ -162,44 +271,148 @@ export default function Electricity() {
         </div>
       </section>
 
-      {success && (
+      {loading && (
+        <div className="purchase-loading-screen" role="status" aria-live="polite">
+          <div className="purchase-loading-card">
+            <div className="purchase-loading-ring">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="purchase-loading-title">Processing Electricity Purchase</div>
+            <div className="purchase-loading-sub">Please wait while we contact provider and verify the response.</div>
+            <div className="purchase-loading-marquee">
+              <div className="purchase-loading-track">
+                <span>Connecting</span>
+                <span>Validating</span>
+                <span>Submitting</span>
+                <span>Confirming</span>
+                <span>Connecting</span>
+                <span>Validating</span>
+                <span>Submitting</span>
+                <span>Confirming</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {purchaseResult && (
         <div className="success-screen" role="dialog" aria-live="polite">
           <div className="success-card">
-            <div className="success-icon">✓</div>
-            <div className="success-title">Electricity Successful</div>
-            <div className="success-sub">Your token is ready.</div>
+            <div className={`success-icon ${purchaseResult.ok ? "" : "error"}`}>
+              {purchaseResult.ok ? "✓" : "!"}
+            </div>
+            <div className="success-title">
+              {purchaseResult.ok
+                ? statusKey(purchaseResult.status) === "success"
+                  ? "Electricity Successful"
+                  : "Electricity Pending"
+                : "Electricity Failed"}
+            </div>
+            <div className="success-sub">
+              {purchaseResult.ok
+                ? "Your token is ready."
+                : "Your request could not be completed. You can download receipt details."}
+            </div>
+            {!!purchaseResult.failure_reason && (
+              <div className="notice" style={{ marginBottom: 10 }}>
+                {purchaseResult.failure_reason}
+              </div>
+            )}
             <div className="success-grid">
               <div>
                 <div className="label">Disco</div>
-                <div className="value">{String(success.disco).toUpperCase()}</div>
+                <div className="value">{String(purchaseResult.disco || "").toUpperCase() || "—"}</div>
               </div>
               <div>
                 <div className="label">Meter</div>
-                <div className="muted">{success.meter_number}</div>
+                <div className="muted">{purchaseResult.meter_number || "—"}</div>
               </div>
               <div>
                 <div className="label">Type</div>
-                <div className="muted">{String(success.meter_type).toUpperCase()}</div>
+                <div className="muted">{String(purchaseResult.meter_type || "").toUpperCase() || "—"}</div>
               </div>
               <div>
                 <div className="label">Amount</div>
-                <div className="value">₦ {success.amount}</div>
+                <div className="value">₦ {formatAmount(purchaseResult.amount)}</div>
               </div>
               <div>
                 <div className="label">Reference</div>
-                <div className="muted">{success.reference}</div>
+                <div className="muted">{purchaseResult.reference}</div>
               </div>
               <div>
                 <div className="label">Token</div>
-                <div className="value" style={{ fontSize: 18 }}>{success.token || "—"}</div>
+                <div className="value" style={{ fontSize: 18 }}>{purchaseResult.token || "—"}</div>
               </div>
             </div>
             <div className="modal-actions">
-              <button className="ghost" type="button" onClick={() => setSuccess(null)}>Close</button>
-              <button className="primary" type="button" onClick={() => navigate("/transactions")}>View Receipt</button>
-              <button className="ghost" type="button" onClick={() => navigate("/electricity")}>Buy Again</button>
+              <button className="primary" type="button" onClick={downloadReceipt} disabled={downloadBusy}>
+                {downloadBusy ? "Preparing..." : "Download Receipt"}
+              </button>
+              <button className="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</button>
+              <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</button>
             </div>
           </div>
+          {renderReceiptSheet && (
+            <div className="receipt-capture-layer" aria-hidden="true">
+              <div className="receipt-sheet" ref={receiptCaptureRef}>
+              <div className="receipt-sheet-header">
+                <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" />
+                <div>
+                  <div className="label">AxisVTU Purchase Receipt</div>
+                  <h4>Electricity</h4>
+                </div>
+                <span className={`pill ${statusKey(purchaseResult.status)}`}>{statusLabel(purchaseResult.status)}</span>
+              </div>
+
+              <div className="receipt-sheet-total">
+                <div className="label">Amount</div>
+                <div className="value">₦ {formatAmount(purchaseResult.amount)}</div>
+              </div>
+
+              <div className="receipt-sheet-grid">
+                <div>
+                  <div className="label">Reference</div>
+                  <div>{purchaseResult.reference || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Date</div>
+                  <div>{formatDateTime(purchaseResult.created_at)}</div>
+                </div>
+                <div>
+                  <div className="label">Disco</div>
+                  <div>{String(purchaseResult.disco || "").toUpperCase() || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Meter Number</div>
+                  <div>{purchaseResult.meter_number || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Meter Type</div>
+                  <div>{String(purchaseResult.meter_type || "").toUpperCase() || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Token</div>
+                  <div>{purchaseResult.token || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Status</div>
+                  <div>{statusLabel(purchaseResult.status)}</div>
+                </div>
+                <div>
+                  <div className="label">Failure Reason</div>
+                  <div>{purchaseResult.failure_reason || "—"}</div>
+                </div>
+              </div>
+
+              <div className="receipt-sheet-footer">
+                <div>Generated by AxisVTU</div>
+                <div>{new Date().toLocaleString("en-NG")}</div>
+              </div>
+            </div>
+            </div>
+          )}
         </div>
       )}
     </div>
