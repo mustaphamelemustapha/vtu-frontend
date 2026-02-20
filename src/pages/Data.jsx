@@ -4,6 +4,7 @@ import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
 export default function Data() {
+  const MIN_PURCHASE_LOADING_MS = 1200;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState([]);
@@ -105,6 +106,7 @@ export default function Data() {
 
   const buy = async (planCode) => {
     setMessage("");
+    const startedAt = Date.now();
     try {
       if (!phone) {
         setFieldError("Enter a valid phone number.");
@@ -158,6 +160,10 @@ export default function Data() {
       });
       showToast(err.message || "Purchase failed.", "error");
     } finally {
+      const elapsed = Date.now() - startedAt;
+      if (elapsed < MIN_PURCHASE_LOADING_MS) {
+        await new Promise((resolve) => setTimeout(resolve, MIN_PURCHASE_LOADING_MS - elapsed));
+      }
       setLoading(false);
     }
   };
