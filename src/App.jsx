@@ -54,6 +54,26 @@ function _txTypeLabel(value) {
   return "Transaction";
 }
 
+function _announcementType(level) {
+  const key = String(level || "").toLowerCase();
+  if (key === "critical") return "error";
+  if (key === "warning") return "warning";
+  if (key === "success") return "success";
+  return "info";
+}
+
+function _announcementSnapshotValue(item) {
+  const id = String(item?.id ?? "").trim();
+  if (!id) return "";
+  const stamp =
+    item?.updated_at ||
+    item?.starts_at ||
+    item?.ends_at ||
+    item?.created_at ||
+    "";
+  return `${id}:${String(stamp)}`;
+}
+
 function _relativeTime(value) {
   const ms = new Date(value || "").getTime();
   if (!Number.isFinite(ms)) return "";
@@ -101,7 +121,7 @@ function _saveNotifItems(items) {
   localStorage.setItem(NOTIF_ITEMS_KEY, JSON.stringify((items || []).slice(0, MAX_NOTIF_ITEMS)));
 }
 
-function _buildSnapshot(wallet, txs, reports) {
+function _buildSnapshot(wallet, txs, reports, broadcasts) {
   const tx_status = {};
   for (const tx of Array.isArray(txs) ? txs : []) {
     if (tx?.reference) tx_status[String(tx.reference)] = _statusKey(tx.status);
@@ -110,10 +130,17 @@ function _buildSnapshot(wallet, txs, reports) {
   for (const report of Array.isArray(reports) ? reports : []) {
     if (report?.id != null) report_status[String(report.id)] = _statusKey(report.status);
   }
+  const announcement_status = {};
+  for (const item of Array.isArray(broadcasts) ? broadcasts : []) {
+    const id = String(item?.id ?? "").trim();
+    if (!id) continue;
+    announcement_status[id] = _announcementSnapshotValue(item);
+  }
   return {
     wallet_balance: Number(wallet?.balance || 0),
     tx_status,
     report_status,
+    announcement_status,
     updated_at: new Date().toISOString(),
   };
 }
@@ -302,18 +329,20 @@ export default function App() {
     if (!silent) setNotifSyncing(true);
 
     try {
-      const [wallet, txs, reports] = await Promise.all([
+      const [wallet, txs, reports, broadcasts] = await Promise.all([
         apiFetch("/wallet/me"),
         apiFetch("/transactions/me"),
         apiFetch("/transactions/reports/me").catch(() => []),
+        apiFetch("/notifications/broadcast").catch(() => []),
       ]);
 
-      const currentSnapshot = _buildSnapshot(wallet, txs, reports);
+      const currentSnapshot = _buildSnapshot(wallet, txs, reports, broadcasts);
       const previousSnapshot = _safeParse(localStorage.getItem(NOTIF_SNAPSHOT_KEY), null);
 
       if (!previousSnapshot || bootstrap) {
         localStorage.setItem(NOTIF_SNAPSHOT_KEY, JSON.stringify(currentSnapshot));
         if (notifItems.length === 0) {
+          const now = new Date().toISOString();
           const base = [
             {
               id: "welcome",
@@ -321,7 +350,7 @@ export default function App() {
               title: "Welcome to AxisVTU",
               text: "Notifications are now active. We will alert you on wallet and purchase updates.",
               seen: false,
-              created_at: new Date().toISOString(),
+              created_at: now,
             },
             {
               id: `wallet-baseline:${Number(wallet?.balance || 0).toFixed(2)}`,
@@ -329,9 +358,24 @@ export default function App() {
               title: "Wallet Snapshot",
               text: `Current wallet balance: ₦ ${_toMoney(wallet?.balance || 0)}`,
               seen: false,
-              created_at: new Date().toISOString(),
+              created_at: now,
             },
           ];
+          const activeBroadcasts = Array.isArray(broadcasts) ? broadcasts.slice(0, 8) : [];
+          for (const item of activeBroadcasts) {
+            const id = String(item?.id ?? "").trim();
+            const title = String(item?.title || "").trim();
+            const message = String(item?.message || "").trim();
+            if (!id || !title || !message) continue;
+            base.unshift({
+              id: `broadcast:${id}:${_announcementSnapshotValue(item)}`,
+              type: _announcementType(item?.level),
+              title,
+              text: message,
+              seen: false,
+              created_at: item?.created_at || now,
+            });
+          }
           setNotifItems(base);
           _saveNotifItems(base);
         }
@@ -410,6 +454,26 @@ export default function App() {
             text: `Report on ${reference} is now ${nextStatus.toUpperCase()}.`,
             seen: false,
             created_at: new Date().toISOString(),
+          });
+        }
+      }
+
+      const prevAnnouncementMap = previousSnapshot.announcement_status || {};
+      for (const item of Array.isArray(broadcasts) ? broadcasts : []) {
+        const id = String(item?.id ?? "").trim();
+        const title = String(item?.title || "").trim();
+        const message = String(item?.message || "").trim();
+        if (!id || !title || !message) continue;
+        const nextValue = _announcementSnapshotValue(item);
+        const prevValue = String(prevAnnouncementMap[id] || "");
+        if (!prevValue || prevValue !== nextValue) {
+          generated.push({
+            id: `broadcast:${id}:${nextValue}`,
+            type: _announcementType(item?.level),
+            title,
+            text: message,
+            seen: false,
+            created_at: item?.created_at || new Date().toISOString(),
           });
         }
       }

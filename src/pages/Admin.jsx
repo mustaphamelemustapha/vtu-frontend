@@ -10,6 +10,31 @@ const SERVICE_PROVIDER_OPTIONS = {
   electricity: ["ikeja", "eko", "abuja", "kano", "ibadan", "enugu", "portharcourt", "kaduna"],
   exam: ["waec", "neco", "jamb"],
 };
+const ANNOUNCEMENT_LEVEL_OPTIONS = ["info", "success", "warning", "critical"];
+
+function toAnnouncementType(level) {
+  const key = String(level || "").toLowerCase();
+  if (key === "critical") return "error";
+  if (key === "warning") return "warning";
+  if (key === "success") return "success";
+  return "info";
+}
+
+function formatDateInput(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function toIsoOrNull(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
 
 function statusKey(value) {
   return String(value || "").toLowerCase();
@@ -75,6 +100,19 @@ export default function Admin() {
   const [pricingBusy, setPricingBusy] = useState(false);
   const [pricingRules, setPricingRules] = useState([]);
   const [pricingLoadBusy, setPricingLoadBusy] = useState(false);
+  const [announceBusy, setAnnounceBusy] = useState(false);
+  const [announceSaveBusy, setAnnounceSaveBusy] = useState(false);
+  const [announceActionBusyId, setAnnounceActionBusyId] = useState(null);
+  const [announceItems, setAnnounceItems] = useState([]);
+  const [announceEditingId, setAnnounceEditingId] = useState(null);
+  const [announceForm, setAnnounceForm] = useState({
+    title: "",
+    message: "",
+    level: "info",
+    is_active: true,
+    starts_at: "",
+    ends_at: "",
+  });
 
   // Transactions
   const [txState, setTxState] = useState({ items: [], total: 0, page: 1, page_size: DEFAULT_PAGE_SIZE });
@@ -216,11 +254,108 @@ export default function Admin() {
     }
   };
 
+  const resetAnnouncementForm = () => {
+    setAnnounceEditingId(null);
+    setAnnounceForm({
+      title: "",
+      message: "",
+      level: "info",
+      is_active: true,
+      starts_at: "",
+      ends_at: "",
+    });
+  };
+
+  const fetchAnnouncements = async () => {
+    setAnnounceBusy(true);
+    try {
+      const data = await apiFetch("/notifications/broadcast/admin");
+      setAnnounceItems(Array.isArray(data) ? data : []);
+    } catch (err) {
+      showToast(err?.message || "Failed to load announcements.", "error");
+    } finally {
+      setAnnounceBusy(false);
+    }
+  };
+
+  const submitAnnouncement = async (e) => {
+    e.preventDefault();
+    const startsAt = toIsoOrNull(announceForm.starts_at);
+    const endsAt = toIsoOrNull(announceForm.ends_at);
+    if (startsAt && endsAt && new Date(endsAt).getTime() <= new Date(startsAt).getTime()) {
+      showToast("End time must be after start time.", "error");
+      return;
+    }
+    const payload = {
+      title: String(announceForm.title || "").trim(),
+      message: String(announceForm.message || "").trim(),
+      level: String(announceForm.level || "info").toLowerCase(),
+      is_active: !!announceForm.is_active,
+      starts_at: startsAt,
+      ends_at: endsAt,
+    };
+    if (!payload.title || !payload.message) {
+      showToast("Title and message are required.", "error");
+      return;
+    }
+    setAnnounceSaveBusy(true);
+    try {
+      if (announceEditingId) {
+        await apiFetch(`/notifications/broadcast/admin/${announceEditingId}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        showToast("Announcement updated.", "success");
+      } else {
+        await apiFetch("/notifications/broadcast/admin", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        showToast("Announcement published.", "success");
+      }
+      await fetchAnnouncements();
+      resetAnnouncementForm();
+    } catch (err) {
+      showToast(err?.message || "Failed to save announcement.", "error");
+    } finally {
+      setAnnounceSaveBusy(false);
+    }
+  };
+
+  const editAnnouncement = (item) => {
+    setAnnounceEditingId(item.id);
+    setAnnounceForm({
+      title: item.title || "",
+      message: item.message || "",
+      level: String(item.level || "info").toLowerCase(),
+      is_active: !!item.is_active,
+      starts_at: formatDateInput(item.starts_at),
+      ends_at: formatDateInput(item.ends_at),
+    });
+  };
+
+  const toggleAnnouncement = async (item) => {
+    setAnnounceActionBusyId(item.id);
+    try {
+      await apiFetch(`/notifications/broadcast/admin/${item.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ is_active: !item.is_active }),
+      });
+      showToast(item.is_active ? "Announcement disabled." : "Announcement enabled.", "success");
+      await fetchAnnouncements();
+    } catch (err) {
+      showToast(err?.message || "Failed to update announcement.", "error");
+    } finally {
+      setAnnounceActionBusyId(null);
+    }
+  };
+
   useEffect(() => {
     if (tab === "transactions" && txState.items.length === 0) fetchTransactions({ page: 1 });
     if (tab === "reports" && reportState.items.length === 0) fetchReports({ page: 1 });
     if (tab === "users" && userState.items.length === 0) fetchUsers({ page: 1 });
     if (tab === "pricing" && pricingRules.length === 0) fetchPricingRules();
+    if (tab === "announcements" && announceItems.length === 0) fetchAnnouncements();
   }, [tab]);
 
   const updatePricing = async (e) => {
@@ -342,6 +477,7 @@ export default function Admin() {
                 { id: "reports", label: "Reports" },
                 { id: "users", label: "Users" },
                 { id: "pricing", label: "Pricing" },
+                { id: "announcements", label: "Announcements" },
               ].map((t) => (
                 <button
                   key={t.id}
@@ -431,6 +567,11 @@ export default function Admin() {
                   <div className="label">Manage</div>
                   <div className="value">Users</div>
                   <div className="muted">Suspend/activate and fund wallets</div>
+                </button>
+                <button className="card action-card" type="button" onClick={() => setTab("announcements")}>
+                  <div className="label">Publish</div>
+                  <div className="value">Broadcast Alerts</div>
+                  <div className="muted">Send promo, outage, and maintenance notices</div>
                 </button>
               </div>
             </div>
@@ -953,6 +1094,185 @@ export default function Admin() {
                     )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {tab === "announcements" && (
+        <section className="section">
+          <div className="card">
+            <div className="section-head">
+              <h3>Broadcast Announcements</h3>
+              <button className="ghost" type="button" onClick={fetchAnnouncements} disabled={announceBusy}>
+                {announceBusy ? "Refreshing..." : "Refresh"}
+              </button>
+            </div>
+            <form onSubmit={submitAnnouncement} className="form-grid admin-announcement-form">
+              <label className="admin-field-span-2">
+                Title
+                <input
+                  maxLength={120}
+                  value={announceForm.title}
+                  onChange={(e) => setAnnounceForm({ ...announceForm, title: e.target.value })}
+                  placeholder="Scheduled Maintenance"
+                />
+              </label>
+              <label className="admin-field-span-2">
+                Message
+                <textarea
+                  rows={4}
+                  maxLength={2000}
+                  value={announceForm.message}
+                  onChange={(e) => setAnnounceForm({ ...announceForm, message: e.target.value })}
+                  placeholder="Platform will be in maintenance mode from 11:00 PM to 11:20 PM."
+                />
+              </label>
+              <label>
+                Level
+                <select
+                  value={announceForm.level}
+                  onChange={(e) => setAnnounceForm({ ...announceForm, level: e.target.value })}
+                >
+                  {ANNOUNCEMENT_LEVEL_OPTIONS.map((level) => (
+                    <option value={level} key={level}>
+                      {level.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Start Time (Optional)
+                <input
+                  type="datetime-local"
+                  value={announceForm.starts_at}
+                  onChange={(e) => setAnnounceForm({ ...announceForm, starts_at: e.target.value })}
+                />
+              </label>
+              <label>
+                End Time (Optional)
+                <input
+                  type="datetime-local"
+                  value={announceForm.ends_at}
+                  onChange={(e) => setAnnounceForm({ ...announceForm, ends_at: e.target.value })}
+                />
+              </label>
+              <label className="admin-checkbox-field">
+                <span>Active</span>
+                <input
+                  type="checkbox"
+                  checked={announceForm.is_active}
+                  onChange={(e) => setAnnounceForm({ ...announceForm, is_active: e.target.checked })}
+                />
+              </label>
+              <div className="admin-actions admin-field-span-2">
+                <button className="primary" type="submit" disabled={announceSaveBusy}>
+                  {announceSaveBusy
+                    ? (announceEditingId ? "Saving..." : "Publishing...")
+                    : (announceEditingId ? "Save Changes" : "Publish Announcement")}
+                </button>
+                {announceEditingId && (
+                  <button className="ghost" type="button" onClick={resetAnnouncementForm} disabled={announceSaveBusy}>
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
+            </form>
+
+            <div className="admin-table-wrap">
+              <table className="admin-table" aria-label="Broadcast announcements">
+                <thead>
+                  <tr>
+                    <th>Created</th>
+                    <th>Title</th>
+                    <th>Level</th>
+                    <th>Status</th>
+                    <th>Schedule Window</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {announceItems.map((item) => (
+                    <tr key={item.id}>
+                      <td className="mono">{formatDate(item.created_at)}</td>
+                      <td>
+                        <div className="list-title">{item.title}</div>
+                        <div className="muted">{item.message}</div>
+                      </td>
+                      <td>
+                        <span className={`pill ${toAnnouncementType(item.level)}`}>{String(item.level || "info").toUpperCase()}</span>
+                      </td>
+                      <td>
+                        <span className={`pill ${item.is_active ? "success" : "failed"}`}>
+                          {item.is_active ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="mono">{item.starts_at ? formatDate(item.starts_at) : "Immediate"}</div>
+                        <div className="mono">{item.ends_at ? formatDate(item.ends_at) : "No end"}</div>
+                      </td>
+                      <td className="admin-actions">
+                        <button className="ghost" type="button" onClick={() => editAnnouncement(item)}>
+                          Edit
+                        </button>
+                        <button
+                          className={`ghost ${item.is_active ? "danger" : ""}`}
+                          type="button"
+                          onClick={() => toggleAnnouncement(item)}
+                          disabled={announceActionBusyId === item.id}
+                        >
+                          {announceActionBusyId === item.id
+                            ? "Saving..."
+                            : (item.is_active ? "Disable" : "Enable")}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {!announceBusy && announceItems.length === 0 && (
+                    <tr>
+                      <td colSpan={6}>
+                        <div className="empty">No announcements yet.</div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              <div className="admin-card-list" aria-label="Broadcast announcements list (mobile)">
+                {announceItems.map((item) => (
+                  <div key={item.id} className="list-card">
+                    <div>
+                      <div className="list-title">{item.title}</div>
+                      <div className="muted">{item.message}</div>
+                      <div className="mono">
+                        {item.starts_at ? formatDate(item.starts_at) : "Immediate"}
+                        {" -> "}
+                        {item.ends_at ? formatDate(item.ends_at) : "No end"}
+                      </div>
+                    </div>
+                    <div className="list-meta">
+                      <span className={`pill ${toAnnouncementType(item.level)}`}>{String(item.level || "info").toUpperCase()}</span>
+                      <span className={`pill ${item.is_active ? "success" : "failed"}`}>
+                        {item.is_active ? "Active" : "Inactive"}
+                      </span>
+                      <button className="ghost" type="button" onClick={() => editAnnouncement(item)}>
+                        Edit
+                      </button>
+                      <button
+                        className={`ghost ${item.is_active ? "danger" : ""}`}
+                        type="button"
+                        onClick={() => toggleAnnouncement(item)}
+                        disabled={announceActionBusyId === item.id}
+                      >
+                        {announceActionBusyId === item.id
+                          ? "Saving..."
+                          : (item.is_active ? "Disable" : "Enable")}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {!announceBusy && announceItems.length === 0 && <div className="empty">No announcements yet.</div>}
+              </div>
             </div>
           </div>
         </section>
