@@ -11,6 +11,9 @@ const SUPPORT_CONTACTS = {
   whatsapp_phone: "2348141114647",
 };
 
+const WHATSAPP_PREFILL =
+  "Welcome to AxisVTU Support. Please share your issue and transaction reference so we can help you quickly.";
+
 const FAQ_ITEMS = [
   {
     q: "I bought data but did not receive it. What should I do?",
@@ -175,7 +178,7 @@ export default function Support() {
           <a
             className="card support-contact-card whatsapp"
             href={`https://wa.me/${SUPPORT_CONTACTS.whatsapp_phone}?text=${encodeURIComponent(
-              "Hello AxisVTU Support, I need help with my transaction."
+              WHATSAPP_PREFILL
             )}`}
             target="_blank"
             rel="noreferrer"
