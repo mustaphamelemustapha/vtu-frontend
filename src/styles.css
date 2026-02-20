@@ -199,11 +199,29 @@ a:focus-visible {
   border: 2px solid var(--panel-light);
 }
 
+.notif-count {
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  background: #ef4444;
+  border: 2px solid var(--panel);
+}
+
 .notif-panel {
   position: absolute;
   right: 0;
   top: 46px;
-  width: 260px;
+  width: 330px;
   background: var(--panel);
   border: 1px solid var(--stroke);
   border-radius: 14px;
@@ -214,14 +232,100 @@ a:focus-visible {
 
 .notif-title {
   font-weight: 700;
+}
+
+.notif-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 8px;
+}
+
+.notif-sub {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.notif-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.notif-action-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.notif-empty {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 10px 4px;
 }
 
 .notif-item {
   font-size: 13px;
   color: var(--muted);
-  padding: 8px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--stroke);
+}
+
+.notif-item.unread {
+  color: var(--ink);
+}
+
+.notif-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.notif-item-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.notif-time {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.notif-tag {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 3px 8px;
+  border: 1px solid transparent;
+}
+
+.notif-tag.info {
+  background: rgba(2, 132, 199, 0.12);
+  color: #0369a1;
+  border-color: rgba(2, 132, 199, 0.25);
+}
+
+.notif-tag.success {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  border-color: rgba(22, 163, 74, 0.25);
+}
+
+.notif-tag.warning {
+  background: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.notif-tag.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.24);
 }
 
 .notif-item:last-child {
@@ -2250,6 +2354,10 @@ a.pill:active::after {
   .top-actions .ghost {
     padding: 8px 12px;
     font-size: 12px;
+  }
+  .notif-panel {
+    width: min(360px, calc(100vw - 44px));
+    right: 0;
   }
   .grid-2,
   .grid-3 {

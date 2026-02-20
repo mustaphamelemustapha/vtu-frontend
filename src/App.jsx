@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import Nav from "./components/Nav.jsx";
 import Login from "./pages/Login.jsx";
@@ -18,6 +18,105 @@ import AdminLogin from "./pages/AdminLogin.jsx";
 import { apiFetch, getToken, clearToken, getProfile, setProfile } from "./services/api";
 import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
+
+const NOTIF_ITEMS_KEY = "axisvtu_notif_items";
+const NOTIF_SNAPSHOT_KEY = "axisvtu_notif_snapshot";
+const NOTIF_POLL_MS = 25000;
+const MAX_NOTIF_ITEMS = 80;
+
+function _safeParse(value, fallback) {
+  try {
+    const parsed = JSON.parse(value || "");
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function _toMoney(value) {
+  const num = Number(value || 0);
+  if (Number.isNaN(num)) return "0.00";
+  return num.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function _statusKey(value) {
+  return String(value || "").toLowerCase();
+}
+
+function _txTypeLabel(value) {
+  const key = String(value || "").toLowerCase();
+  if (key === "wallet_fund") return "Wallet Funding";
+  if (key === "data") return "Data Purchase";
+  if (key === "airtime") return "Airtime";
+  if (key === "cable") return "Cable TV";
+  if (key === "electricity") return "Electricity";
+  if (key === "exam") return "Exam PIN";
+  return "Transaction";
+}
+
+function _relativeTime(value) {
+  const ms = new Date(value || "").getTime();
+  if (!Number.isFinite(ms)) return "";
+  const diff = Date.now() - ms;
+  if (diff < 60000) return "Just now";
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+  return `${Math.floor(diff / 86400000)}d ago`;
+}
+
+function _normalizeNotifItem(item) {
+  if (!item || typeof item !== "object") return null;
+  const id = String(item.id || "").trim();
+  if (!id) return null;
+  if (typeof item.title === "string" && typeof item.text === "string") {
+    return {
+      id,
+      type: String(item.type || "info"),
+      title: item.title,
+      text: item.text,
+      seen: !!item.seen,
+      created_at: item.created_at || new Date().toISOString(),
+    };
+  }
+  if (typeof item.text === "string") {
+    return {
+      id,
+      type: "info",
+      title: "Update",
+      text: item.text,
+      seen: !!item.seen,
+      created_at: item.created_at || new Date().toISOString(),
+    };
+  }
+  return null;
+}
+
+function _loadNotifItems() {
+  const raw = _safeParse(localStorage.getItem(NOTIF_ITEMS_KEY), []);
+  const items = Array.isArray(raw) ? raw.map(_normalizeNotifItem).filter(Boolean) : [];
+  return items.slice(0, MAX_NOTIF_ITEMS);
+}
+
+function _saveNotifItems(items) {
+  localStorage.setItem(NOTIF_ITEMS_KEY, JSON.stringify((items || []).slice(0, MAX_NOTIF_ITEMS)));
+}
+
+function _buildSnapshot(wallet, txs, reports) {
+  const tx_status = {};
+  for (const tx of Array.isArray(txs) ? txs : []) {
+    if (tx?.reference) tx_status[String(tx.reference)] = _statusKey(tx.status);
+  }
+  const report_status = {};
+  for (const report of Array.isArray(reports) ? reports : []) {
+    if (report?.id != null) report_status[String(report.id)] = _statusKey(report.status);
+  }
+  return {
+    wallet_balance: Number(wallet?.balance || 0),
+    tx_status,
+    report_status,
+    updated_at: new Date().toISOString(),
+  };
+}
 
 function AdminRouteGuard({ children, currentRole, onProfileSync, onAuthExpired }) {
   const cachedProfile = getProfile();
@@ -84,10 +183,13 @@ export default function App() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileState, setProfileState] = useState(getProfile());
   const [darkMode, setDarkMode] = useState(false);
-  const [notifItems, setNotifItems] = useState([]);
+  const [notifItems, setNotifItems] = useState(() => _loadNotifItems());
+  const [notifSyncAt, setNotifSyncAt] = useState(null);
+  const [notifSyncing, setNotifSyncing] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [canInstall, setCanInstall] = useState(false);
+  const notifSyncRef = useRef(false);
 
   const pageTitle = (() => {
     const path = location.pathname;
@@ -99,6 +201,11 @@ export default function App() {
     if (path.startsWith("/admin")) return "Admin";
     return "Dashboard";
   })();
+
+  const unreadCount = useMemo(
+    () => notifItems.filter((item) => !item?.seen).length,
+    [notifItems]
+  );
 
   useEffect(() => {
     // PWA install prompt (supported browsers only)
@@ -158,7 +265,7 @@ export default function App() {
   useEffect(() => {
     if (authenticated) {
       fetchProfile();
-      fetchNotifications();
+      refreshNotifications({ bootstrap: true });
       const onboarded = localStorage.getItem("vtu_onboarded");
       if (!onboarded) {
         setShowOnboarding(true);
@@ -166,6 +273,13 @@ export default function App() {
     }
   }, [authenticated]);
 
+  useEffect(() => {
+    if (!authenticated) return undefined;
+    const timer = window.setInterval(() => {
+      refreshNotifications({ silent: true });
+    }, NOTIF_POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [authenticated]);
 
   const fetchProfile = async () => {
     try {
@@ -181,23 +295,142 @@ export default function App() {
     }
   };
 
-  const fetchNotifications = async () => {
+  const refreshNotifications = async ({ bootstrap = false, silent = false } = {}) => {
+    if (!authenticated) return;
+    if (notifSyncRef.current) return;
+    notifSyncRef.current = true;
+    if (!silent) setNotifSyncing(true);
+
     try {
-      const [wallet, txs] = await Promise.all([
+      const [wallet, txs, reports] = await Promise.all([
         apiFetch("/wallet/me"),
         apiFetch("/transactions/me"),
+        apiFetch("/transactions/reports/me").catch(() => []),
       ]);
-      const recent = (txs || []).slice(0, 3).map((tx) => ({
-        id: tx.reference,
-        text: `${tx.tx_type} ${tx.status.toLowerCase()} — ₦ ${tx.amount}`,
-      }));
-      const base = [
-        { id: "welcome", text: "Welcome to AxisVTU" },
-        { id: "balance", text: `Wallet balance: ₦ ${wallet?.balance || "0.00"}` },
-      ];
-      setNotifItems([...base, ...recent]);
+
+      const currentSnapshot = _buildSnapshot(wallet, txs, reports);
+      const previousSnapshot = _safeParse(localStorage.getItem(NOTIF_SNAPSHOT_KEY), null);
+
+      if (!previousSnapshot || bootstrap) {
+        localStorage.setItem(NOTIF_SNAPSHOT_KEY, JSON.stringify(currentSnapshot));
+        if (notifItems.length === 0) {
+          const base = [
+            {
+              id: "welcome",
+              type: "info",
+              title: "Welcome to AxisVTU",
+              text: "Notifications are now active. We will alert you on wallet and purchase updates.",
+              seen: false,
+              created_at: new Date().toISOString(),
+            },
+            {
+              id: `wallet-baseline:${Number(wallet?.balance || 0).toFixed(2)}`,
+              type: "info",
+              title: "Wallet Snapshot",
+              text: `Current wallet balance: ₦ ${_toMoney(wallet?.balance || 0)}`,
+              seen: false,
+              created_at: new Date().toISOString(),
+            },
+          ];
+          setNotifItems(base);
+          _saveNotifItems(base);
+        }
+        setNotifSyncAt(new Date().toISOString());
+        return;
+      }
+
+      const generated = [];
+      const previousWallet = Number(previousSnapshot.wallet_balance || 0);
+      const currentWallet = Number(wallet?.balance || 0);
+      if (Number.isFinite(previousWallet) && Number.isFinite(currentWallet) && currentWallet > previousWallet) {
+        const diff = currentWallet - previousWallet;
+        generated.push({
+          id: `wallet-credit:${currentWallet.toFixed(2)}`,
+          type: "success",
+          title: "Wallet Funded",
+          text: `Your wallet was credited with ₦ ${_toMoney(diff)}.`,
+          seen: false,
+          created_at: new Date().toISOString(),
+        });
+      }
+
+      const prevTxMap = previousSnapshot.tx_status || {};
+      for (const tx of Array.isArray(txs) ? txs : []) {
+        const reference = String(tx?.reference || "").trim();
+        if (!reference) continue;
+        const nextStatus = _statusKey(tx?.status);
+        const prevStatus = _statusKey(prevTxMap[reference]);
+        const txTypeName = _txTypeLabel(tx?.tx_type);
+
+        if (!prevStatus && ["success", "failed", "refunded"].includes(nextStatus)) {
+          const title =
+            nextStatus === "success"
+              ? `${txTypeName} Successful`
+              : nextStatus === "refunded"
+                ? `${txTypeName} Refunded`
+                : `${txTypeName} Failed`;
+          generated.push({
+            id: `tx-new:${reference}:${nextStatus}`,
+            type: nextStatus === "success" ? "success" : nextStatus === "refunded" ? "info" : "error",
+            title,
+            text: `Ref ${reference} • ₦ ${_toMoney(tx?.amount || 0)}`,
+            seen: false,
+            created_at: new Date().toISOString(),
+          });
+        } else if (prevStatus && prevStatus !== nextStatus && ["success", "failed", "refunded"].includes(nextStatus)) {
+          const title =
+            nextStatus === "success"
+              ? `${txTypeName} Successful`
+              : nextStatus === "refunded"
+                ? `${txTypeName} Refunded`
+                : `${txTypeName} Failed`;
+          generated.push({
+            id: `tx-update:${reference}:${nextStatus}`,
+            type: nextStatus === "success" ? "success" : nextStatus === "refunded" ? "info" : "error",
+            title,
+            text: `Status changed from ${prevStatus.toUpperCase()} to ${nextStatus.toUpperCase()} • Ref ${reference}`,
+            seen: false,
+            created_at: new Date().toISOString(),
+          });
+        }
+      }
+
+      const prevReportMap = previousSnapshot.report_status || {};
+      for (const report of Array.isArray(reports) ? reports : []) {
+        const reportId = String(report?.id ?? "").trim();
+        if (!reportId) continue;
+        const prevStatus = _statusKey(prevReportMap[reportId]);
+        const nextStatus = _statusKey(report?.status);
+        const reference = String(report?.transaction_reference || "—");
+        if (prevStatus && prevStatus !== nextStatus && ["resolved", "rejected"].includes(nextStatus)) {
+          generated.push({
+            id: `report:${reportId}:${nextStatus}`,
+            type: nextStatus === "resolved" ? "success" : "warning",
+            title: `Support Issue ${nextStatus === "resolved" ? "Resolved" : "Rejected"}`,
+            text: `Report on ${reference} is now ${nextStatus.toUpperCase()}.`,
+            seen: false,
+            created_at: new Date().toISOString(),
+          });
+        }
+      }
+
+      if (generated.length > 0) {
+        setNotifItems((prev) => {
+          const seenIds = new Set(prev.map((item) => item.id));
+          const fresh = generated.filter((item) => !seenIds.has(item.id));
+          const merged = [...fresh, ...prev].slice(0, MAX_NOTIF_ITEMS);
+          _saveNotifItems(merged);
+          return merged;
+        });
+      }
+
+      localStorage.setItem(NOTIF_SNAPSHOT_KEY, JSON.stringify(currentSnapshot));
+      setNotifSyncAt(new Date().toISOString());
     } catch {
-      setNotifItems([{ id: "welcome", text: "Welcome to AxisVTU" }]);
+      // Keep previous notifications; auto-poll will retry.
+    } finally {
+      notifSyncRef.current = false;
+      if (!silent) setNotifSyncing(false);
     }
   };
 
@@ -226,6 +459,11 @@ export default function App() {
 
   const handleLogout = () => {
     clearToken();
+    localStorage.removeItem(NOTIF_ITEMS_KEY);
+    localStorage.removeItem(NOTIF_SNAPSHOT_KEY);
+    setNotifItems([]);
+    setNotifSyncAt(null);
+    setNotifSyncing(false);
     setProfileState({});
     setAuthenticated(false);
     setNotificationsOpen(false);
@@ -319,43 +557,102 @@ export default function App() {
             onInstall={handleInstall}
           />
           <main className="main">
-            {location.pathname === "/" && (
-              <header className="topbar">
-                <div className="top-left">
-                  <div className="avatar">
-                    <span>{initials}</span>
-                  </div>
+            <header className="topbar">
+              <div className="top-left">
+                {location.pathname === "/" ? (
+                  <>
+                    <div className="avatar">
+                      <span>{initials}</span>
+                    </div>
+                    <div>
+                      <div className="hello">Hi, {fullName}</div>
+                    </div>
+                  </>
+                ) : (
                   <div>
-                    <div className="hello">Hi, {fullName}</div>
+                    <div className="hello">{pageTitle}</div>
+                    <div className="subtle">AxisVTU</div>
                   </div>
-                </div>
-                <div className="top-actions">
-                  <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
-                      <path d="M12 6.5v2.2M12 15.3v2.2M6.5 12h2.2M15.3 12h2.2M7.9 7.9l1.6 1.6M14.5 14.5l1.6 1.6M7.9 16.1l1.6-1.6M14.5 9.5l1.6-1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                  </button>
-                  <div className="notif-wrap">
-                    <button className="icon-btn" aria-label="Notifications" onClick={() => setNotificationsOpen(!notificationsOpen)}>
-                      <span className="notif-dot" />
+                )}
+              </div>
+              <div className="top-actions">
+                <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M12 6.5v2.2M12 15.3v2.2M6.5 12h2.2M15.3 12h2.2M7.9 7.9l1.6 1.6M14.5 14.5l1.6 1.6M7.9 16.1l1.6-1.6M14.5 9.5l1.6-1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+                <div className="notif-wrap">
+                  <button
+                    className="icon-btn"
+                    aria-label="Notifications"
+                    onClick={() => setNotificationsOpen(!notificationsOpen)}
+                  >
+                    {unreadCount > 0 && <span className="notif-dot" />}
                     <svg viewBox="0 0 24 24" fill="none">
                       <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6" stroke="currentColor" strokeWidth="1.6"/>
                       <path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke="currentColor" strokeWidth="1.6"/>
                     </svg>
-                    </button>
-                    {notificationsOpen && (
-                      <div className="notif-panel">
-                        <div className="notif-title">Notifications</div>
-                        {notifItems.map((item) => (
-                          <div className="notif-item" key={item.id}>{item.text}</div>
-                        ))}
-                      </div>
+                    {unreadCount > 0 && (
+                      <span className="notif-count">{unreadCount > 99 ? "99+" : unreadCount}</span>
                     )}
-                  </div>
+                  </button>
+                  {notificationsOpen && (
+                    <div className="notif-panel">
+                      <div className="notif-head">
+                        <div className="notif-title">Notifications</div>
+                        <span className="pill">{unreadCount} unread</span>
+                      </div>
+                      <div className="notif-sub">
+                        {notifSyncing
+                          ? "Syncing..."
+                          : notifSyncAt
+                            ? `Updated ${_relativeTime(notifSyncAt)}`
+                            : "Waiting for sync..."}
+                      </div>
+                      <div className="notif-actions-row">
+                        <button
+                          className="ghost notif-action-btn"
+                          type="button"
+                          onClick={() => {
+                            setNotifItems((prev) => {
+                              const next = prev.map((item) => ({ ...item, seen: true }));
+                              _saveNotifItems(next);
+                              return next;
+                            });
+                          }}
+                          disabled={unreadCount === 0}
+                        >
+                          Mark all read
+                        </button>
+                        <button
+                          className="ghost notif-action-btn"
+                          type="button"
+                          onClick={() => refreshNotifications({ silent: false })}
+                          disabled={notifSyncing}
+                        >
+                          {notifSyncing ? "Refreshing..." : "Refresh"}
+                        </button>
+                      </div>
+                      {notifItems.length === 0 ? (
+                        <div className="notif-empty">No notifications yet.</div>
+                      ) : (
+                        notifItems.slice(0, 20).map((item) => (
+                          <div className={`notif-item ${item.seen ? "" : "unread"}`} key={item.id}>
+                            <div className="notif-item-head">
+                              <span className={`notif-tag ${item.type || "info"}`}>{item.type || "info"}</span>
+                              <span className="notif-time">{_relativeTime(item.created_at)}</span>
+                            </div>
+                            <div className="notif-item-title">{item.title}</div>
+                            <div>{item.text}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
-              </header>
-            )}
+              </div>
+            </header>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/wallet" element={<Wallet />} />
