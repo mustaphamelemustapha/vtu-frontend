@@ -2272,7 +2272,7 @@ a.pill:active::after {
     border-radius: 22px;
     backdrop-filter: blur(16px);
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 6px;
     padding: 10px;
     padding-bottom: calc(10px + env(safe-area-inset-bottom));

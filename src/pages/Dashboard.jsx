@@ -163,6 +163,11 @@ export default function Dashboard() {
             <div className="value">Airtime</div>
             <div className="muted">Cable, electricity, exams</div>
           </Link>
+          <Link className="card action-card" to="/support">
+            <div className="label">Help & Support</div>
+            <div className="value">Contact Team</div>
+            <div className="muted">FAQ, calls, WhatsApp and report tracking</div>
+          </Link>
         </div>
       </section>
 

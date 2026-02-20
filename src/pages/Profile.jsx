@@ -52,6 +52,14 @@ const HelpIcon = () => (
   </svg>
 );
 
+const SupportIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 21a9 9 0 1 0-9-9v4.5A2.5 2.5 0 0 0 5.5 19H8" stroke="currentColor" strokeWidth="1.7" />
+    <path d="M16 14.5c0 1.4-1.3 2.5-3 2.5h-1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    <path d="M6 12.3V10M18 12.3V10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+  </svg>
+);
+
 export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -219,6 +227,14 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
             <span className="profile-ux-menu-left">
               <span className="profile-ux-icon"><HelpIcon /></span>
               <span>Help</span>
+            </span>
+            <span className="profile-ux-chevron">›</span>
+          </button>
+
+          <button className="card profile-ux-menu-item" type="button" onClick={() => navigate("/support")}>
+            <span className="profile-ux-menu-left">
+              <span className="profile-ux-icon"><SupportIcon /></span>
+              <span>Support Center</span>
             </span>
             <span className="profile-ux-chevron">›</span>
           </button>
