@@ -100,6 +100,7 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
       <NavLink to="/" end><Icon><HomeIcon /></Icon><span>Home</span></NavLink>
       <NavLink to="/wallet"><Icon><WalletIcon /></Icon><span>Wallet</span></NavLink>
       <NavLink to="/services"><Icon><DataIcon /></Icon><span>Buy</span></NavLink>
+      <NavLink to="/support"><Icon><SupportIcon /></Icon><span>Support</span></NavLink>
       <NavLink to="/transactions"><Icon><TxIcon /></Icon><span>History</span></NavLink>
       <NavLink to="/profile"><Icon><ProfileIcon /></Icon><span>Profile</span></NavLink>
     </nav>
