@@ -703,6 +703,102 @@ a:focus-visible {
   background: var(--panel-light);
 }
 
+.support-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.support-head h3 {
+  margin: 2px 0 0;
+}
+
+.support-head-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.support-list {
+  display: grid;
+  gap: 12px;
+}
+
+.support-item {
+  display: grid;
+  gap: 12px;
+}
+
+.support-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.support-item-meta {
+  text-align: right;
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.support-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.support-meta-grid > div {
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--panel-light);
+}
+
+.support-reason {
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--panel-light);
+}
+
+.support-timeline {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px dashed var(--stroke);
+  border-radius: 12px;
+}
+
+.support-event {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.support-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  margin-top: 4px;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+}
+
+.support-dot.done {
+  background: #16a34a;
+}
+
+.support-dot.pending {
+  background: #f59e0b;
+}
+
+.support-note {
+  margin-top: 0;
+}
+
 .nav {
   background:
     radial-gradient(circle at 20% 10%, rgba(15, 118, 110, 0.10), transparent 45%),
@@ -2358,6 +2454,29 @@ a.pill:active::after {
   }
   .profile-ux-chevron {
     font-size: 28px;
+  }
+
+  .support-head {
+    grid-template-columns: 1fr;
+  }
+  .support-head-actions {
+    width: 100%;
+  }
+  .support-head-actions .primary,
+  .support-head-actions .ghost {
+    flex: 1 1 140px;
+  }
+  .support-item-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .support-item-meta {
+    width: 100%;
+    text-align: left;
+    justify-items: start;
+  }
+  .support-meta-grid {
+    grid-template-columns: 1fr;
   }
 }
 

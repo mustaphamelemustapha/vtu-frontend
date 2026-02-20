@@ -36,6 +36,13 @@ const TxIcon = () => (
     <path d="M4 7h16M4 12h10M4 17h13" stroke="currentColor" strokeWidth="1.6" />
   </svg>
 );
+const SupportIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M9.6 9.7a2.4 2.4 0 1 1 4.1 1.8c-.6.6-1.4 1-1.7 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <path d="M12 17.2h.01" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
 const AdminIcon = () => (
   <svg viewBox="0 0 24 24" fill="none">
     <path d="M12 3l8 3v6c0 4.4-3 7.7-8 9-5-1.3-8-4.6-8-9V6l8-3z" stroke="currentColor" strokeWidth="1.6" />
@@ -78,6 +85,7 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
         <NavLink to="/data"><Icon><DataIcon /></Icon>Buy Data</NavLink>
         <NavLink to="/services"><Icon><ServicesIcon /></Icon>Services</NavLink>
         <NavLink to="/transactions"><Icon><TxIcon /></Icon>Transactions</NavLink>
+        <NavLink to="/support"><Icon><SupportIcon /></Icon>Support</NavLink>
         <NavLink to="/profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
         {isAdmin && <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
       </nav>

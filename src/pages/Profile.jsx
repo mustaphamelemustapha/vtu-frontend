@@ -335,6 +335,16 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
               <a className="ghost legal-link-btn" href="/landing/terms.html" target="_blank" rel="noreferrer">Terms</a>
               <a className="ghost legal-link-btn" href="/landing/privacy.html" target="_blank" rel="noreferrer">Privacy</a>
               <a className="ghost legal-link-btn" href="/landing/refund-policy.html" target="_blank" rel="noreferrer">Refund Policy</a>
+              <button
+                className="primary"
+                type="button"
+                onClick={() => {
+                  setHelpOpen(false);
+                  navigate("/support");
+                }}
+              >
+                My Support Reports
+              </button>
             </div>
           </div>
         </div>

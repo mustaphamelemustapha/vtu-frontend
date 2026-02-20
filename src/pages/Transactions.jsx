@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
 export default function Transactions() {
+  const navigate = useNavigate();
   const [txs, setTxs] = useState([]);
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
@@ -287,6 +289,9 @@ export default function Transactions() {
                   {status === "all" ? "All" : statusLabel(status)}
                 </button>
               ))}
+              <button className="pill" type="button" onClick={() => navigate("/support")}>
+                Support Desk
+              </button>
             </div>
           </div>
         </div>

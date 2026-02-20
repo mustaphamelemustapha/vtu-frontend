@@ -11,6 +11,7 @@ import Cable from "./pages/Cable.jsx";
 import Electricity from "./pages/Electricity.jsx";
 import Exam from "./pages/Exam.jsx";
 import Transactions from "./pages/Transactions.jsx";
+import Support from "./pages/Support.jsx";
 import Admin from "./pages/Admin.jsx";
 import Profile from "./pages/Profile.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
@@ -94,6 +95,7 @@ export default function App() {
     if (path.startsWith("/wallet")) return "Wallet";
     if (path.startsWith("/data")) return "Buy Data";
     if (path.startsWith("/transactions")) return "Transactions";
+    if (path.startsWith("/support")) return "Support";
     if (path.startsWith("/admin")) return "Admin";
     return "Dashboard";
   })();
@@ -364,6 +366,7 @@ export default function App() {
               <Route path="/electricity" element={<Electricity />} />
               <Route path="/exam" element={<Exam />} />
               <Route path="/transactions" element={<Transactions />} />
+              <Route path="/support" element={<Support />} />
               <Route
                 path="/profile"
                 element={
