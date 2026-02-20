@@ -12,7 +12,7 @@ const SUPPORT_CONTACTS = {
 };
 
 const WHATSAPP_PREFILL =
-  "Welcome to AxisVTU Support. Please share your issue and transaction reference so we can help you quickly.";
+  "Welcome to AXIS X VTU Support. Please share your issue and transaction reference so we can help you quickly.";
 
 const FAQ_ITEMS = [
   {
