@@ -1424,6 +1424,92 @@ a:focus-visible {
   z-index: 70;
 }
 
+.purchase-loading-screen {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 8, 12, 0.66);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  z-index: 72;
+}
+
+.purchase-loading-card {
+  width: min(460px, 92vw);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(56, 189, 248, 0.24);
+  background:
+    radial-gradient(circle at 80% 10%, rgba(56, 189, 248, 0.16), transparent 40%),
+    radial-gradient(circle at 20% 90%, rgba(16, 185, 129, 0.14), transparent 42%),
+    var(--panel);
+  box-shadow: var(--shadow-2);
+  text-align: center;
+}
+
+.purchase-loading-ring {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  position: relative;
+}
+
+.purchase-loading-ring span {
+  position: absolute;
+  inset: 0;
+  border: 3px solid transparent;
+  border-top-color: rgba(56, 189, 248, 0.95);
+  border-radius: 50%;
+  animation: purchase-ring 1.25s linear infinite;
+}
+
+.purchase-loading-ring span:nth-child(2) {
+  inset: 8px;
+  border-top-color: rgba(15, 118, 110, 0.95);
+  animation-duration: 1.7s;
+  animation-direction: reverse;
+}
+
+.purchase-loading-ring span:nth-child(3) {
+  inset: 16px;
+  border-top-color: rgba(245, 158, 11, 0.95);
+  animation-duration: 2.05s;
+}
+
+.purchase-loading-title {
+  font-size: var(--text-xl);
+  font-weight: 800;
+}
+
+.purchase-loading-sub {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.purchase-loading-marquee {
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: var(--panel-light);
+}
+
+.purchase-loading-track {
+  display: inline-flex;
+  gap: 18px;
+  padding: 8px 10px;
+  min-width: 100%;
+  animation: purchase-track 8s linear infinite;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.purchase-loading-track span {
+  flex: 0 0 auto;
+}
+
 .success-card {
   background: var(--panel);
   border: 1px solid var(--stroke);
@@ -1448,6 +1534,11 @@ a:focus-visible {
   place-items: center;
   font-size: 26px;
   font-weight: 800;
+}
+
+.success-icon.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
 }
 
 .success-title {
@@ -1475,6 +1566,21 @@ a:focus-visible {
 .success-grid .value {
   font-size: 18px;
   font-weight: 700;
+}
+
+@keyframes purchase-ring {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes purchase-track {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .onboard-overlay {

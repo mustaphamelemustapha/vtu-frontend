@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
@@ -17,11 +17,13 @@ export default function Data() {
   const [sort, setSort] = useState("recommended");
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [compare, setCompare] = useState([]);
-  const [success, setSuccess] = useState(null);
+  const [purchaseResult, setPurchaseResult] = useState(null);
+  const [downloadBusy, setDownloadBusy] = useState(false);
   const [fieldError, setFieldError] = useState("");
   const [wallet, setWallet] = useState(null);
   const [plansError, setPlansError] = useState("");
   const [walletError, setWalletError] = useState("");
+  const receiptCaptureRef = useRef(null);
   const { showToast } = useToast();
 
   const parseSize = (value) => {
@@ -110,24 +112,95 @@ export default function Data() {
         return;
       }
       setFieldError("");
+      const chosenPlan = plans.find((p) => p.plan_code === planCode) || null;
+      setSelected(null);
       setLoading(true);
       const res = await apiFetch("/data/purchase", {
         method: "POST",
         body: JSON.stringify({ plan_code: planCode, phone_number: phone, ported_number: ported })
       });
-      setSuccess({
-        reference: res.reference,
-        status: res.status,
+      setPurchaseResult({
+        ok: true,
+        reference: res.reference || `AXIS-${Date.now()}`,
+        status: res.status || "success",
+        created_at: res.created_at || new Date().toISOString(),
         test_mode: !!res.test_mode,
-        plan: plans.find((p) => p.plan_code === planCode),
+        plan: chosenPlan,
+        plan_code: chosenPlan?.plan_code || planCode,
+        validity: chosenPlan?.validity || "",
+        network: chosenPlan?.network || "",
+        recipient: phone,
+        amount: Number(chosenPlan?.price || 0),
+        ported,
+        failure_reason: "",
+        provider_message: res.message || "",
       });
-      setSelected(null);
+      loadWallet();
       showToast("Purchase successful.", "success");
     } catch (err) {
       setMessage(err.message);
+      const chosenPlan = plans.find((p) => p.plan_code === planCode) || null;
+      setPurchaseResult({
+        ok: false,
+        reference: `AXIS-ATTEMPT-${Date.now()}`,
+        status: "failed",
+        created_at: new Date().toISOString(),
+        test_mode: false,
+        plan: chosenPlan,
+        plan_code: chosenPlan?.plan_code || planCode,
+        validity: chosenPlan?.validity || "",
+        network: chosenPlan?.network || "",
+        recipient: phone,
+        amount: Number(chosenPlan?.price || 0),
+        ported,
+        failure_reason: err?.message || "Data purchase failed.",
+        provider_message: "",
+      });
       showToast(err.message || "Purchase failed.", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const downloadReceipt = async () => {
+    if (!purchaseResult || !receiptCaptureRef.current) return;
+    setDownloadBusy(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const canvas = await html2canvas(receiptCaptureRef.current, {
+        scale: 2,
+        backgroundColor: "#f4f7fb",
+        useCORS: true,
+        logging: false,
+      });
+      const imageData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const maxWidth = pageWidth - margin * 2;
+      const maxHeight = pageHeight - margin * 2;
+      const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
+      const renderWidth = canvas.width * ratio;
+      const renderHeight = canvas.height * ratio;
+      const x = (pageWidth - renderWidth) / 2;
+      const y = margin;
+      pdf.addImage(imageData, "PNG", x, y, renderWidth, renderHeight, undefined, "FAST");
+
+      const safeReference = String(purchaseResult.reference || "data").replace(/[^a-zA-Z0-9_-]/g, "_");
+      pdf.save(`axisvtu-data-receipt-${safeReference}.pdf`);
+      showToast("Receipt downloaded successfully.", "success");
+    } catch {
+      showToast("Failed to download receipt. Please try again.", "error");
+    } finally {
+      setDownloadBusy(false);
     }
   };
 
@@ -164,6 +237,51 @@ export default function Data() {
       if (prev.length >= 2) return prev;
       return [...prev, plan];
     });
+  };
+
+  const formatAmount = (value) => {
+    const num = Number(value ?? 0);
+    if (Number.isNaN(num)) return String(value ?? "0.00");
+    return num.toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const formatDateTime = (value) => {
+    if (!value) return "—";
+    try {
+      return new Date(value).toLocaleString("en-NG", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    } catch {
+      return String(value);
+    }
+  };
+
+  const resultStatusKey = (value) => String(value || "").toLowerCase();
+  const resultStatusLabel = (value) => {
+    const key = resultStatusKey(value);
+    if (key === "success") return "Success";
+    if (key === "pending") return "Pending";
+    if (key === "failed") return "Failed";
+    return String(value || "—");
+  };
+
+  const receiptFields = (result) => {
+    if (!result) return [];
+    return [
+      { label: "Network", value: result.network ? String(result.network).toUpperCase() : "—" },
+      { label: "Plan", value: result.plan?.plan_name || "—" },
+      { label: "Plan Code", value: result.plan_code || "—" },
+      { label: "Validity", value: result.validity || "—" },
+      { label: "Recipient", value: result.recipient || "—" },
+      { label: "Ported Number", value: result.ported ? "Yes" : "No" },
+      { label: "Status", value: resultStatusLabel(result.status) },
+      { label: "Reference", value: result.reference || "—" },
+      { label: "Failure Reason", value: result.failure_reason || "—" },
+    ];
   };
 
   return (
@@ -397,41 +515,127 @@ export default function Data() {
         </div>
       )}
 
-      {success && (
+      {loading && (
+        <div className="purchase-loading-screen" role="status" aria-live="polite">
+          <div className="purchase-loading-card">
+            <div className="purchase-loading-ring">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="purchase-loading-title">Processing Data Purchase</div>
+            <div className="purchase-loading-sub">Please wait while we contact the provider and verify response.</div>
+            <div className="purchase-loading-marquee">
+              <div className="purchase-loading-track">
+                <span>Connecting</span>
+                <span>Validating</span>
+                <span>Submitting</span>
+                <span>Confirming</span>
+                <span>Connecting</span>
+                <span>Validating</span>
+                <span>Submitting</span>
+                <span>Confirming</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {purchaseResult && (
         <div className="success-screen" role="dialog" aria-live="polite">
           <div className="success-card">
-            <div className="success-icon">✓</div>
+            <div className={`success-icon ${purchaseResult.ok ? "" : "error"}`}>
+              {purchaseResult.ok ? "✓" : "!"}
+            </div>
             <div className="success-title">
-              {(success.status || "").toLowerCase() === "success" ? "Data Purchase Successful" : "Purchase Pending"}
+              {purchaseResult.ok
+                ? resultStatusKey(purchaseResult.status) === "success"
+                  ? "Data Purchase Successful"
+                  : "Data Purchase Pending"
+                : "Data Purchase Failed"}
             </div>
             <div className="success-sub">
-              {(success.status || "").toLowerCase() === "success"
-                ? "Your data has been delivered."
-                : "We are processing your request. You can check status in transactions."}
+              {purchaseResult.ok
+                ? resultStatusKey(purchaseResult.status) === "success"
+                  ? "Your request was completed successfully."
+                  : "Request submitted. Final delivery status may update shortly."
+                : "We could not complete this request. Please review the receipt details below."}
             </div>
-            {success.test_mode && (
+            {purchaseResult.test_mode && (
               <div className="notice" style={{ marginBottom: 10 }}>
                 Simulation mode is enabled. This purchase was not sent to live provider.
+              </div>
+            )}
+            {!!purchaseResult.failure_reason && (
+              <div className="notice" style={{ marginBottom: 10 }}>
+                {purchaseResult.failure_reason}
               </div>
             )}
             <div className="success-grid">
               <div>
                 <div className="label">Plan</div>
-                <div className="value">{success.plan?.plan_name || "—"}</div>
+                <div className="value">{purchaseResult.plan?.plan_name || "—"}</div>
               </div>
               <div>
                 <div className="label">Recipient</div>
-                <div className="muted">{phone}</div>
+                <div className="muted">{purchaseResult.recipient || "—"}</div>
+              </div>
+              <div>
+                <div className="label">Amount</div>
+                <div className="muted">₦ {formatAmount(purchaseResult.amount)}</div>
               </div>
               <div>
                 <div className="label">Reference</div>
-                <div className="muted">{success.reference}</div>
+                <div className="muted">{purchaseResult.reference}</div>
               </div>
             </div>
             <div className="modal-actions">
-              <button className="ghost" onClick={() => setSuccess(null)}>Close</button>
-              <button className="primary" onClick={() => navigate("/transactions")}>View Receipt</button>
-              <button className="ghost" onClick={() => navigate("/wallet")}>Fund Wallet</button>
+              <button className="primary" onClick={downloadReceipt} disabled={downloadBusy}>
+                {downloadBusy ? "Preparing..." : "Download Receipt"}
+              </button>
+              <button className="ghost" onClick={() => navigate("/transactions")}>View Receipt</button>
+              <button className="ghost" onClick={() => setPurchaseResult(null)}>Done</button>
+            </div>
+          </div>
+          <div className="receipt-capture-layer" aria-hidden="true">
+            <div className="receipt-sheet" ref={receiptCaptureRef}>
+              <div className="receipt-sheet-header">
+                <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" />
+                <div>
+                  <div className="label">AxisVTU Purchase Receipt</div>
+                  <h4>Data Purchase</h4>
+                </div>
+                <span className={`pill ${resultStatusKey(purchaseResult.status)}`}>
+                  {resultStatusLabel(purchaseResult.status)}
+                </span>
+              </div>
+
+              <div className="receipt-sheet-total">
+                <div className="label">Amount</div>
+                <div className="value">₦ {formatAmount(purchaseResult.amount)}</div>
+              </div>
+
+              <div className="receipt-sheet-grid">
+                <div>
+                  <div className="label">Reference</div>
+                  <div>{purchaseResult.reference || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Date</div>
+                  <div>{formatDateTime(purchaseResult.created_at)}</div>
+                </div>
+                {receiptFields(purchaseResult).map((item, idx) => (
+                  <div key={`${item.label}-${idx}`}>
+                    <div className="label">{item.label}</div>
+                    <div>{item.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="receipt-sheet-footer">
+                <div>Generated by AxisVTU</div>
+                <div>{new Date().toLocaleString("en-NG")}</div>
+              </div>
             </div>
           </div>
         </div>
