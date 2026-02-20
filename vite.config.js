@@ -11,7 +11,7 @@ export default defineConfig({
       devOptions: { enabled: false },
       workbox: {
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/landing(?:\/|$)/],
       },
       manifest: {
         name: "AxisVTU",

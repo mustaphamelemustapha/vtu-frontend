@@ -7,7 +7,7 @@ const SUPPORT_CONTACTS = {
   customer_care_phone: "+2348141114647",
   tech_support_phone: "+2349124989418",
   email: "mmtechglobe@gmail.com",
-  website: "https://vtu-frontend-beta.vercel.app/landing",
+  website: "/landing/",
   whatsapp_phone: "2348141114647",
 };
 
