@@ -32,7 +32,11 @@ export default function AdminLogin({ onAuth }) {
         return;
       }
       setProfile({ full_name: profile.full_name, email: profile.email, role: profile.role });
-      onAuth();
+      onAuth({
+        full_name: profile.full_name,
+        email: profile.email,
+        role: profile.role,
+      });
       navigate("/admin", { replace: true });
     } catch (err) {
       setError(err.message);

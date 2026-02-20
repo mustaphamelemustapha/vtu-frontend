@@ -207,7 +207,11 @@ export default function Login({ onAuth }) {
       setAuthTokens(data.access_token, data.refresh_token, rememberMe);
       const profile = await apiFetch("/auth/me");
       setProfile({ full_name: profile.full_name, email: profile.email, role: profile.role });
-      onAuth();
+      onAuth({
+        full_name: profile.full_name,
+        email: profile.email,
+        role: profile.role,
+      });
       if ((profile.role || "").toLowerCase() === "admin") {
         navigate("/admin", { replace: true });
       } else {

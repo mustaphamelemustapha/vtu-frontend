@@ -18,9 +18,11 @@ import { apiFetch, getToken, clearToken, getProfile, setProfile } from "./servic
 import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 
-function AdminRouteGuard({ children, onProfileSync, onAuthExpired }) {
+function AdminRouteGuard({ children, currentRole, onProfileSync, onAuthExpired }) {
   const cachedProfile = getProfile();
-  const cachedIsAdmin = String(cachedProfile?.role || "").toLowerCase() === "admin";
+  const cachedIsAdmin =
+    String(currentRole || "").toLowerCase() === "admin" ||
+    String(cachedProfile?.role || "").toLowerCase() === "admin";
   const [checking, setChecking] = useState(!cachedIsAdmin);
   const [allowed, setAllowed] = useState(cachedIsAdmin);
   const location = useLocation();
@@ -58,7 +60,7 @@ function AdminRouteGuard({ children, onProfileSync, onAuthExpired }) {
     };
   }, [onAuthExpired, onProfileSync]);
 
-  if (checking) {
+  if (checking && !allowed) {
     return (
       <section className="section">
         <div className="card">
@@ -234,8 +236,34 @@ export default function App() {
       <ToastHost />
       {!authenticated ? (
         <Routes>
-          <Route path="/admin-login" element={<AdminLogin onAuth={() => setAuthenticated(true)} />} />
-          <Route path="*" element={<Login onAuth={() => setAuthenticated(true)} />} />
+          <Route
+            path="/admin-login"
+            element={
+              <AdminLogin
+                onAuth={(nextProfile) => {
+                  if (nextProfile) {
+                    setProfile(nextProfile);
+                    setProfileState(nextProfile);
+                  }
+                  setAuthenticated(true);
+                }}
+              />
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <Login
+                onAuth={(nextProfile) => {
+                  if (nextProfile) {
+                    setProfile(nextProfile);
+                    setProfileState(nextProfile);
+                  }
+                  setAuthenticated(true);
+                }}
+              />
+            }
+          />
         </Routes>
       ) : (
         <div className="app-shell">
@@ -353,6 +381,7 @@ export default function App() {
                 path="/admin"
                 element={
                   <AdminRouteGuard
+                    currentRole={profile.role}
                     onProfileSync={(next) => {
                       setProfile(next);
                       setProfileState(next);
