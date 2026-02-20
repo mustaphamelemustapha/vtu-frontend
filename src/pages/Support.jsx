@@ -3,6 +3,36 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
+const SUPPORT_CONTACTS = {
+  customer_care_phone: "+2348141114647",
+  tech_support_phone: "+2349124989418",
+  email: "mmtechglobe@gmail.com",
+  website: "https://vtu-frontend-beta.vercel.app/landing",
+};
+
+const FAQ_ITEMS = [
+  {
+    q: "I bought data but did not receive it. What should I do?",
+    a: "Open the transaction receipt, tap Report Issue, and include the exact phone number and network used. Keep your reference ID ready.",
+  },
+  {
+    q: "How long does support resolution take?",
+    a: "Most issues are reviewed within a few hours. Complex provider reversals may take up to 24 to 72 hours.",
+  },
+  {
+    q: "Why is my transaction pending?",
+    a: "Pending means the provider is still processing it. Do not repeat payment immediately. Wait for status update or open a support report.",
+  },
+  {
+    q: "Can I get a refund for failed purchases?",
+    a: "Yes. Failed provider transactions are typically auto-refunded to wallet. If not reflected, report the transaction from your receipt.",
+  },
+  {
+    q: "Where can I download transaction receipts?",
+    a: "Go to Transactions, open any transaction, then tap Download Receipt to save the PDF.",
+  },
+];
+
 function statusKey(value) {
   return String(value || "").toLowerCase();
 }
@@ -105,8 +135,8 @@ export default function Support() {
         <div className="card support-head">
           <div>
             <div className="label">Support</div>
-            <h3>My Reported Issues</h3>
-            <div className="muted">Track all transaction issues and support updates in one place.</div>
+            <h3>Help & Support Center</h3>
+            <div className="muted">Contact support quickly, get answers, and track your reported issues.</div>
           </div>
           <div className="support-head-actions">
             <button className="ghost" type="button" onClick={() => navigate("/transactions")}>
@@ -115,6 +145,74 @@ export default function Support() {
             <button className="primary" type="button" onClick={load} disabled={loading}>
               {loading ? "Refreshing..." : "Refresh"}
             </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="support-contact-grid">
+          <a className="card support-contact-card" href={`tel:${SUPPORT_CONTACTS.customer_care_phone}`}>
+            <div className="label">Customer Care</div>
+            <div className="value">Call Us</div>
+            <div className="muted">{SUPPORT_CONTACTS.customer_care_phone}</div>
+          </a>
+          <a className="card support-contact-card" href={`tel:${SUPPORT_CONTACTS.tech_support_phone}`}>
+            <div className="label">Tech Support</div>
+            <div className="value">Technical Help</div>
+            <div className="muted">{SUPPORT_CONTACTS.tech_support_phone}</div>
+          </a>
+          <a className="card support-contact-card" href={`mailto:${SUPPORT_CONTACTS.email}`}>
+            <div className="label">Email Support</div>
+            <div className="value">Send Email</div>
+            <div className="muted">{SUPPORT_CONTACTS.email}</div>
+          </a>
+          <a className="card support-contact-card" href={SUPPORT_CONTACTS.website} target="_blank" rel="noreferrer">
+            <div className="label">Website</div>
+            <div className="value">Visit Website</div>
+            <div className="muted">AxisVTU Official Site</div>
+          </a>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card support-info-card">
+          <div className="section-head">
+            <h3>Support Info</h3>
+            <span className="pill open">Live</span>
+          </div>
+          <div className="support-info-grid">
+            <div>
+              <div className="label">Hours</div>
+              <div>Monday - Sunday, 8:00 AM to 10:00 PM (WAT)</div>
+            </div>
+            <div>
+              <div className="label">Response Time</div>
+              <div>Usually under 2 hours for open tickets</div>
+            </div>
+            <div>
+              <div className="label">Escalation</div>
+              <div>Use Tech Support line for urgent failed debit/provider cases</div>
+            </div>
+            <div>
+              <div className="label">Tip</div>
+              <div>Always include your transaction reference for faster help</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card support-faq-card">
+          <div className="section-head">
+            <h3>Common Questions</h3>
+          </div>
+          <div className="support-faq-list">
+            {FAQ_ITEMS.map((item, idx) => (
+              <details className="support-faq-item" key={`${item.q}-${idx}`}>
+                <summary>{item.q}</summary>
+                <p className="muted">{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
@@ -142,6 +240,9 @@ export default function Support() {
 
       <section className="section">
         <div className="card">
+          <div className="section-head">
+            <h3>My Reported Issues</h3>
+          </div>
           <div className="pill-group">
             {["all", "open", "resolved", "rejected"].map((item) => (
               <button

@@ -799,6 +799,62 @@ a:focus-visible {
   margin-top: 0;
 }
 
+.support-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.support-contact-card {
+  display: grid;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  background:
+    radial-gradient(circle at 8% 10%, rgba(15, 118, 110, 0.09), transparent 46%),
+    var(--panel);
+}
+
+.support-info-card,
+.support-faq-card {
+  display: grid;
+  gap: 10px;
+}
+
+.support-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.support-info-grid > div {
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  padding: 10px;
+  background: var(--panel-light);
+}
+
+.support-faq-list {
+  display: grid;
+  gap: 8px;
+}
+
+.support-faq-item {
+  border: 1px solid var(--stroke);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--panel-light);
+}
+
+.support-faq-item summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.support-faq-item p {
+  margin: 8px 0 0;
+}
+
 .nav {
   background:
     radial-gradient(circle at 20% 10%, rgba(15, 118, 110, 0.10), transparent 45%),
@@ -2476,6 +2532,10 @@ a.pill:active::after {
     justify-items: start;
   }
   .support-meta-grid {
+    grid-template-columns: 1fr;
+  }
+  .support-contact-grid,
+  .support-info-grid {
     grid-template-columns: 1fr;
   }
 }
