@@ -8,6 +8,7 @@ const SUPPORT_CONTACTS = {
   tech_support_phone: "+2349124989418",
   email: "mmtechglobe@gmail.com",
   website: "https://vtu-frontend-beta.vercel.app/landing",
+  whatsapp_phone: "2348141114647",
 };
 
 const FAQ_ITEMS = [
@@ -170,6 +171,18 @@ export default function Support() {
             <div className="label">Website</div>
             <div className="value">Visit Website</div>
             <div className="muted">AxisVTU Official Site</div>
+          </a>
+          <a
+            className="card support-contact-card whatsapp"
+            href={`https://wa.me/${SUPPORT_CONTACTS.whatsapp_phone}?text=${encodeURIComponent(
+              "Hello AxisVTU Support, I need help with my transaction."
+            )}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <div className="label">WhatsApp Support</div>
+            <div className="value">Chat on WhatsApp</div>
+            <div className="muted">Fast chat support</div>
           </a>
         </div>
       </section>
@@ -355,6 +368,10 @@ export default function Support() {
           )}
         </div>
       </section>
+
+      <a className="support-fab-call" href={`tel:${SUPPORT_CONTACTS.customer_care_phone}`}>
+        Call Now
+      </a>
     </div>
   );
 }
