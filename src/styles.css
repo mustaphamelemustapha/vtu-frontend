@@ -2336,7 +2336,7 @@ a.pill:active::after {
     display: none;
   }
   .main {
-    padding: 16px 16px calc(74px + env(safe-area-inset-bottom));
+    padding: 16px 16px calc(66px + env(safe-area-inset-bottom));
     max-width: none;
   }
   .topbar {
@@ -2385,26 +2385,26 @@ a.pill:active::after {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 0;
-    padding: 8px 6px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
-    box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.12);
+    padding: 4px 0;
+    padding-bottom: calc(4px + env(safe-area-inset-bottom));
+    box-shadow: none;
     z-index: 30;
   }
 
   .dark .bottom-nav {
     background: #101623;
     border-top-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.36);
+    box-shadow: none;
   }
 
   .bottom-nav a {
     display: grid;
     justify-items: center;
-    gap: 6px;
-    font-size: 11px;
-    padding: 9px 0 8px;
+    gap: 3px;
+    font-size: 10px;
+    padding: 6px 0 4px;
     color: var(--muted);
-    border-radius: 18px;
+    border-radius: 0;
     position: relative;
     overflow: hidden;
     isolation: isolate;
@@ -2443,24 +2443,27 @@ a.pill:active::after {
   }
 
   .bottom-nav a .icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 16px;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
     display: grid;
     place-items: center;
-    background: rgba(15, 23, 42, 0.04);
-    border: 1px solid rgba(15, 23, 42, 0.07);
-    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+    background: transparent;
+    border: none;
+    box-shadow: none;
     transition:
-      box-shadow 0.14s ease,
-      background 0.14s ease,
       color 0.14s ease;
   }
 
   .dark .bottom-nav a .icon {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.10);
-    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.28);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .bottom-nav a .icon svg {
+    width: 18px;
+    height: 18px;
   }
 
   .bottom-nav a span {
@@ -2478,13 +2481,11 @@ a.pill:active::after {
   }
 
   .bottom-nav a.active .icon {
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    border-color: rgba(255, 255, 255, 0.28);
-    color: #fff;
+    background: transparent;
+    border: none;
+    color: var(--accent);
     transform: none;
-    box-shadow:
-      0 18px 34px rgba(15, 118, 110, 0.26),
-      0 10px 22px rgba(56, 189, 248, 0.16);
+    box-shadow: none;
   }
 
   .bottom-nav a.active span {
