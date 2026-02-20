@@ -7,6 +7,7 @@ export default function Transactions() {
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
+  const [reportsByReference, setReportsByReference] = useState({});
   const [reportOpen, setReportOpen] = useState(false);
   const [reportBusy, setReportBusy] = useState(false);
   const [downloadBusy, setDownloadBusy] = useState(false);
@@ -18,15 +19,38 @@ export default function Transactions() {
   const receiptCaptureRef = useRef(null);
   const { showToast } = useToast();
 
+  const buildReportMap = (rows) => {
+    const map = {};
+    for (const row of Array.isArray(rows) ? rows : []) {
+      const ref = String(row?.transaction_reference || "").trim();
+      if (!ref) continue;
+      if (!map[ref]) map[ref] = row;
+    }
+    return map;
+  };
+
   useEffect(() => {
     let mounted = true;
-    apiFetch("/transactions/me")
-      .then((rows) => {
+    Promise.all([
+      apiFetch("/transactions/me"),
+      apiFetch("/transactions/reports/me").catch(() => []),
+    ])
+      .then(([rows, reports]) => {
         if (!mounted) return;
         const items = Array.isArray(rows) ? rows : [];
+        const reportMap = buildReportMap(reports);
         setTxs(items);
+        setReportsByReference(reportMap);
         setReportedRefs(
-          new Set(items.filter((item) => item?.has_open_report).map((item) => item.reference))
+          new Set(
+            items
+              .filter(
+                (item) =>
+                  item?.has_open_report ||
+                  statusKey(reportMap[item.reference]?.status) === "open"
+              )
+              .map((item) => item.reference)
+          )
         );
       })
       .catch(() => {});
@@ -46,8 +70,13 @@ export default function Transactions() {
   };
 
   const typeKey = (value) => String(value || "").toLowerCase();
+  const getReportForTx = (tx) => reportsByReference[String(tx?.reference || "")] || null;
   const hasOpenReport = (tx) =>
-    Boolean((tx && tx.has_open_report) || (tx?.reference && reportedRefs.has(tx.reference)));
+    Boolean(
+      (tx && tx.has_open_report) ||
+      statusKey(getReportForTx(tx)?.status) === "open" ||
+      (tx?.reference && reportedRefs.has(tx.reference))
+    );
   const formatAmount = (value) => {
     const num = Number(value ?? 0);
     if (Number.isNaN(num)) return String(value ?? "0.00");
@@ -149,12 +178,18 @@ export default function Transactions() {
           reason: reportForm.reason,
         }),
       });
+      const latestReport = await apiFetch("/transactions/reports/me")
+        .then((rows) => buildReportMap(rows)[selected.reference] || null)
+        .catch(() => null);
       showToast("Issue reported successfully. Support will review it.", "success");
       setReportedRefs((prev) => {
         const next = new Set(prev);
         next.add(selected.reference);
         return next;
       });
+      if (latestReport) {
+        setReportsByReference((prev) => ({ ...prev, [selected.reference]: latestReport }));
+      }
       setTxs((prev) =>
         prev.map((tx) =>
           tx.reference === selected.reference ? { ...tx, has_open_report: true } : tx
@@ -262,18 +297,25 @@ export default function Transactions() {
           {filtered.map((tx) => (
             <button className="list-card" key={tx.id} type="button" onClick={() => setSelected(tx)}>
               <div>
-                  <div className="list-title">{typeLabel(tx)}</div>
-                  <div className="muted">{tx.reference}</div>
+                <div className="list-title">{typeLabel(tx)}</div>
+                <div className="muted">{tx.reference}</div>
+              </div>
+              <div className="list-meta">
+                <div className="value">₦ {formatAmount(tx.amount)}</div>
+                <div className="tx-pill-stack">
+                  <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
+                  {getReportForTx(tx) && (
+                    <span className={`pill ${statusKey(getReportForTx(tx)?.status)}`}>
+                      Issue {statusLabel(getReportForTx(tx)?.status)}
+                    </span>
+                  )}
+                  {!getReportForTx(tx) && hasOpenReport(tx) && (
+                    <span className="pill warning">Issue Reported</span>
+                  )}
                 </div>
-                <div className="list-meta">
-                  <div className="value">₦ {formatAmount(tx.amount)}</div>
-                  <div className="tx-pill-stack">
-                    <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
-                    {hasOpenReport(tx) && <span className="pill warning">Issue Reported</span>}
-                  </div>
-                </div>
-              </button>
-            ))}
+              </div>
+            </button>
+          ))}
           {filtered.length === 0 && (
             <div className="empty">No transactions found.</div>
           )}
@@ -305,6 +347,14 @@ export default function Transactions() {
               {hasOpenReport(selected) && (
                 <div className="notice info">
                   You have an active issue report for this transaction. Support will follow up.
+                </div>
+              )}
+              {getReportForTx(selected) && (
+                <div className="notice info">
+                  <strong>Issue Status:</strong> {statusLabel(getReportForTx(selected)?.status)}
+                  {getReportForTx(selected)?.admin_note
+                    ? ` • Note: ${getReportForTx(selected)?.admin_note}`
+                    : ""}
                 </div>
               )}
               <div className="receipt-grid">

@@ -85,6 +85,7 @@ export default function Admin() {
   // Reports
   const [reportState, setReportState] = useState({ items: [], total: 0, page: 1, page_size: DEFAULT_PAGE_SIZE });
   const [reportBusy, setReportBusy] = useState(false);
+  const [reportActionBusyId, setReportActionBusyId] = useState(null);
   const [reportFilters, setReportFilters] = useState({ q: "", status: "" });
 
   // Users
@@ -96,8 +97,17 @@ export default function Admin() {
   const [fundForm, setFundForm] = useState({ amount: 1000, description: "Admin funding" });
   const [fundBusy, setFundBusy] = useState(false);
 
+  const loadAnalytics = async () => {
+    try {
+      const data = await apiFetch("/admin/analytics");
+      setAnalytics(data);
+    } catch {
+      // keep UI usable even when analytics endpoint is temporarily unavailable
+    }
+  };
+
   useEffect(() => {
-    apiFetch("/admin/analytics").then(setAnalytics).catch(() => {});
+    loadAnalytics();
   }, []);
 
   const fetchTransactions = async (next = {}) => {
@@ -155,6 +165,42 @@ export default function Admin() {
       showToast(err?.message || "Failed to load reports.", "error");
     } finally {
       setReportBusy(false);
+    }
+  };
+
+  const updateReportStatus = async (item, nextStatus) => {
+    const isReject = nextStatus === "rejected";
+    const promptLabel = isReject
+      ? "Add rejection note (required):"
+      : "Add resolution note (optional):";
+    const input = window.prompt(promptLabel, item.admin_note || "");
+    if (input === null) return;
+    const note = String(input || "").trim();
+    if (isReject && !note) {
+      showToast("Rejection note is required.", "error");
+      return;
+    }
+    setReportActionBusyId(`${item.id}:${nextStatus}`);
+    try {
+      await apiFetch(`/admin/reports/${item.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: nextStatus,
+          admin_note: note,
+        }),
+      });
+      showToast(
+        nextStatus === "resolved" ? "Report marked as resolved." : "Report rejected.",
+        "success"
+      );
+      await Promise.all([
+        fetchReports({ page: reportState.page || 1 }),
+        loadAnalytics(),
+      ]);
+    } catch (err) {
+      showToast(err?.message || "Failed to update report.", "error");
+    } finally {
+      setReportActionBusyId(null);
     }
   };
 
@@ -584,6 +630,8 @@ export default function Admin() {
                     <th>Category</th>
                     <th>Status</th>
                     <th>Reason</th>
+                    <th>Admin Note</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -598,11 +646,36 @@ export default function Admin() {
                         <span className={`pill ${statusKey(item.status)}`}>{statusLabel(item.status)}</span>
                       </td>
                       <td>{item.reason}</td>
+                      <td>{item.admin_note || "—"}</td>
+                      <td className="admin-actions">
+                        {statusKey(item.status) === "open" ? (
+                          <>
+                            <button
+                              className="ghost"
+                              type="button"
+                              onClick={() => updateReportStatus(item, "resolved")}
+                              disabled={reportActionBusyId === `${item.id}:resolved`}
+                            >
+                              {reportActionBusyId === `${item.id}:resolved` ? "Saving..." : "Resolve"}
+                            </button>
+                            <button
+                              className="ghost danger"
+                              type="button"
+                              onClick={() => updateReportStatus(item, "rejected")}
+                              disabled={reportActionBusyId === `${item.id}:rejected`}
+                            >
+                              {reportActionBusyId === `${item.id}:rejected` ? "Saving..." : "Reject"}
+                            </button>
+                          </>
+                        ) : (
+                          <span className="muted">Closed</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                   {!reportBusy && reportState.items.length === 0 && (
                     <tr>
-                      <td colSpan={7}>
+                      <td colSpan={9}>
                         <div className="empty">No reports found.</div>
                       </td>
                     </tr>
@@ -617,9 +690,32 @@ export default function Admin() {
                       <div className="list-title">{item.user_email}</div>
                       <div className="muted">{item.transaction_reference}</div>
                       <div className="muted">{String(item.category || "other").replaceAll("_", " ")}</div>
+                      <div className="muted">{item.admin_note || "No admin note yet"}</div>
                     </div>
                     <div className="list-meta">
                       <span className={`pill ${statusKey(item.status)}`}>{statusLabel(item.status)}</span>
+                      {statusKey(item.status) === "open" ? (
+                        <div className="admin-actions">
+                          <button
+                            className="ghost"
+                            type="button"
+                            onClick={() => updateReportStatus(item, "resolved")}
+                            disabled={reportActionBusyId === `${item.id}:resolved`}
+                          >
+                            Resolve
+                          </button>
+                          <button
+                            className="ghost danger"
+                            type="button"
+                            onClick={() => updateReportStatus(item, "rejected")}
+                            disabled={reportActionBusyId === `${item.id}:rejected`}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="muted">Closed</span>
+                      )}
                     </div>
                   </div>
                 ))}
