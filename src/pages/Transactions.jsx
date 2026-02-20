@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
@@ -7,10 +7,32 @@ export default function Transactions() {
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportBusy, setReportBusy] = useState(false);
+  const [downloadBusy, setDownloadBusy] = useState(false);
+  const [reportedRefs, setReportedRefs] = useState(() => new Set());
+  const [reportForm, setReportForm] = useState({
+    category: "delivery_issue",
+    reason: "",
+  });
+  const receiptCaptureRef = useRef(null);
   const { showToast } = useToast();
 
   useEffect(() => {
-    apiFetch("/transactions/me").then(setTxs).catch(() => {});
+    let mounted = true;
+    apiFetch("/transactions/me")
+      .then((rows) => {
+        if (!mounted) return;
+        const items = Array.isArray(rows) ? rows : [];
+        setTxs(items);
+        setReportedRefs(
+          new Set(items.filter((item) => item?.has_open_report).map((item) => item.reference))
+        );
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const statusKey = (value) => String(value || "").toLowerCase();
@@ -24,6 +46,27 @@ export default function Transactions() {
   };
 
   const typeKey = (value) => String(value || "").toLowerCase();
+  const hasOpenReport = (tx) =>
+    Boolean((tx && tx.has_open_report) || (tx?.reference && reportedRefs.has(tx.reference)));
+  const formatAmount = (value) => {
+    const num = Number(value ?? 0);
+    if (Number.isNaN(num)) return String(value ?? "0.00");
+    return num.toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+  const formatDateTime = (value) => {
+    if (!value) return "—";
+    try {
+      return new Date(value).toLocaleString("en-NG", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    } catch {
+      return String(value);
+    }
+  };
   const typeLabel = (tx) => {
     const t = typeKey(tx?.tx_type);
     if (t === "wallet_fund") return "Wallet Funding";
@@ -84,6 +127,90 @@ export default function Transactions() {
     failed: txs.filter((t) => statusKey(t.status) === "failed").length,
   };
 
+  const openReportModal = () => {
+    if (!selected?.reference) return;
+    setReportForm({ category: "delivery_issue", reason: "" });
+    setReportOpen(true);
+  };
+
+  const submitReport = async (e) => {
+    e.preventDefault();
+    if (!selected?.reference) return;
+    if (!String(reportForm.reason || "").trim()) {
+      showToast("Please provide a short reason.", "error");
+      return;
+    }
+    setReportBusy(true);
+    try {
+      await apiFetch(`/transactions/${encodeURIComponent(selected.reference)}/report`, {
+        method: "POST",
+        body: JSON.stringify({
+          category: reportForm.category,
+          reason: reportForm.reason,
+        }),
+      });
+      showToast("Issue reported successfully. Support will review it.", "success");
+      setReportedRefs((prev) => {
+        const next = new Set(prev);
+        next.add(selected.reference);
+        return next;
+      });
+      setTxs((prev) =>
+        prev.map((tx) =>
+          tx.reference === selected.reference ? { ...tx, has_open_report: true } : tx
+        )
+      );
+      setSelected((prev) => (prev ? { ...prev, has_open_report: true } : prev));
+      setReportOpen(false);
+    } catch (err) {
+      showToast(err?.message || "Failed to submit report.", "error");
+    } finally {
+      setReportBusy(false);
+    }
+  };
+
+  const downloadReceipt = async () => {
+    if (!selected || !receiptCaptureRef.current) return;
+    setDownloadBusy(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const canvas = await html2canvas(receiptCaptureRef.current, {
+        scale: 2,
+        backgroundColor: "#f4f7fb",
+        useCORS: true,
+        logging: false,
+      });
+      const imageData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const maxWidth = pageWidth - margin * 2;
+      const maxHeight = pageHeight - margin * 2;
+      const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
+      const renderWidth = canvas.width * ratio;
+      const renderHeight = canvas.height * ratio;
+      const x = (pageWidth - renderWidth) / 2;
+      const y = margin;
+      pdf.addImage(imageData, "PNG", x, y, renderWidth, renderHeight, undefined, "FAST");
+
+      const safeReference = String(selected.reference || "transaction").replace(/[^a-zA-Z0-9_-]/g, "_");
+      pdf.save(`axisvtu-receipt-${safeReference}.pdf`);
+      showToast("Receipt downloaded successfully.", "success");
+    } catch {
+      showToast("Failed to download receipt. Please try again.", "error");
+    } finally {
+      setDownloadBusy(false);
+    }
+  };
+
   return (
     <div className="page">
       <section className="section">
@@ -135,15 +262,18 @@ export default function Transactions() {
           {filtered.map((tx) => (
             <button className="list-card" key={tx.id} type="button" onClick={() => setSelected(tx)}>
               <div>
-                <div className="list-title">{typeLabel(tx)}</div>
-                <div className="muted">{tx.reference}</div>
-              </div>
-              <div className="list-meta">
-                <div className="value">₦ {tx.amount}</div>
-                <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
-              </div>
-            </button>
-          ))}
+                  <div className="list-title">{typeLabel(tx)}</div>
+                  <div className="muted">{tx.reference}</div>
+                </div>
+                <div className="list-meta">
+                  <div className="value">₦ {formatAmount(tx.amount)}</div>
+                  <div className="tx-pill-stack">
+                    <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
+                    {hasOpenReport(tx) && <span className="pill warning">Issue Reported</span>}
+                  </div>
+                </div>
+              </button>
+            ))}
           {filtered.length === 0 && (
             <div className="empty">No transactions found.</div>
           )}
@@ -165,12 +295,18 @@ export default function Transactions() {
                 <div>
                   <div className="list-title">Reference</div>
                   <div className="muted">{selected.reference}</div>
+                  <div className="muted">{formatDateTime(selected.created_at)}</div>
                 </div>
                 <div className="list-meta">
-                  <div className="value">₦ {selected.amount}</div>
+                  <div className="value">₦ {formatAmount(selected.amount)}</div>
                   <span className={`pill ${statusKey(selected.status)}`}>{statusLabel(selected.status)}</span>
                 </div>
               </div>
+              {hasOpenReport(selected) && (
+                <div className="notice info">
+                  You have an active issue report for this transaction. Support will follow up.
+                </div>
+              )}
               <div className="receipt-grid">
                 {receiptFields(selected).map((item, idx) => (
                   <div key={`${item.label}-${idx}`}>
@@ -181,6 +317,17 @@ export default function Transactions() {
               </div>
             </div>
             <div className="modal-actions">
+              <button className="primary" onClick={downloadReceipt} disabled={downloadBusy}>
+                {downloadBusy ? "Preparing..." : "Download Receipt"}
+              </button>
+              <button
+                className="ghost"
+                onClick={openReportModal}
+                disabled={hasOpenReport(selected)}
+                title={hasOpenReport(selected) ? "Issue already reported" : "Report issue"}
+              >
+                {hasOpenReport(selected) ? "Issue Reported" : "Report Issue"}
+              </button>
               <button
                 className="ghost"
                 onClick={() => {
@@ -190,8 +337,101 @@ export default function Transactions() {
               >
                 Copy Reference
               </button>
-              <button className="primary" onClick={() => setSelected(null)}>Done</button>
+              <button className="ghost" onClick={() => setSelected(null)}>Done</button>
             </div>
+          </div>
+          <div className="receipt-capture-layer" aria-hidden="true">
+            <div className="receipt-sheet" ref={receiptCaptureRef}>
+              <div className="receipt-sheet-header">
+                <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" />
+                <div>
+                  <div className="label">AxisVTU Official Receipt</div>
+                  <h4>{typeLabel(selected)}</h4>
+                </div>
+                <span className={`pill ${statusKey(selected.status)}`}>{statusLabel(selected.status)}</span>
+              </div>
+
+              <div className="receipt-sheet-total">
+                <div className="label">Amount Paid</div>
+                <div className="value">₦ {formatAmount(selected.amount)}</div>
+              </div>
+
+              <div className="receipt-sheet-grid">
+                <div>
+                  <div className="label">Reference</div>
+                  <div>{selected.reference || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Date</div>
+                  <div>{formatDateTime(selected.created_at)}</div>
+                </div>
+                {receiptFields(selected).map((item, idx) => (
+                  <div key={`${item.label}-${idx}`}>
+                    <div className="label">{item.label}</div>
+                    <div>{item.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="receipt-sheet-footer">
+                <div>Generated by AxisVTU</div>
+                <div>{new Date().toLocaleString("en-NG")}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reportOpen && selected && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <div className="modal-head">
+              <div>
+                <div className="label">Report Transaction Issue</div>
+                <h3>{selected.reference}</h3>
+              </div>
+              <button className="ghost" onClick={() => setReportOpen(false)} disabled={reportBusy}>
+                Close
+              </button>
+            </div>
+            <form className="form-grid" onSubmit={submitReport}>
+              <label>
+                Issue Type
+                <select
+                  value={reportForm.category}
+                  onChange={(e) => setReportForm((prev) => ({ ...prev, category: e.target.value }))}
+                  disabled={reportBusy}
+                >
+                  <option value="delivery_issue">Delivery issue</option>
+                  <option value="wrong_recipient">Wrong recipient</option>
+                  <option value="duplicate_charge">Duplicate charge</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label>
+                What happened?
+                <textarea
+                  rows={4}
+                  placeholder="Example: Data purchase was marked successful but I did not receive it."
+                  value={reportForm.reason}
+                  onChange={(e) => setReportForm((prev) => ({ ...prev, reason: e.target.value }))}
+                  disabled={reportBusy}
+                />
+              </label>
+              <div className="modal-actions">
+                <button
+                  className="ghost"
+                  type="button"
+                  onClick={() => setReportOpen(false)}
+                  disabled={reportBusy}
+                >
+                  Cancel
+                </button>
+                <button className="primary" type="submit" disabled={reportBusy}>
+                  {reportBusy ? "Submitting..." : "Submit Report"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

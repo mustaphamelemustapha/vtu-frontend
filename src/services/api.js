@@ -75,6 +75,11 @@ function parseError(data) {
   if (Array.isArray(data?.detail)) {
     return data.detail.map((item) => item?.msg || item).join(", ");
   }
+  if (data?.detail && typeof data.detail === "object") {
+    const message = data.detail.message || data.detail.detail || data.message;
+    const hint = data.detail.hint;
+    return [message, hint].filter(Boolean).join(" ");
+  }
   if (typeof data?.detail === "string") {
     return data.detail;
   }

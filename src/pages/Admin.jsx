@@ -21,6 +21,9 @@ function statusLabel(value) {
   if (key === "pending") return "Pending";
   if (key === "failed") return "Failed";
   if (key === "refunded") return "Refunded";
+  if (key === "open") return "Open";
+  if (key === "resolved") return "Resolved";
+  if (key === "rejected") return "Rejected";
   return String(value || "—");
 }
 
@@ -64,7 +67,7 @@ function qs(params) {
 export default function Admin() {
   const { showToast } = useToast();
 
-  const [tab, setTab] = useState("overview"); // overview|transactions|users|pricing
+  const [tab, setTab] = useState("overview"); // overview|transactions|reports|users|pricing
   const [analytics, setAnalytics] = useState(null);
 
   // Pricing
@@ -78,6 +81,11 @@ export default function Admin() {
   const [txBusy, setTxBusy] = useState(false);
   const [txFilters, setTxFilters] = useState({ q: "", status: "", tx_type: "", network: "" });
   const [selectedTx, setSelectedTx] = useState(null);
+
+  // Reports
+  const [reportState, setReportState] = useState({ items: [], total: 0, page: 1, page_size: DEFAULT_PAGE_SIZE });
+  const [reportBusy, setReportBusy] = useState(false);
+  const [reportFilters, setReportFilters] = useState({ q: "", status: "" });
 
   // Users
   const [userState, setUserState] = useState({ items: [], total: 0, page: 1, page_size: DEFAULT_PAGE_SIZE });
@@ -129,6 +137,27 @@ export default function Admin() {
     }
   };
 
+  const fetchReports = async (next = {}) => {
+    const page = next.page ?? reportState.page ?? 1;
+    const page_size = next.page_size ?? reportState.page_size ?? DEFAULT_PAGE_SIZE;
+    setReportBusy(true);
+    try {
+      const data = await apiFetch(
+        `/admin/reports${qs({
+          page,
+          page_size,
+          q: reportFilters.q,
+          status: reportFilters.status,
+        })}`
+      );
+      setReportState(data);
+    } catch (err) {
+      showToast(err?.message || "Failed to load reports.", "error");
+    } finally {
+      setReportBusy(false);
+    }
+  };
+
   const fetchPricingRules = async () => {
     setPricingLoadBusy(true);
     try {
@@ -143,6 +172,7 @@ export default function Admin() {
 
   useEffect(() => {
     if (tab === "transactions" && txState.items.length === 0) fetchTransactions({ page: 1 });
+    if (tab === "reports" && reportState.items.length === 0) fetchReports({ page: 1 });
     if (tab === "users" && userState.items.length === 0) fetchUsers({ page: 1 });
     if (tab === "pricing" && pricingRules.length === 0) fetchPricingRules();
   }, [tab]);
@@ -243,6 +273,12 @@ export default function Admin() {
     return Math.max(1, Math.ceil(total / Math.max(1, size)));
   }, [userState.total, userState.page_size]);
 
+  const reportPages = useMemo(() => {
+    const total = Number(reportState.total || 0);
+    const size = Number(reportState.page_size || DEFAULT_PAGE_SIZE);
+    return Math.max(1, Math.ceil(total / Math.max(1, size)));
+  }, [reportState.total, reportState.page_size]);
+
   return (
     <div className="page admin-page">
       <section className="section">
@@ -257,6 +293,7 @@ export default function Admin() {
               {[
                 { id: "overview", label: "Overview" },
                 { id: "transactions", label: "Transactions" },
+                { id: "reports", label: "Reports" },
                 { id: "users", label: "Users" },
                 { id: "pricing", label: "Pricing" },
               ].map((t) => (
@@ -325,6 +362,11 @@ export default function Admin() {
               <div className="label">API Success</div>
               <div className="value">{analytics?.api_success || 0}</div>
               <div className="muted">Provider deliveries</div>
+            </div>
+            <div className="card stat-card">
+              <div className="label">Open Reports</div>
+              <div className="value">{analytics?.reports_open || 0}</div>
+              <div className="muted">Unresolved transaction issues</div>
             </div>
           </div>
           <div className="admin-overview-grid">
@@ -473,6 +515,115 @@ export default function Admin() {
                   </button>
                 ))}
                 {!txBusy && txState.items.length === 0 && <div className="empty">No transactions found.</div>}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {tab === "reports" && (
+        <section className="section">
+          <div className="card">
+            <div className="admin-toolbar">
+              <input
+                placeholder="Search by user, reference, reason..."
+                value={reportFilters.q}
+                onChange={(e) => setReportFilters({ ...reportFilters, q: e.target.value })}
+              />
+              <select
+                value={reportFilters.status}
+                onChange={(e) => setReportFilters({ ...reportFilters, status: e.target.value })}
+              >
+                <option value="">All Status</option>
+                <option value="open">Open</option>
+                <option value="resolved">Resolved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+              <button
+                className="primary"
+                type="button"
+                onClick={() => fetchReports({ page: 1 })}
+                disabled={reportBusy}
+              >
+                {reportBusy ? "Loading..." : "Search"}
+              </button>
+            </div>
+
+            <div className="admin-subhead">
+              <div className="muted">
+                Showing page {reportState.page} of {reportPages} ({reportState.total} total)
+              </div>
+              <div className="admin-pager">
+                <button
+                  className="ghost"
+                  type="button"
+                  onClick={() => fetchReports({ page: Math.max(1, (reportState.page || 1) - 1) })}
+                  disabled={reportBusy || (reportState.page || 1) <= 1}
+                >
+                  Prev
+                </button>
+                <button
+                  className="ghost"
+                  type="button"
+                  onClick={() => fetchReports({ page: Math.min(reportPages, (reportState.page || 1) + 1) })}
+                  disabled={reportBusy || (reportState.page || 1) >= reportPages}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+
+            <div className="admin-table-wrap">
+              <table className="admin-table" aria-label="Transaction reports">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Reference</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportState.items.map((item) => (
+                    <tr key={item.id}>
+                      <td className="mono">{formatDate(item.created_at)}</td>
+                      <td>{item.user_email}</td>
+                      <td className="mono">{item.transaction_reference}</td>
+                      <td>{typeLabel(item.tx_type)}</td>
+                      <td>{String(item.category || "other").replaceAll("_", " ")}</td>
+                      <td>
+                        <span className={`pill ${statusKey(item.status)}`}>{statusLabel(item.status)}</span>
+                      </td>
+                      <td>{item.reason}</td>
+                    </tr>
+                  ))}
+                  {!reportBusy && reportState.items.length === 0 && (
+                    <tr>
+                      <td colSpan={7}>
+                        <div className="empty">No reports found.</div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              <div className="admin-card-list" aria-label="Reports list (mobile)">
+                {reportState.items.map((item) => (
+                  <div key={item.id} className="list-card">
+                    <div>
+                      <div className="list-title">{item.user_email}</div>
+                      <div className="muted">{item.transaction_reference}</div>
+                      <div className="muted">{String(item.category || "other").replaceAll("_", " ")}</div>
+                    </div>
+                    <div className="list-meta">
+                      <span className={`pill ${statusKey(item.status)}`}>{statusLabel(item.status)}</span>
+                    </div>
+                  </div>
+                ))}
+                {!reportBusy && reportState.items.length === 0 && <div className="empty">No reports found.</div>}
               </div>
             </div>
           </div>

@@ -1050,6 +1050,86 @@ a:focus-visible {
   margin-top: 0;
 }
 
+.receipt-capture-layer {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 430px;
+  pointer-events: none;
+  opacity: 1;
+  z-index: -1;
+}
+
+.receipt-sheet {
+  width: 430px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(15, 118, 110, 0.14), transparent 52%),
+    radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.14), transparent 48%),
+    #f4f7fb;
+  color: #0f172a;
+  border-radius: 24px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  padding: 18px;
+  font-family: var(--font-body);
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+}
+
+.receipt-sheet-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.receipt-sheet-header img {
+  width: 42px;
+  height: 42px;
+}
+
+.receipt-sheet-header h4 {
+  margin: 2px 0 0;
+  font-size: 16px;
+}
+
+.receipt-sheet-total {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.receipt-sheet-total .value {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.receipt-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.receipt-sheet-grid > div {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 12px;
+  padding: 10px;
+  min-height: 56px;
+}
+
+.receipt-sheet-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(15, 23, 42, 0.18);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #475569;
+  font-size: 12px;
+}
+
 .modal-head {
   display: flex;
   justify-content: space-between;
@@ -1748,6 +1828,13 @@ input, select {
   text-align: right;
 }
 
+.tx-pill-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
 .pill {
   display: inline-flex;
   align-items: center;
@@ -1814,6 +1901,26 @@ a.pill:active::after {
 .pill.failed {
   background: rgba(239, 68, 68, 0.15);
   color: #dc2626;
+}
+
+.pill.open {
+  background: rgba(14, 165, 233, 0.18);
+  color: #0369a1;
+}
+
+.pill.resolved {
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+}
+
+.pill.rejected {
+  background: rgba(234, 88, 12, 0.15);
+  color: #c2410c;
+}
+
+.pill.warning {
+  background: rgba(14, 165, 233, 0.18);
+  color: #0369a1;
 }
 
 .pill-group {
