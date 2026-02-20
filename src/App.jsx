@@ -19,15 +19,17 @@ import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 
 function AdminRouteGuard({ children, onProfileSync, onAuthExpired }) {
-  const [checking, setChecking] = useState(true);
-  const [allowed, setAllowed] = useState(false);
+  const cachedProfile = getProfile();
+  const cachedIsAdmin = String(cachedProfile?.role || "").toLowerCase() === "admin";
+  const [checking, setChecking] = useState(!cachedIsAdmin);
+  const [allowed, setAllowed] = useState(cachedIsAdmin);
   const location = useLocation();
 
   useEffect(() => {
     let cancelled = false;
 
     const verify = async () => {
-      setChecking(true);
+      if (!cachedIsAdmin) setChecking(true);
       try {
         const profile = await apiFetch("/auth/me");
         if (cancelled) return;
