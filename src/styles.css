@@ -1633,6 +1633,72 @@ a:focus-visible {
   flex-wrap: wrap;
 }
 
+.dashboard-announcement {
+  padding: 12px 14px;
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.dashboard-announcement.info {
+  border-color: rgba(2, 132, 199, 0.28);
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.1), rgba(14, 116, 144, 0.05));
+}
+
+.dashboard-announcement.success {
+  border-color: rgba(22, 163, 74, 0.28);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.1), rgba(5, 150, 105, 0.05));
+}
+
+.dashboard-announcement.warning {
+  border-color: rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.06));
+}
+
+.dashboard-announcement.critical {
+  border-color: rgba(220, 38, 38, 0.3);
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.12), rgba(185, 28, 28, 0.07));
+}
+
+.dashboard-announcement-badge {
+  display: grid;
+  gap: 4px;
+  min-width: 112px;
+}
+
+.dashboard-announcement-marquee {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.dashboard-announcement-track {
+  display: inline-flex;
+  gap: 32px;
+  min-width: 100%;
+  animation: dash-marquee 24s linear infinite;
+}
+
+.dashboard-announcement-track span {
+  flex: 0 0 auto;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+@keyframes dash-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 .section {
   margin-top: var(--space-6);
 }
@@ -2165,6 +2231,11 @@ a.pill:active::after {
   color: #16a34a;
 }
 
+.pill.info {
+  background: rgba(2, 132, 199, 0.16);
+  color: #0369a1;
+}
+
 .pill.pending {
   background: rgba(245, 158, 11, 0.2);
   color: #b45309;
@@ -2191,8 +2262,13 @@ a.pill:active::after {
 }
 
 .pill.warning {
-  background: rgba(14, 165, 233, 0.18);
-  color: #0369a1;
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
+}
+
+.pill.critical {
+  background: rgba(220, 38, 38, 0.16);
+  color: #b91c1c;
 }
 
 .pill-group {
@@ -2398,6 +2474,21 @@ a.pill:active::after {
   .hero-card {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .dashboard-announcement {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+  .dashboard-announcement-badge {
+    min-width: 0;
+  }
+  .dashboard-announcement-marquee {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .dashboard-announcement-track {
+    animation-duration: 19s;
   }
   .bottom-nav {
     position: fixed;

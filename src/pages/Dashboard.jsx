@@ -7,6 +7,7 @@ export default function Dashboard() {
   const { showToast } = useToast();
   const [wallet, setWallet] = useState(null);
   const [txs, setTxs] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [loadingTxs, setLoadingTxs] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -16,9 +17,10 @@ export default function Dashboard() {
     setLoadError("");
     setLoadingWallet(true);
     setLoadingTxs(true);
-    const [walletRes, txRes] = await Promise.allSettled([
+    const [walletRes, txRes, announcementRes] = await Promise.allSettled([
       apiFetch("/wallet/me"),
       apiFetch("/transactions/me"),
+      apiFetch("/notifications/broadcast"),
     ]);
 
     if (walletRes.status === "fulfilled") {
@@ -30,6 +32,11 @@ export default function Dashboard() {
       setTxs(txRes.value);
     } else {
       setLoadError((prev) => prev || txRes.reason?.message || "Failed to load dashboard.");
+    }
+    if (announcementRes.status === "fulfilled") {
+      setAnnouncements(Array.isArray(announcementRes.value) ? announcementRes.value : []);
+    } else {
+      setAnnouncements([]);
     }
     if (walletRes.status !== "fulfilled" || txRes.status !== "fulfilled") {
       showToast("Some dashboard data failed to load.", "warning");
@@ -80,6 +87,35 @@ export default function Dashboard() {
     return `${raw.slice(0, 4)}•••${raw.slice(-3)}`;
   };
 
+  const announcementFeed = useMemo(() => {
+    const chunks = announcements
+      .map((item) => {
+        const title = String(item?.title || "").trim();
+        const message = String(item?.message || "").trim();
+        if (!title && !message) return "";
+        if (!message) return title;
+        if (!title) return message;
+        return `${title}: ${message}`;
+      })
+      .filter(Boolean);
+    return chunks.join("  •  ");
+  }, [announcements]);
+
+  const announcementLevel = useMemo(() => {
+    let score = 0;
+    for (const item of announcements) {
+      const level = String(item?.level || "").toLowerCase();
+      if (level === "critical") score = Math.max(score, 4);
+      else if (level === "warning") score = Math.max(score, 3);
+      else if (level === "success") score = Math.max(score, 2);
+      else if (level === "info") score = Math.max(score, 1);
+    }
+    if (score >= 4) return "critical";
+    if (score >= 3) return "warning";
+    if (score >= 2) return "success";
+    return "info";
+  }, [announcements]);
+
   return (
     <div className="page">
       <section className="hero-card">
@@ -96,6 +132,23 @@ export default function Dashboard() {
           <Link className="ghost" to="/data">Buy Data</Link>
         </div>
       </section>
+
+      {announcementFeed && (
+        <section className="section">
+          <div className={`dashboard-announcement card ${announcementLevel}`}>
+            <div className="dashboard-announcement-badge">
+              <span className={`pill ${announcementLevel}`}>{announcementLevel.toUpperCase()}</span>
+              <span className="label">Live Updates</span>
+            </div>
+            <div className="dashboard-announcement-marquee" role="status" aria-live="polite">
+              <div className="dashboard-announcement-track">
+                <span>{announcementFeed}</span>
+                <span aria-hidden="true">{announcementFeed}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {loadError && (
         <section className="section">
