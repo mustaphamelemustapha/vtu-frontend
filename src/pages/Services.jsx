@@ -5,12 +5,27 @@ import { useToast } from "../context/toast.jsx";
 
 export default function Services() {
   const [catalog, setCatalog] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const { showToast } = useToast();
 
+  const loadCatalog = async () => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const data = await apiFetch("/services/catalog");
+      setCatalog(data);
+    } catch (err) {
+      const msg = err?.message || "Failed to load services.";
+      setLoadError(msg);
+      showToast(msg, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    apiFetch("/services/catalog")
-      .then(setCatalog)
-      .catch((err) => showToast(err?.message || "Failed to load services.", "error"));
+    loadCatalog();
   }, []);
 
   return (
@@ -62,9 +77,15 @@ export default function Services() {
         <div className="card">
           <div className="section-head">
             <h3>Available Providers</h3>
-            <span className="muted">{catalog ? "Loaded" : "Loading..."}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="muted">{loading ? "Loading..." : loadError ? "Error" : "Loaded"}</span>
+              <button className="ghost" type="button" onClick={loadCatalog} disabled={loading}>
+                {loading ? "Refreshing..." : "Refresh"}
+              </button>
+            </div>
           </div>
-          {catalog ? (
+          {loadError && <div className="notice">{loadError}</div>}
+          {catalog && !loadError ? (
             <div className="grid-2">
               <div className="card" style={{ background: "transparent" }}>
                 <div className="label">Airtime networks</div>
@@ -78,7 +99,7 @@ export default function Services() {
               </div>
             </div>
           ) : (
-            <div className="empty">Loading catalog…</div>
+            <div className="empty">{loading ? "Loading catalog…" : "Catalog unavailable. Tap refresh to retry."}</div>
           )}
           <div className="hint">
             If “Install” isn’t available on your device, use Profile → Add to Home Screen for iPhone Safari.

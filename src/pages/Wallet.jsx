@@ -23,6 +23,7 @@ export default function Wallet() {
   const [searchParams] = useSearchParams();
   const [method, setMethod] = useState("paystack");
   const [verifying, setVerifying] = useState(false);
+  const [fundingBusy, setFundingBusy] = useState(false);
   const [pendingRef, setPendingRef] = useState("");
   const [pollCount, setPollCount] = useState(0);
   const { showToast } = useToast();
@@ -67,7 +68,9 @@ export default function Wallet() {
 
   const fund = async (e) => {
     e.preventDefault();
+    if (fundingBusy || verifying) return;
     setMessage("");
+    setFundingBusy(true);
     try {
       if (method === "monnify") {
         showToast("Monnify is coming soon. Please use Paystack for now.", "warning");
@@ -96,6 +99,8 @@ export default function Wallet() {
     } catch (err) {
       setMessage(err.message);
       showToast(err.message || "Wallet funding failed.", "error");
+    } finally {
+      setFundingBusy(false);
     }
   };
 
@@ -183,10 +188,10 @@ export default function Wallet() {
           <div className="muted">Keep your wallet funded for quick purchases.</div>
         </div>
         <div className="hero-actions">
-          <button className="primary" onClick={() => setAmount(2000)}>+ ₦2,000</button>
-          <button className="ghost" onClick={() => setAmount(5000)}>+ ₦5,000</button>
+          <button className="primary" onClick={() => setAmount(2000)} disabled={fundingBusy || verifying}>+ ₦2,000</button>
+          <button className="ghost" onClick={() => setAmount(5000)} disabled={fundingBusy || verifying}>+ ₦5,000</button>
           {ENABLE_BANK_TRANSFER && (
-            <button className="ghost" type="button" onClick={openTransfer}>
+            <button className="ghost" type="button" onClick={openTransfer} disabled={fundingBusy || verifying || transferBusy}>
               Add Balance (Transfer)
             </button>
           )}
@@ -209,24 +214,24 @@ export default function Wallet() {
             </label>
             <label>
               Amount (₦)
-              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} min="100" />
+              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} min="100" disabled={fundingBusy || verifying} />
             </label>
             <label>
               Callback URL
-              <input value={callback} onChange={(e) => setCallback(e.target.value)} />
+              <input value={callback} onChange={(e) => setCallback(e.target.value)} disabled={fundingBusy || verifying} />
             </label>
-            <button className="primary" type="submit">
-              {method === "monnify" ? "Monnify Coming Soon" : "Pay with Paystack"}
+            <button className="primary" type="submit" disabled={fundingBusy || verifying}>
+              {fundingBusy ? "Starting..." : method === "monnify" ? "Monnify Coming Soon" : "Pay with Paystack"}
             </button>
           </form>
           {method === "paystack" && lastReference && (
-            <button className="ghost" type="button" onClick={verifyPayment}>
+            <button className="ghost" type="button" onClick={verifyPayment} disabled={verifying || fundingBusy}>
               {verifying ? "Verifying..." : "Verify Paystack Payment"}
             </button>
           )}
           {ENABLE_BANK_TRANSFER && (
             <div style={{ marginTop: 10 }}>
-              <button className="ghost" type="button" onClick={openTransfer}>
+              <button className="ghost" type="button" onClick={openTransfer} disabled={fundingBusy || verifying || transferBusy}>
                 Add money via mobile or internet banking
               </button>
             </div>

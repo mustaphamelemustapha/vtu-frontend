@@ -1,15 +1,45 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { useToast } from "../context/toast.jsx";
 
 export default function Dashboard() {
+  const { showToast } = useToast();
   const [wallet, setWallet] = useState(null);
   const [txs, setTxs] = useState([]);
+  const [loadingWallet, setLoadingWallet] = useState(true);
+  const [loadingTxs, setLoadingTxs] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
 
+  const loadDashboardData = async () => {
+    setLoadError("");
+    setLoadingWallet(true);
+    setLoadingTxs(true);
+    const [walletRes, txRes] = await Promise.allSettled([
+      apiFetch("/wallet/me"),
+      apiFetch("/transactions/me"),
+    ]);
+
+    if (walletRes.status === "fulfilled") {
+      setWallet(walletRes.value);
+    } else {
+      setLoadError(walletRes.reason?.message || "Failed to load dashboard.");
+    }
+    if (txRes.status === "fulfilled") {
+      setTxs(txRes.value);
+    } else {
+      setLoadError((prev) => prev || txRes.reason?.message || "Failed to load dashboard.");
+    }
+    if (walletRes.status !== "fulfilled" || txRes.status !== "fulfilled") {
+      showToast("Some dashboard data failed to load.", "warning");
+    }
+    setLoadingWallet(false);
+    setLoadingTxs(false);
+  };
+
   useEffect(() => {
-    apiFetch("/wallet/me").then(setWallet).catch(() => {});
-    apiFetch("/transactions/me").then(setTxs).catch(() => {});
+    loadDashboardData();
     try {
       const stored = JSON.parse(localStorage.getItem("vtu_last_recipient") || "null");
       if (stored && typeof stored === "object" && typeof stored.phone === "string" && stored.phone.trim()) {
@@ -55,14 +85,23 @@ export default function Dashboard() {
       <section className="hero-card">
         <div>
           <div className="label">Wallet Balance</div>
-          <div className="hero-value">₦ {wallet?.balance || "0.00"}</div>
+          <div className="hero-value">{loadingWallet ? "Loading..." : `₦ ${wallet?.balance || "0.00"}`}</div>
           <div className="muted">Instant payments. Secure topups.</div>
         </div>
         <div className="hero-actions">
+          <button className="ghost" type="button" onClick={loadDashboardData} disabled={loadingWallet || loadingTxs}>
+            {loadingWallet || loadingTxs ? "Refreshing..." : "Refresh"}
+          </button>
           <Link className="primary" to="/wallet">Fund Wallet</Link>
           <Link className="ghost" to="/data">Buy Data</Link>
         </div>
       </section>
+
+      {loadError && (
+        <section className="section">
+          <div className="notice">{loadError}</div>
+        </section>
+      )}
 
       <section className="section">
         <div className="stats-grid">
@@ -73,7 +112,7 @@ export default function Dashboard() {
           </div>
           <div className="card stat-card">
             <div className="label">Transactions</div>
-            <div className="value">{txs.length}</div>
+            <div className="value">{loadingTxs ? "..." : txs.length}</div>
             <div className="muted">All time</div>
           </div>
           <div className="card stat-card">

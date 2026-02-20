@@ -20,6 +20,8 @@ export default function Data() {
   const [success, setSuccess] = useState(null);
   const [fieldError, setFieldError] = useState("");
   const [wallet, setWallet] = useState(null);
+  const [plansError, setPlansError] = useState("");
+  const [walletError, setWalletError] = useState("");
   const { showToast } = useToast();
 
   const parseSize = (value) => {
@@ -46,6 +48,33 @@ export default function Data() {
     }
   };
 
+  const loadPlans = async () => {
+    setLoadingPlans(true);
+    setPlansError("");
+    try {
+      const data = await apiFetch("/data/plans");
+      setPlans(data);
+    } catch (err) {
+      const msg = err?.message || "Failed to load data plans.";
+      setPlansError(msg);
+      showToast(msg, "error");
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
+
+  const loadWallet = async () => {
+    setWalletError("");
+    try {
+      const data = await apiFetch("/wallet/me");
+      setWallet(data);
+    } catch (err) {
+      const msg = err?.message || "Failed to load wallet balance.";
+      setWalletError(msg);
+      showToast(msg, "error");
+    }
+  };
+
   useEffect(() => {
     try {
       const stored = JSON.parse(localStorage.getItem("vtu_last_recipient") || "null");
@@ -68,12 +97,8 @@ export default function Data() {
     } catch {
       // ignore
     }
-    setLoadingPlans(true);
-    apiFetch("/data/plans")
-      .then(setPlans)
-      .catch(() => {})
-      .finally(() => setLoadingPlans(false));
-    apiFetch("/wallet/me").then(setWallet).catch(() => {});
+    loadPlans();
+    loadWallet();
   }, [searchParams]);
 
   const buy = async (planCode) => {
@@ -93,6 +118,7 @@ export default function Data() {
       setSuccess({
         reference: res.reference,
         status: res.status,
+        test_mode: !!res.test_mode,
         plan: plans.find((p) => p.plan_code === planCode),
       });
       setSelected(null);
@@ -188,8 +214,18 @@ export default function Data() {
       <section className="section">
         <div className="section-head">
           <h3>Data Plans</h3>
-          <div className="muted">{sorted.length} plans</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="muted">{sorted.length} plans</div>
+            <button className="ghost" type="button" onClick={loadPlans} disabled={loadingPlans}>
+              {loadingPlans ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
         </div>
+        {(plansError || walletError) && (
+          <div className="notice">
+            {plansError || walletError}
+          </div>
+        )}
         <div className="tab-row">
           {[
             { id: "all", label: "All" },
@@ -373,6 +409,11 @@ export default function Data() {
                 ? "Your data has been delivered."
                 : "We are processing your request. You can check status in transactions."}
             </div>
+            {success.test_mode && (
+              <div className="notice" style={{ marginBottom: 10 }}>
+                Simulation mode is enabled. This purchase was not sent to live provider.
+              </div>
+            )}
             <div className="success-grid">
               <div>
                 <div className="label">Plan</div>
