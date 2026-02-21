@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
@@ -16,11 +17,13 @@ export default function Electricity() {
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [renderReceiptSheet, setRenderReceiptSheet] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState(null);
+  const [beneficiaries, setBeneficiaries] = useState([]);
   const receiptCaptureRef = useRef(null);
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
+    setBeneficiaries(loadBeneficiaries("electricity"));
   }, []);
 
   const validate = () => {
@@ -106,6 +109,18 @@ export default function Electricity() {
         token: res.token || "",
         failure_reason: "",
       });
+      setBeneficiaries(
+        saveBeneficiary("electricity", {
+          label: payload.meter_number,
+          subtitle: `${payload.disco.toUpperCase()} • ${payload.meter_type.toUpperCase()}`,
+          fields: {
+            disco: payload.disco,
+            meter_type: payload.meter_type,
+            meter_number: payload.meter_number,
+            amount: String(payload.amount),
+          },
+        })
+      );
       showToast("Electricity successful.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
@@ -182,6 +197,44 @@ export default function Electricity() {
       setRenderReceiptSheet(false);
       setDownloadBusy(false);
     }
+  };
+
+  const saveCurrentBeneficiary = () => {
+    const meterNumber = String(form.meter_number || "").replace(/\D/g, "");
+    if (meterNumber.length < 6 || meterNumber.length > 13) {
+      showToast("Enter valid meter number first.", "error");
+      return;
+    }
+    setBeneficiaries(
+      saveBeneficiary("electricity", {
+        label: meterNumber,
+        subtitle: `${String(form.disco || "").toUpperCase()} • ${String(form.meter_type || "").toUpperCase()}`,
+        fields: {
+          disco: String(form.disco || "").toLowerCase(),
+          meter_type: String(form.meter_type || "").toLowerCase(),
+          meter_number: meterNumber,
+          amount: String(form.amount || ""),
+        },
+      })
+    );
+    showToast("Beneficiary saved.", "success");
+  };
+
+  const applyBeneficiary = (item) => {
+    const fields = item?.fields || {};
+    setForm((prev) => ({
+      ...prev,
+      disco: String(fields.disco || prev.disco || "ikeja").toLowerCase(),
+      meter_type: String(fields.meter_type || prev.meter_type || "prepaid").toLowerCase(),
+      meter_number: String(fields.meter_number || prev.meter_number || ""),
+      amount: fields.amount ? Number(fields.amount) || prev.amount : prev.amount,
+    }));
+    showToast("Beneficiary applied.", "success");
+  };
+
+  const removeSavedBeneficiary = (id) => {
+    setBeneficiaries(removeBeneficiary("electricity", id));
+    showToast("Beneficiary removed.", "success");
   };
 
   const discos = catalog?.electricity_discos || ["ikeja", "eko", "abuja", "kano"];
@@ -268,6 +321,34 @@ export default function Electricity() {
               {loading ? "Processing..." : "Buy Electricity"}
             </button>
           </form>
+          <div className="beneficiary-head row-between">
+            <div className="label">Saved Beneficiaries</div>
+            <button type="button" className="ghost beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
+              Save Current
+            </button>
+          </div>
+          {beneficiaries.length === 0 ? (
+            <div className="hint">No saved beneficiaries yet.</div>
+          ) : (
+            <div className="beneficiary-grid">
+              {beneficiaries.map((item) => (
+                <div className="beneficiary-item" key={item.id}>
+                  <button type="button" className="beneficiary-main" onClick={() => applyBeneficiary(item)}>
+                    <div className="beneficiary-title">{item.label}</div>
+                    <div className="beneficiary-sub">{item.subtitle || "Saved electricity recipient"}</div>
+                  </button>
+                  <button
+                    type="button"
+                    className="beneficiary-remove"
+                    aria-label={`Remove ${item.label}`}
+                    onClick={() => removeSavedBeneficiary(item.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

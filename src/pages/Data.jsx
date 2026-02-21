@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
 export default function Data() {
@@ -20,6 +21,7 @@ export default function Data() {
   const [compare, setCompare] = useState([]);
   const [purchaseResult, setPurchaseResult] = useState(null);
   const [downloadBusy, setDownloadBusy] = useState(false);
+  const [beneficiaries, setBeneficiaries] = useState([]);
   const [fieldError, setFieldError] = useState("");
   const [wallet, setWallet] = useState(null);
   const [plansError, setPlansError] = useState("");
@@ -102,6 +104,7 @@ export default function Data() {
     }
     loadPlans();
     loadWallet();
+    setBeneficiaries(loadBeneficiaries("data"));
   }, [searchParams]);
 
   const buy = async (planCode) => {
@@ -137,6 +140,17 @@ export default function Data() {
         failure_reason: "",
         provider_message: res.message || "",
       });
+      setBeneficiaries(
+        saveBeneficiary("data", {
+          label: phone,
+          subtitle: `${String(chosenPlan?.network || network || "any").toUpperCase()} • ${ported ? "Ported" : "Standard"}`,
+          fields: {
+            phone,
+            ported,
+            preferred_network: String(chosenPlan?.network || network || "").toLowerCase(),
+          },
+        })
+      );
       loadWallet();
       showToast("Purchase successful.", "success");
     } catch (err) {
@@ -245,6 +259,44 @@ export default function Data() {
     });
   };
 
+  const saveCurrentBeneficiary = () => {
+    const value = String(phone || "").trim();
+    if (!value) {
+      showToast("Enter phone number first.", "error");
+      return;
+    }
+    setBeneficiaries(
+      saveBeneficiary("data", {
+        label: value,
+        subtitle: `${String(network || "all").toUpperCase()} • ${ported ? "Ported" : "Standard"}`,
+        fields: {
+          phone: value,
+          ported: !!ported,
+          preferred_network: String(network || "").toLowerCase(),
+        },
+      })
+    );
+    showToast("Beneficiary saved.", "success");
+  };
+
+  const applyBeneficiary = (item) => {
+    const fields = item?.fields || {};
+    const nextPhone = String(fields.phone || "").trim();
+    if (nextPhone) {
+      setPhone(nextPhone);
+      saveRecipient({ phone: nextPhone, ported: !!fields.ported });
+    }
+    setPorted(!!fields.ported);
+    const preferredNetwork = String(fields.preferred_network || "").toLowerCase();
+    if (preferredNetwork) setNetwork(preferredNetwork);
+    showToast("Beneficiary applied.", "success");
+  };
+
+  const removeSavedBeneficiary = (id) => {
+    setBeneficiaries(removeBeneficiary("data", id));
+    showToast("Beneficiary removed.", "success");
+  };
+
   const formatAmount = (value) => {
     const num = Number(value ?? 0);
     if (Number.isNaN(num)) return String(value ?? "0.00");
@@ -331,6 +383,34 @@ export default function Data() {
               Ported number
             </label>
           </div>
+          <div className="beneficiary-head row-between">
+            <div className="label">Saved Beneficiaries</div>
+            <button type="button" className="ghost beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
+              Save Current
+            </button>
+          </div>
+          {beneficiaries.length === 0 ? (
+            <div className="hint">No saved beneficiaries yet.</div>
+          ) : (
+            <div className="beneficiary-grid">
+              {beneficiaries.map((item) => (
+                <div className="beneficiary-item" key={item.id}>
+                  <button type="button" className="beneficiary-main" onClick={() => applyBeneficiary(item)}>
+                    <div className="beneficiary-title">{item.label}</div>
+                    <div className="beneficiary-sub">{item.subtitle || "Saved recipient"}</div>
+                  </button>
+                  <button
+                    type="button"
+                    className="beneficiary-remove"
+                    aria-label={`Remove ${item.label}`}
+                    onClick={() => removeSavedBeneficiary(item.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           {fieldError && <div className="error">{fieldError}</div>}
         </div>
       </section>

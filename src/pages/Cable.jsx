@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
@@ -16,11 +17,13 @@ export default function Cable() {
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [renderReceiptSheet, setRenderReceiptSheet] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState(null);
+  const [beneficiaries, setBeneficiaries] = useState([]);
   const receiptCaptureRef = useRef(null);
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
+    setBeneficiaries(loadBeneficiaries("cable"));
   }, []);
 
   const validate = () => {
@@ -105,6 +108,18 @@ export default function Cable() {
         amount: payload.amount,
         failure_reason: "",
       });
+      setBeneficiaries(
+        saveBeneficiary("cable", {
+          label: payload.smartcard_number,
+          subtitle: `${payload.provider.toUpperCase()} • ${payload.package_code}`,
+          fields: {
+            provider: payload.provider,
+            smartcard_number: payload.smartcard_number,
+            package_code: payload.package_code,
+            amount: String(payload.amount),
+          },
+        })
+      );
       showToast("Cable successful.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
@@ -180,6 +195,44 @@ export default function Cable() {
       setRenderReceiptSheet(false);
       setDownloadBusy(false);
     }
+  };
+
+  const saveCurrentBeneficiary = () => {
+    const smartcardNumber = String(form.smartcard_number || "").replace(/\s+/g, "");
+    if (!/^[a-zA-Z0-9]{5,20}$/.test(smartcardNumber)) {
+      showToast("Enter valid smartcard first.", "error");
+      return;
+    }
+    setBeneficiaries(
+      saveBeneficiary("cable", {
+        label: smartcardNumber,
+        subtitle: `${String(form.provider || "").toUpperCase()} • ${String(form.package_code || "")}`,
+        fields: {
+          provider: String(form.provider || "").toLowerCase(),
+          smartcard_number: smartcardNumber,
+          package_code: String(form.package_code || "").toLowerCase(),
+          amount: String(form.amount || ""),
+        },
+      })
+    );
+    showToast("Beneficiary saved.", "success");
+  };
+
+  const applyBeneficiary = (item) => {
+    const fields = item?.fields || {};
+    setForm((prev) => ({
+      ...prev,
+      provider: String(fields.provider || prev.provider || "dstv").toLowerCase(),
+      smartcard_number: String(fields.smartcard_number || prev.smartcard_number || ""),
+      package_code: String(fields.package_code || prev.package_code || ""),
+      amount: fields.amount ? Number(fields.amount) || prev.amount : prev.amount,
+    }));
+    showToast("Beneficiary applied.", "success");
+  };
+
+  const removeSavedBeneficiary = (id) => {
+    setBeneficiaries(removeBeneficiary("cable", id));
+    showToast("Beneficiary removed.", "success");
   };
 
   const providers = catalog?.cable_providers || [
@@ -269,6 +322,34 @@ export default function Cable() {
               {loading ? "Processing..." : "Pay Cable"}
             </button>
           </form>
+          <div className="beneficiary-head row-between">
+            <div className="label">Saved Beneficiaries</div>
+            <button type="button" className="ghost beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
+              Save Current
+            </button>
+          </div>
+          {beneficiaries.length === 0 ? (
+            <div className="hint">No saved beneficiaries yet.</div>
+          ) : (
+            <div className="beneficiary-grid">
+              {beneficiaries.map((item) => (
+                <div className="beneficiary-item" key={item.id}>
+                  <button type="button" className="beneficiary-main" onClick={() => applyBeneficiary(item)}>
+                    <div className="beneficiary-title">{item.label}</div>
+                    <div className="beneficiary-sub">{item.subtitle || "Saved cable recipient"}</div>
+                  </button>
+                  <button
+                    type="button"
+                    className="beneficiary-remove"
+                    aria-label={`Remove ${item.label}`}
+                    onClick={() => removeSavedBeneficiary(item.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="hint">Tip: use a simple package code for now. We’ll add real bouquet lists next.</div>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
@@ -16,11 +17,13 @@ export default function Airtime() {
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [renderReceiptSheet, setRenderReceiptSheet] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState(null);
+  const [beneficiaries, setBeneficiaries] = useState([]);
   const receiptCaptureRef = useRef(null);
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
+    setBeneficiaries(loadBeneficiaries("airtime"));
   }, []);
 
   const validate = () => {
@@ -95,6 +98,17 @@ export default function Airtime() {
         amount: payload.amount,
         failure_reason: "",
       });
+      setBeneficiaries(
+        saveBeneficiary("airtime", {
+          label: payload.phone_number,
+          subtitle: `${payload.network.toUpperCase()} • ₦ ${formatAmount(payload.amount)}`,
+          fields: {
+            network: payload.network,
+            phone_number: payload.phone_number,
+            amount: String(payload.amount),
+          },
+        })
+      );
       showToast("Airtime successful.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
@@ -171,6 +185,42 @@ export default function Airtime() {
     }
   };
 
+  const saveCurrentBeneficiary = () => {
+    const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
+    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
+      showToast("Enter valid phone number first.", "error");
+      return;
+    }
+    setBeneficiaries(
+      saveBeneficiary("airtime", {
+        label: phoneNumber,
+        subtitle: `${String(form.network || "").toUpperCase()} • ₦ ${formatAmount(form.amount)}`,
+        fields: {
+          network: String(form.network || "").toLowerCase(),
+          phone_number: phoneNumber,
+          amount: String(form.amount || ""),
+        },
+      })
+    );
+    showToast("Beneficiary saved.", "success");
+  };
+
+  const applyBeneficiary = (item) => {
+    const fields = item?.fields || {};
+    setForm((prev) => ({
+      ...prev,
+      network: String(fields.network || prev.network || "mtn").toLowerCase(),
+      phone_number: String(fields.phone_number || prev.phone_number || ""),
+      amount: fields.amount ? Number(fields.amount) || prev.amount : prev.amount,
+    }));
+    showToast("Beneficiary applied.", "success");
+  };
+
+  const removeSavedBeneficiary = (id) => {
+    setBeneficiaries(removeBeneficiary("airtime", id));
+    showToast("Beneficiary removed.", "success");
+  };
+
   const networks = catalog?.airtime_networks || ["mtn", "glo", "airtel", "9mobile"];
 
   return (
@@ -242,6 +292,34 @@ export default function Airtime() {
               {loading ? "Processing..." : "Buy Airtime"}
             </button>
           </form>
+          <div className="beneficiary-head row-between">
+            <div className="label">Saved Beneficiaries</div>
+            <button type="button" className="ghost beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
+              Save Current
+            </button>
+          </div>
+          {beneficiaries.length === 0 ? (
+            <div className="hint">No saved beneficiaries yet.</div>
+          ) : (
+            <div className="beneficiary-grid">
+              {beneficiaries.map((item) => (
+                <div className="beneficiary-item" key={item.id}>
+                  <button type="button" className="beneficiary-main" onClick={() => applyBeneficiary(item)}>
+                    <div className="beneficiary-title">{item.label}</div>
+                    <div className="beneficiary-sub">{item.subtitle || "Saved airtime recipient"}</div>
+                  </button>
+                  <button
+                    type="button"
+                    className="beneficiary-remove"
+                    aria-label={`Remove ${item.label}`}
+                    onClick={() => removeSavedBeneficiary(item.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

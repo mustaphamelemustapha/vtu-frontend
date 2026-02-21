@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
@@ -16,11 +17,13 @@ export default function Exam() {
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [renderReceiptSheet, setRenderReceiptSheet] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState(null);
+  const [beneficiaries, setBeneficiaries] = useState([]);
   const receiptCaptureRef = useRef(null);
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
+    setBeneficiaries(loadBeneficiaries("exam"));
   }, []);
 
   const validate = () => {
@@ -100,6 +103,17 @@ export default function Exam() {
         amount: estimatedAmount,
         failure_reason: "",
       });
+      setBeneficiaries(
+        saveBeneficiary("exam", {
+          label: payload.phone_number || `${payload.exam.toUpperCase()} x${payload.quantity}`,
+          subtitle: `${payload.exam.toUpperCase()} • Qty ${payload.quantity}`,
+          fields: {
+            exam: payload.exam,
+            quantity: String(payload.quantity),
+            phone_number: payload.phone_number || "",
+          },
+        })
+      );
       showToast("Pins generated.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
@@ -188,6 +202,47 @@ export default function Exam() {
     }
   };
 
+  const saveCurrentBeneficiary = () => {
+    const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
+    if (phoneNumber && (phoneNumber.length < 10 || phoneNumber.length > 15)) {
+      showToast("Phone number is invalid.", "error");
+      return;
+    }
+    const examType = String(form.exam || "").toLowerCase();
+    if (!examType) {
+      showToast("Select exam type first.", "error");
+      return;
+    }
+    setBeneficiaries(
+      saveBeneficiary("exam", {
+        label: phoneNumber || `${examType.toUpperCase()} x${Number(form.quantity || 1)}`,
+        subtitle: `${examType.toUpperCase()} • Qty ${Number(form.quantity || 1)}`,
+        fields: {
+          exam: examType,
+          quantity: String(form.quantity || 1),
+          phone_number: phoneNumber,
+        },
+      })
+    );
+    showToast("Beneficiary saved.", "success");
+  };
+
+  const applyBeneficiary = (item) => {
+    const fields = item?.fields || {};
+    setForm((prev) => ({
+      ...prev,
+      exam: String(fields.exam || prev.exam || "waec").toLowerCase(),
+      quantity: fields.quantity ? Number(fields.quantity) || prev.quantity : prev.quantity,
+      phone_number: String(fields.phone_number || prev.phone_number || ""),
+    }));
+    showToast("Beneficiary applied.", "success");
+  };
+
+  const removeSavedBeneficiary = (id) => {
+    setBeneficiaries(removeBeneficiary("exam", id));
+    showToast("Beneficiary removed.", "success");
+  };
+
   const exams = catalog?.exam_types || ["waec", "neco", "jamb"];
 
   return (
@@ -258,6 +313,34 @@ export default function Exam() {
               {loading ? "Processing..." : "Buy Pins"}
             </button>
           </form>
+          <div className="beneficiary-head row-between">
+            <div className="label">Saved Beneficiaries</div>
+            <button type="button" className="ghost beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
+              Save Current
+            </button>
+          </div>
+          {beneficiaries.length === 0 ? (
+            <div className="hint">No saved beneficiaries yet.</div>
+          ) : (
+            <div className="beneficiary-grid">
+              {beneficiaries.map((item) => (
+                <div className="beneficiary-item" key={item.id}>
+                  <button type="button" className="beneficiary-main" onClick={() => applyBeneficiary(item)}>
+                    <div className="beneficiary-title">{item.label}</div>
+                    <div className="beneficiary-sub">{item.subtitle || "Saved exam recipient"}</div>
+                  </button>
+                  <button
+                    type="button"
+                    className="beneficiary-remove"
+                    aria-label={`Remove ${item.label}`}
+                    onClick={() => removeSavedBeneficiary(item.id)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="hint">Demo pricing: ₦ 2,000 per PIN for now.</div>
         </div>
       </section>
