@@ -28,6 +28,7 @@ export default function Data() {
   const [plansError, setPlansError] = useState("");
   const [walletError, setWalletError] = useState("");
   const receiptCaptureRef = useRef(null);
+  const purchaseLockRef = useRef(false);
   const { showToast } = useToast();
 
   const parseSize = (value) => {
@@ -113,6 +114,7 @@ export default function Data() {
   }, [searchParams]);
 
   const buy = async (planCode) => {
+    if (purchaseLockRef.current) return;
     setMessage("");
     const startedAt = Date.now();
     try {
@@ -121,6 +123,7 @@ export default function Data() {
         showToast("Enter a valid phone number.", "error");
         return;
       }
+      purchaseLockRef.current = true;
       setFieldError("");
       const chosenPlan = plans.find((p) => p.plan_code === planCode) || null;
       setSelected(null);
@@ -184,6 +187,7 @@ export default function Data() {
         await new Promise((resolve) => setTimeout(resolve, MIN_PURCHASE_LOADING_MS - elapsed));
       }
       setLoading(false);
+      purchaseLockRef.current = false;
     }
   };
 
