@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
@@ -14,6 +14,9 @@ export default function Transactions() {
   const [reportBusy, setReportBusy] = useState(false);
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [reportedRefs, setReportedRefs] = useState(() => new Set());
+  const [liveRefresh, setLiveRefresh] = useState(true);
+  const [refreshBusy, setRefreshBusy] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState(null);
   const [reportForm, setReportForm] = useState({
     category: "delivery_issue",
     reason: "",
@@ -31,36 +34,6 @@ export default function Transactions() {
     return map;
   };
 
-  useEffect(() => {
-    let mounted = true;
-    Promise.all([
-      apiFetch("/transactions/me"),
-      apiFetch("/transactions/reports/me").catch(() => []),
-    ])
-      .then(([rows, reports]) => {
-        if (!mounted) return;
-        const items = Array.isArray(rows) ? rows : [];
-        const reportMap = buildReportMap(reports);
-        setTxs(items);
-        setReportsByReference(reportMap);
-        setReportedRefs(
-          new Set(
-            items
-              .filter(
-                (item) =>
-                  item?.has_open_report ||
-                  statusKey(reportMap[item.reference]?.status) === "open"
-              )
-              .map((item) => item.reference)
-          )
-        );
-      })
-      .catch(() => {});
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   const statusKey = (value) => String(value || "").toLowerCase();
   const statusLabel = (value) => {
     const key = statusKey(value);
@@ -72,6 +45,71 @@ export default function Transactions() {
   };
 
   const typeKey = (value) => String(value || "").toLowerCase();
+
+  const applyFetchedRows = useCallback((rows, reports) => {
+    const items = Array.isArray(rows) ? rows : [];
+    const reportMap = buildReportMap(reports);
+    setTxs(items);
+    setReportsByReference(reportMap);
+    setReportedRefs(
+      new Set(
+        items
+          .filter(
+            (item) =>
+              item?.has_open_report ||
+              statusKey(reportMap[item.reference]?.status) === "open"
+          )
+          .map((item) => item.reference)
+      )
+    );
+    setSelected((prev) => {
+      if (!prev?.reference) return prev;
+      const latest = items.find((item) => item.reference === prev.reference);
+      return latest || prev;
+    });
+    setLastSyncedAt(new Date().toISOString());
+  }, []);
+
+  const refreshTransactions = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) setRefreshBusy(true);
+      try {
+        const [rows, reports] = await Promise.all([
+          apiFetch("/transactions/me"),
+          apiFetch("/transactions/reports/me").catch(() => []),
+        ]);
+        applyFetchedRows(rows, reports);
+      } finally {
+        if (!silent) setRefreshBusy(false);
+      }
+    },
+    [applyFetchedRows]
+  );
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([
+      apiFetch("/transactions/me"),
+      apiFetch("/transactions/reports/me").catch(() => []),
+    ])
+      .then(([rows, reports]) => {
+        if (!mounted) return;
+        applyFetchedRows(rows, reports);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [applyFetchedRows]);
+
+  useEffect(() => {
+    if (!liveRefresh) return undefined;
+    const timer = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+      refreshTransactions({ silent: true }).catch(() => {});
+    }, 20000);
+    return () => clearInterval(timer);
+  }, [liveRefresh, refreshTransactions]);
   const getReportForTx = (tx) => reportsByReference[String(tx?.reference || "")] || null;
   const hasOpenReport = (tx) =>
     Boolean(
@@ -267,6 +305,35 @@ export default function Transactions() {
 
   return (
     <div className="page">
+      <section className="section">
+        <div className="card tx-live-card">
+          <div>
+            <div className="label">Live Status Tracking</div>
+            <div className="muted">
+              {liveRefresh ? "Auto-refresh runs every 20 seconds." : "Auto-refresh is paused."}
+              {lastSyncedAt
+                ? ` Last sync: ${new Date(lastSyncedAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}.`
+                : ""}
+            </div>
+          </div>
+          <div className="tx-live-actions">
+            <button className="ghost" type="button" onClick={() => refreshTransactions()} disabled={refreshBusy}>
+              {refreshBusy ? "Refreshing..." : "Refresh Now"}
+            </button>
+            <button
+              className={`pill ${liveRefresh ? "active" : ""}`}
+              type="button"
+              onClick={() => setLiveRefresh((prev) => !prev)}
+            >
+              {liveRefresh ? "Live On" : "Live Off"}
+            </button>
+          </div>
+        </div>
+      </section>
+
       <section className="section">
         <div className="stats-grid">
           <div className="card stat-card">

@@ -69,6 +69,12 @@ function formatMoney(value) {
   return num.toFixed(2);
 }
 
+function formatCurrency(value) {
+  const num = Number(value || 0);
+  if (Number.isNaN(num)) return `₦ ${value || 0}`;
+  return `₦ ${num.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 function formatDate(value) {
   try {
     return new Date(value).toLocaleString();
@@ -134,6 +140,9 @@ export default function Admin() {
   const [fundOpen, setFundOpen] = useState(false);
   const [fundForm, setFundForm] = useState({ amount: 1000, description: "Admin funding" });
   const [fundBusy, setFundBusy] = useState(false);
+  const [userDetailOpen, setUserDetailOpen] = useState(false);
+  const [userDetailBusy, setUserDetailBusy] = useState(false);
+  const [userDetailData, setUserDetailData] = useState(null);
 
   const loadAnalytics = async () => {
     try {
@@ -183,6 +192,29 @@ export default function Admin() {
     } finally {
       setUserBusy(false);
     }
+  };
+
+  const fetchUserDetails = async (userId, { silent = false } = {}) => {
+    if (!userId) return null;
+    if (!silent) setUserDetailBusy(true);
+    try {
+      const data = await apiFetch(`/admin/users/${userId}/details`);
+      setUserDetailData(data);
+      return data;
+    } catch (err) {
+      showToast(err?.message || "Failed to load user details.", "error");
+      return null;
+    } finally {
+      if (!silent) setUserDetailBusy(false);
+    }
+  };
+
+  const openUserDetails = async (user) => {
+    if (!user?.id) return;
+    setSelectedUser(user);
+    setUserDetailOpen(true);
+    setUserDetailData(null);
+    await fetchUserDetails(user.id);
   };
 
   const fetchReports = async (next = {}) => {
@@ -392,7 +424,10 @@ export default function Admin() {
     try {
       await apiFetch(`/admin/users/${user.id}/suspend`, { method: "POST" });
       showToast("User suspended.", "success");
-      fetchUsers();
+      await fetchUsers({ page: userState.page || 1 });
+      if (Number(userDetailData?.user?.id) === Number(user.id)) {
+        await fetchUserDetails(user.id, { silent: true });
+      }
     } catch (err) {
       showToast(err?.message || "Suspend failed.", "error");
     }
@@ -403,7 +438,10 @@ export default function Admin() {
     try {
       await apiFetch(`/admin/users/${user.id}/activate`, { method: "POST" });
       showToast("User activated.", "success");
-      fetchUsers();
+      await fetchUsers({ page: userState.page || 1 });
+      if (Number(userDetailData?.user?.id) === Number(user.id)) {
+        await fetchUserDetails(user.id, { silent: true });
+      }
     } catch (err) {
       showToast(err?.message || "Activate failed.", "error");
     }
@@ -435,6 +473,10 @@ export default function Admin() {
       });
       showToast("Wallet funded.", "success");
       setFundOpen(false);
+      await fetchUsers({ page: userState.page || 1 });
+      if (Number(userDetailData?.user?.id) === Number(selectedUser.id)) {
+        await fetchUserDetails(selectedUser.id, { silent: true });
+      }
     } catch (err) {
       showToast(err?.message || "Funding failed.", "error");
     } finally {
@@ -549,6 +591,31 @@ export default function Admin() {
               <div className="label">Open Reports</div>
               <div className="value">{analytics?.reports_open || 0}</div>
               <div className="muted">Unresolved transaction issues</div>
+            </div>
+          </div>
+          <div className="card admin-earnings-card">
+            <div className="section-head">
+              <h3>Earnings Snapshot</h3>
+              <span className="muted">Estimated revenue, cost and profit</span>
+            </div>
+            <div className="admin-earnings-grid">
+              {[
+                { key: "daily", label: "Today" },
+                { key: "weekly", label: "This Week" },
+                { key: "monthly", label: "This Month" },
+              ].map((period) => {
+                const row = analytics?.profit_period_estimates?.[period.key] || {};
+                return (
+                  <div key={period.key} className="card admin-earnings-item">
+                    <div className="label">{period.label}</div>
+                    <div className="value">{formatCurrency(row.profit_estimate || 0)}</div>
+                    <div className="muted">
+                      Revenue {formatCurrency(row.revenue || 0)} • Cost {formatCurrency(row.cost_estimate || 0)}
+                    </div>
+                    <div className="muted">{Number(row.tx_count || 0)} successful transaction(s)</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
           <div className="admin-overview-grid">
@@ -934,6 +1001,9 @@ export default function Admin() {
                       </td>
                       <td>{u.is_verified ? "Yes" : "No"}</td>
                       <td className="admin-actions">
+                        <button className="ghost" type="button" onClick={() => openUserDetails(u)}>
+                          View
+                        </button>
                         <button className="ghost" type="button" onClick={() => openFund(u)}>
                           Fund
                         </button>
@@ -971,6 +1041,9 @@ export default function Admin() {
                       <span className={`pill ${u.is_active ? "success" : "failed"}`}>
                         {u.is_active ? "Active" : "Suspended"}
                       </span>
+                      <button className="ghost" type="button" onClick={() => openUserDetails(u)}>
+                        View
+                      </button>
                       <button className="ghost" type="button" onClick={() => openFund(u)}>
                         Fund
                       </button>
@@ -1276,6 +1349,134 @@ export default function Admin() {
             </div>
           </div>
         </section>
+      )}
+
+      {userDetailOpen && selectedUser && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal admin-user-modal">
+            <div className="modal-head">
+              <div>
+                <div className="label">User Details</div>
+                <h3>{userDetailData?.user?.full_name || selectedUser.full_name || selectedUser.email}</h3>
+                <div className="muted">{userDetailData?.user?.email || selectedUser.email}</div>
+              </div>
+              <button
+                className="ghost"
+                type="button"
+                onClick={() => {
+                  setUserDetailOpen(false);
+                  setUserDetailData(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+            <div className="modal-body">
+              {userDetailBusy ? (
+                <div className="empty">Loading user details...</div>
+              ) : (
+                <>
+                  <div className="admin-user-head">
+                    <div className="card admin-user-summary-card">
+                      <div className="label">Account</div>
+                      <div className="value">{String(userDetailData?.user?.role || selectedUser.role || "user").toUpperCase()}</div>
+                      <div className="muted">
+                        Joined {formatDate(userDetailData?.user?.created_at || selectedUser.created_at)}
+                      </div>
+                      <div className="admin-actions">
+                        <span className={`pill ${userDetailData?.user?.is_active ? "success" : "failed"}`}>
+                          {userDetailData?.user?.is_active ? "Active" : "Suspended"}
+                        </span>
+                        <span className={`pill ${userDetailData?.user?.is_verified ? "success" : "warning"}`}>
+                          {userDetailData?.user?.is_verified ? "Verified" : "Not Verified"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="card admin-user-summary-card">
+                      <div className="label">Wallet Balance</div>
+                      <div className="value">{formatCurrency(userDetailData?.wallet?.balance || 0)}</div>
+                      <div className="muted">
+                        {userDetailData?.wallet?.is_locked ? "Wallet locked" : "Wallet active"}
+                      </div>
+                      <div className="muted">
+                        Last update {formatDate(userDetailData?.wallet?.updated_at || userDetailData?.user?.created_at)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="section-head">
+                    <h3>Recent Transactions</h3>
+                    <span className="muted">
+                      {(userDetailData?.recent_transactions || []).length} latest records
+                    </span>
+                  </div>
+                  <div className="admin-user-recent-list">
+                    {(userDetailData?.recent_transactions || []).map((tx) => (
+                      <div className="list-card" key={`${tx.tx_type}-${tx.reference}-${tx.id}`}>
+                        <div>
+                          <div className="list-title">{typeLabel(tx.tx_type)}</div>
+                          <div className="muted">{tx.reference}</div>
+                          <div className="muted">{formatDate(tx.created_at)}</div>
+                        </div>
+                        <div className="list-meta">
+                          <div className="value">{formatCurrency(tx.amount || 0)}</div>
+                          <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {(userDetailData?.recent_transactions || []).length === 0 && (
+                      <div className="empty">No recent transactions found for this user.</div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="modal-actions admin-user-actions">
+              <button
+                className="ghost"
+                type="button"
+                onClick={() => fetchUserDetails(userDetailData?.user?.id || selectedUser.id)}
+                disabled={userDetailBusy}
+              >
+                {userDetailBusy ? "Refreshing..." : "Refresh"}
+              </button>
+              <button
+                className="ghost"
+                type="button"
+                onClick={() => openFund(userDetailData?.user || selectedUser)}
+              >
+                Fund Wallet
+              </button>
+              {(userDetailData?.user?.is_active ?? selectedUser.is_active) ? (
+                <button
+                  className="ghost danger"
+                  type="button"
+                  onClick={() => suspendUser(userDetailData?.user || selectedUser)}
+                >
+                  Suspend User
+                </button>
+              ) : (
+                <button
+                  className="ghost"
+                  type="button"
+                  onClick={() => activateUser(userDetailData?.user || selectedUser)}
+                >
+                  Activate User
+                </button>
+              )}
+              <button
+                className="primary"
+                type="button"
+                onClick={() => {
+                  setUserDetailOpen(false);
+                  setUserDetailData(null);
+                }}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {selectedTx && (

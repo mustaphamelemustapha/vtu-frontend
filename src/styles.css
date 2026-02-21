@@ -2476,6 +2476,19 @@ a.pill:active::after {
   gap: 12px;
 }
 
+.tx-live-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.tx-live-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .empty {
   color: var(--muted);
   text-align: center;
@@ -2620,6 +2633,43 @@ a.pill:active::after {
   grid-template-columns: 1fr 420px;
   gap: 16px;
   margin-top: 16px;
+}
+
+.admin-earnings-card {
+  margin-top: 16px;
+}
+
+.admin-earnings-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-earnings-item {
+  padding: 14px;
+}
+
+.admin-user-modal {
+  width: min(920px, 94vw);
+}
+
+.admin-user-head {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-user-summary-card {
+  padding: 14px;
+}
+
+.admin-user-recent-list {
+  display: grid;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 @media (max-width: 900px) {
@@ -2837,6 +2887,23 @@ a.pill:active::after {
 
   .admin-overview-grid {
     grid-template-columns: 1fr;
+  }
+
+  .tx-live-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-earnings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-head {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-modal {
+    width: min(96vw, 760px);
   }
 
   /* Common page patterns: prevent overflow and improve tap targets */
