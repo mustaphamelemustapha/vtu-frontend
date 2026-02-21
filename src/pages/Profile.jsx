@@ -73,6 +73,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
   const [securityOpen, setSecurityOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [creditOpen, setCreditOpen] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [pwForm, setPwForm] = useState({ current_password: "", new_password: "" });
@@ -242,16 +243,32 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
       </section>
 
       <section className="section">
-        <div className="card profile-ux-credit">
-          <div className="muted">Designed by</div>
-          <div className="profile-ux-brand">
-            <img src="/brand/mmtechglobe-logo.svg" alt="MMTechGlobe" />
-            <span>MMTechGlobe</span>
-          </div>
-          <div className="profile-ux-cac">
-            <img src="/brand/cac-logo.svg" alt="Certified by CAC" />
-            <span>Certified by CAC</span>
-          </div>
+        <div className="profile-ux-credit-wrap">
+          <button
+            className="card profile-ux-menu-item profile-ux-credit-toggle"
+            type="button"
+            onClick={() => setCreditOpen((prev) => !prev)}
+          >
+            <span className="profile-ux-menu-left">
+              <span className="profile-ux-icon"><AboutIcon /></span>
+              <span>Designed by</span>
+            </span>
+            <span className={`profile-ux-chevron ${creditOpen ? "open" : ""}`}>›</span>
+          </button>
+          {creditOpen && (
+            <div className="card profile-ux-credit">
+              <div className="muted">Developed by</div>
+              <div className="profile-ux-credit-dev">Mustapha Mele Mustapha</div>
+              <div className="profile-ux-brand">
+                <img src="/brand/mmtechglobe-logo.svg" alt="MMTECHGLOBE" />
+                <span>MMTECHGLOBE</span>
+              </div>
+              <div className="profile-ux-cac">
+                <img src="/brand/cac-logo.svg" alt="Certified by CAC" />
+                <span>Certified by CAC</span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

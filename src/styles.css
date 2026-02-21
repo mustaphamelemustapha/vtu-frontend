@@ -762,11 +762,30 @@ a:focus-visible {
   font-size: 30px;
   color: #9ca3af;
   line-height: 1;
+  transition: transform 0.16s ease;
+}
+
+.profile-ux-chevron.open {
+  transform: rotate(90deg);
+}
+
+.profile-ux-credit-wrap {
+  display: grid;
+  gap: 10px;
+}
+
+.profile-ux-credit-toggle {
+  width: 100%;
 }
 
 .profile-ux-credit {
   display: grid;
   gap: 10px;
+}
+
+.profile-ux-credit-dev {
+  font-size: 17px;
+  font-weight: 800;
 }
 
 .profile-ux-brand {
