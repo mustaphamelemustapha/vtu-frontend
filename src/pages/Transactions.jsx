@@ -143,11 +143,28 @@ export default function Transactions() {
     return fields;
   };
 
+  const metaSearchText = (value) => {
+    if (value == null) return "";
+    if (Array.isArray(value)) return value.map(metaSearchText).join(" ");
+    if (typeof value === "object") return Object.values(value).map(metaSearchText).join(" ");
+    return String(value);
+  };
+
   const filtered = txs.filter((tx) => {
     const matchesFilter = filter === "all" ? true : statusKey(tx.status) === filter;
-    const matchesQuery = query
-      ? `${tx.reference} ${tx.tx_type}`.toLowerCase().includes(query.toLowerCase())
-      : true;
+    const queryNeedle = String(query || "").trim().toLowerCase();
+    const haystack = [
+      tx.reference,
+      tx.tx_type,
+      tx.network,
+      tx.data_plan_code,
+      tx.external_reference,
+      tx.failure_reason,
+      metaSearchText(tx.meta),
+    ]
+      .map((item) => String(item || "").toLowerCase())
+      .join(" ");
+    const matchesQuery = queryNeedle ? haystack.includes(queryNeedle) : true;
     return matchesFilter && matchesQuery;
   });
 
@@ -275,7 +292,7 @@ export default function Transactions() {
         <div className="card">
           <div className="filter-row">
             <input
-              placeholder="Search by reference or type"
+              placeholder="Search by reference, type, phone, meter, smartcard..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
+import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
 
 export default function Airtime() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { showToast } = useToast();
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
@@ -24,7 +26,16 @@ export default function Airtime() {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
     setBeneficiaries(loadBeneficiaries("airtime"));
-  }, []);
+    const qNetwork = String(searchParams.get("network") || "").trim().toLowerCase();
+    const qPhone = String(searchParams.get("phone_number") || "").trim();
+    const qAmount = Number(searchParams.get("amount") || "");
+    setForm((prev) => ({
+      ...prev,
+      network: qNetwork || prev.network,
+      phone_number: qPhone || prev.phone_number,
+      amount: Number.isFinite(qAmount) && qAmount > 0 ? qAmount : prev.amount,
+    }));
+  }, [searchParams]);
 
   const validate = () => {
     const nextErrors = {};
@@ -183,6 +194,42 @@ export default function Airtime() {
       setRenderReceiptSheet(false);
       setDownloadBusy(false);
     }
+  };
+
+  const shareText = () =>
+    buildReceiptShareText({
+      title: "Airtime Receipt",
+      reference: purchaseResult?.reference,
+      status: statusLabel(purchaseResult?.status),
+      amount: purchaseResult?.amount,
+      fields: [
+        { label: "Network", value: String(purchaseResult?.network || "").toUpperCase() || "—" },
+        { label: "Phone", value: purchaseResult?.phone || "—" },
+        { label: "Failure Reason", value: purchaseResult?.failure_reason || "—" },
+      ],
+    });
+
+  const shareReceipt = async () => {
+    if (!purchaseResult) return;
+    const result = await shareReceiptText({
+      title: "AxisVTU Airtime Receipt",
+      text: shareText(),
+    });
+    if (!result.ok) {
+      showToast("Unable to share receipt.", "error");
+      return;
+    }
+    showToast(result.mode === "native" ? "Receipt shared." : "Opened WhatsApp share.", "success");
+  };
+
+  const shareReceiptWhatsApp = () => {
+    if (!purchaseResult) return;
+    const ok = shareReceiptOnWhatsApp(shareText());
+    if (!ok) {
+      showToast("Unable to open WhatsApp.", "error");
+      return;
+    }
+    showToast("Opened WhatsApp share.", "success");
   };
 
   const saveCurrentBeneficiary = () => {
@@ -394,6 +441,8 @@ export default function Airtime() {
               <button className="primary" type="button" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
               </button>
+              <button className="ghost" type="button" onClick={shareReceipt}>Share Receipt</button>
+              <button className="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</button>
               <button className="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</button>
               <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</button>
             </div>

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
+import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
 
 export default function Electricity() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { showToast } = useToast();
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
@@ -24,7 +26,18 @@ export default function Electricity() {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
     setBeneficiaries(loadBeneficiaries("electricity"));
-  }, []);
+    const qDisco = String(searchParams.get("disco") || "").trim().toLowerCase();
+    const qMeterType = String(searchParams.get("meter_type") || "").trim().toLowerCase();
+    const qMeterNumber = String(searchParams.get("meter_number") || "").trim();
+    const qAmount = Number(searchParams.get("amount") || "");
+    setForm((prev) => ({
+      ...prev,
+      disco: qDisco || prev.disco,
+      meter_type: qMeterType || prev.meter_type,
+      meter_number: qMeterNumber || prev.meter_number,
+      amount: Number.isFinite(qAmount) && qAmount > 0 ? qAmount : prev.amount,
+    }));
+  }, [searchParams]);
 
   const validate = () => {
     const nextErrors = {};
@@ -197,6 +210,44 @@ export default function Electricity() {
       setRenderReceiptSheet(false);
       setDownloadBusy(false);
     }
+  };
+
+  const shareText = () =>
+    buildReceiptShareText({
+      title: "Electricity Receipt",
+      reference: purchaseResult?.reference,
+      status: statusLabel(purchaseResult?.status),
+      amount: purchaseResult?.amount,
+      fields: [
+        { label: "Disco", value: String(purchaseResult?.disco || "").toUpperCase() || "—" },
+        { label: "Meter Number", value: purchaseResult?.meter_number || "—" },
+        { label: "Meter Type", value: String(purchaseResult?.meter_type || "").toUpperCase() || "—" },
+        { label: "Token", value: purchaseResult?.token || "—" },
+        { label: "Failure Reason", value: purchaseResult?.failure_reason || "—" },
+      ],
+    });
+
+  const shareReceipt = async () => {
+    if (!purchaseResult) return;
+    const result = await shareReceiptText({
+      title: "AxisVTU Electricity Receipt",
+      text: shareText(),
+    });
+    if (!result.ok) {
+      showToast("Unable to share receipt.", "error");
+      return;
+    }
+    showToast(result.mode === "native" ? "Receipt shared." : "Opened WhatsApp share.", "success");
+  };
+
+  const shareReceiptWhatsApp = () => {
+    if (!purchaseResult) return;
+    const ok = shareReceiptOnWhatsApp(shareText());
+    if (!ok) {
+      showToast("Unable to open WhatsApp.", "error");
+      return;
+    }
+    showToast("Opened WhatsApp share.", "success");
   };
 
   const saveCurrentBeneficiary = () => {
@@ -431,6 +482,8 @@ export default function Electricity() {
               <button className="primary" type="button" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
               </button>
+              <button className="ghost" type="button" onClick={shareReceipt}>Share Receipt</button>
+              <button className="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</button>
               <button className="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</button>
               <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</button>
             </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
+import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
 
 export default function Data() {
@@ -93,11 +94,15 @@ export default function Data() {
     try {
       const qpPhone = searchParams.get("phone");
       const qpPorted = searchParams.get("ported");
+      const qpNetwork = String(searchParams.get("network") || "").trim().toLowerCase();
       if (qpPhone) {
         const nextPorted = qpPorted === "1" || qpPorted === "true";
         setPhone(qpPhone);
         setPorted(nextPorted);
         saveRecipient({ phone: qpPhone, ported: nextPorted });
+      }
+      if (qpNetwork && ["all", "mtn", "glo", "airtel", "9mobile"].includes(qpNetwork)) {
+        setNetwork(qpNetwork);
       }
     } catch {
       // ignore
@@ -222,6 +227,38 @@ export default function Data() {
     } finally {
       setDownloadBusy(false);
     }
+  };
+
+  const shareText = () =>
+    buildReceiptShareText({
+      title: "Data Purchase Receipt",
+      reference: purchaseResult?.reference,
+      status: resultStatusLabel(purchaseResult?.status),
+      amount: purchaseResult?.amount,
+      fields: receiptFields(purchaseResult).slice(0, 8),
+    });
+
+  const shareReceipt = async () => {
+    if (!purchaseResult) return;
+    const result = await shareReceiptText({
+      title: "AxisVTU Data Receipt",
+      text: shareText(),
+    });
+    if (!result.ok) {
+      showToast("Unable to share receipt.", "error");
+      return;
+    }
+    showToast(result.mode === "native" ? "Receipt shared." : "Opened WhatsApp share.", "success");
+  };
+
+  const shareReceiptWhatsApp = () => {
+    if (!purchaseResult) return;
+    const ok = shareReceiptOnWhatsApp(shareText());
+    if (!ok) {
+      showToast("Unable to open WhatsApp.", "error");
+      return;
+    }
+    showToast("Opened WhatsApp share.", "success");
   };
 
   const filtered = plans.filter((plan) => {
@@ -679,6 +716,8 @@ export default function Data() {
               <button className="primary" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
               </button>
+              <button className="ghost" onClick={shareReceipt}>Share Receipt</button>
+              <button className="ghost" onClick={shareReceiptWhatsApp}>WhatsApp</button>
               <button className="ghost" onClick={() => navigate("/transactions")}>View Receipt</button>
               <button className="ghost" onClick={() => setPurchaseResult(null)}>Done</button>
             </div>

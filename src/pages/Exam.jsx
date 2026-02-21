@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
+import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
 
 export default function Exam() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { showToast } = useToast();
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
@@ -24,7 +26,16 @@ export default function Exam() {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/services/catalog").then(setCatalog).catch(() => {});
     setBeneficiaries(loadBeneficiaries("exam"));
-  }, []);
+    const qExam = String(searchParams.get("exam") || "").trim().toLowerCase();
+    const qQuantity = Number(searchParams.get("quantity") || "");
+    const qPhone = String(searchParams.get("phone_number") || "").trim();
+    setForm((prev) => ({
+      ...prev,
+      exam: qExam || prev.exam,
+      quantity: Number.isInteger(qQuantity) && qQuantity > 0 ? qQuantity : prev.quantity,
+      phone_number: qPhone || prev.phone_number,
+    }));
+  }, [searchParams]);
 
   const validate = () => {
     const nextErrors = {};
@@ -200,6 +211,44 @@ export default function Exam() {
       setRenderReceiptSheet(false);
       setDownloadBusy(false);
     }
+  };
+
+  const shareText = () =>
+    buildReceiptShareText({
+      title: "Exam PIN Receipt",
+      reference: purchaseResult?.reference,
+      status: statusLabel(purchaseResult?.status),
+      amount: purchaseResult?.amount,
+      fields: [
+        { label: "Exam", value: String(purchaseResult?.exam || "").toUpperCase() || "—" },
+        { label: "Quantity", value: purchaseResult?.quantity || "0" },
+        { label: "Phone", value: purchaseResult?.phone_number || "—" },
+        { label: "Pins", value: Array.isArray(purchaseResult?.pins) ? purchaseResult.pins.join(", ") : "—" },
+        { label: "Failure Reason", value: purchaseResult?.failure_reason || "—" },
+      ],
+    });
+
+  const shareReceipt = async () => {
+    if (!purchaseResult) return;
+    const result = await shareReceiptText({
+      title: "AxisVTU Exam PIN Receipt",
+      text: shareText(),
+    });
+    if (!result.ok) {
+      showToast("Unable to share receipt.", "error");
+      return;
+    }
+    showToast(result.mode === "native" ? "Receipt shared." : "Opened WhatsApp share.", "success");
+  };
+
+  const shareReceiptWhatsApp = () => {
+    if (!purchaseResult) return;
+    const ok = shareReceiptOnWhatsApp(shareText());
+    if (!ok) {
+      showToast("Unable to open WhatsApp.", "error");
+      return;
+    }
+    showToast("Opened WhatsApp share.", "success");
   };
 
   const saveCurrentBeneficiary = () => {
@@ -420,6 +469,8 @@ export default function Exam() {
               <button className="primary" type="button" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
               </button>
+              <button className="ghost" type="button" onClick={shareReceipt}>Share Receipt</button>
+              <button className="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</button>
               {purchaseResult.ok && (purchaseResult.pins || []).length > 0 && (
                 <button className="ghost" type="button" onClick={copyPins}>Copy Pins</button>
               )}

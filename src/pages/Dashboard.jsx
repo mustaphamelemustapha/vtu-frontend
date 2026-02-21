@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { loadBeneficiaries } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
 export default function Dashboard() {
@@ -12,6 +13,83 @@ export default function Dashboard() {
   const [loadingTxs, setLoadingTxs] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
+  const [quickBeneficiaries, setQuickBeneficiaries] = useState([]);
+
+  const toServiceRoute = (service, fields = {}) => {
+    const params = new URLSearchParams();
+    const put = (key, value) => {
+      const raw = String(value ?? "").trim();
+      if (!raw) return;
+      params.set(key, raw);
+    };
+    if (service === "data") {
+      put("phone", fields.phone);
+      put("ported", fields.ported ? "1" : "0");
+      put("network", fields.preferred_network);
+      const q = params.toString();
+      return q ? `/data?${q}` : "/data";
+    }
+    if (service === "airtime") {
+      put("network", fields.network);
+      put("phone_number", fields.phone_number);
+      put("amount", fields.amount);
+      const q = params.toString();
+      return q ? `/airtime?${q}` : "/airtime";
+    }
+    if (service === "cable") {
+      put("provider", fields.provider);
+      put("smartcard_number", fields.smartcard_number);
+      put("package_code", fields.package_code);
+      put("amount", fields.amount);
+      const q = params.toString();
+      return q ? `/cable?${q}` : "/cable";
+    }
+    if (service === "electricity") {
+      put("disco", fields.disco);
+      put("meter_type", fields.meter_type);
+      put("meter_number", fields.meter_number);
+      put("amount", fields.amount);
+      const q = params.toString();
+      return q ? `/electricity?${q}` : "/electricity";
+    }
+    if (service === "exam") {
+      put("exam", fields.exam);
+      put("quantity", fields.quantity);
+      put("phone_number", fields.phone_number);
+      const q = params.toString();
+      return q ? `/exam?${q}` : "/exam";
+    }
+    return "/services";
+  };
+
+  const getQuickBeneficiaries = () => {
+    const serviceOrder = ["data", "airtime", "cable", "electricity", "exam"];
+    const serviceTitles = {
+      data: "Data",
+      airtime: "Airtime",
+      cable: "Cable",
+      electricity: "Electricity",
+      exam: "Exam",
+    };
+    const merged = [];
+    for (const service of serviceOrder) {
+      const rows = loadBeneficiaries(service).slice(0, 4);
+      rows.forEach((item) => {
+        merged.push({
+          id: `${service}:${item.id}`,
+          service,
+          serviceTitle: serviceTitles[service] || "Service",
+          label: item.label || "Saved",
+          subtitle: item.subtitle || "Beneficiary",
+          to: toServiceRoute(service, item.fields || {}),
+          last_used_at: item.last_used_at || "",
+        });
+      });
+    }
+    return merged
+      .sort((a, b) => String(b.last_used_at || "").localeCompare(String(a.last_used_at || "")))
+      .slice(0, 8);
+  };
 
   const loadDashboardData = async () => {
     setLoadError("");
@@ -41,6 +119,7 @@ export default function Dashboard() {
     if (walletRes.status !== "fulfilled" || txRes.status !== "fulfilled") {
       showToast("Some dashboard data failed to load.", "warning");
     }
+    setQuickBeneficiaries(getQuickBeneficiaries());
     setLoadingWallet(false);
     setLoadingTxs(false);
   };
@@ -55,6 +134,7 @@ export default function Dashboard() {
     } catch {
       // ignore
     }
+    setQuickBeneficiaries(getQuickBeneficiaries());
   }, []);
 
   const chartData = useMemo(() => {
@@ -222,6 +302,30 @@ export default function Dashboard() {
             <div className="muted">FAQ, calls, WhatsApp and report tracking</div>
           </Link>
         </div>
+      </section>
+
+      <section className="section">
+        <div className="section-head">
+          <h3>Quick Buy</h3>
+          <span className="muted">{quickBeneficiaries.length} saved</span>
+        </div>
+        {quickBeneficiaries.length === 0 ? (
+          <div className="card">
+            <div className="muted">
+              Save beneficiaries from Data/Airtime/Cable/Electricity/Exam pages to quick-buy here.
+            </div>
+          </div>
+        ) : (
+          <div className="grid-3">
+            {quickBeneficiaries.map((item) => (
+              <Link className="card action-card beneficiary-quick-card" to={item.to} key={item.id}>
+                <div className="label">{item.serviceTitle}</div>
+                <div className="value">{item.label}</div>
+                <div className="muted">{item.subtitle}</div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="section">
