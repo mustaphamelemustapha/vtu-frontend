@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch, clearToken, setAuthTokens, setProfile } from "../services/api";
+import { apiFetch, clearToken, setAuthTokens, setProfile, warmBackend } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
 export default function AdminLogin({ onAuth }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const { showToast } = useToast();
@@ -14,8 +15,12 @@ export default function AdminLogin({ onAuth }) {
   const submit = async (e) => {
     e.preventDefault();
     setError("");
+    setNotice("");
     setLoading(true);
     try {
+      setNotice("Waking secure server...");
+      await warmBackend(9000);
+      setNotice("");
       const data = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email: form.email, password: form.password })
@@ -80,6 +85,7 @@ export default function AdminLogin({ onAuth }) {
             />
             Remember me
           </label>
+          {notice && <div className="notice">{notice}</div>}
           {error && <div className="error">{error}</div>}
           <button className="primary" type="submit">
             {loading ? "Signing in..." : "Login"}

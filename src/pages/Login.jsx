@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch, setAuthTokens, setProfile } from "../services/api";
+import { apiFetch, setAuthTokens, setProfile, warmBackend } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
 export default function Login({ onAuth }) {
@@ -42,7 +42,7 @@ export default function Login({ onAuth }) {
     let lastError = null;
     for (let attempt = 0; attempt <= retries; attempt += 1) {
       try {
-        return await apiFetch("/auth/me");
+        return await apiFetch("/auth/me", { _suppressRetryToast: true });
       } catch (err) {
         lastError = err;
         const msg = String(err?.message || "").toLowerCase();
@@ -226,6 +226,9 @@ export default function Login({ onAuth }) {
         showToast("Please fix the highlighted fields.", "error");
         return;
       }
+      setNotice("Waking secure server...");
+      await warmBackend(9000);
+      setNotice("");
       const data = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email: form.email, password: form.password })

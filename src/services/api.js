@@ -11,6 +11,15 @@ const AUTH_EXPIRED = "AUTH_EXPIRED";
 
 let refreshInFlight = null;
 
+function getBackendOrigin() {
+  try {
+    const parsed = new URL(API_BASE);
+    return parsed.origin;
+  } catch {
+    return String(API_BASE).replace(/\/api\/v1\/?$/, "");
+  }
+}
+
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(SESSION_KEY);
 }
@@ -220,4 +229,23 @@ export async function apiFetch(path, options = {}) {
   }
 
   throw makeError(`Service is busy. Please try again in a moment. [${method} ${path}]`);
+}
+
+export async function warmBackend(maxWaitMs = 9000) {
+  const deadline = Date.now() + Math.max(1000, Number(maxWaitMs) || 9000);
+  const healthUrl = `${getBackendOrigin()}/healthz`;
+  let attempt = 0;
+
+  while (Date.now() < deadline) {
+    attempt += 1;
+    try {
+      const res = await fetchWithTimeout(healthUrl, { method: "GET" }, 3500);
+      if (res.ok) return true;
+    } catch {
+      // Keep trying until deadline.
+    }
+    await sleep(Math.min(300 * attempt, 1000));
+  }
+
+  return false;
 }
