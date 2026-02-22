@@ -155,6 +155,7 @@ export default function Transactions() {
     if (t === "data") {
       fields.push({ label: "Network", value: tx.network || "—" });
       fields.push({ label: "Plan", value: tx.data_plan_code || "—" });
+      fields.push({ label: "Recipient", value: meta.recipient_phone || "—" });
     } else if (t === "airtime") {
       fields.push({ label: "Network", value: (meta.network || tx.network || "—").toString() });
       fields.push({ label: "Phone", value: meta.phone_number || meta.phone || "—" });

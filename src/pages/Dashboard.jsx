@@ -339,6 +339,9 @@ export default function Dashboard() {
               <div>
                 <div className="list-title">{tx.tx_type}</div>
                 <div className="muted">{tx.reference}</div>
+                {tx?.meta?.recipient_phone ? (
+                  <div className="muted">To {maskPhone(tx.meta.recipient_phone)}</div>
+                ) : null}
               </div>
               <div className="list-meta">
                 <div className="value">₦ {tx.amount}</div>
