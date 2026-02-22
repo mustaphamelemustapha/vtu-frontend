@@ -7,10 +7,16 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "mobile:sync": "npm run build && npx cap sync",
+    "mobile:android": "npm run mobile:sync && npx cap open android",
+    "mobile:ios": "npm run mobile:sync && npx cap open ios",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/ios": "^8.1.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
     "react": "^18.2.0",
@@ -18,6 +24,7 @@
     "react-router-dom": "^6.22.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.1.0",
     "@playwright/test": "^1.58.2",
     "@vitejs/plugin-react": "^4.2.1",
     "vite": "^5.1.4",
