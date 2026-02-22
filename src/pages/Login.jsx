@@ -25,6 +25,35 @@ export default function Login({ onAuth }) {
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
   const { showToast } = useToast();
 
+  const decodeRoleFromToken = (token) => {
+    try {
+      const parts = String(token || "").split(".");
+      if (parts.length < 2) return "user";
+      const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+      const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+      const payload = JSON.parse(atob(padded));
+      return String(payload?.role || "user").toLowerCase();
+    } catch {
+      return "user";
+    }
+  };
+
+  const fetchProfileWithRetry = async (retries = 2) => {
+    let lastError = null;
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+      try {
+        return await apiFetch("/auth/me");
+      } catch (err) {
+        lastError = err;
+        const msg = String(err?.message || "").toLowerCase();
+        const isBusy = msg.includes("service is busy") || msg.includes("503");
+        if (!isBusy || attempt >= retries) break;
+        await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
+      }
+    }
+    throw lastError || new Error("Failed to load profile");
+  };
+
   useEffect(() => {
     // Email reset link support: /app/?reset=1&token=...
     try {
@@ -205,7 +234,22 @@ export default function Login({ onAuth }) {
         throw new Error("Invalid authentication response");
       }
       setAuthTokens(data.access_token, data.refresh_token, rememberMe);
-      const profile = await apiFetch("/auth/me");
+      let profile = null;
+      try {
+        profile = await fetchProfileWithRetry(2);
+      } catch (err) {
+        const role = decodeRoleFromToken(data.access_token);
+        profile = {
+          full_name: form.email.split("@")[0] || "User",
+          email: form.email,
+          role,
+        };
+        setNotice("Logged in. Syncing profile...");
+        showToast("Logged in. Syncing profile...", "warning");
+        if (String(err?.message || "").trim()) {
+          setError(String(err.message));
+        }
+      }
       setProfile({ full_name: profile.full_name, email: profile.email, role: profile.role });
       onAuth({
         full_name: profile.full_name,
