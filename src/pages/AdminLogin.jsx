@@ -7,7 +7,6 @@ export default function AdminLogin({ onAuth }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const { showToast } = useToast();
@@ -15,21 +14,19 @@ export default function AdminLogin({ onAuth }) {
   const submit = async (e) => {
     e.preventDefault();
     setError("");
-    setNotice("");
     setLoading(true);
     try {
-      setNotice("Waking secure server...");
       await warmBackend(9000);
-      setNotice("");
       const data = await apiFetch("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email: form.email, password: form.password })
+        body: JSON.stringify({ email: form.email, password: form.password }),
+        _suppressRetryToast: true,
       });
       if (!data?.access_token || !data?.refresh_token) {
         throw new Error("Invalid authentication response");
       }
       setAuthTokens(data.access_token, data.refresh_token, rememberMe);
-      const profile = await apiFetch("/auth/me");
+      const profile = await apiFetch("/auth/me", { _suppressRetryToast: true });
       if ((profile.role || "").toLowerCase() !== "admin") {
         clearToken();
         setError("This account is not an admin.");
@@ -85,7 +82,6 @@ export default function AdminLogin({ onAuth }) {
             />
             Remember me
           </label>
-          {notice && <div className="notice">{notice}</div>}
           {error && <div className="error">{error}</div>}
           <button className="primary" type="submit">
             {loading ? "Signing in..." : "Login"}

@@ -7,6 +7,8 @@ export default function ToastHost() {
   useEffect(() => {
     const onRetry = (event) => {
       const detail = event?.detail || {};
+      const path = String(detail.path || "");
+      if (path.startsWith("/auth/")) return;
       const attempt = Number(detail.attempt || 1);
       const maxAttempts = Number(detail.maxAttempts || 1);
       if (attempt >= maxAttempts) return;

@@ -226,12 +226,11 @@ export default function Login({ onAuth }) {
         showToast("Please fix the highlighted fields.", "error");
         return;
       }
-      setNotice("Waking secure server...");
       await warmBackend(9000);
-      setNotice("");
       const data = await apiFetch("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email: form.email, password: form.password })
+        body: JSON.stringify({ email: form.email, password: form.password }),
+        _suppressRetryToast: true,
       });
       if (!data?.access_token || !data?.refresh_token) {
         throw new Error("Invalid authentication response");
