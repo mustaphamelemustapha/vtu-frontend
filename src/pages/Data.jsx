@@ -6,6 +6,7 @@ import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from 
 import { useToast } from "../context/toast.jsx";
 
 const RESULT_PREFS_KEY = "vtu_data_result_prefs";
+const DELIVERED_HINTS = ["success", "successful", "delivered", "gifted", "completed"];
 
 export default function Data() {
   const MIN_PURCHASE_LOADING_MS = 1200;
@@ -145,6 +146,47 @@ export default function Data() {
   };
 
   const toStatusKey = (value) => String(value || "").toLowerCase();
+  const isDeliveredMessage = (value) => {
+    const msg = String(value || "").toLowerCase();
+    if (!msg) return false;
+    return DELIVERED_HINTS.some((hint) => msg.includes(hint));
+  };
+
+  const pollTransactionByReference = async (reference, maxAttempts = 6) => {
+    const target = String(reference || "").trim();
+    if (!target) return null;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      try {
+        const rows = await apiFetch("/transactions/me", { _suppressRetryToast: true });
+        const tx = (Array.isArray(rows) ? rows : []).find((item) => String(item?.reference || "") === target);
+        if (tx) {
+          const status = toStatusKey(tx?.status);
+          if (["success", "failed", "refunded"].includes(status)) return tx;
+        }
+      } catch {
+        // ignore poll errors and continue
+      }
+      await sleep(1000 * (attempt + 1));
+    }
+    return null;
+  };
+
+  const startPendingReconciliation = ({ reference, chosenPlan, recipientPhone }) => {
+    if (!reference) return;
+    (async () => {
+      const tx = await pollTransactionByReference(reference, 6);
+      if (!tx) return;
+      const mapped = mapTransactionToResult(tx, chosenPlan, recipientPhone);
+      setPurchaseResult(mapped);
+      if (toStatusKey(mapped.status) === "success") {
+        setMessage("");
+        showToast("Purchase confirmed successful.", "success");
+      } else if (toStatusKey(mapped.status) === "failed" || toStatusKey(mapped.status) === "refunded") {
+        showToast(mapped.failure_reason || "Purchase did not complete.", "warning");
+      }
+      loadWallet();
+    })();
+  };
   const isTransientPurchaseError = (error) => {
     const msg = String(error?.message || "").toLowerCase();
     if (!msg) return false;
@@ -247,10 +289,14 @@ export default function Data() {
         method: "POST",
         body: JSON.stringify({ plan_code: planCode, phone_number: phone, ported_number: ported })
       });
+      const apiStatus = toStatusKey(res.status || "success");
+      const inferredSuccess = apiStatus === "pending" && isDeliveredMessage(res.message);
+      const resolvedStatus = inferredSuccess ? "success" : (apiStatus || "success");
+      const reference = res.reference || `AXIS-${Date.now()}`;
       setPurchaseResult({
-        ok: true,
-        reference: res.reference || `AXIS-${Date.now()}`,
-        status: res.status || "success",
+        ok: !["failed", "refunded"].includes(resolvedStatus),
+        reference,
+        status: resolvedStatus,
         created_at: res.created_at || new Date().toISOString(),
         test_mode: !!res.test_mode,
         plan: chosenPlan,
@@ -277,7 +323,14 @@ export default function Data() {
         );
       }
       loadWallet();
-      showToast("Purchase successful.", "success");
+      if (resolvedStatus === "success") {
+        showToast("Purchase successful.", "success");
+      } else if (resolvedStatus === "pending") {
+        showToast("Purchase submitted. Confirming status...", "info");
+        startPendingReconciliation({ reference, chosenPlan, recipientPhone: phone });
+      } else {
+        showToast("Purchase submitted with unresolved status.", "warning");
+      }
     } catch (err) {
       const chosenPlan = plans.find((p) => p.plan_code === planCode) || null;
       if (isTransientPurchaseError(err)) {
@@ -295,6 +348,11 @@ export default function Data() {
             showToast("Purchase successful.", "success");
           } else if (toStatusKey(mapped.status) === "pending") {
             showToast("Purchase submitted and is pending confirmation.", "info");
+            startPendingReconciliation({
+              reference: mapped.reference,
+              chosenPlan,
+              recipientPhone: phone,
+            });
           } else {
             showToast(mapped.failure_reason || "Purchase failed and has been updated in history.", "warning");
           }

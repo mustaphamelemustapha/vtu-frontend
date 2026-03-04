@@ -1698,6 +1698,8 @@ a:focus-visible {
   font-size: 24px;
   font-weight: 800;
   text-align: right;
+  max-width: 62%;
+  word-break: break-word;
 }
 
 .data-result-switches {
@@ -1772,7 +1774,7 @@ a:focus-visible {
 
 @media (max-width: 640px) {
   .data-result-title {
-    font-size: 52px;
+    font-size: clamp(34px, 10vw, 48px);
   }
 
   .data-result-icon {
@@ -1785,22 +1787,31 @@ a:focus-visible {
     font-size: 18px;
   }
 
+  .data-result-receipt-top {
+    flex-wrap: wrap;
+  }
+
   .data-result-row span {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .data-result-row strong {
-    font-size: 18px;
+    font-size: 16px;
+    max-width: 60%;
   }
 
   .data-result-actions {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   .data-result-actions .primary {
     grid-column: 1 / -1;
-    font-size: 20px;
-    min-height: 54px;
+    font-size: 18px;
+    min-height: 52px;
+  }
+
+  .data-result-actions .ghost {
+    min-height: 42px;
   }
 }
 
