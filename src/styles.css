@@ -1587,6 +1587,223 @@ a:focus-visible {
   font-weight: 700;
 }
 
+.data-result-screen {
+  background: #eef2f7;
+  backdrop-filter: none;
+  place-items: start center;
+  overflow: auto;
+}
+
+.data-result-shell {
+  width: min(640px, 100%);
+  min-height: 100%;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 28px;
+}
+
+.data-result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.data-result-head .ghost {
+  border-radius: 16px;
+  padding: 10px 14px;
+}
+
+.data-result-icon {
+  width: 134px;
+  height: 134px;
+  border-radius: 999px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  font-size: 64px;
+  font-weight: 900;
+}
+
+.data-result-icon.success {
+  background: rgba(34, 197, 94, 0.23);
+  color: #16a34a;
+}
+
+.data-result-icon.pending {
+  background: rgba(245, 158, 11, 0.22);
+  color: #b45309;
+}
+
+.data-result-icon.failed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+.data-result-title {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: clamp(28px, 5.7vw, 52px);
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.data-result-receipt {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 24px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08);
+}
+
+.data-result-receipt-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.data-result-receipt-name {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.data-result-receipt-rows {
+  padding: 8px 16px 12px;
+}
+
+.data-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 2px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.data-result-row:last-child {
+  border-bottom: none;
+}
+
+.data-result-row span {
+  color: #64748b;
+  font-size: 22px;
+}
+
+.data-result-row strong {
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.data-result-switches {
+  margin-top: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.data-result-switch-row {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.data-result-switch-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.toggle-switch {
+  width: 56px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  background: #d7dde8;
+  position: relative;
+  transition: background 0.25s ease;
+}
+
+.toggle-switch span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+  transition: transform 0.25s ease;
+}
+
+.toggle-switch.on {
+  background: rgba(34, 197, 94, 0.35);
+}
+
+.toggle-switch.on span {
+  transform: translateX(24px);
+}
+
+.data-result-actions {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.data-result-actions .primary {
+  grid-column: 1 / -1;
+  border-radius: 999px;
+  font-size: 24px;
+  min-height: 58px;
+}
+
+.data-result-actions .ghost {
+  min-height: 46px;
+}
+
+@media (max-width: 640px) {
+  .data-result-title {
+    font-size: 52px;
+  }
+
+  .data-result-icon {
+    width: 120px;
+    height: 120px;
+    font-size: 56px;
+  }
+
+  .data-result-receipt-name {
+    font-size: 18px;
+  }
+
+  .data-result-row span {
+    font-size: 15px;
+  }
+
+  .data-result-row strong {
+    font-size: 18px;
+  }
+
+  .data-result-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .data-result-actions .primary {
+    grid-column: 1 / -1;
+    font-size: 20px;
+    min-height: 54px;
+  }
+}
+
 @keyframes purchase-ring {
   to {
     transform: rotate(360deg);

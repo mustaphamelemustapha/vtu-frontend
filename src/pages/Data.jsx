@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { apiFetch } from "../services/api";
+import { apiFetch, getProfile } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
+
+const RESULT_PREFS_KEY = "vtu_data_result_prefs";
 
 export default function Data() {
   const MIN_PURCHASE_LOADING_MS = 1200;
@@ -27,9 +29,11 @@ export default function Data() {
   const [wallet, setWallet] = useState(null);
   const [plansError, setPlansError] = useState("");
   const [walletError, setWalletError] = useState("");
+  const [resultPrefs, setResultPrefs] = useState({ save_beneficiary: true, amigo_bolt: false });
   const receiptCaptureRef = useRef(null);
   const purchaseLockRef = useRef(false);
   const { showToast } = useToast();
+  const profile = getProfile();
 
   const parseSize = (value) => {
     if (!value) return null;
@@ -84,6 +88,18 @@ export default function Data() {
 
   useEffect(() => {
     try {
+      const prefs = JSON.parse(localStorage.getItem(RESULT_PREFS_KEY) || "{}");
+      setResultPrefs({
+        save_beneficiary: prefs?.save_beneficiary !== false,
+        amigo_bolt: !!prefs?.amigo_bolt,
+      });
+    } catch {
+      setResultPrefs({ save_beneficiary: true, amigo_bolt: false });
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
       const stored = JSON.parse(localStorage.getItem("vtu_last_recipient") || "null");
       if (stored && typeof stored === "object") {
         if (typeof stored.phone === "string") setPhone(stored.phone);
@@ -112,6 +128,105 @@ export default function Data() {
     loadWallet();
     setBeneficiaries(loadBeneficiaries("data"));
   }, [searchParams]);
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const normalizePhone = (value) => String(value || "").replace(/\D/g, "");
+  const normalizePlanCode = (value) => String(value || "").split(":").pop();
+
+  const updateResultPref = (key, value) => {
+    const next = { ...resultPrefs, [key]: !!value };
+    setResultPrefs(next);
+    try {
+      localStorage.setItem(RESULT_PREFS_KEY, JSON.stringify(next));
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const toStatusKey = (value) => String(value || "").toLowerCase();
+  const isTransientPurchaseError = (error) => {
+    const msg = String(error?.message || "").toLowerCase();
+    if (!msg) return false;
+    if (msg.includes("insufficient balance") || msg.includes("plan not found") || msg.includes("unsupported network")) {
+      return false;
+    }
+    return (
+      msg.includes("service is busy") ||
+      msg.includes("request timed out") ||
+      msg.includes("network") ||
+      msg.includes("failed to fetch") ||
+      msg.includes("temporarily unavailable") ||
+      msg.includes("502") ||
+      msg.includes("503") ||
+      msg.includes("504")
+    );
+  };
+
+  const mapTransactionToResult = (tx, chosenPlan, fallbackPhone) => {
+    const status = toStatusKey(tx?.status || "pending");
+    return {
+      ok: status !== "failed" && status !== "refunded",
+      reference: tx?.reference || `AXIS-${Date.now()}`,
+      status,
+      created_at: tx?.created_at || new Date().toISOString(),
+      test_mode: false,
+      plan: chosenPlan,
+      plan_code: tx?.data_plan_code || chosenPlan?.plan_code || "—",
+      validity: chosenPlan?.validity || "",
+      network: tx?.network || chosenPlan?.network || "",
+      recipient: tx?.meta?.recipient_phone || fallbackPhone || "",
+      amount: Number(tx?.amount ?? chosenPlan?.price ?? 0),
+      ported,
+      failure_reason: tx?.failure_reason || "",
+      provider_message: "",
+    };
+  };
+
+  const findMatchingRecentTransaction = async ({ chosenPlan, planCode, recipientPhone }) => {
+    const targetPlan = normalizePlanCode(planCode);
+    const targetPhone = normalizePhone(recipientPhone);
+    const targetAmount = Number(chosenPlan?.price || 0);
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        const rows = await apiFetch("/transactions/me", { _suppressRetryToast: true });
+        const now = Date.now();
+        const candidates = (Array.isArray(rows) ? rows : [])
+          .filter((tx) => String(tx?.tx_type || "").toLowerCase() === "data")
+          .filter((tx) => {
+            const createdAt = Date.parse(tx?.created_at || "");
+            if (!Number.isFinite(createdAt)) return false;
+            return now - createdAt <= 15 * 60 * 1000;
+          })
+          .sort((a, b) => Date.parse(b?.created_at || 0) - Date.parse(a?.created_at || 0));
+
+        let best = null;
+        let bestScore = -1;
+        for (const tx of candidates) {
+          let score = 0;
+          const txPlan = normalizePlanCode(tx?.data_plan_code);
+          const txPhone = normalizePhone(tx?.meta?.recipient_phone);
+          const txAmount = Number(tx?.amount || 0);
+
+          if (txPlan && targetPlan && txPlan === targetPlan) score += 4;
+          if (txPhone && targetPhone && (txPhone.endsWith(targetPhone.slice(-10)) || targetPhone.endsWith(txPhone.slice(-10)))) score += 5;
+          if (Math.abs(txAmount - targetAmount) < 0.01) score += 2;
+          if (now - Date.parse(tx?.created_at || 0) <= 2 * 60 * 1000) score += 1;
+
+          if (score > bestScore) {
+            best = tx;
+            bestScore = score;
+          }
+        }
+        if (best && bestScore >= 6) return best;
+      } catch {
+        // ignore and continue polling
+      }
+      await sleep(700 * (attempt + 1));
+    }
+    return null;
+  };
 
   const buy = async (planCode) => {
     if (purchaseLockRef.current) return;
@@ -148,22 +263,46 @@ export default function Data() {
         failure_reason: "",
         provider_message: res.message || "",
       });
-      setBeneficiaries(
-        saveBeneficiary("data", {
-          label: phone,
-          subtitle: `${String(chosenPlan?.network || network || "any").toUpperCase()} • ${ported ? "Ported" : "Standard"}`,
-          fields: {
-            phone,
-            ported,
-            preferred_network: String(chosenPlan?.network || network || "").toLowerCase(),
-          },
-        })
-      );
+      if (resultPrefs.save_beneficiary) {
+        setBeneficiaries(
+          saveBeneficiary("data", {
+            label: phone,
+            subtitle: `${String(chosenPlan?.network || network || "any").toUpperCase()} • ${ported ? "Ported" : "Standard"}`,
+            fields: {
+              phone,
+              ported,
+              preferred_network: String(chosenPlan?.network || network || "").toLowerCase(),
+            },
+          })
+        );
+      }
       loadWallet();
       showToast("Purchase successful.", "success");
     } catch (err) {
-      setMessage(err.message);
       const chosenPlan = plans.find((p) => p.plan_code === planCode) || null;
+      if (isTransientPurchaseError(err)) {
+        setMessage("Purchase submitted. Verifying final status...");
+        const matchedTx = await findMatchingRecentTransaction({
+          chosenPlan,
+          planCode,
+          recipientPhone: phone,
+        });
+        if (matchedTx) {
+          const mapped = mapTransactionToResult(matchedTx, chosenPlan, phone);
+          setPurchaseResult(mapped);
+          loadWallet();
+          if (toStatusKey(mapped.status) === "success") {
+            showToast("Purchase successful.", "success");
+          } else if (toStatusKey(mapped.status) === "pending") {
+            showToast("Purchase submitted and is pending confirmation.", "info");
+          } else {
+            showToast(mapped.failure_reason || "Purchase failed and has been updated in history.", "warning");
+          }
+          setMessage("");
+          return;
+        }
+      }
+      setMessage(err.message);
       setPurchaseResult({
         ok: false,
         reference: `AXIS-ATTEMPT-${Date.now()}`,
@@ -365,6 +504,7 @@ export default function Data() {
     if (key === "success") return "Success";
     if (key === "pending") return "Pending";
     if (key === "failed") return "Failed";
+    if (key === "refunded") return "Refunded";
     return String(value || "—");
   };
 
@@ -669,63 +809,132 @@ export default function Data() {
       )}
 
       {purchaseResult && (
-        <div className="success-screen" role="dialog" aria-live="polite">
-          <div className="success-card">
-            <div className={`success-icon ${purchaseResult.ok ? "" : "error"}`}>
-              {purchaseResult.ok ? "✓" : "!"}
+        <div className="success-screen data-result-screen" role="dialog" aria-live="polite" aria-modal="true">
+          <div className="data-result-shell">
+            <div className="data-result-head">
+              <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>
+                Back
+              </button>
+              <button className="ghost" type="button" onClick={() => navigate("/transactions")}>
+                History
+              </button>
             </div>
-            <div className="success-title">
-              {purchaseResult.ok
-                ? resultStatusKey(purchaseResult.status) === "success"
-                  ? "Data Purchase Successful"
-                  : "Data Purchase Pending"
-                : "Data Purchase Failed"}
+
+            <div
+              className={`data-result-icon ${
+                resultStatusKey(purchaseResult.status) === "success"
+                  ? "success"
+                  : resultStatusKey(purchaseResult.status) === "pending"
+                    ? "pending"
+                    : "failed"
+              }`}
+            >
+              {resultStatusKey(purchaseResult.status) === "success" ? "✓" : resultStatusKey(purchaseResult.status) === "pending" ? "…" : "!"}
             </div>
-            <div className="success-sub">
-              {purchaseResult.ok
-                ? resultStatusKey(purchaseResult.status) === "success"
-                  ? "Your request was completed successfully."
-                  : "Request submitted. Final delivery status may update shortly."
-                : "We could not complete this request. Please review the receipt details below."}
-            </div>
-            {purchaseResult.test_mode && (
-              <div className="notice" style={{ marginBottom: 10 }}>
-                Simulation mode is enabled. This purchase was not sent to live provider.
+
+            <h2 className="data-result-title">
+              {resultStatusKey(purchaseResult.status) === "success"
+                ? "Purchase Successful"
+                : resultStatusKey(purchaseResult.status) === "pending"
+                  ? "Purchase Pending"
+                  : "Purchase Failed"}
+            </h2>
+
+            <div className="data-result-receipt">
+              <div className="data-result-receipt-top">
+                <div className="data-result-receipt-name">Transfer Receipt</div>
+                <span className={`pill ${resultStatusKey(purchaseResult.status)}`}>{resultStatusLabel(purchaseResult.status)}</span>
               </div>
-            )}
+
+              <div className="data-result-receipt-rows">
+                <div className="data-result-row">
+                  <span>Time</span>
+                  <strong>{formatDateTime(purchaseResult.created_at)}</strong>
+                </div>
+                <div className="data-result-row">
+                  <span>Sender Name</span>
+                  <strong>{profile?.full_name || profile?.email || "AxisVTU User"}</strong>
+                </div>
+                <div className="data-result-row">
+                  <span>Provider</span>
+                  <strong>Amigo</strong>
+                </div>
+                <div className="data-result-row">
+                  <span>Data Capacity</span>
+                  <strong>{purchaseResult?.plan?.data_size || purchaseResult?.plan?.plan_name || "—"}</strong>
+                </div>
+                <div className="data-result-row">
+                  <span>Network</span>
+                  <strong>{purchaseResult.network ? String(purchaseResult.network).toUpperCase() : "—"}</strong>
+                </div>
+                <div className="data-result-row">
+                  <span>Receiver Phone</span>
+                  <strong>{purchaseResult.recipient || "—"}</strong>
+                </div>
+                <div className="data-result-row">
+                  <span>Amount</span>
+                  <strong>₦ {formatAmount(purchaseResult.amount)}</strong>
+                </div>
+                <div className="data-result-row">
+                  <span>Reference</span>
+                  <strong>{purchaseResult.reference || "—"}</strong>
+                </div>
+              </div>
+            </div>
+
             {!!purchaseResult.failure_reason && (
-              <div className="notice" style={{ marginBottom: 10 }}>
+              <div className="notice" style={{ marginTop: 12 }}>
                 {purchaseResult.failure_reason}
               </div>
             )}
-            <div className="success-grid">
-              <div>
-                <div className="label">Plan</div>
-                <div className="value">{purchaseResult.plan?.plan_name || "—"}</div>
+            {purchaseResult.test_mode && (
+              <div className="notice" style={{ marginTop: 12 }}>
+                Simulation mode is enabled. This purchase was not sent to live provider.
               </div>
-              <div>
-                <div className="label">Recipient</div>
-                <div className="muted">{purchaseResult.recipient || "—"}</div>
+            )}
+
+            <div className="data-result-switches">
+              <div className="data-result-switch-row">
+                <div>
+                  <div className="data-result-switch-title">Beneficiaries</div>
+                  <div className="muted">Auto-save recipients for quick buy</div>
+                </div>
+                <button
+                  type="button"
+                  className={`toggle-switch ${resultPrefs.save_beneficiary ? "on" : ""}`}
+                  onClick={() => updateResultPref("save_beneficiary", !resultPrefs.save_beneficiary)}
+                  aria-label="Toggle beneficiaries auto save"
+                >
+                  <span />
+                </button>
               </div>
-              <div>
-                <div className="label">Amount</div>
-                <div className="muted">₦ {formatAmount(purchaseResult.amount)}</div>
-              </div>
-              <div>
-                <div className="label">Reference</div>
-                <div className="muted">{purchaseResult.reference}</div>
+
+              <div className="data-result-switch-row">
+                <div>
+                  <div className="data-result-switch-title">Amigo Bolt</div>
+                  <div className="muted">Fast route preference (coming soon)</div>
+                </div>
+                <button
+                  type="button"
+                  className={`toggle-switch ${resultPrefs.amigo_bolt ? "on" : ""}`}
+                  onClick={() => updateResultPref("amigo_bolt", !resultPrefs.amigo_bolt)}
+                  aria-label="Toggle Amigo Bolt"
+                >
+                  <span />
+                </button>
               </div>
             </div>
-            <div className="modal-actions">
-              <button className="primary" onClick={downloadReceipt} disabled={downloadBusy}>
+
+            <div className="data-result-actions">
+              <button className="ghost" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
               </button>
-              <button className="ghost" onClick={shareReceipt}>Share Receipt</button>
+              <button className="ghost" onClick={shareReceipt}>Share</button>
               <button className="ghost" onClick={shareReceiptWhatsApp}>WhatsApp</button>
-              <button className="ghost" onClick={() => navigate("/transactions")}>View Receipt</button>
-              <button className="ghost" onClick={() => setPurchaseResult(null)}>Done</button>
+              <button className="primary" onClick={() => setPurchaseResult(null)}>Dismiss</button>
             </div>
           </div>
+
           <div className="receipt-capture-layer" aria-hidden="true">
             <div className="receipt-sheet" ref={receiptCaptureRef}>
               <div className="receipt-sheet-header">
