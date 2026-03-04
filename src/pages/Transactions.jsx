@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
+import { downloadReceiptPdf } from "../services/receiptDownload";
 import { useToast } from "../context/toast.jsx";
 
 export default function Transactions() {
@@ -266,38 +267,14 @@ export default function Transactions() {
     if (!selected || !receiptCaptureRef.current) return;
     setDownloadBusy(true);
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import("html2canvas"),
-        import("jspdf"),
-      ]);
-      const canvas = await html2canvas(receiptCaptureRef.current, {
-        scale: 2,
-        backgroundColor: "#f4f7fb",
-        useCORS: true,
-        logging: false,
-      });
-      const imageData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const maxWidth = pageWidth - margin * 2;
-      const maxHeight = pageHeight - margin * 2;
-      const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
-      const renderWidth = canvas.width * ratio;
-      const renderHeight = canvas.height * ratio;
-      const x = (pageWidth - renderWidth) / 2;
-      const y = margin;
-      pdf.addImage(imageData, "PNG", x, y, renderWidth, renderHeight, undefined, "FAST");
-
       const safeReference = String(selected.reference || "transaction").replace(/[^a-zA-Z0-9_-]/g, "_");
-      pdf.save(`axisvtu-receipt-${safeReference}.pdf`);
+      await downloadReceiptPdf({
+        sourceNode: receiptCaptureRef.current,
+        fileName: `axisvtu-receipt-${safeReference}.pdf`,
+      });
       showToast("Receipt downloaded successfully.", "success");
-    } catch {
+    } catch (err) {
+      console.error("Receipt download failed:", err);
       showToast("Failed to download receipt. Please try again.", "error");
     } finally {
       setDownloadBusy(false);
