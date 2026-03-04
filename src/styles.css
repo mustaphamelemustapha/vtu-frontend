@@ -1335,6 +1335,98 @@ a:focus-visible {
   margin-top: 0;
 }
 
+.tx-receipt-hero {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.tx-receipt-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  font-size: 56px;
+  font-weight: 900;
+}
+
+.tx-receipt-icon.success {
+  background: rgba(34, 197, 94, 0.25);
+  color: #16a34a;
+}
+
+.tx-receipt-icon.pending {
+  background: rgba(245, 158, 11, 0.22);
+  color: #b45309;
+}
+
+.tx-receipt-icon.failed {
+  background: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
+}
+
+.tx-receipt-title {
+  margin: 0;
+  font-size: clamp(30px, 5vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.tx-receipt-card {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 24px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.tx-receipt-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.tx-receipt-card-name {
+  font-size: 29px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.tx-receipt-card-rows {
+  padding: 8px 16px 12px;
+}
+
+.tx-receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 2px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.tx-receipt-row:last-child {
+  border-bottom: none;
+}
+
+.tx-receipt-row span {
+  color: #64748b;
+  font-size: 20px;
+}
+
+.tx-receipt-row strong {
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: right;
+  max-width: 62%;
+  word-break: break-word;
+}
+
 .receipt-capture-layer {
   position: fixed;
   left: -10000px;
@@ -1413,6 +1505,36 @@ a:focus-visible {
   gap: 12px;
   color: #475569;
   font-size: 12px;
+}
+
+.receipt-sheet.receipt-sheet-transfer {
+  width: 430px;
+  background: #eef2f7;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  padding: 14px 14px 12px;
+}
+
+.receipt-sheet.receipt-sheet-transfer .tx-receipt-icon {
+  width: 92px;
+  height: 92px;
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.receipt-sheet.receipt-sheet-transfer .tx-receipt-title {
+  font-size: 34px;
+}
+
+.receipt-sheet.receipt-sheet-transfer .tx-receipt-card-name {
+  font-size: 22px;
+}
+
+.receipt-sheet.receipt-sheet-transfer .tx-receipt-row span {
+  font-size: 15px;
+}
+
+.receipt-sheet.receipt-sheet-transfer .tx-receipt-row strong {
+  font-size: 16px;
 }
 
 .modal-head {
@@ -3182,6 +3304,25 @@ a.pill:active::after {
   }
   .modal.modal-receipt .receipt-grid {
     grid-template-columns: 1fr;
+  }
+  .tx-receipt-icon {
+    width: 92px;
+    height: 92px;
+    font-size: 42px;
+    margin-bottom: 10px;
+  }
+  .tx-receipt-title {
+    font-size: clamp(24px, 8.2vw, 36px);
+  }
+  .tx-receipt-card-name {
+    font-size: 22px;
+  }
+  .tx-receipt-row span {
+    font-size: 16px;
+  }
+  .tx-receipt-row strong {
+    font-size: 18px;
+    max-width: 58%;
   }
 
   /* Profile page: prevent overflow and keep actions usable on small screens */

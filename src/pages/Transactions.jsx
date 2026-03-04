@@ -148,6 +148,22 @@ export default function Transactions() {
     return String(tx?.tx_type || "Transaction");
   };
 
+  const receiptStatusTitle = (tx) => {
+    const key = statusKey(tx?.status);
+    if (key === "success") return "Purchase Successful";
+    if (key === "pending") return "Purchase Pending";
+    if (key === "failed") return "Purchase Failed";
+    return "Transaction Receipt";
+  };
+
+  const receiptStatusSymbol = (tx) => {
+    const key = statusKey(tx?.status);
+    if (key === "success") return "✓";
+    if (key === "pending") return "…";
+    if (key === "failed") return "!";
+    return "•";
+  };
+
   const receiptFields = (tx) => {
     const meta = tx?.meta || {};
     const t = typeKey(tx?.tx_type);
@@ -181,6 +197,22 @@ export default function Transactions() {
     fields.push({ label: "External Ref", value: tx.external_reference || "—" });
     fields.push({ label: "Failure Reason", value: tx.failure_reason || "—" });
     return fields;
+  };
+
+  const transactionReceiptRows = (tx) => {
+    const rows = [
+      { label: "Time", value: formatDateTime(tx?.created_at) },
+      { label: "Reference", value: tx?.reference || "—" },
+      { label: "Amount", value: `₦ ${formatAmount(tx?.amount)}` },
+    ];
+    const extras = receiptFields(tx).filter((item) => {
+      const label = String(item?.label || "");
+      const value = String(item?.value || "").trim();
+      if (!label) return false;
+      if (label === "Status" || label === "Tx Type") return false;
+      return value && value !== "—";
+    });
+    return [...rows, ...extras];
   };
 
   const metaSearchText = (value) => {
@@ -393,22 +425,36 @@ export default function Transactions() {
         <div className="modal-backdrop">
           <div className="modal modal-receipt">
             <div className="modal-head">
-              <div>
-                <div className="label">Transaction Receipt</div>
-                <h3>{typeLabel(selected)}</h3>
-              </div>
+              <div className="label">Transaction Receipt</div>
               <button className="ghost" onClick={() => setSelected(null)}>Close</button>
             </div>
             <div className="modal-body">
-              <div className="list-card">
-                <div>
-                  <div className="list-title">Reference</div>
-                  <div className="muted">{selected.reference}</div>
-                  <div className="muted">{formatDateTime(selected.created_at)}</div>
+              <div className="tx-receipt-hero">
+                <div
+                  className={`tx-receipt-icon ${
+                    statusKey(selected.status) === "success"
+                      ? "success"
+                      : statusKey(selected.status) === "pending"
+                        ? "pending"
+                        : "failed"
+                  }`}
+                >
+                  {receiptStatusSymbol(selected)}
                 </div>
-                <div className="list-meta">
-                  <div className="value">₦ {formatAmount(selected.amount)}</div>
+                <h3 className="tx-receipt-title">{receiptStatusTitle(selected)}</h3>
+              </div>
+              <div className="tx-receipt-card">
+                <div className="tx-receipt-card-top">
+                  <div className="tx-receipt-card-name">Transfer Receipt</div>
                   <span className={`pill ${statusKey(selected.status)}`}>{statusLabel(selected.status)}</span>
+                </div>
+                <div className="tx-receipt-card-rows">
+                  {transactionReceiptRows(selected).map((item, idx) => (
+                    <div className="tx-receipt-row" key={`${item.label}-${idx}`}>
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                  ))}
                 </div>
               </div>
               {hasOpenReport(selected) && (
@@ -424,14 +470,6 @@ export default function Transactions() {
                     : ""}
                 </div>
               )}
-              <div className="receipt-grid">
-                {receiptFields(selected).map((item, idx) => (
-                  <div key={`${item.label}-${idx}`}>
-                    <div className="label">{item.label}</div>
-                    <div>{item.value}</div>
-                  </div>
-                ))}
-              </div>
             </div>
             <div className="modal-actions">
               <button className="primary" onClick={downloadReceipt} disabled={downloadBusy}>
@@ -458,38 +496,35 @@ export default function Transactions() {
             </div>
           </div>
           <div className="receipt-capture-layer" aria-hidden="true">
-            <div className="receipt-sheet" ref={receiptCaptureRef}>
-              <div className="receipt-sheet-header">
-                <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" />
-                <div>
-                  <div className="label">AxisVTU Official Receipt</div>
-                  <h4>{typeLabel(selected)}</h4>
+            <div className="receipt-sheet receipt-sheet-transfer" ref={receiptCaptureRef}>
+              <div className="tx-receipt-hero">
+                <div
+                  className={`tx-receipt-icon ${
+                    statusKey(selected.status) === "success"
+                      ? "success"
+                      : statusKey(selected.status) === "pending"
+                        ? "pending"
+                        : "failed"
+                  }`}
+                >
+                  {receiptStatusSymbol(selected)}
                 </div>
-                <span className={`pill ${statusKey(selected.status)}`}>{statusLabel(selected.status)}</span>
+                <h3 className="tx-receipt-title">{receiptStatusTitle(selected)}</h3>
               </div>
-
-              <div className="receipt-sheet-total">
-                <div className="label">Amount Paid</div>
-                <div className="value">₦ {formatAmount(selected.amount)}</div>
-              </div>
-
-              <div className="receipt-sheet-grid">
-                <div>
-                  <div className="label">Reference</div>
-                  <div>{selected.reference || "—"}</div>
+              <div className="tx-receipt-card">
+                <div className="tx-receipt-card-top">
+                  <div className="tx-receipt-card-name">Transfer Receipt</div>
+                  <span className={`pill ${statusKey(selected.status)}`}>{statusLabel(selected.status)}</span>
                 </div>
-                <div>
-                  <div className="label">Date</div>
-                  <div>{formatDateTime(selected.created_at)}</div>
+                <div className="tx-receipt-card-rows">
+                  {transactionReceiptRows(selected).map((item, idx) => (
+                    <div className="tx-receipt-row" key={`${item.label}-${idx}`}>
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                  ))}
                 </div>
-                {receiptFields(selected).map((item, idx) => (
-                  <div key={`${item.label}-${idx}`}>
-                    <div className="label">{item.label}</div>
-                    <div>{item.value}</div>
-                  </div>
-                ))}
               </div>
-
               <div className="receipt-sheet-footer">
                 <div>Generated by AxisVTU</div>
                 <div>{new Date().toLocaleString("en-NG")}</div>
