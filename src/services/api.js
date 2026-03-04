@@ -232,8 +232,21 @@ export async function apiFetch(path, options = {}) {
 }
 
 export async function warmBackend(maxWaitMs = 9000) {
+  const backendOrigin = getBackendOrigin();
+  let hostname = "";
+  try {
+    hostname = new URL(backendOrigin).hostname;
+  } catch {
+    hostname = "";
+  }
+
+  // In local/mock test environments, pre-warm should not block auth flows.
+  if (["localhost", "127.0.0.1", "0.0.0.0"].includes(String(hostname).toLowerCase())) {
+    return true;
+  }
+
   const deadline = Date.now() + Math.max(1000, Number(maxWaitMs) || 9000);
-  const healthUrl = `${getBackendOrigin()}/healthz`;
+  const healthUrl = `${backendOrigin}/healthz`;
   let attempt = 0;
 
   while (Date.now() < deadline) {

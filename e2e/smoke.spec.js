@@ -304,8 +304,8 @@ test("data purchase smoke", async ({ page }) => {
   await page.getByRole("button", { name: /MTN 1GB/i }).first().click();
   await page.getByRole("button", { name: "Confirm & Buy" }).click();
 
-  await expect(page.getByText("Data Purchase Successful")).toBeVisible();
-  await page.getByRole("button", { name: "View Receipt" }).click();
+  await expect(page.getByRole("heading", { name: "Purchase Successful" })).toBeVisible();
+  await page.getByRole("button", { name: "History" }).click();
 
   await expect(page).toHaveURL(/\/app\/transactions$/);
   await expect(page.getByText(/DATA_E2E_/)).toBeVisible();
