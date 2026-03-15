@@ -3,12 +3,21 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.mmtechglobe.axisvtu"
     compileSdk = rootProject.ext.compileSdkVersion
+    def keystorePropsFile = rootProject.file("keystore.properties")
+    def keystoreProps = new Properties()
+    if (keystorePropsFile.exists()) {
+        keystoreProps.load(new FileInputStream(keystorePropsFile))
+    }
+    def keystorePath = System.getenv("AXISVTU_KEYSTORE_PATH") ?: keystoreProps.getProperty("storeFile")
+    def keystorePassword = System.getenv("AXISVTU_KEYSTORE_PASSWORD") ?: keystoreProps.getProperty("storePassword")
+    def keyAlias = System.getenv("AXISVTU_KEY_ALIAS") ?: keystoreProps.getProperty("keyAlias")
+    def keyPassword = System.getenv("AXISVTU_KEY_PASSWORD") ?: keystoreProps.getProperty("keyPassword")
     defaultConfig {
         applicationId "com.mmtechglobe.axisvtu"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,9 +25,22 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (keystorePath && keystorePassword && keyAlias && keyPassword) {
+                storeFile file(keystorePath)
+                storePassword keystorePassword
+                keyAlias keyAlias
+                keyPassword keyPassword
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
+            if (keystorePath && keystorePassword && keyAlias && keyPassword) {
+                signingConfig signingConfigs.release
+            }
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
