@@ -340,10 +340,10 @@ a:focus-visible {
 .dark {
   --bg: #080b10;
   --panel: #121826;
-  --panel-light: #1a2232;
-  --stroke: #2a3547;
+  --panel-light: #1d2638;
+  --stroke: #2f3b50;
   --ink: #f5f7fb;
-  --muted: #d0d6df;
+  --muted: #d6dde7;
   --accent: #35d07f;
   --accent-2: #60d3ff;
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
@@ -1116,6 +1116,22 @@ a:focus-visible {
 .plan-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 18px 30px rgba(15, 23, 42, 0.12);
+}
+
+@media (hover: none) {
+  .card:hover,
+  .list-card:hover,
+  .plan-card:hover {
+    transform: none;
+    box-shadow: var(--shadow);
+  }
+
+  .card:active,
+  .list-card:active,
+  .plan-card:active {
+    transform: scale(0.985);
+    box-shadow: var(--shadow-2);
+  }
 }
 
 .plan-top {
@@ -2328,8 +2344,11 @@ a:focus-visible {
   background: var(--accent);
   border: none;
   color: white;
-  padding: 10px 16px;
-  border-radius: 14px;
+  padding: 12px 18px;
+  min-height: 48px;
+  border-radius: 16px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -2346,12 +2365,14 @@ a:focus-visible {
 }
 
 .ghost {
-  background: transparent;
-  border: none;
+  background: var(--panel-light);
+  border: 1px solid var(--stroke);
   color: var(--ink);
   cursor: pointer;
-  padding: 10px 14px;
-  border-radius: 14px;
+  padding: 12px 16px;
+  min-height: 44px;
+  border-radius: 16px;
+  font-weight: 600;
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -2369,6 +2390,7 @@ a:focus-visible {
 button {
   border: none;
   outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:focus-visible {
@@ -2394,12 +2416,12 @@ select:focus-visible {
 }
 
 .ghost:hover {
-  background: rgba(15, 118, 110, 0.08);
+  background: rgba(15, 118, 110, 0.12);
 }
 
 .ghost:active {
   transform: translateY(1px) scale(0.985);
-  background: rgba(15, 118, 110, 0.12);
+  background: rgba(15, 118, 110, 0.18);
   filter: saturate(1.04);
 }
 
@@ -2847,9 +2869,9 @@ textarea {
 .pill {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 12.5px;
   background: var(--panel-light);
   color: var(--muted);
 }
