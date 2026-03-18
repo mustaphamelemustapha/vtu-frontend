@@ -246,7 +246,7 @@ export async function warmBackend(maxWaitMs = 9000) {
   }
 
   const deadline = Date.now() + Math.max(1000, Number(maxWaitMs) || 9000);
-  const healthUrl = `${backendOrigin}/health`;
+  const healthUrl = `${backendOrigin}/healthz`;
   let attempt = 0;
 
   while (Date.now() < deadline) {
