@@ -15,7 +15,7 @@ import Support from "./pages/Support.jsx";
 import Admin from "./pages/Admin.jsx";
 import Profile from "./pages/Profile.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
-import { apiFetch, getToken, clearToken, getProfile, setProfile } from "./services/api";
+import { apiFetch, getToken, clearToken, getProfile, setProfile, warmBackend } from "./services/api";
 import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 
@@ -287,6 +287,11 @@ export default function App() {
       document.body.classList.add("dark");
       setDarkMode(true);
     }
+  }, []);
+
+  useEffect(() => {
+    // Pre-warm backend on app load to avoid cold-start delays.
+    warmBackend(7000).catch(() => {});
   }, []);
 
   useEffect(() => {

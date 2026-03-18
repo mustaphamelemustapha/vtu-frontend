@@ -16,7 +16,7 @@ export default function AdminLogin({ onAuth }) {
     setError("");
     setLoading(true);
     try {
-      await warmBackend(9000);
+      warmBackend(9000).catch(() => {});
       const data = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email: form.email, password: form.password }),
