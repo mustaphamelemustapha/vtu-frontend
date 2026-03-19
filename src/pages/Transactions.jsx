@@ -179,10 +179,12 @@ export default function Transactions() {
     } else if (t === "cable") {
       fields.push({ label: "Provider", value: meta.provider || tx.network || "—" });
       fields.push({ label: "Smartcard", value: meta.smartcard_number || meta.smartcard || "—" });
+      fields.push({ label: "Phone", value: meta.phone_number || meta.phone || "—" });
       fields.push({ label: "Package", value: meta.package_code || tx.data_plan_code || "—" });
     } else if (t === "electricity") {
       fields.push({ label: "Disco", value: meta.disco || tx.network || "—" });
       fields.push({ label: "Meter", value: meta.meter_number || meta.meter || "—" });
+      fields.push({ label: "Phone", value: meta.phone_number || meta.phone || "—" });
       fields.push({ label: "Meter Type", value: meta.meter_type || "—" });
       fields.push({ label: "Token", value: meta.token || "—" });
     } else if (t === "exam") {

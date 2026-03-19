@@ -13,7 +13,13 @@ export default function Cable() {
   const { showToast } = useToast();
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
-  const [form, setForm] = useState({ provider: "dstv", smartcard_number: "", package_code: "basic", amount: 5000 });
+  const [form, setForm] = useState({
+    provider: "dstv",
+    smartcard_number: "",
+    phone_number: "",
+    package_code: "basic",
+    amount: 5000,
+  });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [downloadBusy, setDownloadBusy] = useState(false);
@@ -28,12 +34,14 @@ export default function Cable() {
     setBeneficiaries(loadBeneficiaries("cable"));
     const qProvider = String(searchParams.get("provider") || "").trim().toLowerCase();
     const qSmartcard = String(searchParams.get("smartcard_number") || "").trim();
+    const qPhone = String(searchParams.get("phone_number") || "").trim();
     const qPackageCode = String(searchParams.get("package_code") || "").trim().toLowerCase();
     const qAmount = Number(searchParams.get("amount") || "");
     setForm((prev) => ({
       ...prev,
       provider: qProvider || prev.provider,
       smartcard_number: qSmartcard || prev.smartcard_number,
+      phone_number: qPhone || prev.phone_number,
       package_code: qPackageCode || prev.package_code,
       amount: Number.isFinite(qAmount) && qAmount > 0 ? qAmount : prev.amount,
     }));
@@ -43,12 +51,16 @@ export default function Cable() {
     const nextErrors = {};
     const provider = String(form.provider || "").trim().toLowerCase();
     const smartcardNumber = String(form.smartcard_number || "").replace(/\s+/g, "");
+    const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
     const packageCode = String(form.package_code || "").trim().toLowerCase();
     const amount = Number(form.amount);
 
     if (!provider) nextErrors.provider = "Select a provider.";
     if (!/^[a-zA-Z0-9]{5,20}$/.test(smartcardNumber)) {
       nextErrors.smartcard_number = "Use 5-20 letters/numbers for smartcard.";
+    }
+    if (phoneNumber.length < 7 || phoneNumber.length > 15) {
+      nextErrors.phone_number = "Enter a valid phone number.";
     }
     if (packageCode.length < 2 || packageCode.length > 64) {
       nextErrors.package_code = "Enter a valid package code.";
@@ -64,6 +76,7 @@ export default function Cable() {
     return {
       provider,
       smartcard_number: smartcardNumber,
+      phone_number: phoneNumber,
       package_code: packageCode,
       amount,
     };
@@ -117,6 +130,7 @@ export default function Cable() {
         created_at: res.created_at || new Date().toISOString(),
         provider: payload.provider,
         smartcard: payload.smartcard_number,
+        phone_number: payload.phone_number,
         package_code: payload.package_code,
         amount: payload.amount,
         failure_reason: "",
@@ -128,6 +142,7 @@ export default function Cable() {
           fields: {
             provider: payload.provider,
             smartcard_number: payload.smartcard_number,
+            phone_number: payload.phone_number,
             package_code: payload.package_code,
             amount: String(payload.amount),
           },
@@ -144,6 +159,7 @@ export default function Cable() {
         created_at: new Date().toISOString(),
         provider: payload.provider,
         smartcard: payload.smartcard_number,
+        phone_number: payload.phone_number,
         package_code: payload.package_code,
         amount: payload.amount,
         failure_reason: message,
@@ -219,6 +235,7 @@ export default function Cable() {
       fields: [
         { label: "Provider", value: String(purchaseResult?.provider || "").toUpperCase() || "—" },
         { label: "Smartcard", value: purchaseResult?.smartcard || "—" },
+        { label: "Phone", value: purchaseResult?.phone_number || "—" },
         { label: "Package", value: purchaseResult?.package_code || "—" },
         { label: "Failure Reason", value: purchaseResult?.failure_reason || "—" },
       ],
@@ -260,6 +277,7 @@ export default function Cable() {
         fields: {
           provider: String(form.provider || "").toLowerCase(),
           smartcard_number: smartcardNumber,
+          phone_number: String(form.phone_number || "").replace(/\D/g, ""),
           package_code: String(form.package_code || "").toLowerCase(),
           amount: String(form.amount || ""),
         },
@@ -274,6 +292,7 @@ export default function Cable() {
       ...prev,
       provider: String(fields.provider || prev.provider || "dstv").toLowerCase(),
       smartcard_number: String(fields.smartcard_number || prev.smartcard_number || ""),
+      phone_number: String(fields.phone_number || prev.phone_number || ""),
       package_code: String(fields.package_code || prev.package_code || ""),
       amount: fields.amount ? Number(fields.amount) || prev.amount : prev.amount,
     }));
@@ -340,6 +359,20 @@ export default function Cable() {
                 required
               />
               {errors.smartcard_number && <div className="error inline">{errors.smartcard_number}</div>}
+            </label>
+            <label className={errors.phone_number ? "field-error" : ""}>
+              Customer Phone
+              <input
+                placeholder="e.g. 08012345678"
+                value={form.phone_number}
+                inputMode="tel"
+                onChange={(e) => {
+                  setForm({ ...form, phone_number: e.target.value });
+                  if (errors.phone_number) setErrors((prev) => ({ ...prev, phone_number: "" }));
+                }}
+                required
+              />
+              {errors.phone_number && <div className="error inline">{errors.phone_number}</div>}
             </label>
             <label className={errors.package_code ? "field-error" : ""}>
               Package Code
@@ -467,6 +500,10 @@ export default function Cable() {
                 <div className="muted">{purchaseResult.package_code || "—"}</div>
               </div>
               <div>
+                <div className="label">Phone</div>
+                <div className="muted">{purchaseResult.phone_number || "—"}</div>
+              </div>
+              <div>
                 <div className="label">Amount</div>
                 <div className="value">₦ {formatAmount(purchaseResult.amount)}</div>
               </div>
@@ -518,6 +555,10 @@ export default function Cable() {
                 <div>
                   <div className="label">Smartcard</div>
                   <div>{purchaseResult.smartcard || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Phone</div>
+                  <div>{purchaseResult.phone_number || "—"}</div>
                 </div>
                 <div>
                   <div className="label">Package</div>

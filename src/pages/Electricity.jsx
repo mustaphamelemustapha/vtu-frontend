@@ -13,7 +13,13 @@ export default function Electricity() {
   const { showToast } = useToast();
   const [wallet, setWallet] = useState(null);
   const [catalog, setCatalog] = useState(null);
-  const [form, setForm] = useState({ disco: "ikeja", meter_type: "prepaid", meter_number: "", amount: 2000 });
+  const [form, setForm] = useState({
+    disco: "ikeja",
+    meter_type: "prepaid",
+    meter_number: "",
+    phone_number: "",
+    amount: 2000,
+  });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [downloadBusy, setDownloadBusy] = useState(false);
@@ -29,12 +35,14 @@ export default function Electricity() {
     const qDisco = String(searchParams.get("disco") || "").trim().toLowerCase();
     const qMeterType = String(searchParams.get("meter_type") || "").trim().toLowerCase();
     const qMeterNumber = String(searchParams.get("meter_number") || "").trim();
+    const qPhone = String(searchParams.get("phone_number") || "").trim();
     const qAmount = Number(searchParams.get("amount") || "");
     setForm((prev) => ({
       ...prev,
       disco: qDisco || prev.disco,
       meter_type: qMeterType || prev.meter_type,
       meter_number: qMeterNumber || prev.meter_number,
+      phone_number: qPhone || prev.phone_number,
       amount: Number.isFinite(qAmount) && qAmount > 0 ? qAmount : prev.amount,
     }));
   }, [searchParams]);
@@ -44,6 +52,7 @@ export default function Electricity() {
     const disco = String(form.disco || "").trim().toLowerCase();
     const meterType = String(form.meter_type || "").trim().toLowerCase();
     const meterNumber = String(form.meter_number || "").replace(/\D/g, "");
+    const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
     const amount = Number(form.amount);
 
     if (!disco) nextErrors.disco = "Select a disco.";
@@ -52,6 +61,9 @@ export default function Electricity() {
     }
     if (meterNumber.length < 6 || meterNumber.length > 13) {
       nextErrors.meter_number = "Enter a valid meter number.";
+    }
+    if (phoneNumber.length < 7 || phoneNumber.length > 15) {
+      nextErrors.phone_number = "Enter a valid phone number.";
     }
     if (!Number.isFinite(amount) || amount < 500) {
       nextErrors.amount = "Minimum electricity amount is ₦500.";
@@ -65,6 +77,7 @@ export default function Electricity() {
       disco,
       meter_type: meterType,
       meter_number: meterNumber,
+      phone_number: phoneNumber,
       amount,
     };
   };
@@ -118,6 +131,7 @@ export default function Electricity() {
         disco: payload.disco,
         meter_type: payload.meter_type,
         meter_number: payload.meter_number,
+        phone_number: payload.phone_number,
         amount: payload.amount,
         token: res.token || "",
         failure_reason: "",
@@ -130,6 +144,7 @@ export default function Electricity() {
             disco: payload.disco,
             meter_type: payload.meter_type,
             meter_number: payload.meter_number,
+            phone_number: payload.phone_number,
             amount: String(payload.amount),
           },
         })
@@ -146,6 +161,7 @@ export default function Electricity() {
         disco: payload.disco,
         meter_type: payload.meter_type,
         meter_number: payload.meter_number,
+        phone_number: payload.phone_number,
         amount: payload.amount,
         token: "",
         failure_reason: message,
@@ -221,6 +237,7 @@ export default function Electricity() {
       fields: [
         { label: "Disco", value: String(purchaseResult?.disco || "").toUpperCase() || "—" },
         { label: "Meter Number", value: purchaseResult?.meter_number || "—" },
+        { label: "Phone", value: purchaseResult?.phone_number || "—" },
         { label: "Meter Type", value: String(purchaseResult?.meter_type || "").toUpperCase() || "—" },
         { label: "Token", value: purchaseResult?.token || "—" },
         { label: "Failure Reason", value: purchaseResult?.failure_reason || "—" },
@@ -264,6 +281,7 @@ export default function Electricity() {
           disco: String(form.disco || "").toLowerCase(),
           meter_type: String(form.meter_type || "").toLowerCase(),
           meter_number: meterNumber,
+          phone_number: String(form.phone_number || "").replace(/\D/g, ""),
           amount: String(form.amount || ""),
         },
       })
@@ -278,6 +296,7 @@ export default function Electricity() {
       disco: String(fields.disco || prev.disco || "ikeja").toLowerCase(),
       meter_type: String(fields.meter_type || prev.meter_type || "prepaid").toLowerCase(),
       meter_number: String(fields.meter_number || prev.meter_number || ""),
+      phone_number: String(fields.phone_number || prev.phone_number || ""),
       amount: fields.amount ? Number(fields.amount) || prev.amount : prev.amount,
     }));
     showToast("Beneficiary applied.", "success");
@@ -353,6 +372,20 @@ export default function Electricity() {
                 required
               />
               {errors.meter_number && <div className="error inline">{errors.meter_number}</div>}
+            </label>
+            <label className={errors.phone_number ? "field-error" : ""}>
+              Customer Phone
+              <input
+                placeholder="e.g. 08012345678"
+                value={form.phone_number}
+                inputMode="tel"
+                onChange={(e) => {
+                  setForm({ ...form, phone_number: e.target.value });
+                  if (errors.phone_number) setErrors((prev) => ({ ...prev, phone_number: "" }));
+                }}
+                required
+              />
+              {errors.phone_number && <div className="error inline">{errors.phone_number}</div>}
             </label>
             <label className={errors.amount ? "field-error" : ""}>
               Amount (₦)
@@ -462,6 +495,10 @@ export default function Electricity() {
                 <div className="muted">{purchaseResult.meter_number || "—"}</div>
               </div>
               <div>
+                <div className="label">Phone</div>
+                <div className="muted">{purchaseResult.phone_number || "—"}</div>
+              </div>
+              <div>
                 <div className="label">Type</div>
                 <div className="muted">{String(purchaseResult.meter_type || "").toUpperCase() || "—"}</div>
               </div>
@@ -521,6 +558,10 @@ export default function Electricity() {
                 <div>
                   <div className="label">Meter Number</div>
                   <div>{purchaseResult.meter_number || "—"}</div>
+                </div>
+                <div>
+                  <div className="label">Phone</div>
+                  <div>{purchaseResult.phone_number || "—"}</div>
                 </div>
                 <div>
                   <div className="label">Meter Type</div>
