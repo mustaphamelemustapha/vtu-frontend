@@ -32,6 +32,8 @@ export default function Wallet() {
   const [transferAccounts, setTransferAccounts] = useState([]);
   const [transferNeedsKyc, setTransferNeedsKyc] = useState(false);
   const [transferForm, setTransferForm] = useState({ bvn: "", nin: "" });
+  const [phonePromptOpen, setPhonePromptOpen] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
 
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
@@ -164,7 +166,36 @@ export default function Wallet() {
       setTransferNeedsKyc(!!res?.requires_kyc);
       showToast("Bank transfer accounts generated.", "success");
     } catch (err) {
-      showToast(err.message || "Unable to generate accounts.", "error");
+      if (String(err.message || "").toLowerCase().includes("phone")) {
+        setPhonePromptOpen(true);
+      } else {
+        showToast(err.message || "Unable to generate accounts.", "error");
+      }
+    } finally {
+      setTransferBusy(false);
+    }
+  };
+
+  const savePhoneAndRetry = async (e) => {
+    e.preventDefault();
+    if (!phoneInput.trim()) return;
+    setTransferBusy(true);
+    try {
+      await apiFetch("/auth/me", {
+        method: "PATCH",
+        body: JSON.stringify({ phone_number: phoneInput.trim() }),
+      });
+      setPhonePromptOpen(false);
+      // Retry generation without requiring BVN/NIN; backend will accept phone for Paystack.
+      const res = await apiFetch("/wallet/bank-transfer-accounts", {
+        method: "POST",
+        body: JSON.stringify({}),
+      });
+      setTransferAccounts(res?.accounts || []);
+      setTransferNeedsKyc(!!res?.requires_kyc);
+      showToast("Bank transfer account generated.", "success");
+    } catch (err) {
+      showToast(err.message || "Unable to save phone number.", "error");
     } finally {
       setTransferBusy(false);
     }
@@ -385,6 +416,36 @@ export default function Wallet() {
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {phonePromptOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal">
+            <div className="modal-head">
+              <div>
+                <div className="label">Phone number required</div>
+                <h3>Add your phone to generate bank account</h3>
+              </div>
+              <button className="ghost" type="button" onClick={() => setPhonePromptOpen(false)}>
+                Close
+              </button>
+            </div>
+            <form onSubmit={savePhoneAndRetry} className="form-grid">
+              <label>
+                Phone Number
+                <input
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  placeholder="e.g. 08123456789"
+                  required
+                />
+              </label>
+              <button className="primary" type="submit" disabled={transferBusy}>
+                {transferBusy ? "Saving..." : "Save & Generate"}
+              </button>
+            </form>
           </div>
         </div>
       )}
