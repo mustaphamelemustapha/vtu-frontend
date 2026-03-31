@@ -316,7 +316,21 @@ export default function Transactions() {
   };
 
   return (
-    <div className="page">
+    <div className="page transactions-page">
+      <section className="hero-card service-hero service-hero-transactions">
+        <div>
+          <div className="label">Transactions</div>
+          <div className="hero-value">Receipt & Status Center</div>
+          <div className="muted">
+            Track every debit and credit, monitor live status, and download polished receipts instantly.
+          </div>
+        </div>
+        <div className="hero-actions">
+          <button className="ghost" type="button" onClick={() => navigate("/support")}>Support</button>
+          <button className="primary" type="button" onClick={() => navigate("/wallet")}>Wallet</button>
+        </div>
+      </section>
+
       <section className="section">
         <div className="card tx-live-card">
           <div>
@@ -396,7 +410,7 @@ export default function Transactions() {
       <section className="section">
         <div className="card-list">
           {filtered.map((tx) => (
-            <button className="list-card" key={tx.id} type="button" onClick={() => setSelected(tx)}>
+            <button className="list-card tx-list-item" key={tx.id} type="button" onClick={() => setSelected(tx)}>
               <div>
                 <div className="list-title">{typeLabel(tx)}</div>
                 <div className="muted">{tx.reference}</div>

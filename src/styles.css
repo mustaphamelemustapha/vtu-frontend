@@ -683,7 +683,7 @@ a:focus-visible {
 }
 
 .profile-ux {
-  gap: 10px;
+  gap: 14px;
 }
 
 .profile-ux-topbar {
@@ -691,21 +691,28 @@ a:focus-visible {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: #eceef3;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.12), transparent 42%),
+    var(--panel);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 .profile-ux-back {
-  font-size: 28px;
+  font-size: 22px;
   line-height: 1;
-  color: #111827;
-  padding: 8px 10px;
+  color: var(--ink);
+  padding: 7px 10px;
+  border-radius: 12px;
 }
 
 .profile-ux-gear {
-  font-size: 24px;
+  font-size: 20px;
   line-height: 1;
-  color: #111827;
-  padding: 8px 10px;
+  color: var(--ink);
+  padding: 7px 10px;
+  border-radius: 12px;
 }
 
 .profile-ux-user-card {
@@ -713,7 +720,12 @@ a:focus-visible {
   grid-template-columns: auto 1fr;
   align-items: center;
   gap: 14px;
-  background: #eceef3;
+  border: 1px solid var(--stroke);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 85% 5%, rgba(245, 158, 11, 0.12), transparent 45%),
+    radial-gradient(circle at 0% 90%, rgba(15, 118, 110, 0.10), transparent 55%),
+    var(--panel);
 }
 
 .profile-ux-user-avatar {
@@ -729,7 +741,7 @@ a:focus-visible {
 }
 
 .profile-ux-user-name {
-  font-size: 22px;
+  font-size: 26px;
   line-height: 1.15;
   font-family: var(--font-display);
   letter-spacing: -0.01em;
@@ -746,14 +758,25 @@ a:focus-visible {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: var(--panel);
+  transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+}
+
+.profile-ux-menu-item:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--stroke));
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
 }
 
 .profile-ux-menu-left {
   display: inline-flex;
   align-items: center;
   gap: 14px;
-  font-size: 18px;
-  color: #6b7280;
+  font-size: 17px;
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .profile-ux-icon {
@@ -762,7 +785,7 @@ a:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #111827;
+  color: var(--ink);
   opacity: 0.85;
 }
 
@@ -772,8 +795,8 @@ a:focus-visible {
 }
 
 .profile-ux-chevron {
-  font-size: 30px;
-  color: #9ca3af;
+  font-size: 28px;
+  color: var(--muted);
   line-height: 1;
   transition: transform 0.16s ease;
 }
@@ -794,6 +817,9 @@ a:focus-visible {
 .profile-ux-credit {
   display: grid;
   gap: 10px;
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background: var(--panel);
 }
 
 .profile-ux-credit-dev {
@@ -836,7 +862,9 @@ a:focus-visible {
   padding: 12px;
   border: 1px solid var(--stroke);
   border-radius: 12px;
-  background: var(--panel-light);
+  background:
+    radial-gradient(circle at 95% 0%, rgba(56, 189, 248, 0.1), transparent 50%),
+    var(--panel-light);
 }
 
 .support-head {
@@ -1175,6 +1203,111 @@ a:focus-visible {
   grid-template-columns: 1fr auto;
   gap: 12px;
   margin: 12px 0 16px;
+}
+
+.service-hero {
+  border: 1px solid var(--stroke);
+  border-radius: 22px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+}
+
+.service-hero-data {
+  background:
+    radial-gradient(circle at 6% 4%, rgba(56, 189, 248, 0.16), transparent 45%),
+    radial-gradient(circle at 85% 10%, rgba(14, 165, 233, 0.12), transparent 45%),
+    var(--panel);
+}
+
+.service-hero-airtime {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(34, 197, 94, 0.14), transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(245, 158, 11, 0.11), transparent 45%),
+    var(--panel);
+}
+
+.service-hero-transactions {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(15, 118, 110, 0.14), transparent 45%),
+    radial-gradient(circle at 88% 8%, rgba(56, 189, 248, 0.14), transparent 45%),
+    var(--panel);
+}
+
+.data-page .data-recipient-card,
+.airtime-page .airtime-form-card,
+.transactions-page .tx-live-card {
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 95% 0%, rgba(15, 118, 110, 0.08), transparent 45%),
+    var(--panel);
+}
+
+.data-page .data-catalog-toolbar {
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 10px 12px 4px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(56, 189, 248, 0.08), transparent 45%),
+    var(--panel);
+}
+
+.data-page .data-section-head,
+.transactions-page .section-head,
+.airtime-page .section-head {
+  margin-bottom: 4px;
+}
+
+.data-page .data-plan-card {
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.45), transparent 50%),
+    var(--panel);
+}
+
+.data-page .data-plan-card .plan-foot .pill {
+  font-weight: 700;
+}
+
+.data-page .data-plan-card:focus-visible,
+.data-page .data-plan-card:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--stroke));
+  box-shadow: 0 14px 28px rgba(15, 118, 110, 0.16);
+}
+
+.data-page .data-compare-card {
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(245, 158, 11, 0.1), transparent 45%),
+    var(--panel);
+}
+
+.transactions-page .tx-list-item {
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  background:
+    linear-gradient(140deg, rgba(15, 118, 110, 0.05), transparent 38%),
+    var(--panel);
+}
+
+.transactions-page .tx-list-item:hover {
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--stroke));
+}
+
+.transactions-page .filter-row {
+  gap: 14px;
+}
+
+.transactions-page .pill-group .pill {
+  font-weight: 700;
+}
+
+.airtime-page .airtime-success-card {
+  border: 1px solid var(--stroke);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(34, 197, 94, 0.12), transparent 45%),
+    var(--panel);
 }
 
 .plan-card {
@@ -2051,6 +2184,46 @@ a:focus-visible {
   background: #1b2333;
   color: #d7dee8;
   border: 1px solid #2a3547;
+}
+
+.dark .topbar {
+  border-color: #283347;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+}
+
+.dark .top-actions {
+  border-color: #2a3547;
+  background: rgba(18, 24, 38, 0.92);
+}
+
+.dark .service-hero,
+.dark .data-page .data-recipient-card,
+.dark .airtime-page .airtime-form-card,
+.dark .transactions-page .tx-live-card,
+.dark .data-page .data-catalog-toolbar,
+.dark .data-page .data-plan-card,
+.dark .data-page .data-compare-card,
+.dark .airtime-page .airtime-success-card,
+.dark .transactions-page .tx-list-item {
+  border-color: #2a3547;
+}
+
+.dark .profile-ux-topbar,
+.dark .profile-ux-user-card,
+.dark .profile-ux-menu-item,
+.dark .profile-ux-credit {
+  border-color: #2a3547;
+  background: #141b28;
+}
+
+.dark .profile-ux-menu-left,
+.dark .profile-ux-user-name,
+.dark .profile-ux-icon {
+  color: #f5f7fb;
+}
+
+.dark .profile-ux-chevron {
+  color: #c4cedd;
 }
 
 .dark .pill.success {

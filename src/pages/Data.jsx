@@ -582,9 +582,25 @@ export default function Data() {
   };
 
   return (
-    <div className="page">
+    <div className="page data-page">
+      <section className="hero-card service-hero service-hero-data">
+        <div>
+          <div className="label">Data Purchase</div>
+          <div className="hero-value">Smart Plan Checkout</div>
+          <div className="muted">
+            Select network, compare value per GB, and complete purchases with instant receipts.
+          </div>
+        </div>
+        <div className="hero-actions">
+          <button className="ghost" type="button" onClick={() => navigate("/transactions")}>History</button>
+          <button className="primary" type="button" onClick={() => navigate("/wallet")}>
+            Wallet: ₦ {wallet?.balance || "0.00"}
+          </button>
+        </div>
+      </section>
+
       <section className="section">
-        <div className="card">
+        <div className="card data-recipient-card">
           <h3>Recipient</h3>
           <div className="form-grid">
             <label>
@@ -655,7 +671,7 @@ export default function Data() {
       </section>
 
       <section className="section">
-        <div className="section-head">
+        <div className="section-head data-section-head">
           <h3>Data Plans</h3>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div className="muted">{sorted.length} plans</div>
@@ -669,6 +685,7 @@ export default function Data() {
             {plansError || walletError}
           </div>
         )}
+        <div className="card data-catalog-toolbar">
         <div className="tab-row">
           {[
             { id: "all", label: "All" },
@@ -700,6 +717,7 @@ export default function Data() {
             <option value="data_high">Data: High to Low</option>
           </select>
         </div>
+        </div>
         <div className="plan-grid">
           {loadingPlans && Array.from({ length: 6 }).map((_, idx) => (
             <div className="card plan-card skeleton" key={`s-${idx}`}>
@@ -714,7 +732,7 @@ export default function Data() {
           {!loadingPlans && sorted.map((plan) => (
             <button
               type="button"
-              className="card plan-card"
+              className="card plan-card data-plan-card"
               key={plan.plan_code}
               onClick={() => setSelected(plan)}
             >
@@ -763,7 +781,7 @@ export default function Data() {
       </section>
 
       {compare.length === 2 && (
-        <div className="compare-card card">
+        <div className="compare-card card data-compare-card">
           <div className="section-head">
             <h3>Plan Comparison</h3>
             <button className="ghost" onClick={() => setCompare([])}>Clear</button>

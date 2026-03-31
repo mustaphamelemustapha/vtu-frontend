@@ -271,8 +271,8 @@ export default function Airtime() {
   const networks = catalog?.airtime_networks || ["mtn", "glo", "airtel", "9mobile"];
 
   return (
-    <div className="page">
-      <section className="hero-card">
+    <div className="page airtime-page">
+      <section className="hero-card service-hero service-hero-airtime">
         <div>
           <div className="label">Airtime</div>
           <div className="hero-value">Top up</div>
@@ -285,7 +285,7 @@ export default function Airtime() {
       </section>
 
       <section className="section">
-        <div className="card">
+        <div className="card airtime-form-card">
           <div className="section-head">
             <h3>Buy Airtime</h3>
             <span className="muted">Balance: ₦ {wallet?.balance || "0.00"}</span>
@@ -398,7 +398,7 @@ export default function Airtime() {
 
       {purchaseResult && (
         <div className="success-screen" role="dialog" aria-live="polite">
-          <div className="success-card">
+        <div className="success-card airtime-success-card">
             <div className={`success-icon ${purchaseResult.ok ? "" : "error"}`}>
               {purchaseResult.ok ? "✓" : "!"}
             </div>

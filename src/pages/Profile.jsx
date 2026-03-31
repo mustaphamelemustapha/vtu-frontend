@@ -176,7 +176,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
   };
 
   return (
-    <div className="page profile-ux">
+    <div className="page profile-ux profile-page">
       <section className="section">
         <div className="profile-ux-topbar card">
           <button className="ghost profile-ux-back" type="button" onClick={() => navigate("/")}>
