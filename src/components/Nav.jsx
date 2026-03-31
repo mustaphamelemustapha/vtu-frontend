@@ -79,22 +79,35 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
           <div className="brand-sub">VTU Platform</div>
         </div>
       </div>
-      <nav>
-        <NavLink to="/" end><Icon><HomeIcon /></Icon>Dashboard</NavLink>
-        <NavLink to="/wallet"><Icon><WalletIcon /></Icon>Wallet</NavLink>
-        <NavLink to="/data"><Icon><DataIcon /></Icon>Buy Data</NavLink>
-        <NavLink to="/services"><Icon><ServicesIcon /></Icon>Services</NavLink>
-        <NavLink to="/transactions"><Icon><TxIcon /></Icon>Transactions</NavLink>
-        <NavLink to="/support"><Icon><SupportIcon /></Icon>Support</NavLink>
-        <NavLink to="/profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
-        {isAdmin && <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
-      </nav>
-      {canInstall && (
-        <button className="ghost" type="button" onClick={install}>
-          Install AxisVTU
-        </button>
-      )}
-      <button className="ghost" type="button" onClick={onLogout}>Logout</button>
+
+      <div className="nav-section">
+        <div className="nav-section-title">General</div>
+        <nav className="nav-links">
+          <NavLink to="/" end><Icon><HomeIcon /></Icon>Dashboard</NavLink>
+          <NavLink to="/wallet"><Icon><WalletIcon /></Icon>Wallet</NavLink>
+          <NavLink to="/data"><Icon><DataIcon /></Icon>Buy Data</NavLink>
+          <NavLink to="/services"><Icon><ServicesIcon /></Icon>Services</NavLink>
+          <NavLink to="/transactions"><Icon><TxIcon /></Icon>Transactions</NavLink>
+        </nav>
+      </div>
+
+      <div className="nav-section nav-section-soft">
+        <div className="nav-section-title">Account</div>
+        <nav className="nav-links">
+          <NavLink to="/support"><Icon><SupportIcon /></Icon>Support</NavLink>
+          <NavLink to="/profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
+          {isAdmin && <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
+        </nav>
+      </div>
+
+      <div className="nav-footer">
+        {canInstall && (
+          <button className="ghost nav-action" type="button" onClick={install}>
+            Install AxisVTU
+          </button>
+        )}
+        <button className="ghost nav-action nav-logout" type="button" onClick={onLogout}>Logout</button>
+      </div>
     </aside>
     <nav className="bottom-nav">
       <NavLink to="/" end><Icon><HomeIcon /></Icon><span>Home</span></NavLink>
