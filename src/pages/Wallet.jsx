@@ -12,6 +12,7 @@ export default function Wallet() {
   const [transferBusy, setTransferBusy] = useState(false);
   const [transferAccounts, setTransferAccounts] = useState([]);
   const [transferNeedsKyc, setTransferNeedsKyc] = useState(false);
+  const [transferProvider, setTransferProvider] = useState("monnify");
   const [transferForm, setTransferForm] = useState({ bvn: "", nin: "" });
   const [phonePromptOpen, setPhonePromptOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState("");
@@ -28,6 +29,7 @@ export default function Wallet() {
       const res = await apiFetch("/wallet/bank-transfer-accounts");
       setTransferAccounts(res?.accounts || []);
       setTransferNeedsKyc(!!res?.requires_kyc);
+      setTransferProvider(String(res?.provider || "monnify").toLowerCase());
     } catch (err) {
       showToast(err.message || "Failed to load bank transfer accounts.", "error");
       setTransferAccounts([]);
@@ -41,15 +43,19 @@ export default function Wallet() {
     e.preventDefault();
     setTransferBusy(true);
     try {
+      const requestBody = transferProvider === "paystack"
+        ? {}
+        : {
+            bvn: transferForm.bvn || null,
+            nin: transferForm.nin || null,
+          };
       const res = await apiFetch("/wallet/bank-transfer-accounts", {
         method: "POST",
-        body: JSON.stringify({
-          bvn: transferForm.bvn || null,
-          nin: transferForm.nin || null,
-        }),
+        body: JSON.stringify(requestBody),
       });
       setTransferAccounts(res?.accounts || []);
       setTransferNeedsKyc(!!res?.requires_kyc);
+      setTransferProvider(String(res?.provider || transferProvider || "monnify").toLowerCase());
       showToast("Bank transfer accounts generated.", "success");
     } catch (err) {
       if (String(err.message || "").toLowerCase().includes("phone")) {
@@ -79,6 +85,7 @@ export default function Wallet() {
       });
       setTransferAccounts(res?.accounts || []);
       setTransferNeedsKyc(!!res?.requires_kyc);
+      setTransferProvider(String(res?.provider || transferProvider || "paystack").toLowerCase());
       showToast("Bank transfer account generated.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
@@ -158,7 +165,7 @@ export default function Wallet() {
 
             {transferBusy && <div className="notice">Loading...</div>}
 
-            {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && (
+            {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider !== "paystack" && (
               <div className="card">
                 <div className="muted">
                   Complete one-time verification details to generate your dedicated funding account.
@@ -184,6 +191,19 @@ export default function Wallet() {
                     {transferBusy ? "Generating..." : "Generate Account Numbers"}
                   </button>
                 </form>
+              </div>
+            )}
+
+            {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider === "paystack" && (
+              <div className="card">
+                <div className="muted">
+                  Paystack needs your phone number to generate your dedicated account.
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <button className="primary" type="button" onClick={() => setPhonePromptOpen(true)} disabled={transferBusy}>
+                    Add Phone Number
+                  </button>
+                </div>
               </div>
             )}
 
