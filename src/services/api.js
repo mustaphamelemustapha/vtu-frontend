@@ -192,7 +192,7 @@ export async function apiFetch(path, options = {}) {
         continue;
       }
       if (timedOut) {
-        throw makeError("Request timed out. Please try again.");
+        throw makeError("Connection timed out. Please try again.");
       }
       throw err;
     }
@@ -228,7 +228,7 @@ export async function apiFetch(path, options = {}) {
     return data;
   }
 
-  throw makeError(`Service is busy. Please try again in a moment. [${method} ${path}]`);
+  throw makeError("Service is busy. Please try again in a moment.");
 }
 
 export async function warmBackend(maxWaitMs = 9000) {

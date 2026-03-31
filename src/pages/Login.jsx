@@ -25,6 +25,31 @@ export default function Login({ onAuth }) {
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
   const { showToast } = useToast();
 
+  const isTransientConnectionError = (value) => {
+    const msg = String(value || "").toLowerCase();
+    return (
+      msg.includes("timed out") ||
+      msg.includes("timeout") ||
+      msg.includes("failed to fetch") ||
+      msg.includes("networkerror") ||
+      msg.includes("network error") ||
+      msg.includes("service is busy") ||
+      msg.includes("503") ||
+      msg.includes("502") ||
+      msg.includes("504")
+    );
+  };
+
+  const presentError = (err, fallback = "Something went wrong. Please try again.") => {
+    const raw = String(err?.message || "").trim();
+    if (!raw) return fallback;
+    if (isTransientConnectionError(raw)) {
+      return "Connection is unstable. Server may be waking up, please try again.";
+    }
+    if (raw.length > 160) return fallback;
+    return raw;
+  };
+
   const decodeRoleFromToken = (token) => {
     try {
       const parts = String(token || "").split(".");
@@ -148,8 +173,14 @@ export default function Login({ onAuth }) {
         setForgotMode(false);
       }
     } catch (err) {
-      setError(err.message);
-      showToast(err.message || "Password reset request failed.", "error");
+      const next = presentError(err, "Password reset request failed.");
+      if (isTransientConnectionError(next)) {
+        setError("");
+        setNotice(next);
+      } else {
+        setError(next);
+      }
+      showToast(next, isTransientConnectionError(next) ? "warning" : "error");
     } finally {
       setLoading(false);
     }
@@ -186,8 +217,14 @@ export default function Login({ onAuth }) {
       setMode("login");
       setResetForm({ token: "", password: "", confirm: "" });
     } catch (err) {
-      setError(err.message);
-      showToast(err.message || "Password reset failed.", "error");
+      const next = presentError(err, "Password reset failed.");
+      if (isTransientConnectionError(next)) {
+        setError("");
+        setNotice(next);
+      } else {
+        setError(next);
+      }
+      showToast(next, isTransientConnectionError(next) ? "warning" : "error");
     } finally {
       setLoading(false);
     }
@@ -248,9 +285,7 @@ export default function Login({ onAuth }) {
         };
         setNotice("Logged in. Syncing profile...");
         showToast("Logged in. Syncing profile...", "warning");
-        if (String(err?.message || "").trim()) {
-          setError(String(err.message));
-        }
+        setError("");
       }
       setProfile({ full_name: profile.full_name, email: profile.email, role: profile.role });
       onAuth({
@@ -264,8 +299,14 @@ export default function Login({ onAuth }) {
         navigate("/", { replace: true });
       }
     } catch (err) {
-      setError(err.message);
-      showToast(err.message || "Login failed.", "error");
+      const next = presentError(err, "Login failed.");
+      if (isTransientConnectionError(next)) {
+        setError("");
+        setNotice(next);
+      } else {
+        setError(next);
+      }
+      showToast(next, isTransientConnectionError(next) ? "warning" : "error");
     } finally {
       setLoading(false);
     }

@@ -11,6 +11,31 @@ export default function AdminLogin({ onAuth }) {
   const [rememberMe, setRememberMe] = useState(true);
   const { showToast } = useToast();
 
+  const isTransientConnectionError = (value) => {
+    const msg = String(value || "").toLowerCase();
+    return (
+      msg.includes("timed out") ||
+      msg.includes("timeout") ||
+      msg.includes("failed to fetch") ||
+      msg.includes("networkerror") ||
+      msg.includes("network error") ||
+      msg.includes("service is busy") ||
+      msg.includes("503") ||
+      msg.includes("502") ||
+      msg.includes("504")
+    );
+  };
+
+  const presentError = (err, fallback = "Admin login failed.") => {
+    const raw = String(err?.message || "").trim();
+    if (!raw) return fallback;
+    if (isTransientConnectionError(raw)) {
+      return "Connection is unstable. Server may be waking up, please try again.";
+    }
+    if (raw.length > 160) return fallback;
+    return raw;
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setError("");
@@ -41,8 +66,9 @@ export default function AdminLogin({ onAuth }) {
       });
       navigate("/admin", { replace: true });
     } catch (err) {
-      setError(err.message);
-      showToast(err.message || "Admin login failed.", "error");
+      const next = presentError(err, "Admin login failed.");
+      setError(next);
+      showToast(next, isTransientConnectionError(next) ? "warning" : "error");
     } finally {
       setLoading(false);
     }

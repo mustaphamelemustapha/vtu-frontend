@@ -12,6 +12,8 @@ export default function Wallet() {
   const [transferBusy, setTransferBusy] = useState(false);
   const [transferAccounts, setTransferAccounts] = useState([]);
   const [transferNeedsKyc, setTransferNeedsKyc] = useState(false);
+  const [transferNeedsPhone, setTransferNeedsPhone] = useState(false);
+  const [transferMessage, setTransferMessage] = useState("");
   const [transferProvider, setTransferProvider] = useState("monnify");
   const [transferForm, setTransferForm] = useState({ bvn: "", nin: "" });
   const [phonePromptOpen, setPhonePromptOpen] = useState(false);
@@ -29,11 +31,15 @@ export default function Wallet() {
       const res = await apiFetch("/wallet/bank-transfer-accounts");
       setTransferAccounts(res?.accounts || []);
       setTransferNeedsKyc(!!res?.requires_kyc);
+      setTransferNeedsPhone(!!res?.requires_phone);
+      setTransferMessage(String(res?.message || ""));
       setTransferProvider(String(res?.provider || "monnify").toLowerCase());
     } catch (err) {
       showToast(err.message || "Failed to load bank transfer accounts.", "error");
       setTransferAccounts([]);
       setTransferNeedsKyc(true);
+      setTransferNeedsPhone(false);
+      setTransferMessage("Unable to load dedicated account now. Please try again.");
     } finally {
       setTransferBusy(false);
     }
@@ -55,12 +61,17 @@ export default function Wallet() {
       });
       setTransferAccounts(res?.accounts || []);
       setTransferNeedsKyc(!!res?.requires_kyc);
+      setTransferNeedsPhone(!!res?.requires_phone);
+      setTransferMessage(String(res?.message || ""));
       setTransferProvider(String(res?.provider || transferProvider || "monnify").toLowerCase());
       showToast("Bank transfer accounts generated.", "success");
     } catch (err) {
       if (String(err.message || "").toLowerCase().includes("phone")) {
+        setTransferNeedsPhone(true);
         setPhonePromptOpen(true);
       } else {
+        setTransferNeedsPhone(false);
+        setTransferMessage(err.message || "Unable to generate account right now.");
         showToast(err.message || "Unable to generate accounts.", "error");
       }
     } finally {
@@ -85,6 +96,8 @@ export default function Wallet() {
       });
       setTransferAccounts(res?.accounts || []);
       setTransferNeedsKyc(!!res?.requires_kyc);
+      setTransferNeedsPhone(!!res?.requires_phone);
+      setTransferMessage(String(res?.message || ""));
       setTransferProvider(String(res?.provider || transferProvider || "paystack").toLowerCase());
       showToast("Bank transfer account generated.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
@@ -194,7 +207,7 @@ export default function Wallet() {
               </div>
             )}
 
-            {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider === "paystack" && (
+            {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider === "paystack" && transferNeedsPhone && (
               <div className="card">
                 <div className="muted">
                   Paystack needs your phone number to generate your dedicated account.
@@ -202,6 +215,19 @@ export default function Wallet() {
                 <div style={{ marginTop: 12 }}>
                   <button className="primary" type="button" onClick={() => setPhonePromptOpen(true)} disabled={transferBusy}>
                     Add Phone Number
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider === "paystack" && !transferNeedsPhone && (
+              <div className="card">
+                <div className="muted">
+                  {transferMessage || "We could not fetch your dedicated account right now. Please try again shortly."}
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <button className="primary" type="button" onClick={createTransfer} disabled={transferBusy}>
+                    Try Again
                   </button>
                 </div>
               </div>
