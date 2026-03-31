@@ -2256,6 +2256,65 @@ a:focus-visible {
   flex-wrap: wrap;
 }
 
+.dashboard-hero-actions {
+  min-width: 320px;
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard-funded-account {
+  border: 1px solid rgba(15, 118, 110, 0.24);
+  background:
+    radial-gradient(circle at 12% 10%, rgba(15, 118, 110, 0.10), transparent 46%),
+    var(--panel);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.dashboard-funded-account.empty {
+  border-style: dashed;
+}
+
+.dashboard-funded-account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dashboard-funded-account .account-number {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  font-size: 20px;
+}
+
+.dashboard-hero-actions .hero-cta {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-hero-actions .primary.hero-cta {
+  background: linear-gradient(135deg, #0f766e, #0ea5a1);
+  box-shadow: 0 12px 22px rgba(15, 118, 110, 0.26);
+}
+
+.dashboard-hero-actions .ghost.hero-cta {
+  border-width: 1.5px;
+}
+
+.account-copy-btn {
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .dashboard-announcement {
   padding: 12px 14px;
   border-radius: 14px;
@@ -2859,6 +2918,36 @@ textarea {
   text-align: right;
 }
 
+.tx-list-card {
+  align-items: flex-start;
+}
+
+.tx-main {
+  display: grid;
+  gap: 4px;
+}
+
+.tx-list-meta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.tx-amount {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.tx-amount.credit {
+  color: #16a34a;
+}
+
+.tx-amount.debit {
+  color: #dc2626;
+}
+
 .tx-pill-stack {
   display: inline-flex;
   flex-direction: column;
@@ -3217,6 +3306,13 @@ a.pill:active::after {
   .hero-card {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .dashboard-hero-actions {
+    width: 100%;
+    min-width: 0;
+  }
+  .dashboard-hero-actions .hero-cta {
+    width: 100%;
   }
   .dashboard-announcement {
     grid-template-columns: 1fr;

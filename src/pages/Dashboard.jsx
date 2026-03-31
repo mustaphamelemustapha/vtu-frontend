@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [wallet, setWallet] = useState(null);
   const [txs, setTxs] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [fundingAccounts, setFundingAccounts] = useState([]);
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [loadingTxs, setLoadingTxs] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -95,10 +96,11 @@ export default function Dashboard() {
     setLoadError("");
     setLoadingWallet(true);
     setLoadingTxs(true);
-    const [walletRes, txRes, announcementRes] = await Promise.allSettled([
+    const [walletRes, txRes, announcementRes, fundingAccountRes] = await Promise.allSettled([
       apiFetch("/wallet/me"),
       apiFetch("/transactions/me"),
       apiFetch("/notifications/broadcast"),
+      apiFetch("/wallet/bank-transfer-accounts"),
     ]);
 
     if (walletRes.status === "fulfilled") {
@@ -115,6 +117,12 @@ export default function Dashboard() {
       setAnnouncements(Array.isArray(announcementRes.value) ? announcementRes.value : []);
     } else {
       setAnnouncements([]);
+    }
+    if (fundingAccountRes.status === "fulfilled") {
+      const rows = Array.isArray(fundingAccountRes.value?.accounts) ? fundingAccountRes.value.accounts : [];
+      setFundingAccounts(rows);
+    } else {
+      setFundingAccounts([]);
     }
     if (walletRes.status !== "fulfilled" || txRes.status !== "fulfilled") {
       showToast("Some dashboard data failed to load.", "warning");
@@ -148,6 +156,63 @@ export default function Dashboard() {
   }, [txs]);
 
   const statusKey = (value) => String(value || "").toLowerCase();
+  const txTypeKey = (value) => String(value || "").toLowerCase();
+  const formatAmount = (value) =>
+    Number(value || 0).toLocaleString("en-NG", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  const txTypeLabel = (tx) => {
+    const key = txTypeKey(tx?.tx_type);
+    if (key === "wallet_fund") return "Credit";
+    if (key === "data") return "Data";
+    if (key === "airtime") return "Airtime";
+    if (key === "cable") return "Cable TV";
+    if (key === "electricity") return "Electricity";
+    if (key === "exam") return "Exam PIN";
+    return "Transaction";
+  };
+
+  const txRecipientPhone = (tx) =>
+    tx?.meta?.recipient_phone ||
+    tx?.meta?.phone_number ||
+    tx?.phone_number ||
+    "";
+
+  const txBodyText = (tx) => {
+    const key = txTypeKey(tx?.tx_type);
+    const recipient = txRecipientPhone(tx);
+    if (key === "wallet_fund") return "Wallet funding received.";
+    if (key === "data") return recipient ? `Data sent to ${maskPhone(recipient)}.` : "Data purchase completed.";
+    if (key === "airtime") return recipient ? `Airtime sent to ${maskPhone(recipient)}.` : "Airtime purchase completed.";
+    if (key === "cable") return "Cable subscription payment completed.";
+    if (key === "electricity") return "Electricity purchase completed.";
+    if (key === "exam") return "Exam PIN purchase completed.";
+    return "Transaction update.";
+  };
+
+  const isCreditTx = (tx) => {
+    const key = txTypeKey(tx?.tx_type);
+    const status = statusKey(tx?.status);
+    return key === "wallet_fund" || status === "refunded";
+  };
+
+  const primaryFundingAccount = useMemo(
+    () => (Array.isArray(fundingAccounts) && fundingAccounts.length > 0 ? fundingAccounts[0] : null),
+    [fundingAccounts]
+  );
+
+  const copyFundingAccount = async () => {
+    if (!primaryFundingAccount?.account_number) return;
+    try {
+      await navigator.clipboard?.writeText(String(primaryFundingAccount.account_number));
+      showToast("Account number copied.", "success");
+    } catch {
+      showToast("Copy failed. Please copy manually.", "error");
+    }
+  };
+
   const statusLabel = (value) => {
     const key = statusKey(value);
     if (key === "success") return "Success";
@@ -204,12 +269,32 @@ export default function Dashboard() {
           <div className="hero-value">{loadingWallet ? "Loading..." : `₦ ${wallet?.balance || "0.00"}`}</div>
           <div className="muted">Instant payments. Secure topups.</div>
         </div>
-        <div className="hero-actions">
-          <button className="ghost" type="button" onClick={loadDashboardData} disabled={loadingWallet || loadingTxs}>
-            {loadingWallet || loadingTxs ? "Refreshing..." : "Refresh"}
-          </button>
-          <Link className="primary" to="/wallet">Fund Wallet</Link>
-          <Link className="ghost" to="/data">Buy Data</Link>
+        <div className="hero-actions dashboard-hero-actions">
+          <div className={`dashboard-funded-account ${primaryFundingAccount ? "" : "empty"}`}>
+            {primaryFundingAccount ? (
+              <>
+                <div className="label">Generated Account</div>
+                <div className="dashboard-funded-account-row">
+                  <div className="account-number">{primaryFundingAccount.account_number}</div>
+                  <button className="ghost account-copy-btn" type="button" onClick={copyFundingAccount}>
+                    Copy
+                  </button>
+                </div>
+                <div className="muted">
+                  {primaryFundingAccount.bank_name} • {primaryFundingAccount.account_name || "AxisVTU Wallet"}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="label">Generated Account</div>
+                <div className="muted">No account yet. Tap below to generate your personal funding account.</div>
+              </>
+            )}
+          </div>
+          <Link className="primary hero-cta" to="/wallet">
+            {primaryFundingAccount ? "Fund Wallet" : "Generate Account"}
+          </Link>
+          <Link className="ghost hero-cta" to="/data">Buy Data</Link>
         </div>
       </section>
 
@@ -335,16 +420,16 @@ export default function Dashboard() {
         </div>
         <div className="card-list">
           {txs.slice(0, 4).map((tx) => (
-            <div className="list-card" key={tx.id}>
-              <div>
-                <div className="list-title">{tx.tx_type}</div>
-                <div className="muted">{tx.reference}</div>
-                {tx?.meta?.recipient_phone ? (
-                  <div className="muted">To {maskPhone(tx.meta.recipient_phone)}</div>
-                ) : null}
+            <div className="list-card tx-list-card" key={tx.id}>
+              <div className="tx-main">
+                <div className="list-title">{txTypeLabel(tx)}</div>
+                <div className="muted">{txBodyText(tx)}</div>
+                <div className="muted">Ref: {tx.reference}</div>
               </div>
-              <div className="list-meta">
-                <div className="value">₦ {tx.amount}</div>
+              <div className="list-meta tx-list-meta">
+                <div className={`tx-amount ${isCreditTx(tx) ? "credit" : "debit"}`}>
+                  {isCreditTx(tx) ? "+" : "-"}₦ {formatAmount(tx.amount)}
+                </div>
                 <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
               </div>
             </div>
