@@ -35,11 +35,16 @@
   --space-10: 80px;
   --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Sora", "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 260ms;
+  --ease-standard: cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
 body {
   margin: 0;
   font-family: var(--font-body);
+  line-height: 1.35;
   background:
     radial-gradient(circle at 20% 10%, rgba(15, 118, 110, 0.10), transparent 42%),
     radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.14), transparent 46%),
@@ -105,6 +110,7 @@ a:focus-visible {
     radial-gradient(circle at 90% 10%, rgba(245, 158, 11, 0.08), transparent 40%),
     var(--panel);
   box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  transition: box-shadow var(--motion-base) ease, border-color var(--motion-base) ease;
 }
 
 .top-left {
@@ -151,10 +157,11 @@ a:focus-visible {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
-    transform 0.10s cubic-bezier(0.2, 0.9, 0.2, 1),
-    box-shadow 0.14s ease,
-    background 0.14s ease,
-    filter 0.14s ease;
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) ease,
+    background var(--motion-base) ease,
+    filter var(--motion-base) ease,
+    border-color var(--motion-base) ease;
 }
 
 .icon-btn svg {
@@ -182,7 +189,7 @@ a:focus-visible {
     radial-gradient(circle at 50% 50%, rgba(15, 118, 110, 0.18), transparent 60%);
   opacity: 0;
   transform: scale(0.55);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: opacity var(--motion-base) ease, transform var(--motion-base) ease;
   pointer-events: none;
   z-index: -1;
 }
@@ -236,6 +243,13 @@ a:focus-visible {
   box-shadow: var(--shadow);
   padding: 12px;
   z-index: 20;
+  animation: notif-pop var(--motion-slow) var(--ease-standard);
+  transform-origin: top right;
+}
+
+@keyframes notif-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .notif-title {
@@ -1085,10 +1099,11 @@ a:focus-visible {
   opacity: 0.9;
   position: relative;
   transition:
-    transform 0.14s ease,
-    border-color 0.14s ease,
-    background 0.14s ease,
-    box-shadow 0.14s ease;
+    transform var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-base) ease,
+    background var(--motion-base) ease,
+    box-shadow var(--motion-base) ease,
+    color var(--motion-base) ease;
 }
 
 .nav a:hover {
@@ -1312,7 +1327,10 @@ a:focus-visible {
 
 .plan-card {
   text-align: left;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) ease,
+    border-color var(--motion-base) ease;
   position: relative;
 }
 
@@ -1587,7 +1605,7 @@ a:focus-visible {
 
 .tx-receipt-title {
   margin: 0;
-  font-size: clamp(30px, 5vw, 48px);
+  font-size: clamp(28px, 4.4vw, 42px);
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: #0f172a;
@@ -1610,7 +1628,7 @@ a:focus-visible {
 }
 
 .tx-receipt-card-name {
-  font-size: 29px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.01em;
 }
@@ -1634,12 +1652,12 @@ a:focus-visible {
 
 .tx-receipt-row span {
   color: #64748b;
-  font-size: 20px;
+  font-size: 17px;
 }
 
 .tx-receipt-row strong {
   color: #0f172a;
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 800;
   text-align: right;
   max-width: 62%;
@@ -2031,12 +2049,12 @@ a:focus-visible {
 
 .data-result-row span {
   color: #64748b;
-  font-size: 22px;
+  font-size: 18px;
 }
 
 .data-result-row strong {
   color: #0f172a;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   text-align: right;
   max-width: 62%;
@@ -2450,7 +2468,10 @@ a:focus-visible {
   border-radius: var(--radius-md);
   padding: 18px;
   box-shadow: var(--shadow);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) ease,
+    border-color var(--motion-base) ease;
 }
 
 .card:hover {
@@ -2560,14 +2581,20 @@ a:focus-visible {
 }
 
 .hero-value {
-  font-size: var(--text-4xl);
+  font-size: clamp(30px, 4vw, 42px);
   font-weight: 800;
+  line-height: 1.08;
 }
 
 .hero-actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.hero-actions .primary,
+.hero-actions .ghost {
+  min-width: 130px;
 }
 
 .dashboard-shell-top {
@@ -2840,10 +2867,10 @@ a:focus-visible {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
-    transform 0.10s cubic-bezier(0.2, 0.9, 0.2, 1),
-    box-shadow 0.14s ease,
-    background 0.14s ease,
-    filter 0.14s ease;
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) ease,
+    background var(--motion-base) ease,
+    filter var(--motion-base) ease;
 }
 
 .ghost {
@@ -2863,16 +2890,18 @@ a:focus-visible {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
-    transform 0.10s cubic-bezier(0.2, 0.9, 0.2, 1),
-    box-shadow 0.14s ease,
-    background 0.14s ease,
-    filter 0.14s ease;
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) ease,
+    background var(--motion-base) ease,
+    filter var(--motion-base) ease,
+    border-color var(--motion-base) ease;
 }
 
 button {
   border: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
 }
 
 button:focus-visible {
@@ -2955,6 +2984,7 @@ input, select, textarea {
   font-size: var(--text-md);
   background: var(--panel-light);
   color: var(--ink);
+  font-family: inherit;
 }
 
 textarea {
@@ -3213,7 +3243,10 @@ textarea {
   border: 1px solid var(--stroke);
   border-radius: 12px;
   padding: 10px 12px;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) ease,
+    border-color var(--motion-base) ease;
 }
 
 .beneficiary-main:hover {
@@ -3315,7 +3348,10 @@ textarea {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition:
+    transform var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-base) ease,
+    border-color var(--motion-base) ease;
 }
 
 .list-card:hover {
@@ -4009,13 +4045,13 @@ a.pill:active::after {
     font-size: clamp(24px, 8.2vw, 36px);
   }
   .tx-receipt-card-name {
-    font-size: 22px;
+    font-size: 20px;
   }
   .tx-receipt-row span {
-    font-size: 16px;
+    font-size: 14px;
   }
   .tx-receipt-row strong {
-    font-size: 18px;
+    font-size: 16px;
     max-width: 58%;
   }
 
