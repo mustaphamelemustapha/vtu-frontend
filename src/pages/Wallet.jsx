@@ -19,9 +19,20 @@ export default function Wallet() {
   const [phonePromptOpen, setPhonePromptOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState("");
 
+  const hydrateTransferState = (res, fallbackProvider = "monnify") => {
+    setTransferAccounts(res?.accounts || []);
+    setTransferNeedsKyc(!!res?.requires_kyc);
+    setTransferNeedsPhone(!!res?.requires_phone);
+    setTransferMessage(String(res?.message || ""));
+    setTransferProvider(String(res?.provider || fallbackProvider).toLowerCase());
+  };
+
   useEffect(() => {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/wallet/ledger").then(setLedger).catch(() => {});
+    apiFetch("/wallet/bank-transfer-accounts")
+      .then((res) => hydrateTransferState(res, "monnify"))
+      .catch(() => {});
   }, []);
 
   const openTransfer = async () => {
@@ -29,11 +40,7 @@ export default function Wallet() {
     setTransferBusy(true);
     try {
       const res = await apiFetch("/wallet/bank-transfer-accounts");
-      setTransferAccounts(res?.accounts || []);
-      setTransferNeedsKyc(!!res?.requires_kyc);
-      setTransferNeedsPhone(!!res?.requires_phone);
-      setTransferMessage(String(res?.message || ""));
-      setTransferProvider(String(res?.provider || "monnify").toLowerCase());
+      hydrateTransferState(res, "monnify");
     } catch (err) {
       showToast(err.message || "Failed to load bank transfer accounts.", "error");
       setTransferAccounts([]);
@@ -59,11 +66,7 @@ export default function Wallet() {
         method: "POST",
         body: JSON.stringify(requestBody),
       });
-      setTransferAccounts(res?.accounts || []);
-      setTransferNeedsKyc(!!res?.requires_kyc);
-      setTransferNeedsPhone(!!res?.requires_phone);
-      setTransferMessage(String(res?.message || ""));
-      setTransferProvider(String(res?.provider || transferProvider || "monnify").toLowerCase());
+      hydrateTransferState(res, transferProvider || "monnify");
       showToast("Bank transfer accounts generated.", "success");
     } catch (err) {
       if (String(err.message || "").toLowerCase().includes("phone")) {
@@ -94,11 +97,7 @@ export default function Wallet() {
         method: "POST",
         body: JSON.stringify({}),
       });
-      setTransferAccounts(res?.accounts || []);
-      setTransferNeedsKyc(!!res?.requires_kyc);
-      setTransferNeedsPhone(!!res?.requires_phone);
-      setTransferMessage(String(res?.message || ""));
-      setTransferProvider(String(res?.provider || transferProvider || "paystack").toLowerCase());
+      hydrateTransferState(res, transferProvider || "paystack");
       showToast("Bank transfer account generated.", "success");
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
@@ -117,23 +116,64 @@ export default function Wallet() {
     }
   };
 
+  const hasGeneratedAccounts = transferAccounts.length > 0;
+  const primaryAccount = hasGeneratedAccounts ? transferAccounts[0] : null;
+
   return (
     <div className="page">
-      <section className="hero-card wallet-hero">
+      <section className="hero-card wallet-hero wallet-hero-premium">
         <div>
-          <div className="label">Available Balance</div>
+          <div className="label">Wallet</div>
           <div className="hero-value">₦ {wallet?.balance || "0.00"}</div>
-          <div className="muted">Generate your personal account number and fund via transfer.</div>
+          <div className="muted">Automated funding with your personal account number.</div>
         </div>
-        <div className="hero-actions">
+        <div className="hero-actions wallet-hero-actions-premium">
           {ENABLE_BANK_TRANSFER && (
             <button className="primary" type="button" onClick={openTransfer} disabled={transferBusy}>
-              Generate Account
+              {hasGeneratedAccounts ? "Manage Accounts" : "Generate Account"}
             </button>
           )}
-          <button className="ghost" type="button" onClick={() => apiFetch("/wallet/me").then(setWallet).catch(() => {})}>
-            Refresh Balance
-          </button>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card wallet-account-board">
+          <div className="section-head">
+            <h3>Automated Bank Transfer</h3>
+            <span className="muted">{transferProvider === "paystack" ? "Paystack" : "Monnify"}</span>
+          </div>
+
+          {primaryAccount ? (
+            <div className="wallet-primary-account">
+              <div>
+                <div className="label">{primaryAccount.bank_name}</div>
+                <div className="wallet-primary-account-number">{primaryAccount.account_number}</div>
+                <div className="muted">{primaryAccount.account_name || "AxisVTU Wallet"}</div>
+              </div>
+              <button className="ghost account-copy-btn" type="button" onClick={() => copyText(primaryAccount.account_number)}>
+                Copy
+              </button>
+            </div>
+          ) : (
+            <div className="notice">
+              {transferMessage || "No dedicated account yet. Tap Generate Account to create one."}
+            </div>
+          )}
+
+          {transferAccounts.length > 1 && (
+            <div className="wallet-account-grid">
+              {transferAccounts.slice(1).map((acc, idx) => (
+                <div className="wallet-account-card" key={`${acc.bank_name}-${acc.account_number}-${idx}`}>
+                  <div className="label">{acc.bank_name}</div>
+                  <div className="wallet-account-number">{acc.account_number}</div>
+                  <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
+                  <button className="ghost beneficiary-save-btn" type="button" onClick={() => copyText(acc.account_number)}>
+                    Copy Account
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

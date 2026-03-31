@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { apiFetch } from "../services/api";
+import { apiFetch, getProfile } from "../services/api";
 import { loadBeneficiaries } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
   const [quickBeneficiaries, setQuickBeneficiaries] = useState([]);
+  const profile = getProfile();
 
   const toServiceRoute = (service, fields = {}) => {
     const params = new URLSearchParams();
@@ -213,6 +214,16 @@ export default function Dashboard() {
     }
   };
 
+  const copyAccountNumber = async (value) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard?.writeText(String(value));
+      showToast("Account number copied.", "success");
+    } catch {
+      showToast("Copy failed. Please copy manually.", "error");
+    }
+  };
+
   const statusLabel = (value) => {
     const key = statusKey(value);
     if (key === "success") return "Success";
@@ -261,19 +272,31 @@ export default function Dashboard() {
     return "info";
   }, [announcements]);
 
+  const greetingName = useMemo(() => {
+    const fallback = String(profile?.full_name || "").trim();
+    if (!fallback) return "there";
+    return fallback;
+  }, [profile?.full_name]);
+
   return (
     <div className="page">
-      <section className="hero-card">
-        <div>
-          <div className="label">Wallet Balance</div>
+      <section className="dashboard-shell-top">
+        <div className="hero-card dashboard-welcome-card">
+          <div className="dashboard-welcome-head">
+            <div className="label">DASHBOARD</div>
+            <h2 className="dashboard-welcome-title">Welcome back, {greetingName}!</h2>
+            <div className="muted">Your account is active and ready for instant VTU purchases.</div>
+          </div>
           <div className="hero-value">{loadingWallet ? "Loading..." : `₦ ${wallet?.balance || "0.00"}`}</div>
-          <div className="muted">Instant payments. Secure topups.</div>
-        </div>
-        <div className="hero-actions dashboard-hero-actions">
+          <div className="dashboard-welcome-actions">
+            <Link className="primary hero-cta" to="/wallet">Fund Wallet</Link>
+            <Link className="ghost hero-cta" to="/data">Buy Data</Link>
+            <Link className="ghost hero-cta" to="/services">All Services</Link>
+          </div>
           <div className={`dashboard-funded-account ${primaryFundingAccount ? "" : "empty"}`}>
             {primaryFundingAccount ? (
               <>
-                <div className="label">Generated Account</div>
+                <div className="label">Primary Funding Account</div>
                 <div className="dashboard-funded-account-row">
                   <div className="account-number">{primaryFundingAccount.account_number}</div>
                   <button className="ghost account-copy-btn" type="button" onClick={copyFundingAccount}>
@@ -286,15 +309,51 @@ export default function Dashboard() {
               </>
             ) : (
               <>
-                <div className="label">Generated Account</div>
-                <div className="muted">No account yet. Tap below to generate your personal funding account.</div>
+                <div className="label">Funding Account</div>
+                <div className="muted">No generated account yet. Tap Fund Wallet to generate yours.</div>
               </>
             )}
           </div>
-          <Link className="primary hero-cta" to="/wallet">
-            {primaryFundingAccount ? "Fund Wallet" : "Generate Account"}
-          </Link>
-          <Link className="ghost hero-cta" to="/data">Buy Data</Link>
+        </div>
+
+        <div className="card dashboard-feature-card">
+          <div className="label">FEATURED</div>
+          <div className="dashboard-feature-brand">
+            <img src="/pwa/pwa-192.png" alt="AxisVTU" />
+          </div>
+          <div className="value">AXISVTU</div>
+          <div className="muted">Fast purchases. Clean receipts. Secure wallet.</div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="card dashboard-funding-rail">
+          <div className="section-head">
+            <h3>Automated Bank Transfer</h3>
+            <Link className="ghost beneficiary-save-btn" to="/wallet">Manage</Link>
+          </div>
+          {fundingAccounts.length === 0 ? (
+            <div className="muted">No account generated yet. Open Wallet and tap Generate Account.</div>
+          ) : (
+            <div className="funding-account-grid">
+              {fundingAccounts.map((acc) => (
+                <div className="funding-account-card" key={`${acc.bank_name}-${acc.account_number}`}>
+                  <div className="funding-account-top">
+                    <div className="label">{acc.bank_name}</div>
+                    <button
+                      className="ghost account-copy-btn"
+                      type="button"
+                      onClick={() => copyAccountNumber(acc.account_number)}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <div className="funding-account-number">{acc.account_number}</div>
+                  <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -362,24 +421,34 @@ export default function Dashboard() {
       </section>
 
       <section className="section">
-        <h3>Quick Actions</h3>
+        <h3>Services</h3>
         <div className="grid-3">
           <Link className="card action-card" to={quickBuyLink}>
-            <div className="label">{lastRecipient?.phone ? "Quick Buy" : "Buy Data"}</div>
+            <div className="label">Data</div>
             <div className="value">{lastRecipient?.phone ? maskPhone(lastRecipient.phone) : "All Networks"}</div>
             <div className="muted">
               {lastRecipient?.phone ? "Use your last recipient instantly" : "Fast, reliable delivery"}
             </div>
           </Link>
-          <Link className="card action-card" to="/wallet">
-            <div className="label">Fund Wallet</div>
-            <div className="value">Paystack</div>
-            <div className="muted">Card / Bank transfer</div>
+          <Link className="card action-card" to="/airtime">
+            <div className="label">Airtime</div>
+            <div className="value">Topup</div>
+            <div className="muted">All major networks</div>
           </Link>
-          <Link className="card action-card" to="/services">
-            <div className="label">More Services</div>
-            <div className="value">Airtime</div>
-            <div className="muted">Cable, electricity, exams</div>
+          <Link className="card action-card" to="/electricity">
+            <div className="label">Electricity</div>
+            <div className="value">Token</div>
+            <div className="muted">Prepaid and postpaid</div>
+          </Link>
+          <Link className="card action-card" to="/cable">
+            <div className="label">Cable TV</div>
+            <div className="value">Subscriptions</div>
+            <div className="muted">DStv, GOtv, Startimes</div>
+          </Link>
+          <Link className="card action-card" to="/exam">
+            <div className="label">Exam PIN</div>
+            <div className="value">WAEC / NECO</div>
+            <div className="muted">Instant pin delivery</div>
           </Link>
           <Link className="card action-card" to="/support">
             <div className="label">Help & Support</div>
