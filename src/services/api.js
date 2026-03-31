@@ -8,6 +8,8 @@ const REFRESH_KEY = "vtu_refresh_token";
 const REFRESH_SESSION_KEY = "vtu_refresh_token_session";
 const PROFILE_KEY = "vtu_profile";
 const AUTH_EXPIRED = "AUTH_EXPIRED";
+const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v1";
+const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
 
 let refreshInFlight = null;
 
@@ -106,6 +108,14 @@ function makeError(message, code) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function writeJsonCache(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore storage errors
+  }
 }
 
 function fetchWithTimeout(url, options = {}, timeoutMs = API_TIMEOUT_MS) {
@@ -261,4 +271,24 @@ export async function warmBackend(maxWaitMs = 9000) {
   }
 
   return false;
+}
+
+export async function prefetchDataPageCache() {
+  // Warm Data page dependencies after auth so refresh/open feels instant.
+  if (!getToken()) return;
+
+  const [plans, wallet] = await Promise.allSettled([
+    apiFetch("/data/plans", { _suppressRetryToast: true }),
+    apiFetch("/wallet/me", { _suppressRetryToast: true }),
+  ]);
+
+  if (plans.status === "fulfilled" && Array.isArray(plans.value)) {
+    writeJsonCache(DATA_PLANS_CACHE_KEY, {
+      plans: plans.value,
+      cached_at: Date.now(),
+    });
+  }
+  if (wallet.status === "fulfilled" && wallet.value && typeof wallet.value === "object") {
+    writeJsonCache(DATA_WALLET_CACHE_KEY, wallet.value);
+  }
 }

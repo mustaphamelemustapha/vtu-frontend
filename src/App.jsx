@@ -15,7 +15,7 @@ import Support from "./pages/Support.jsx";
 import Admin from "./pages/Admin.jsx";
 import Profile from "./pages/Profile.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
-import { apiFetch, getToken, clearToken, getProfile, setProfile, warmBackend } from "./services/api";
+import { apiFetch, getToken, clearToken, getProfile, setProfile, warmBackend, prefetchDataPageCache } from "./services/api";
 import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 
@@ -303,6 +303,23 @@ export default function App() {
         setShowOnboarding(true);
       }
     }
+  }, [authenticated]);
+
+  useEffect(() => {
+    if (!authenticated) return undefined;
+
+    const run = () => {
+      prefetchDataPageCache().catch(() => {});
+    };
+
+    // Defer cache warm-up to idle-time so we don't block first paint.
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(run, { timeout: 1200 });
+      return () => window.cancelIdleCallback?.(idleId);
+    }
+
+    const timer = window.setTimeout(run, 260);
+    return () => window.clearTimeout(timer);
   }, [authenticated]);
 
   useEffect(() => {
