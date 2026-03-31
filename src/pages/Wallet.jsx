@@ -1,31 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
-const LAST_FUND_KEY = "vtu_last_fund";
-const ENABLE_BANK_TRANSFER = ["1", "true", "yes", "on"].includes(
-  String(import.meta.env.VITE_ENABLE_BANK_TRANSFER || "").toLowerCase()
-);
+const ENABLE_BANK_TRANSFER = true;
 
 export default function Wallet() {
-  const navigate = useNavigate();
   const [wallet, setWallet] = useState(null);
   const [ledger, setLedger] = useState([]);
-  const [amount, setAmount] = useState(1000);
-  const [callback, setCallback] = useState(
-    typeof window !== "undefined" ? `${window.location.origin}/app/wallet` : ""
-  );
-  const [message, setMessage] = useState("");
-  const [lastReference, setLastReference] = useState("");
-  const [lastAmount, setLastAmount] = useState(null);
-  const [successModal, setSuccessModal] = useState(false);
-  const [searchParams] = useSearchParams();
-  const [method, setMethod] = useState("paystack");
-  const [verifying, setVerifying] = useState(false);
-  const [fundingBusy, setFundingBusy] = useState(false);
-  const [pendingRef, setPendingRef] = useState("");
-  const [pollCount, setPollCount] = useState(0);
   const { showToast } = useToast();
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferBusy, setTransferBusy] = useState(false);
@@ -39,101 +20,6 @@ export default function Wallet() {
     apiFetch("/wallet/me").then(setWallet).catch(() => {});
     apiFetch("/wallet/ledger").then(setLedger).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    const ref = searchParams.get("reference") || searchParams.get("trxref");
-    if (ref) {
-      setLastReference(ref);
-      setPendingRef(ref);
-      const stored = JSON.parse(localStorage.getItem(LAST_FUND_KEY) || "{}");
-      if (stored?.amount) setLastAmount(stored.amount);
-      verifyPayment(ref);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (!successModal) return;
-    const timer = setTimeout(() => {
-      apiFetch("/wallet/me").then(setWallet).catch(() => {});
-    }, 1800);
-    return () => clearTimeout(timer);
-  }, [successModal]);
-
-  useEffect(() => {
-    if (!pendingRef || successModal || pollCount >= 5) return;
-    const timer = setTimeout(() => {
-      verifyPayment(pendingRef);
-      setPollCount((c) => c + 1);
-    }, 8000);
-    return () => clearTimeout(timer);
-  }, [pendingRef, successModal, pollCount]);
-
-  const fund = async (e) => {
-    e.preventDefault();
-    if (fundingBusy || verifying) return;
-    setMessage("");
-    setFundingBusy(true);
-    try {
-      if (method === "monnify") {
-        showToast("Monnify is coming soon. Please use Paystack for now.", "warning");
-        return;
-      }
-      const path = "/wallet/fund";
-      const res = await apiFetch(path, {
-        method: "POST",
-        body: JSON.stringify({ amount: Number(amount), callback_url: callback })
-      });
-      const paystackUrl = res?.data?.authorization_url;
-      const paystackRef = res?.data?.reference;
-      const monnifyUrl =
-        res?.responseBody?.checkoutUrl ||
-        res?.responseBody?.paymentUrl ||
-        res?.responseBody?.paymentPageUrl;
-      if (paystackRef) {
-        setLastReference(paystackRef);
-        setLastAmount(Number(amount));
-        localStorage.setItem(LAST_FUND_KEY, JSON.stringify({ reference: paystackRef, amount: Number(amount) }));
-        setPendingRef(paystackRef);
-        setPollCount(0);
-      }
-      const url = paystackUrl || monnifyUrl;
-      if (url) window.location.href = url;
-    } catch (err) {
-      setMessage(err.message);
-      showToast(err.message || "Wallet funding failed.", "error");
-    } finally {
-      setFundingBusy(false);
-    }
-  };
-
-  const verifyPayment = async (refOverride) => {
-    const reference = refOverride || lastReference;
-    if (!reference) {
-      showToast("No recent transaction reference found.", "error");
-      return;
-    }
-    setMessage("");
-    try {
-      setVerifying(true);
-      const res = await apiFetch(`/wallet/paystack/verify?reference=${reference}`);
-      if (res.status === "success") {
-        setMessage("");
-        setSuccessModal(true);
-        showToast("Wallet funded successfully.", "success");
-        apiFetch("/wallet/me").then(setWallet).catch(() => {});
-        apiFetch("/wallet/ledger").then(setLedger).catch(() => {});
-        setPendingRef("");
-      } else {
-        setMessage("Payment pending. Please wait and try again.");
-        showToast("Payment pending. Please wait and try again.", "info");
-      }
-    } catch (err) {
-      setMessage(err.message);
-      showToast(err.message || "Verification failed.", "error");
-    } finally {
-      setVerifying(false);
-    }
-  };
 
   const openTransfer = async () => {
     setTransferOpen(true);
@@ -194,6 +80,7 @@ export default function Wallet() {
       setTransferAccounts(res?.accounts || []);
       setTransferNeedsKyc(!!res?.requires_kyc);
       showToast("Bank transfer account generated.", "success");
+      apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
       showToast(err.message || "Unable to save phone number.", "error");
     } finally {
@@ -216,103 +103,19 @@ export default function Wallet() {
         <div>
           <div className="label">Available Balance</div>
           <div className="hero-value">₦ {wallet?.balance || "0.00"}</div>
-          <div className="muted">Keep your wallet funded for quick purchases.</div>
+          <div className="muted">Generate your personal account number and fund via transfer.</div>
         </div>
         <div className="hero-actions">
-          <button className="primary" onClick={() => setAmount(2000)} disabled={fundingBusy || verifying}>+ ₦2,000</button>
-          <button className="ghost" onClick={() => setAmount(5000)} disabled={fundingBusy || verifying}>+ ₦5,000</button>
           {ENABLE_BANK_TRANSFER && (
-            <button className="ghost" type="button" onClick={openTransfer} disabled={fundingBusy || verifying || transferBusy}>
-              Add Balance (Transfer)
+            <button className="primary" type="button" onClick={openTransfer} disabled={transferBusy}>
+              Generate Account
             </button>
           )}
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="card">
-          <div className="section-head">
-            <h3>Fund Wallet</h3>
-            <span className="muted">Paystack checkout</span>
-          </div>
-          <form onSubmit={fund} className="form-grid">
-            <label>
-              Funding Method
-              <select value={method} onChange={(e) => setMethod(e.target.value)}>
-                <option value="paystack">Paystack (Card / Transfer)</option>
-                <option value="monnify" disabled>Monnify (Coming soon)</option>
-              </select>
-            </label>
-            <label>
-              Amount (₦)
-              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} min="100" disabled={fundingBusy || verifying} />
-            </label>
-            <label>
-              Callback URL
-              <input value={callback} onChange={(e) => setCallback(e.target.value)} disabled={fundingBusy || verifying} />
-            </label>
-            <button className="primary" type="submit" disabled={fundingBusy || verifying}>
-              {fundingBusy ? "Starting..." : method === "monnify" ? "Monnify Coming Soon" : "Pay with Paystack"}
-            </button>
-          </form>
-          {method === "paystack" && lastReference && (
-            <button className="ghost" type="button" onClick={verifyPayment} disabled={verifying || fundingBusy}>
-              {verifying ? "Verifying..." : "Verify Paystack Payment"}
-            </button>
-          )}
-          {ENABLE_BANK_TRANSFER && (
-            <div style={{ marginTop: 10 }}>
-              <button className="ghost" type="button" onClick={openTransfer} disabled={fundingBusy || verifying || transferBusy}>
-                Add money via mobile or internet banking
-              </button>
-            </div>
-          )}
-          {message && <div className="error">{message}</div>}
-        </div>
-      </section>
-
-      {successModal && (
-        <div className="success-screen" role="dialog" aria-live="polite">
-          <div className="success-card">
-            <div className="success-icon">✓</div>
-            <div className="success-title">Wallet Funded</div>
-            <div className="success-sub">Your payment was successful.</div>
-            <div className="success-grid">
-              <div>
-                <div className="label">Amount</div>
-                <div className="value">₦ {lastAmount || amount}</div>
-              </div>
-              <div>
-                <div className="label">Reference</div>
-                <div className="muted">{lastReference || "—"}</div>
-              </div>
-              <div>
-                <div className="label">New Balance</div>
-                <div className="value">₦ {wallet?.balance || "0.00"}</div>
-              </div>
-            </div>
-            <div className="modal-actions">
-              <button className="ghost" onClick={() => setSuccessModal(false)}>Close</button>
-              <button className="primary" onClick={() => navigate("/data")}>Buy Data Now</button>
-              <button className="ghost" onClick={() => navigate("/transactions")}>View Receipt</button>
-            </div>
-            <div className="hint">Auto-refreshing wallet balance.</div>
-          </div>
-        </div>
-      )}
-
-      {pendingRef && !successModal && (
-        <div className="card pending-card">
-          <div>
-            <div className="label">Payment Pending</div>
-            <div className="value">Reference: {pendingRef}</div>
-            <div className="muted">We are confirming your payment. Webhooks can take a minute.</div>
-          </div>
-          <button className="ghost" type="button" onClick={() => verifyPayment(pendingRef)}>
-            {verifying ? "Checking..." : "Check Status"}
+          <button className="ghost" type="button" onClick={() => apiFetch("/wallet/me").then(setWallet).catch(() => {})}>
+            Refresh Balance
           </button>
         </div>
-      )}
+      </section>
 
       <section className="section">
         <div className="section-head">
@@ -358,8 +161,7 @@ export default function Wallet() {
             {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && (
               <div className="card">
                 <div className="muted">
-                  To generate your dedicated bank account numbers, Monnify requires BVN or NIN once.
-                  We do not store it; it is only used to create the accounts.
+                  Complete one-time verification details to generate your dedicated funding account.
                 </div>
                 <form onSubmit={createTransfer} className="form-grid" style={{ marginTop: 12 }}>
                   <label>
@@ -407,7 +209,7 @@ export default function Wallet() {
 
             {!transferBusy && transferAccounts.length > 0 && (
               <div className="notice">
-                Make a transfer to any of the accounts above from PalmPay, 9PSB, or any bank app. Your wallet will be credited automatically.
+                Transfer to this account from PalmPay, 9PSB, or any bank app. Your wallet credits automatically after confirmation.
               </div>
             )}
 
