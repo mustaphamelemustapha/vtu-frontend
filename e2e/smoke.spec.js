@@ -12,6 +12,25 @@ async function installApiMocks(page) {
   const state = {
     walletBalance: 5000,
     pendingFund: null,
+    profile: {
+      id: 99,
+      email: "user@example.com",
+      full_name: "Test User",
+      role: "user",
+      phone_number: "",
+    },
+    transferAccounts: [
+      {
+        bank_name: "PalmPay",
+        account_number: "6666227606",
+        account_name: "Test User",
+      },
+      {
+        bank_name: "9PSB",
+        account_number: "1002003004",
+        account_name: "Test User",
+      },
+    ],
     ledger: [],
     transactions: [
       {
@@ -106,12 +125,13 @@ async function installApiMocks(page) {
     }
 
     if (method === "GET" && path === "/auth/me") {
-      return json(route, {
-        id: 99,
-        email: "user@example.com",
-        full_name: "Test User",
-        role: "user",
-      });
+      return json(route, state.profile);
+    }
+
+    if (method === "PATCH" && path === "/auth/me") {
+      const payload = request.postDataJSON();
+      state.profile = { ...state.profile, ...payload };
+      return json(route, state.profile);
     }
 
     if (method === "GET" && path === "/wallet/me") {
@@ -123,6 +143,22 @@ async function installApiMocks(page) {
 
     if (method === "GET" && path === "/wallet/ledger") {
       return json(route, state.ledger);
+    }
+
+    if (method === "GET" && path === "/wallet/bank-transfer-accounts") {
+      return json(route, {
+        provider: "paystack",
+        requires_kyc: false,
+        accounts: state.transferAccounts,
+      });
+    }
+
+    if (method === "POST" && path === "/wallet/bank-transfer-accounts") {
+      return json(route, {
+        provider: "paystack",
+        requires_kyc: false,
+        accounts: state.transferAccounts,
+      });
     }
 
     if (method === "POST" && path === "/wallet/fund") {
@@ -286,13 +322,10 @@ test("wallet funding smoke", async ({ page }) => {
   await page.locator("aside.nav").getByRole("link", { name: "Wallet" }).click();
   await expect(page).toHaveURL(/\/app\/wallet$/);
 
-  await page.getByLabel("Amount (₦)").fill("2500");
-  await page.getByRole("button", { name: "Pay with Paystack" }).click();
-  await page.getByRole("button", { name: "Verify Paystack Payment" }).click();
-
-  // Disambiguate from toast + hero copy that also contain "wallet funded".
-  await expect(page.locator(".success-card .success-title")).toHaveText("Wallet Funded");
-  await expect(page.getByText("Your payment was successful.")).toBeVisible();
+  await page.getByRole("button", { name: "Generate Account" }).click();
+  await expect(page.getByText("Add money via mobile or internet banking")).toBeVisible();
+  await expect(page.getByText("6666227606")).toBeVisible();
+  await expect(page.getByText("1002003004")).toBeVisible();
 });
 
 test("data purchase smoke", async ({ page }) => {
@@ -333,6 +366,7 @@ test("cable purchase smoke", async ({ page }) => {
   await expect(page).toHaveURL(/\/app\/cable$/);
 
   await page.getByLabel("Smartcard / IUC Number").fill("12345678901");
+  await page.getByLabel("Customer Phone").fill("08012345678");
   await page.getByLabel("Package Code").fill("basic");
   await page.getByLabel("Amount (₦)").fill("5500");
   await page.getByRole("button", { name: "Pay Cable" }).click();
@@ -348,6 +382,7 @@ test("electricity purchase smoke", async ({ page }) => {
   await expect(page).toHaveURL(/\/app\/electricity$/);
 
   await page.getByLabel("Meter Number").fill("12345678901");
+  await page.getByLabel("Customer Phone").fill("08012345678");
   await page.getByLabel("Amount (₦)").fill("2500");
   await page.getByRole("button", { name: "Buy Electricity" }).click();
 
