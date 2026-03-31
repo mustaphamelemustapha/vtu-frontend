@@ -7,6 +7,9 @@ import { useToast } from "../context/toast.jsx";
 
 const RESULT_PREFS_KEY = "vtu_data_result_prefs";
 const DELIVERED_HINTS = ["success", "successful", "delivered", "gifted", "completed"];
+const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v1";
+const DATA_PLANS_CACHE_TTL_MS = 10 * 60 * 1000;
+const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
 
 export default function Data() {
   const MIN_PURCHASE_LOADING_MS = 1200;
@@ -22,6 +25,7 @@ export default function Data() {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("recommended");
   const [loadingPlans, setLoadingPlans] = useState(true);
+  const [refreshingPlans, setRefreshingPlans] = useState(false);
   const [compare, setCompare] = useState([]);
   const [purchaseResult, setPurchaseResult] = useState(null);
   const [downloadBusy, setDownloadBusy] = useState(false);
@@ -60,30 +64,79 @@ export default function Data() {
     }
   };
 
-  const loadPlans = async () => {
-    setLoadingPlans(true);
+  const readJsonCache = (key) => {
+    try {
+      return JSON.parse(localStorage.getItem(key) || "null");
+    } catch {
+      return null;
+    }
+  };
+
+  const writeJsonCache = (key, value) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const loadPlans = async ({ forceRefresh = false } = {}) => {
     setPlansError("");
+    const cached = readJsonCache(DATA_PLANS_CACHE_KEY);
+    const cachedRows = Array.isArray(cached?.plans) ? cached.plans : [];
+    const hasCached = cachedRows.length > 0;
+    const isFresh =
+      hasCached &&
+      Number.isFinite(Number(cached?.cached_at)) &&
+      Date.now() - Number(cached.cached_at) < DATA_PLANS_CACHE_TTL_MS;
+
+    if (hasCached) {
+      setPlans(cachedRows);
+      setLoadingPlans(false);
+    } else {
+      setLoadingPlans(true);
+    }
+
+    if (isFresh && !forceRefresh) {
+      return;
+    }
+
+    setRefreshingPlans(true);
     try {
       const data = await apiFetch("/data/plans");
       setPlans(data);
+      writeJsonCache(DATA_PLANS_CACHE_KEY, {
+        plans: Array.isArray(data) ? data : [],
+        cached_at: Date.now(),
+      });
     } catch (err) {
       const msg = err?.message || "Failed to load data plans.";
-      setPlansError(msg);
-      showToast(msg, "error");
+      if (!hasCached) {
+        setPlansError(msg);
+        showToast(msg, "error");
+      } else if (forceRefresh) {
+        showToast("Using cached plans. Refresh failed.", "warning");
+      }
     } finally {
       setLoadingPlans(false);
+      setRefreshingPlans(false);
     }
   };
 
   const loadWallet = async () => {
     setWalletError("");
+    const cached = readJsonCache(DATA_WALLET_CACHE_KEY);
+    if (cached && typeof cached === "object") {
+      setWallet(cached);
+    }
     try {
       const data = await apiFetch("/wallet/me");
       setWallet(data);
+      writeJsonCache(DATA_WALLET_CACHE_KEY, data);
     } catch (err) {
       const msg = err?.message || "Failed to load wallet balance.";
       setWalletError(msg);
-      showToast(msg, "error");
+      if (!cached) showToast(msg, "error");
     }
   };
 
@@ -675,8 +728,13 @@ export default function Data() {
           <h3>Data Plans</h3>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div className="muted">{sorted.length} plans</div>
-            <button className="ghost" type="button" onClick={loadPlans} disabled={loadingPlans}>
-              {loadingPlans ? "Refreshing..." : "Refresh"}
+            <button
+              className="ghost"
+              type="button"
+              onClick={() => loadPlans({ forceRefresh: true })}
+              disabled={refreshingPlans}
+            >
+              {refreshingPlans ? "Refreshing..." : "Refresh"}
             </button>
           </div>
         </div>
