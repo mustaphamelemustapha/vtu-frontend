@@ -33,6 +33,7 @@ function resolveApiBase() {
 
 const API_BASE = resolveApiBase();
 const API_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 12000);
+const PURCHASE_API_TIMEOUT_MS = Number(import.meta.env.VITE_PURCHASE_API_TIMEOUT_MS || 40000);
 const AUTH_PROFILE_RETRIES = Number(import.meta.env.VITE_AUTH_PROFILE_RETRIES || 2);
 const RETRY_BASE_DELAY_MS = Number(import.meta.env.VITE_API_RETRY_BASE_DELAY_MS || 450);
 const TOKEN_KEY = "vtu_access_token";
@@ -205,6 +206,7 @@ export async function apiFetch(path, options = {}) {
   const {
     _retry = false,
     _suppressRetryToast = false,
+    timeoutMs,
     ...requestOptions
   } = options;
   const headers = { ...(requestOptions.headers || {}) };
@@ -217,12 +219,19 @@ export async function apiFetch(path, options = {}) {
   let attempt = 0;
   const url = `${API_BASE}${path}`;
   const refreshablePath = path !== "/auth/login" && path !== "/auth/refresh";
+  const isPurchasePath =
+    path === "/data/purchase" ||
+    path.endsWith("/purchase") ||
+    path.includes("/services/");
+  const requestTimeoutMs = Number.isFinite(Number(timeoutMs))
+    ? Number(timeoutMs)
+    : (isPurchasePath ? Math.max(API_TIMEOUT_MS, PURCHASE_API_TIMEOUT_MS) : API_TIMEOUT_MS);
 
   while (attempt < maxAttempts) {
     attempt += 1;
     let res;
     try {
-      res = await fetchWithTimeout(url, { ...requestOptions, headers });
+      res = await fetchWithTimeout(url, { ...requestOptions, headers }, requestTimeoutMs);
     } catch (err) {
       const timedOut = err?.name === "AbortError";
       const retryableNetworkError =
