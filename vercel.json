@@ -3,6 +3,10 @@
     { "source": "/", "destination": "/landing/", "permanent": false }
   ],
   "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://vtu-backend-8gsi.onrender.com/api/v1/:path*"
+    },
     { "source": "/app", "destination": "/index.html" },
     { "source": "/app/(.*)", "destination": "/index.html" }
   ]

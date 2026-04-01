@@ -5,8 +5,17 @@ function normalizeApiBase(raw) {
   return value.replace(/\/+$/, "");
 }
 
+function forceHttpsForSecurePage(value) {
+  if (typeof window === "undefined") return value;
+  if (window.location.protocol !== "https:") return value;
+  if (String(value).startsWith("http://")) {
+    return `https://${String(value).slice("http://".length)}`;
+  }
+  return value;
+}
+
 function resolveApiBase() {
-  const envBase = normalizeApiBase(import.meta.env.VITE_API_BASE);
+  const envBase = forceHttpsForSecurePage(normalizeApiBase(import.meta.env.VITE_API_BASE));
   if (envBase) return envBase;
 
   if (typeof window !== "undefined") {
@@ -16,7 +25,7 @@ function resolveApiBase() {
       host === "www.axisvtu.com" ||
       host === "axisvtu.vercel.app" ||
       host === "vtu-frontend-beta.vercel.app";
-    if (isAxisDomain) return PROD_API_FALLBACK;
+    if (isAxisDomain) return "/api/v1";
   }
 
   return "http://localhost:8000/api/v1";
