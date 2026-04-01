@@ -15,9 +15,6 @@ function forceHttpsForSecurePage(value) {
 }
 
 function resolveApiBase() {
-  const envBase = forceHttpsForSecurePage(normalizeApiBase(import.meta.env.VITE_API_BASE));
-  if (envBase) return envBase;
-
   if (typeof window !== "undefined") {
     const host = String(window.location.hostname || "").toLowerCase();
     const isAxisDomain =
@@ -27,6 +24,9 @@ function resolveApiBase() {
       host === "vtu-frontend-beta.vercel.app";
     if (isAxisDomain) return "/api/v1";
   }
+
+  const envBase = forceHttpsForSecurePage(normalizeApiBase(import.meta.env.VITE_API_BASE));
+  if (envBase && !/[<>]/.test(envBase)) return envBase;
 
   return "http://localhost:8000/api/v1";
 }
