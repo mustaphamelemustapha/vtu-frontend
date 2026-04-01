@@ -56,6 +56,18 @@ export default function Data() {
     return raw.replace(/[^a-z0-9_-]/g, "-");
   };
 
+  const inferProviderLabel = (provider, networkValue) => {
+    const key = String(provider || "").trim().toLowerCase();
+    if (key === "clubkonnect") return "Clubkonnect";
+    if (key === "vtpass") return "VTPass";
+    if (key === "amigo") return "Amigo";
+
+    const net = String(networkValue || "").trim().toLowerCase();
+    if (net === "mtn" || net === "glo") return "Amigo";
+    if (net === "airtel" || net === "9mobile" || net === "etisalat" || net === "t2") return "Clubkonnect";
+    return "Provider";
+  };
+
   const saveRecipient = (next) => {
     try {
       localStorage.setItem("vtu_last_recipient", JSON.stringify(next));
@@ -275,6 +287,7 @@ export default function Data() {
       ported,
       failure_reason: tx?.failure_reason || "",
       provider_message: "",
+      provider: inferProviderLabel("", tx?.network || chosenPlan?.network || ""),
     };
   };
 
@@ -340,12 +353,18 @@ export default function Data() {
       setLoading(true);
       const res = await apiFetch("/data/purchase", {
         method: "POST",
-        body: JSON.stringify({ plan_code: planCode, phone_number: phone, ported_number: ported })
+        body: JSON.stringify({
+          plan_code: planCode,
+          phone_number: phone,
+          ported_number: ported,
+          network: String(chosenPlan?.network || network || "").toLowerCase() || undefined,
+        }),
       });
       const apiStatus = toStatusKey(res.status || "success");
       const inferredSuccess = apiStatus === "pending" && isDeliveredMessage(res.message);
       const resolvedStatus = inferredSuccess ? "success" : (apiStatus || "success");
       const reference = res.reference || `AXIS-${Date.now()}`;
+      const resolvedNetwork = String(res.network || chosenPlan?.network || "");
       setPurchaseResult({
         ok: !["failed", "refunded"].includes(resolvedStatus),
         reference,
@@ -353,14 +372,15 @@ export default function Data() {
         created_at: res.created_at || new Date().toISOString(),
         test_mode: !!res.test_mode,
         plan: chosenPlan,
-        plan_code: chosenPlan?.plan_code || planCode,
+        plan_code: res.plan_code || chosenPlan?.plan_code || planCode,
         validity: chosenPlan?.validity || "",
-        network: chosenPlan?.network || "",
+        network: resolvedNetwork,
         recipient: phone,
         amount: Number(chosenPlan?.price || 0),
         ported,
         failure_reason: "",
         provider_message: res.message || "",
+        provider: inferProviderLabel(res.provider, resolvedNetwork),
       });
       if (resultPrefs.save_beneficiary) {
         setBeneficiaries(
@@ -429,6 +449,7 @@ export default function Data() {
         ported,
         failure_reason: err?.message || "Data purchase failed.",
         provider_message: "",
+        provider: inferProviderLabel("", chosenPlan?.network || ""),
       });
       showToast(err.message || "Purchase failed.", "error");
     } finally {
@@ -991,7 +1012,7 @@ export default function Data() {
                 </div>
                 <div className="data-result-row">
                   <span>Provider</span>
-                  <strong>Amigo</strong>
+                  <strong>{inferProviderLabel(purchaseResult.provider, purchaseResult.network)}</strong>
                 </div>
                 <div className="data-result-row">
                   <span>Data Capacity</span>
@@ -1045,14 +1066,14 @@ export default function Data() {
 
               <div className="data-result-switch-row">
                 <div>
-                  <div className="data-result-switch-title">Amigo Bolt</div>
+                  <div className="data-result-switch-title">Fast Route</div>
                   <div className="muted">Fast route preference (coming soon)</div>
                 </div>
                 <button
                   type="button"
                   className={`toggle-switch ${resultPrefs.amigo_bolt ? "on" : ""}`}
                   onClick={() => updateResultPref("amigo_bolt", !resultPrefs.amigo_bolt)}
-                  aria-label="Toggle Amigo Bolt"
+                  aria-label="Toggle fast route"
                 >
                   <span />
                 </button>
