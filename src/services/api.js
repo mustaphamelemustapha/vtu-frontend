@@ -1,4 +1,28 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000/api/v1";
+const PROD_API_FALLBACK = "https://vtu-backend-8gsi.onrender.com/api/v1";
+
+function normalizeApiBase(raw) {
+  const value = String(raw || "").trim();
+  return value.replace(/\/+$/, "");
+}
+
+function resolveApiBase() {
+  const envBase = normalizeApiBase(import.meta.env.VITE_API_BASE);
+  if (envBase) return envBase;
+
+  if (typeof window !== "undefined") {
+    const host = String(window.location.hostname || "").toLowerCase();
+    const isAxisDomain =
+      host === "axisvtu.com" ||
+      host === "www.axisvtu.com" ||
+      host === "axisvtu.vercel.app" ||
+      host === "vtu-frontend-beta.vercel.app";
+    if (isAxisDomain) return PROD_API_FALLBACK;
+  }
+
+  return "http://localhost:8000/api/v1";
+}
+
+const API_BASE = resolveApiBase();
 const API_TIMEOUT_MS = Number(import.meta.env.VITE_API_TIMEOUT_MS || 12000);
 const AUTH_PROFILE_RETRIES = Number(import.meta.env.VITE_AUTH_PROFILE_RETRIES || 2);
 const RETRY_BASE_DELAY_MS = Number(import.meta.env.VITE_API_RETRY_BASE_DELAY_MS || 450);
@@ -203,6 +227,9 @@ export async function apiFetch(path, options = {}) {
       }
       if (timedOut) {
         throw makeError("Connection timed out. Please try again.");
+      }
+      if (err?.name === "TypeError") {
+        throw makeError("Unable to reach server. Please check your network and try again.");
       }
       throw err;
     }
