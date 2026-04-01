@@ -48,6 +48,13 @@ const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
 let refreshInFlight = null;
 
 function getBackendOrigin() {
+  if (String(API_BASE).startsWith("/")) {
+    try {
+      return new URL(PROD_API_FALLBACK).origin;
+    } catch {
+      return "";
+    }
+  }
   try {
     const parsed = new URL(API_BASE);
     return parsed.origin;
@@ -217,15 +224,20 @@ export async function apiFetch(path, options = {}) {
 
   const maxAttempts = isAuthProfilePath(path) ? Math.max(1, AUTH_PROFILE_RETRIES + 1) : 1;
   let attempt = 0;
-  const url = `${API_BASE}${path}`;
   const refreshablePath = path !== "/auth/login" && path !== "/auth/refresh";
   const isPurchasePath =
     path === "/data/purchase" ||
     path.endsWith("/purchase") ||
     path.includes("/services/");
+  const isRelativeApiBase = String(API_BASE).startsWith("/");
+  const requestBase =
+    isPurchasePath && isRelativeApiBase
+      ? PROD_API_FALLBACK
+      : API_BASE;
   const requestTimeoutMs = Number.isFinite(Number(timeoutMs))
     ? Number(timeoutMs)
     : (isPurchasePath ? Math.max(API_TIMEOUT_MS, PURCHASE_API_TIMEOUT_MS) : API_TIMEOUT_MS);
+  const url = `${requestBase}${path}`;
 
   while (attempt < maxAttempts) {
     attempt += 1;
