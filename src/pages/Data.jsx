@@ -378,7 +378,10 @@ export default function Data() {
         recipient: phone,
         amount: Number(chosenPlan?.price || 0),
         ported,
-        failure_reason: "",
+        failure_reason:
+          ["failed", "refunded"].includes(resolvedStatus)
+            ? String(res.failure_reason || res.message || "").trim()
+            : "",
         provider_message: res.message || "",
         provider: inferProviderLabel(res.provider, resolvedNetwork),
       });
