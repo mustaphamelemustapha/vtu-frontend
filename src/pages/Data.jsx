@@ -7,7 +7,7 @@ import { useToast } from "../context/toast.jsx";
 
 const RESULT_PREFS_KEY = "vtu_data_result_prefs";
 const DELIVERED_HINTS = ["success", "successful", "delivered", "gifted", "completed"];
-const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v1";
+const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v2";
 const DATA_PLANS_CACHE_TTL_MS = 10 * 60 * 1000;
 const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
 
