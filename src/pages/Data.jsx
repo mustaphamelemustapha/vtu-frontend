@@ -252,6 +252,31 @@ export default function Data() {
       loadWallet();
     })();
   };
+
+  const startRecentReconciliation = ({ chosenPlan, planCode, recipientPhone, maxAttempts = 8 }) => {
+    (async () => {
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        const tx = await findMatchingRecentTransaction({ chosenPlan, planCode, recipientPhone });
+        if (tx) {
+          const mapped = mapTransactionToResult(tx, chosenPlan, recipientPhone);
+          setPurchaseResult(mapped);
+          if (toStatusKey(mapped.status) === "success") {
+            setMessage("");
+            showToast("Purchase confirmed successful.", "success");
+          } else if (toStatusKey(mapped.status) === "pending") {
+            setMessage("Purchase submitted. Verifying final status...");
+            showToast("Purchase submitted and is pending confirmation.", "info");
+          } else {
+            showToast(mapped.failure_reason || "Purchase did not complete.", "warning");
+          }
+          loadWallet();
+          return;
+        }
+        await sleep(900 * (attempt + 1));
+      }
+      showToast("Still verifying purchase status. Check History shortly.", "warning");
+    })();
+  };
   const isTransientPurchaseError = (error) => {
     const msg = String(error?.message || "").toLowerCase();
     if (!msg) return false;
@@ -295,6 +320,7 @@ export default function Data() {
     const targetPlan = normalizePlanCode(planCode);
     const targetPhone = normalizePhone(recipientPhone);
     const targetAmount = Number(chosenPlan?.price || 0);
+    const targetNetwork = String(chosenPlan?.network || network || "").toLowerCase();
 
     for (let attempt = 0; attempt < 4; attempt += 1) {
       try {
@@ -316,9 +342,11 @@ export default function Data() {
           const txPlan = normalizePlanCode(tx?.data_plan_code);
           const txPhone = normalizePhone(tx?.meta?.recipient_phone);
           const txAmount = Number(tx?.amount || 0);
+          const txNetwork = String(tx?.network || "").toLowerCase();
 
           if (txPlan && targetPlan && txPlan === targetPlan) score += 4;
           if (txPhone && targetPhone && (txPhone.endsWith(targetPhone.slice(-10)) || targetPhone.endsWith(txPhone.slice(-10)))) score += 5;
+          if (txNetwork && targetNetwork && txNetwork === targetNetwork) score += 3;
           if (Math.abs(txAmount - targetAmount) < 0.01) score += 2;
           if (now - Date.parse(tx?.created_at || 0) <= 2 * 60 * 1000) score += 1;
 
@@ -327,7 +355,7 @@ export default function Data() {
             bestScore = score;
           }
         }
-        if (best && bestScore >= 6) return best;
+        if (best && bestScore >= 4) return best;
       } catch {
         // ignore and continue polling
       }
@@ -439,6 +467,31 @@ export default function Data() {
           setMessage("");
           return;
         }
+        setPurchaseResult({
+          ok: true,
+          reference: `AXIS-PENDING-${Date.now()}`,
+          status: "pending",
+          created_at: new Date().toISOString(),
+          test_mode: false,
+          plan: chosenPlan,
+          plan_code: chosenPlan?.plan_code || planCode,
+          validity: chosenPlan?.validity || "",
+          network: chosenPlan?.network || "",
+          recipient: phone,
+          amount: Number(chosenPlan?.price || 0),
+          ported,
+          failure_reason: "",
+          provider_message: "Network unstable. Verifying purchase status...",
+          provider: inferProviderLabel("", chosenPlan?.network || ""),
+        });
+        showToast("Purchase submitted. Verifying status...", "info");
+        startRecentReconciliation({
+          chosenPlan,
+          planCode,
+          recipientPhone: phone,
+          maxAttempts: 10,
+        });
+        return;
       }
       setMessage(err.message);
       if (String(err?.message || "").toLowerCase().includes("invalid_dataplan")) {
