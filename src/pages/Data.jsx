@@ -385,6 +385,10 @@ export default function Data() {
         provider_message: res.message || "",
         provider: inferProviderLabel(res.provider, resolvedNetwork),
       });
+      const failureReasonText = String(res.failure_reason || res.message || "").toLowerCase();
+      if (failureReasonText.includes("invalid_dataplan")) {
+        await loadPlans({ forceRefresh: true });
+      }
       if (resultPrefs.save_beneficiary) {
         setBeneficiaries(
           saveBeneficiary("data", {
@@ -437,6 +441,9 @@ export default function Data() {
         }
       }
       setMessage(err.message);
+      if (String(err?.message || "").toLowerCase().includes("invalid_dataplan")) {
+        await loadPlans({ forceRefresh: true });
+      }
       setPurchaseResult({
         ok: false,
         reference: `AXIS-ATTEMPT-${Date.now()}`,
