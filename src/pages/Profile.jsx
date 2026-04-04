@@ -106,6 +106,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
       .join("")
       .toUpperCase();
   }, [profile.full_name]);
+  const accountTypeText = roleLabel(profile.role);
 
   const saveAccountDetails = async () => {
     const nextName = String(fullName || "").trim();
@@ -191,9 +192,15 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
     <div className="page profile-ux profile-page">
       <section className="section">
         <div className="profile-ux-topbar card">
-          <button className="ghost profile-ux-back" type="button" onClick={() => navigate("/")}>
-            ← Back
-          </button>
+          <div className="profile-ux-topbar-left">
+            <button className="ghost profile-ux-back" type="button" onClick={() => navigate("/")}>
+              ←
+            </button>
+            <div>
+              <div className="profile-ux-topbar-title">Profile</div>
+              <div className="muted profile-ux-topbar-subtitle">Manage account and security</div>
+            </div>
+          </div>
           <button className="ghost profile-ux-gear" type="button" onClick={() => onToggleTheme?.()}>
             ⚙
           </button>
@@ -203,10 +210,30 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
       <section className="section">
         <div className="card profile-ux-user-card">
           <div className="profile-ux-user-avatar">{initials}</div>
-          <div>
+          <div className="profile-ux-user-meta">
             <div className="profile-ux-user-name">{profile.full_name || "User"}</div>
             <div className="muted">Joined {joinedLabel}</div>
+            <div className="profile-ux-user-chips">
+              <span className="pill">{accountTypeText}</span>
+              <span className="profile-ux-email-chip" title={profile.email || ""}>
+                {profile.email || "No email"}
+              </span>
+            </div>
           </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="profile-ux-quick-actions card">
+          <button className="primary" type="button" onClick={() => setAccountOpen(true)}>
+            Edit Account
+          </button>
+          <button className="ghost" type="button" onClick={() => setSecurityOpen(true)}>
+            Security
+          </button>
+          <button className="ghost" type="button" onClick={() => navigate("/support")}>
+            Support
+          </button>
         </div>
       </section>
 
@@ -215,7 +242,10 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <button className="card profile-ux-menu-item" type="button" onClick={() => setAccountOpen(true)}>
             <span className="profile-ux-menu-left">
               <span className="profile-ux-icon"><AccountIcon /></span>
-              <span>Account</span>
+              <span className="profile-ux-menu-text">
+                <span className="profile-ux-menu-title">Account</span>
+                <span className="profile-ux-menu-subtitle">Update full name and phone number</span>
+              </span>
             </span>
             <span className="profile-ux-chevron">›</span>
           </button>
@@ -223,7 +253,10 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <button className="card profile-ux-menu-item" type="button" onClick={() => setSecurityOpen(true)}>
             <span className="profile-ux-menu-left">
               <span className="profile-ux-icon"><SecurityIcon /></span>
-              <span>Security</span>
+              <span className="profile-ux-menu-text">
+                <span className="profile-ux-menu-title">Security</span>
+                <span className="profile-ux-menu-subtitle">Change password and session settings</span>
+              </span>
             </span>
             <span className="profile-ux-chevron">›</span>
           </button>
@@ -231,7 +264,10 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <button className="card profile-ux-menu-item" type="button" onClick={() => setAboutOpen(true)}>
             <span className="profile-ux-menu-left">
               <span className="profile-ux-icon"><AboutIcon /></span>
-              <span>About</span>
+              <span className="profile-ux-menu-text">
+                <span className="profile-ux-menu-title">About</span>
+                <span className="profile-ux-menu-subtitle">App version and platform details</span>
+              </span>
             </span>
             <span className="profile-ux-chevron">›</span>
           </button>
@@ -239,7 +275,10 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <button className="card profile-ux-menu-item" type="button" onClick={() => setHelpOpen(true)}>
             <span className="profile-ux-menu-left">
               <span className="profile-ux-icon"><HelpIcon /></span>
-              <span>Help</span>
+              <span className="profile-ux-menu-text">
+                <span className="profile-ux-menu-title">Help</span>
+                <span className="profile-ux-menu-subtitle">Policies and support resources</span>
+              </span>
             </span>
             <span className="profile-ux-chevron">›</span>
           </button>
@@ -247,7 +286,10 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <button className="card profile-ux-menu-item" type="button" onClick={() => navigate("/support")}>
             <span className="profile-ux-menu-left">
               <span className="profile-ux-icon"><SupportIcon /></span>
-              <span>Support Center</span>
+              <span className="profile-ux-menu-text">
+                <span className="profile-ux-menu-title">Support Center</span>
+                <span className="profile-ux-menu-subtitle">Open and track support reports</span>
+              </span>
             </span>
             <span className="profile-ux-chevron">›</span>
           </button>
