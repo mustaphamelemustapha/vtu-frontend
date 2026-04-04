@@ -263,14 +263,14 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           >
             <span className="profile-ux-menu-left">
               <span className="profile-ux-icon"><AboutIcon /></span>
-              <span>Designed by</span>
+              <span>Designed by M.Mele · MMTECHGLOBE</span>
             </span>
             <span className={`profile-ux-chevron ${creditOpen ? "open" : ""}`}>›</span>
           </button>
           {creditOpen && (
             <div className="card profile-ux-credit">
               <div className="muted">Developed by</div>
-              <div className="profile-ux-credit-dev">M.Mele</div>
+              <div className="profile-ux-credit-dev">M.Mele · MMTECHGLOBE</div>
               <div className="profile-ux-brand">
                 <img src="/brand/mmtechglobe-logo.svg" alt="MMTECHGLOBE" />
                 <span>MMTECHGLOBE</span>
