@@ -81,10 +81,17 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
   useEffect(() => {
     apiFetch("/auth/me")
       .then((data) => {
-        const next = { full_name: data.full_name, email: data.email, role: data.role };
+        const next = {
+          full_name: data.full_name,
+          email: data.email,
+          role: data.role,
+          phone_number: data.phone_number || "",
+        };
         setProfile(next);
         setProfileState(next);
         setFullName(next.full_name || "");
+        setPhoneNumber(next.phone_number || "");
+        localStorage.setItem(PHONE_KEY, next.phone_number || "");
         onProfileUpdate?.(next);
       })
       .catch(() => {});
@@ -117,13 +124,18 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
       const data = await apiFetch("/auth/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ full_name: nextName }),
+        body: JSON.stringify({ full_name: nextName, phone_number: nextPhone || null }),
       });
-      const nextProfile = { full_name: data.full_name, email: data.email, role: data.role };
+      const nextProfile = {
+        full_name: data.full_name,
+        email: data.email,
+        role: data.role,
+        phone_number: data.phone_number || nextPhone || "",
+      };
       setProfile(nextProfile);
       setProfileState(nextProfile);
-      setPhoneNumber(nextPhone);
-      localStorage.setItem(PHONE_KEY, nextPhone);
+      setPhoneNumber(nextProfile.phone_number || "");
+      localStorage.setItem(PHONE_KEY, nextProfile.phone_number || "");
       onProfileUpdate?.(nextProfile);
       showToast("Account details saved.", "success");
     } catch (err) {
@@ -161,7 +173,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
   };
 
   const deleteAccount = async () => {
-    const confirmed = window.confirm("Delete this account? You will be logged out immediately.");
+    const confirmed = window.confirm("Do you want to delete account? If yes, continue.");
     if (!confirmed) return;
     setDeleting(true);
     try {
@@ -258,7 +270,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           {creditOpen && (
             <div className="card profile-ux-credit">
               <div className="muted">Developed by</div>
-              <div className="profile-ux-credit-dev">Mustapha Mele Mustapha</div>
+              <div className="profile-ux-credit-dev">M.Mele</div>
               <div className="profile-ux-brand">
                 <img src="/brand/mmtechglobe-logo.svg" alt="MMTECHGLOBE" />
                 <span>MMTECHGLOBE</span>

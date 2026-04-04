@@ -939,7 +939,7 @@ export default function Admin() {
           <div className="card">
             <div className="admin-toolbar">
               <input
-                placeholder="Search users by email or name..."
+                placeholder="Search users by email, name, or phone..."
                 value={userQuery}
                 onChange={(e) => setUserQuery(e.target.value)}
               />
@@ -978,6 +978,7 @@ export default function Admin() {
                   <tr>
                     <th>Joined</th>
                     <th>Email</th>
+                    <th>Phone</th>
                     <th>Name</th>
                     <th>Role</th>
                     <th>Status</th>
@@ -990,6 +991,7 @@ export default function Admin() {
                     <tr key={u.id}>
                       <td className="mono">{formatDate(u.created_at)}</td>
                       <td>{u.email}</td>
+                      <td>{u.phone_number || "—"}</td>
                       <td>{u.full_name}</td>
                       <td>
                         <span className="pill">{String(u.role || "user")}</span>
@@ -1021,7 +1023,7 @@ export default function Admin() {
                   ))}
                   {!userBusy && userState.items.length === 0 && (
                     <tr>
-                      <td colSpan={7}>
+                      <td colSpan={8}>
                         <div className="empty">No users found.</div>
                       </td>
                     </tr>
@@ -1035,6 +1037,7 @@ export default function Admin() {
                     <div>
                       <div className="list-title">{u.full_name}</div>
                       <div className="muted">{u.email}</div>
+                      <div className="muted">{u.phone_number || "No phone number"}</div>
                       <div className="muted">{String(u.role || "user")}</div>
                     </div>
                     <div className="list-meta">
@@ -1355,10 +1358,11 @@ export default function Admin() {
         <div className="modal-backdrop" role="dialog" aria-modal="true">
           <div className="modal admin-user-modal">
             <div className="modal-head">
-              <div>
-                <div className="label">User Details</div>
+                <div>
+                  <div className="label">User Details</div>
                 <h3>{userDetailData?.user?.full_name || selectedUser.full_name || selectedUser.email}</h3>
                 <div className="muted">{userDetailData?.user?.email || selectedUser.email}</div>
+                <div className="muted">{userDetailData?.user?.phone_number || selectedUser.phone_number || "No phone number"}</div>
               </div>
               <button
                 className="ghost"
