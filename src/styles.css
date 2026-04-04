@@ -35,6 +35,8 @@
   --space-10: 80px;
   --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Sora", "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-auth-body: "Manrope", "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-auth-display: "Outfit", "Sora", "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 260ms;
@@ -3117,6 +3119,7 @@ textarea {
   display: grid;
   place-items: center;
   padding: 24px;
+  font-family: var(--font-auth-body);
   background: radial-gradient(circle at 20% 20%, rgba(15, 118, 110, 0.14), transparent 45%),
               radial-gradient(circle at 80% 10%, rgba(245, 158, 11, 0.16), transparent 45%);
 }
@@ -3173,20 +3176,25 @@ textarea {
 }
 
 .auth-brand-title {
-  font-family: var(--font-display);
+  font-family: var(--font-auth-display);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  font-size: 24px;
 }
 
 .auth-brand-sub {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.003em;
   color: var(--muted);
 }
 
 .auth-pitch {
-  font-family: var(--font-display);
-  font-size: 26px;
-  letter-spacing: -0.02em;
+  font-family: var(--font-auth-display);
+  font-size: clamp(28px, 3.2vw, 34px);
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+  font-weight: 800;
   margin: 0 0 10px;
 }
 
@@ -3238,6 +3246,20 @@ textarea {
   box-shadow: var(--shadow-2);
 }
 
+.auth-card h1 {
+  margin: 0 0 6px;
+  font-family: var(--font-auth-display);
+  font-size: clamp(30px, 3vw, 36px);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+
+.auth-card p.muted {
+  font-size: 14px;
+  letter-spacing: 0.002em;
+}
+
 .field {
   display: grid;
   gap: 8px;
@@ -3245,7 +3267,10 @@ textarea {
 }
 
 .field label {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
@@ -3262,6 +3287,8 @@ textarea {
   border-radius: 10px;
   padding: 8px 12px;
   font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--muted);
   cursor: pointer;
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
@@ -3415,6 +3442,25 @@ textarea {
 .auth-wide {
   display: grid;
   gap: 6px;
+}
+
+.auth input,
+.auth select,
+.auth textarea {
+  font-family: var(--font-auth-body);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.auth .primary,
+.auth .ghost,
+.auth .link {
+  font-family: var(--font-auth-body);
+}
+
+.auth .primary {
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 
 .notice {
