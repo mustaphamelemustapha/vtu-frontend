@@ -279,7 +279,7 @@ export default function Dashboard() {
   }, [profile?.full_name]);
 
   return (
-    <div className="page">
+    <div className="page dashboard-page">
       <section className="dashboard-shell-top">
         <div className="hero-card dashboard-welcome-card">
           <div className="dashboard-welcome-head">
