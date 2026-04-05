@@ -104,7 +104,6 @@ export default function Login({ onAuth }) {
     }
     if (name === "password") {
       if (!value) message = "Password is required";
-      if (value && value.length > 72) message = "Password max 72 characters";
     }
     if (name === "confirm_password") {
       if (mode === "register") {
@@ -198,11 +197,6 @@ export default function Login({ onAuth }) {
     if (resetForm.password !== resetForm.confirm) {
       setError("Passwords do not match");
       showToast("Passwords do not match", "error");
-      return;
-    }
-    if (resetForm.password.length > 72) {
-      setError("Password max 72 characters");
-      showToast("Password max 72 characters", "error");
       return;
     }
     setLoading(true);
@@ -326,39 +320,19 @@ export default function Login({ onAuth }) {
                 <div className="auth-brand-sub">Fast VTU. Clean receipts. Wallet-first.</div>
               </div>
             </div>
-            <h2 className="auth-pitch">A premium VTU dashboard built for speed.</h2>
-            <p className="muted">
-              Fund your wallet, deliver data instantly, and track every transaction with receipts and status.
-            </p>
-            <div className="auth-bullets">
-              <div className="auth-bullet">
-                <span className="dot" aria-hidden="true" />
-                <div>
-                  <div className="auth-bullet-title">Wallet funding</div>
-                  <div className="muted">Paystack checkout with verification flow.</div>
-                </div>
-              </div>
-              <div className="auth-bullet">
-                <span className="dot" aria-hidden="true" />
-                <div>
-                  <div className="auth-bullet-title">Buy data</div>
-                  <div className="muted">MTN and Glo plans, simple confirmations.</div>
-                </div>
-              </div>
-              <div className="auth-bullet">
-                <span className="dot" aria-hidden="true" />
-                <div>
-                  <div className="auth-bullet-title">Receipts</div>
-                  <div className="muted">Copy references, track history, stay audit-ready.</div>
-                </div>
-              </div>
+            <h2 className="auth-pitch">Welcome to AxisVTU</h2>
+            <p className="muted">Sign in to buy data, airtime, pay bills, and manage your wallet in one place.</p>
+            <div className="auth-tags">
+              <span className="auth-tag">Fast login</span>
+              <span className="auth-tag">Secure wallet</span>
+              <span className="auth-tag">Instant purchases</span>
             </div>
           </div>
         </div>
         <div className="auth-right">
           <div className="auth-card">
             <h1>{mode === "login" ? "Welcome back" : "Create account"}</h1>
-            <p className="muted">Secure VTU platform for data and wallet payments.</p>
+            <p className="muted">{mode === "login" ? "Enter your email and password to continue." : "Create your account to start using AxisVTU."}</p>
         {resetMode ? (
           <form onSubmit={submitReset} className="auth-wide">
             <div className="field">
@@ -378,7 +352,6 @@ export default function Login({ onAuth }) {
                   placeholder="New password"
                   value={resetForm.password}
                   onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
-                  maxLength={72}
                   required
                 />
                 <button
@@ -405,7 +378,6 @@ export default function Login({ onAuth }) {
                   placeholder="Confirm password"
                   value={resetForm.confirm}
                   onChange={(e) => setResetForm({ ...resetForm, confirm: e.target.value })}
-                  maxLength={72}
                   required
                 />
                 <button
@@ -496,7 +468,6 @@ export default function Login({ onAuth }) {
                   validateField("password", e.target.value);
                 }}
                 onBlur={(e) => validateField("password", e.target.value)}
-                maxLength={72}
                 required
               />
               <button
@@ -529,7 +500,6 @@ export default function Login({ onAuth }) {
                     validateField("confirm_password", e.target.value);
                   }}
                   onBlur={(e) => validateField("confirm_password", e.target.value)}
-                  maxLength={72}
                   required
                 />
                 <button
@@ -544,7 +514,6 @@ export default function Login({ onAuth }) {
               {fieldErrors.confirm_password && <div className="error inline">{fieldErrors.confirm_password}</div>}
             </div>
           )}
-          <div className="hint">Password max 72 characters.</div>
           {mode === "login" && (
             <div className="row-between">
               <label className="check">

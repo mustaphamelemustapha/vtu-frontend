@@ -4353,3 +4353,41 @@ a.pill:active::after {
     scroll-behavior: auto !important;
   }
 }
+
+/* Login page polish overrides */
+.auth-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.auth-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 118, 110, 0.22);
+  background: rgba(15, 118, 110, 0.09);
+  color: #0f4f4a;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.auth-right {
+  padding: 30px;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(15, 118, 110, 0.12), transparent 58%),
+    radial-gradient(circle at 88% 0%, rgba(245, 158, 11, 0.12), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(248, 250, 255, 0.45)),
+    var(--panel);
+}
+
+.auth-card {
+  width: min(440px, 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 255, 0.96));
+  padding: 34px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.12);
+}
