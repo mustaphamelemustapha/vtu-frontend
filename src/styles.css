@@ -4517,97 +4517,95 @@ a.pill:active::after {
   }
 }
 
-/* Dashboard compact tune (mobile) */
+/* Dashboard balanced mobile tune */
 .dashboard-page .section {
-  margin-top: 14px;
+  margin-top: 16px;
 }
-
 @media (max-width: 900px) {
   .dashboard-page .card {
-    padding: 14px;
-    border-radius: 14px;
+    padding: 16px;
+    border-radius: 15px;
   }
 
   .dashboard-page .dashboard-welcome-card {
-    padding: 14px;
-    gap: 8px;
+    padding: 16px;
+    gap: 10px;
   }
 
   .dashboard-page .dashboard-welcome-title {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .dashboard-page .hero-value {
-    font-size: 28px;
+    font-size: 30px;
   }
 
   .dashboard-page .dashboard-welcome-actions {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .dashboard-page .dashboard-welcome-actions .hero-cta {
-    min-height: 40px;
-    padding: 8px 8px;
-    font-size: 12px;
-    border-radius: 10px;
-    white-space: nowrap;
+    min-height: 44px;
+    padding: 10px 10px;
+    font-size: 13px;
+    border-radius: 12px;
   }
 
   .dashboard-page .dashboard-welcome-actions .hero-cta:nth-child(3) {
-    grid-column: auto;
+    grid-column: 1 / -1;
   }
 
   .dashboard-page .dashboard-funded-account {
-    padding: 8px 10px;
+    padding: 10px 12px;
   }
 
   .dashboard-page .dashboard-funded-account .account-number {
-    font-size: 14px;
+    font-size: 15px;
     letter-spacing: 0.02em;
   }
 
   .dashboard-page .dashboard-services-grid,
   .dashboard-page .dashboard-quick-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 10px;
   }
 
   .dashboard-page .dashboard-service-card {
-    padding: 10px;
-    min-height: 92px;
-    border-radius: 12px;
+    padding: 12px;
+    min-height: 102px;
+    border-radius: 13px;
   }
 
   .dashboard-page .dashboard-service-card .label {
-    font-size: 9px;
+    font-size: 10px;
   }
 
   .dashboard-page .dashboard-service-card .value {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .dashboard-page .dashboard-service-card .muted {
     font-size: 11px;
+    line-height: 1.35;
   }
 
   .dashboard-page .stats-grid {
-    gap: 8px;
+    gap: 10px;
   }
 
   .dashboard-page .tx-amount {
-    font-size: 16px;
+    font-size: 17px;
   }
 }
-
-@media (max-width: 380px) {
+@media (max-width: 520px) {
   .dashboard-page .dashboard-welcome-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .dashboard-page .dashboard-welcome-actions .hero-cta:nth-child(3) {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
   .dashboard-page .dashboard-services-grid,
