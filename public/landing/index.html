@@ -3,340 +3,269 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AxisVTU</title>
-  <meta name="theme-color" content="#0f766e" />
+  <title>AxisVTU | Reliable VTU Dashboard</title>
+  <meta name="description" content="AxisVTU helps you run a clean VTU business: fund wallet, buy data and airtime, and track transactions with confidence." />
+  <meta name="theme-color" content="#2563eb" />
   <link rel="icon" type="image/png" href="/pwa/pwa-192.png" />
   <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/landing/style.css" />
 </head>
 <body>
-  <div class="chrome">
-    <div class="wrap">
-      <header class="nav" aria-label="Primary navigation">
-        <a class="brand" href="/landing/">
-          <div class="brand-mark">
-            <img src="/pwa/pwa-192.png" alt="AxisVTU" />
-          </div>
-          <div>
-            <div class="brand-title">AxisVTU</div>
-            <div class="brand-sub">Wallet-first VTU platform</div>
-          </div>
-        </a>
-        <nav class="nav-links">
-          <a href="#features">Features</a>
-          <a href="#flow">Flow</a>
-          <a href="#trust">Trust</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faq">FAQ</a>
-        </nav>
-        <div class="nav-cta">
-          <a class="btn ghost" href="/app/">Open App</a>
-          <a class="btn" href="/app/">Sign In</a>
+  <header class="topbar">
+    <div class="container nav-wrap">
+      <a class="brand" href="/landing/" aria-label="AxisVTU homepage">
+        <img src="/brand/axisvtu-icon.svg" alt="AxisVTU" class="brand-logo" />
+        <div>
+          <div class="brand-name">AxisVTU</div>
+          <div class="brand-tag">Smart VTU dashboard</div>
         </div>
-      </header>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#services">Services</a>
+        <a href="#how">How It Works</a>
+        <a href="#why">Why AxisVTU</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="btn btn-ghost" href="/app/">Open App</a>
+        <a class="btn btn-primary" href="/app/">Sign In</a>
+      </div>
     </div>
-  </div>
+  </header>
 
   <main>
-    <section class="hero reveal">
-      <div class="wrap">
-        <div class="hero-grid">
-          <div>
-            <div class="kicker"><span class="pill" aria-hidden="true"></span>Built for speed and clear receipts</div>
-            <h1>Sell data and fund wallets with a dashboard that feels trustworthy.</h1>
-            <p>
-              AxisVTU keeps the flow simple: fund wallet, buy data, view receipt. Clean UI, predictable status,
-              and a history you can reconcile.
-            </p>
-            <div class="hero-actions">
-              <a class="btn" href="/app/">Open Dashboard</a>
-              <a class="btn ghost" href="#features">See Features</a>
-            </div>
-            <div class="hero-proof">
-              <div class="proof">
-                <div class="metric">Wallet-first</div>
-                <div class="muted">Fast top-ups and balance view</div>
-              </div>
-              <div class="proof">
-                <div class="metric">Receipts</div>
-                <div class="muted">Reference copy and status</div>
-              </div>
-              <div class="proof">
-                <div class="metric">Admin</div>
-                <div class="muted">Pricing rules by role/network</div>
-              </div>
-            </div>
+    <section class="section hero reveal">
+      <div class="container hero-grid">
+        <article class="hero-banner">
+          <p class="eyebrow">WELCOME BACK</p>
+          <h1>A mature VTU platform your users can trust from first click.</h1>
+          <p class="lead">
+            AxisVTU gives a direct flow: fund wallet, buy services, and track every transaction without confusion.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-success" href="/app/wallet">Fund Wallet</a>
+            <a class="btn btn-primary" href="/app/profile">Update Your KYC</a>
+          </div>
+          <div class="hero-meta">
+            <span>Wallet-first operations</span>
+            <span>Fast transaction status</span>
+            <span>Built for scale</span>
+          </div>
+        </article>
+
+        <aside class="featured-card" aria-label="AxisVTU platform highlight">
+          <div class="feature-label">FEATURED</div>
+          <h2>AXISVTU</h2>
+          <p>Reliable VTU platform with clear wallet and receipt flow.</p>
+          <div class="feature-badge">Best for daily VTU operations</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section reveal" id="wallet-preview">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Automated Bank Transfer</h2>
+            <a class="mini-link" href="/app/wallet">Manage Wallet</a>
+          </div>
+          <p class="panel-sub">Transfer to your generated account and your wallet is credited automatically.</p>
+
+          <div class="account-tabs">
+            <span class="active">PalmPay</span>
+            <span>9PSB</span>
+            <span>Upgrade Account</span>
           </div>
 
-          <aside class="panel" aria-label="Snapshot panel">
-            <div class="panel-head">
-              <h3>Live Snapshot</h3>
-              <span class="status">Active</span>
+          <div class="account-grid">
+            <div class="account-box">
+              <div class="k">Account Number</div>
+              <div class="v">6666227606</div>
             </div>
-            <div class="snap-grid">
-              <div class="mini">
-                <div class="label">Wallet Balance</div>
-                <div class="value">₦ 0.00</div>
-              </div>
-              <div class="mini">
-                <div class="label">Transactions</div>
-                <div class="value">0</div>
-              </div>
-              <div class="mini">
-                <div class="label">Success Rate</div>
-                <div class="value">99%</div>
-              </div>
-              <div class="mini">
-                <div class="label">Networks</div>
-                <div class="value">MTN, Glo</div>
-              </div>
+            <div class="account-box">
+              <div class="k">Bank Name</div>
+              <div class="v">PalmPay</div>
             </div>
-            <div class="list" aria-label="Sample plans">
-              <div class="row">
-                <span>MTN 1GB / 30d</span>
-                <span class="chip">₦ 429</span>
-              </div>
-              <div class="row">
-                <span>Glo 2GB / 30d</span>
-                <span class="chip">₦ 799</span>
-              </div>
+            <div class="account-box">
+              <div class="k">Account Name</div>
+              <div class="v">AXISVTU USER</div>
             </div>
-            <a class="btn" href="/app/">Get Started</a>
-          </aside>
+            <div class="account-box">
+              <div class="k">Charges</div>
+              <div class="v">1% capped at ₦50</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <article class="stat-card">
+            <p>Wallet Balance</p>
+            <h3>₦98,055.00</h3>
+          </article>
+          <article class="stat-card">
+            <p>Earning Balance</p>
+            <h3>₦0.00</h3>
+          </article>
+          <article class="stat-card">
+            <p>Data Purchased Today</p>
+            <h3>0GB</h3>
+          </article>
         </div>
       </div>
     </section>
 
-    <section id="features" class="section reveal">
-      <div class="wrap">
+    <section id="services" class="section reveal">
+      <div class="container">
         <div class="section-head">
-          <h2>Everything you need to run VTU, with a premium feel</h2>
-          <p>Only the essentials. Built for speed, clarity, and fewer support messages.</p>
+          <h2>Services</h2>
+          <p>Core products your users need every day.</p>
         </div>
-        <div class="grid">
-          <div class="card">
-            <h3>Wallet Funding</h3>
-            <p>Paystack checkout with a clear verification flow.</p>
-          </div>
-          <div class="card">
+
+        <div class="services-grid">
+          <article class="service-card">
+            <span class="service-icon">◉</span>
             <h3>Buy Data</h3>
-            <p>Choose a plan, confirm, and deliver with predictable status.</p>
-          </div>
-          <div class="card">
-            <h3>Receipts</h3>
-            <p>Transaction modal with copyable references and details.</p>
-          </div>
-          <div class="card">
-            <h3>Reseller Pricing</h3>
-            <p>Admin pricing rules by role and network.</p>
-          </div>
-          <div class="card">
-            <h3>Secure Sessions</h3>
-            <p>Refresh token session recovery and clean expiry handling.</p>
-          </div>
-          <div class="card">
-            <h3>Mobile-First</h3>
-            <p>Bottom navigation for fast daily workflows.</p>
-          </div>
+            <p>Fast purchase flow with structured plan selection.</p>
+          </article>
+          <article class="service-card">
+            <span class="service-icon">◉</span>
+            <h3>Buy Airtime</h3>
+            <p>Network-aware airtime top up with clear results.</p>
+          </article>
+          <article class="service-card">
+            <span class="service-icon">◉</span>
+            <h3>Fund Wallet</h3>
+            <p>Dedicated account generation and automated credit.</p>
+          </article>
+          <article class="service-card">
+            <span class="service-icon">◉</span>
+            <h3>Transactions</h3>
+            <p>Readable history with reference and status clarity.</p>
+          </article>
         </div>
       </div>
     </section>
 
-    <section id="flow" class="section reveal">
-      <div class="wrap">
+    <section id="how" class="section muted-section reveal">
+      <div class="container">
         <div class="section-head">
-          <h2>A flow you can teach in 10 seconds</h2>
-          <p>Create account, fund wallet, buy data, view receipt. Repeat.</p>
+          <h2>How It Works</h2>
+          <p>Simple for users, stable for operations.</p>
         </div>
-        <div class="grid">
-          <div class="card">
-            <h3>1. Sign in</h3>
-            <p>Access dashboard instantly and keep sessions stable.</p>
-          </div>
-          <div class="card">
-            <h3>2. Fund wallet</h3>
-            <p>Use Paystack, verify payment, see balance update.</p>
-          </div>
-          <div class="card">
-            <h3>3. Buy data</h3>
-            <p>Select a plan, confirm purchase, get a receipt.</p>
-          </div>
+        <div class="steps-grid">
+          <article class="step-card"><span>01</span><h3>Create account</h3><p>Register and set up profile quickly.</p></article>
+          <article class="step-card"><span>02</span><h3>Fund wallet</h3><p>Transfer to generated account number.</p></article>
+          <article class="step-card"><span>03</span><h3>Buy service</h3><p>Pick network and complete purchase.</p></article>
+          <article class="step-card"><span>04</span><h3>Track records</h3><p>Review all operations from history.</p></article>
         </div>
       </div>
     </section>
 
-    <section id="trust" class="section reveal">
-      <div class="wrap">
+    <section id="why" class="section reveal">
+      <div class="container">
         <div class="section-head">
-          <h2>Designed for trust</h2>
-          <p>Clear UI and clean records matter when money is involved.</p>
+          <h2>Why AxisVTU</h2>
+          <p>Built with a practical dashboard-first approach.</p>
         </div>
-        <div class="grid">
-          <div class="card">
-            <h3>Transparent records</h3>
-            <p>Status, reference, and history you can reconcile.</p>
-          </div>
-          <div class="card">
-            <h3>Less friction</h3>
-            <p>Fewer clicks and fewer confusing screens.</p>
-          </div>
-          <div class="card">
-            <h3>Ready to grow</h3>
-            <p>Extend into airtime and bills when you want.</p>
-          </div>
+        <div class="why-grid">
+          <article class="why-card"><h3>Clear interface</h3><p>Straightforward screens users understand fast.</p></article>
+          <article class="why-card"><h3>Fast workflow</h3><p>Reduced clicks and direct access to core tasks.</p></article>
+          <article class="why-card"><h3>Reliable records</h3><p>Status, amount, and reference always visible.</p></article>
+          <article class="why-card"><h3>Growth ready</h3><p>Designed to expand with your business model.</p></article>
         </div>
       </div>
     </section>
 
     <section id="pricing" class="section reveal">
-      <div class="wrap">
+      <div class="container">
         <div class="section-head">
-          <h2>Pricing that stays simple</h2>
-          <p>Start free, then choose the level of controls you need as you grow.</p>
+          <h2>Pricing</h2>
+          <p>Start lean and scale with transaction volume.</p>
         </div>
-        <div class="grid pricing-grid" aria-label="Pricing plans">
-          <div class="card price-card">
-            <div class="price-top">
-              <h3>Starter</h3>
-              <span class="tag">For personal use</span>
-            </div>
-            <div class="price">₦ 0<span class="per">/month</span></div>
-            <p class="muted">Use the dashboard and run wallet-first VTU workflows.</p>
-            <ul class="listy">
-              <li>Wallet funding + verification</li>
-              <li>Buy data + receipts</li>
-              <li>Transaction history</li>
-            </ul>
-            <a class="btn ghost" href="/app/">Open App</a>
-          </div>
-          <div class="card price-card featured">
-            <div class="price-top">
-              <h3>Reseller</h3>
-              <span class="tag hot">Most popular</span>
-            </div>
-            <div class="price">Custom<span class="per">/month</span></div>
-            <p class="muted">Best for agents and teams that need better margins and tracking.</p>
-            <ul class="listy">
-              <li>Role-based pricing rules</li>
-              <li>Admin analytics dashboard</li>
-              <li>Priority support channel</li>
-            </ul>
-            <a class="btn" href="/app/">Sign In</a>
-          </div>
-          <div class="card price-card">
-            <div class="price-top">
-              <h3>Business</h3>
-              <span class="tag">For scale</span>
-            </div>
-            <div class="price">Custom<span class="per">/month</span></div>
-            <p class="muted">For operators who need stricter controls and future integrations.</p>
-            <ul class="listy">
-              <li>Custom limits and controls</li>
-              <li>Operational reporting</li>
-              <li>Integration roadmap</li>
-            </ul>
-            <a class="btn ghost" href="#faq">Read FAQ</a>
-          </div>
-        </div>
-        <div class="pricing-note muted">
-          Notes: provider charges and transaction fees depend on integrations. This section is editable to your final business model.
-        </div>
-        <div class="footer-links" style="margin-top:10px;">
-          <a href="/landing/terms.html">Terms of Service</a>
-          <a href="/landing/privacy.html">Privacy Policy</a>
-          <a href="/landing/refund-policy.html">Refund Policy</a>
-          <a href="/landing/kyc-aml.html">KYC/AML Policy</a>
+        <div class="pricing-grid">
+          <article class="price-card">
+            <p class="price-tier">Starter</p>
+            <h3>₦0<span>/month</span></h3>
+            <ul><li>Wallet dashboard</li><li>Data and airtime flow</li><li>Transaction history</li></ul>
+            <a class="btn btn-ghost" href="/app/">Open App</a>
+          </article>
+          <article class="price-card featured">
+            <p class="price-tier">Growth</p>
+            <h3>Custom<span>/month</span></h3>
+            <ul><li>Admin pricing controls</li><li>Operational insights</li><li>Priority support</li></ul>
+            <a class="btn btn-primary" href="/app/">Get Started</a>
+          </article>
+          <article class="price-card">
+            <p class="price-tier">Business</p>
+            <h3>Custom<span>/month</span></h3>
+            <ul><li>Custom rollout</li><li>Advanced controls</li><li>Launch support</li></ul>
+            <a class="btn btn-ghost" href="#faq">Talk to Team</a>
+          </article>
         </div>
       </div>
     </section>
 
     <section id="faq" class="section reveal">
-      <div class="wrap">
+      <div class="container">
         <div class="section-head">
-          <h2>FAQ</h2>
-          <p>Quick answers to the most common questions.</p>
+          <h2>Frequently Asked Questions</h2>
+          <p>Quick answers for operators and users.</p>
         </div>
-        <div class="faq" aria-label="Frequently asked questions">
-          <details class="faq-item">
-            <summary>How do I fund my wallet?</summary>
-            <div class="faq-body">Go to Wallet, enter an amount, and use Paystack. After payment, verify and your balance updates.</div>
-          </details>
-          <details class="faq-item">
-            <summary>Do you support multiple networks?</summary>
-            <div class="faq-body">Yes. AxisVTU supports MTN and Glo in the current flow, and can be expanded to more networks.</div>
-          </details>
-          <details class="faq-item">
-            <summary>Where can I find receipts?</summary>
-            <div class="faq-body">Open Transactions and click a transaction to view the receipt modal. You can copy references for reconciliation.</div>
-          </details>
-          <details class="faq-item">
-            <summary>What happens if my session expires?</summary>
-            <div class="faq-body">The app handles token refresh and will prompt you to log in again if your session can’t be recovered.</div>
-          </details>
-          <details class="faq-item">
-            <summary>Can I set reseller margins?</summary>
-            <div class="faq-body">Yes. Admin users can manage pricing rules by role and network.</div>
-          </details>
-          <details class="faq-item">
-            <summary>Is the pricing final?</summary>
-            <div class="faq-body">This page is a starting template. Update pricing and terms based on your provider costs and business plan.</div>
-          </details>
+        <div class="faq-list">
+          <details><summary>How does wallet funding work?</summary><p>Generate account details in wallet and transfer. Credit reflects after webhook confirmation.</p></details>
+          <details><summary>Can I track every transaction?</summary><p>Yes. History contains amount, receiver, type, status, and reference.</p></details>
+          <details><summary>Can services be expanded later?</summary><p>Yes. Cable, electricity, exam pin, and more providers can be integrated progressively.</p></details>
+          <details><summary>Is mobile app available?</summary><p>Yes. Flutter app is active and aligned with the core web flows.</p></details>
         </div>
       </div>
     </section>
 
-    <section class="cta reveal" aria-label="Call to action">
-      <div class="wrap">
-        <div class="cta-inner">
-          <div>
-            <h2>Launch in minutes</h2>
-            <p class="muted">Open the app and start selling today.</p>
-          </div>
-          <div class="nav-cta">
-            <a class="btn" href="/app/">Create Account</a>
-            <a class="btn ghost" href="/app/">Sign In</a>
-          </div>
+    <section class="section cta reveal">
+      <div class="container cta-inner">
+        <div>
+          <h2>Launch your VTU brand with confidence</h2>
+          <p>Open AxisVTU and start operating from a cleaner dashboard.</p>
+        </div>
+        <div class="nav-actions">
+          <a class="btn btn-primary" href="/app/">Create Account</a>
+          <a class="btn btn-ghost" href="/app/">Sign In</a>
         </div>
       </div>
     </section>
-
-    <footer class="footer">
-      <div class="wrap" style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;">
-        <div>© 2026 AxisVTU</div>
-        <div class="footer-links">
-          <a href="#features">Features</a>
-          <a href="#flow">Flow</a>
-          <a href="#trust">Trust</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faq">FAQ</a>
-          <a href="/landing/terms.html">Terms</a>
-          <a href="/landing/privacy.html">Privacy</a>
-          <a href="/landing/refund-policy.html">Refund Policy</a>
-          <a href="/landing/kyc-aml.html">KYC/AML</a>
-        </div>
-      </div>
-    </footer>
   </main>
 
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>
+        <p class="footer-brand">AxisVTU</p>
+        <p>Designed by MMTECHGLOBE · M.Mele</p>
+      </div>
+      <div class="footer-links">
+        <a href="/landing/terms.html">Terms</a>
+        <a href="/landing/privacy.html">Privacy</a>
+        <a href="/landing/refund-policy.html">Refund Policy</a>
+        <a href="/landing/kyc-aml.html">KYC/AML</a>
+      </div>
+    </div>
+  </footer>
+
   <script>
-    window.addEventListener("load", () => {
-      const reveals = document.querySelectorAll(".reveal");
+    window.addEventListener('load', () => {
+      const blocks = document.querySelectorAll('.reveal');
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("in");
-            observer.unobserve(entry.target);
-          }
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('in');
+          observer.unobserve(entry.target);
         });
-      }, { threshold: 0.15 });
-
-      reveals.forEach((el) => observer.observe(el));
+      }, { threshold: 0.12 });
+      blocks.forEach((b) => observer.observe(b));
     });
   </script>
 </body>
