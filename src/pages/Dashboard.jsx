@@ -422,35 +422,35 @@ export default function Dashboard() {
 
       <section className="section">
         <h3>Services</h3>
-        <div className="grid-3">
-          <Link className="card action-card" to={quickBuyLink}>
+        <div className="grid-3 dashboard-services-grid">
+          <Link className="card action-card dashboard-service-card" to={quickBuyLink}>
             <div className="label">Data</div>
             <div className="value">{lastRecipient?.phone ? maskPhone(lastRecipient.phone) : "All Networks"}</div>
             <div className="muted">
               {lastRecipient?.phone ? "Use your last recipient instantly" : "Fast, reliable delivery"}
             </div>
           </Link>
-          <Link className="card action-card" to="/airtime">
+          <Link className="card action-card dashboard-service-card" to="/airtime">
             <div className="label">Airtime</div>
             <div className="value">Topup</div>
             <div className="muted">All major networks</div>
           </Link>
-          <Link className="card action-card" to="/electricity">
+          <Link className="card action-card dashboard-service-card" to="/electricity">
             <div className="label">Electricity</div>
             <div className="value">Token</div>
             <div className="muted">Prepaid and postpaid</div>
           </Link>
-          <Link className="card action-card" to="/cable">
+          <Link className="card action-card dashboard-service-card" to="/cable">
             <div className="label">Cable TV</div>
             <div className="value">Subscriptions</div>
             <div className="muted">DStv, GOtv, Startimes</div>
           </Link>
-          <Link className="card action-card" to="/exam">
+          <Link className="card action-card dashboard-service-card" to="/exam">
             <div className="label">Exam PIN</div>
             <div className="value">WAEC / NECO</div>
             <div className="muted">Instant pin delivery</div>
           </Link>
-          <Link className="card action-card" to="/support">
+          <Link className="card action-card dashboard-service-card" to="/support">
             <div className="label">Help & Support</div>
             <div className="value">Contact Team</div>
             <div className="muted">FAQ, calls, WhatsApp and report tracking</div>
@@ -470,9 +470,9 @@ export default function Dashboard() {
             </div>
           </div>
         ) : (
-          <div className="grid-3">
+          <div className="grid-3 dashboard-quick-grid">
             {quickBeneficiaries.map((item) => (
-              <Link className="card action-card beneficiary-quick-card" to={item.to} key={item.id}>
+              <Link className="card action-card dashboard-service-card beneficiary-quick-card" to={item.to} key={item.id}>
                 <div className="label">{item.serviceTitle}</div>
                 <div className="value">{item.label}</div>
                 <div className="muted">{item.subtitle}</div>
