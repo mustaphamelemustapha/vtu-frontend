@@ -24,6 +24,27 @@ function getJoinedLabel() {
   return label;
 }
 
+function deriveProfileDisplayName(profile) {
+  const fullName = String(profile?.full_name || "").trim();
+  if (fullName) return fullName;
+  const email = String(profile?.email || "").trim();
+  if (email.includes("@")) {
+    const prefix = email.split("@")[0].replace(/[._-]+/g, " ").trim();
+    if (prefix) return prefix;
+  }
+  return "User";
+}
+
+function deriveInitials(value) {
+  const text = String(value || "").trim();
+  if (!text) return "U";
+  const parts = text.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+}
+
 const AccountIcon = () => (
   <svg viewBox="0 0 24 24" fill="none">
     <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" stroke="currentColor" strokeWidth="1.7" />
@@ -97,15 +118,8 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
       .catch(() => {});
   }, []);
 
-  const initials = useMemo(() => {
-    return (profile.full_name || "User")
-      .split(" ")
-      .filter(Boolean)
-      .map((part) => part[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-  }, [profile.full_name]);
+  const displayName = useMemo(() => deriveProfileDisplayName(profile), [profile.full_name, profile.email]);
+  const initials = useMemo(() => deriveInitials(displayName), [displayName]);
   const accountTypeText = roleLabel(profile.role);
 
   const saveAccountDetails = async () => {
@@ -211,7 +225,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
         <div className="card profile-ux-user-card">
           <div className="profile-ux-user-avatar">{initials}</div>
           <div className="profile-ux-user-meta">
-            <div className="profile-ux-user-name">{profile.full_name || "User"}</div>
+            <div className="profile-ux-user-name">{displayName}</div>
             <div className="muted">Joined {joinedLabel}</div>
             <div className="profile-ux-user-chips">
               <span className="pill">{accountTypeText}</span>
