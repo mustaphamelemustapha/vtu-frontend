@@ -529,7 +529,7 @@ export default function Electricity() {
             <div className="receipt-capture-layer" aria-hidden="true">
               <div className="receipt-sheet" ref={receiptCaptureRef}>
               <div className="receipt-sheet-header">
-                <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" />
+                <img src="/brand/axisvtu-logo.png" alt="AxisVTU" />
                 <div>
                   <div className="label">AxisVTU Purchase Receipt</div>
                   <h4>Electricity</h4>
