@@ -2696,8 +2696,8 @@ a:focus-visible {
 
 .dashboard-shell-top {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
-  gap: 14px;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
 
 .dashboard-welcome-card {
@@ -4418,10 +4418,10 @@ a.pill:active::after {
 }
 
 .dashboard-welcome-actions .hero-cta {
-  min-height: 42px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  font-size: 13px;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 13px;
+  font-size: 14px;
   min-width: 0;
 }
 
@@ -4504,5 +4504,15 @@ a.pill:active::after {
   .dashboard-services-grid,
   .dashboard-quick-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .dashboard-welcome-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-welcome-actions .hero-cta:nth-child(3) {
+    grid-column: auto;
   }
 }

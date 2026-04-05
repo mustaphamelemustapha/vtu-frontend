@@ -315,15 +315,6 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-
-        <div className="card dashboard-feature-card">
-          <div className="label">FEATURED</div>
-          <div className="dashboard-feature-brand">
-            <img src="/pwa/pwa-192.png" alt="AxisVTU" />
-          </div>
-          <div className="value">AXISVTU</div>
-          <div className="muted">Fast purchases. Clean receipts. Secure wallet.</div>
-        </div>
       </section>
 
       <section className="section">
