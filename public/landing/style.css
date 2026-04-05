@@ -13,8 +13,8 @@
   --radius-md: 12px;
   --shadow-soft: 0 8px 24px rgba(17, 24, 39, 0.06);
   --shadow-strong: 0 12px 28px rgba(59, 130, 246, 0.18);
-  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Outfit", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Poppins", "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -25,6 +25,8 @@ body {
   color: var(--text);
   font-family: var(--font-body);
   line-height: 1.55;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, p { margin: 0; }
@@ -232,7 +234,6 @@ a { color: inherit; text-decoration: none; }
 .service-card,
 .step-card,
 .why-card,
-.price-card,
 .faq-list details,
 .stat-card {
   border-radius: var(--radius-md);
@@ -318,8 +319,7 @@ a { color: inherit; text-decoration: none; }
 
 .services-grid,
 .steps-grid,
-.why-grid,
-.pricing-grid {
+.why-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
@@ -327,8 +327,7 @@ a { color: inherit; text-decoration: none; }
 
 .service-card,
 .step-card,
-.why-card,
-.price-card {
+.why-card {
   padding: 16px;
 }
 
@@ -355,7 +354,6 @@ a { color: inherit; text-decoration: none; }
 .service-card p,
 .step-card p,
 .why-card p,
-.price-card li,
 .faq-list p,
 .cta-inner p,
 .footer p {
@@ -368,37 +366,6 @@ a { color: inherit; text-decoration: none; }
   font-size: .82rem;
   font-weight: 800;
 }
-
-.pricing-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.price-card.featured {
-  background: #edf4ff;
-  border-color: #c8dbff;
-}
-
-.price-tier {
-  color: #2f62d6;
-  font-size: .78rem;
-  font-weight: 800;
-  letter-spacing: .06em;
-}
-
-.price-card h3 {
-  margin-top: 8px;
-  font-size: 2rem;
-}
-
-.price-card h3 span {
-  margin-left: 5px;
-  font-size: .8rem;
-  color: var(--muted);
-}
-
-.price-card ul {
-  margin: 12px 0 16px;
-  padding-left: 18px;
-}
-
-.price-card li + li { margin-top: 6px; }
 
 .faq-list { display: grid; gap: 10px; }
 .faq-list details { padding: 12px 14px; }
@@ -458,13 +425,53 @@ a { color: inherit; text-decoration: none; }
 
 .reveal {
   opacity: 0;
-  transform: translateY(12px);
-  transition: opacity .5s ease, transform .5s ease;
+  transform: translate3d(0, 22px, 0) scale(.985);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.2, .75, .15, 1);
 }
 
 .reveal.in {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.stagger > * {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+  transition: opacity .6s ease, transform .6s cubic-bezier(.2, .75, .15, 1);
+}
+
+.stagger.in > * {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.stagger.in > *:nth-child(1) { transition-delay: .03s; }
+.stagger.in > *:nth-child(2) { transition-delay: .10s; }
+.stagger.in > *:nth-child(3) { transition-delay: .17s; }
+.stagger.in > *:nth-child(4) { transition-delay: .24s; }
+.stagger.in > *:nth-child(5) { transition-delay: .31s; }
+.stagger.in > *:nth-child(6) { transition-delay: .38s; }
+.stagger.in > *:nth-child(7) { transition-delay: .45s; }
+.stagger.in > *:nth-child(8) { transition-delay: .52s; }
+
+.service-card,
+.step-card,
+.why-card,
+.stat-card,
+.faq-list details,
+.panel,
+.hero-banner,
+.featured-card {
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.service-card:hover,
+.step-card:hover,
+.why-card:hover,
+.stat-card:hover,
+.faq-list details:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.08);
 }
 
 @media (max-width: 1060px) {
@@ -472,8 +479,7 @@ a { color: inherit; text-decoration: none; }
   .hero-grid { grid-template-columns: 1fr; }
   .services-grid,
   .steps-grid,
-  .why-grid,
-  .pricing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .why-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 740px) {
@@ -484,12 +490,10 @@ a { color: inherit; text-decoration: none; }
   .panel,
   .service-card,
   .step-card,
-  .why-card,
-  .price-card { padding: 14px; }
+  .why-card { padding: 14px; }
   .services-grid,
   .steps-grid,
   .why-grid,
-  .pricing-grid,
   .account-grid,
   .stat-grid { grid-template-columns: 1fr; }
   .nav-actions { width: 100%; justify-content: flex-end; }

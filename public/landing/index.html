@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/landing/style.css" />
 </head>
 <body>
@@ -28,7 +28,6 @@
         <a href="#services">Services</a>
         <a href="#how">How It Works</a>
         <a href="#why">Why AxisVTU</a>
-        <a href="#pricing">Pricing</a>
         <a href="#faq">FAQ</a>
       </nav>
 
@@ -42,7 +41,7 @@
   <main>
     <section class="section hero reveal">
       <div class="container hero-grid">
-        <article class="hero-banner">
+        <article class="hero-banner reveal">
           <p class="eyebrow">WELCOME BACK</p>
           <h1>A mature VTU platform your users can trust from first click.</h1>
           <p class="lead">
@@ -59,7 +58,7 @@
           </div>
         </article>
 
-        <aside class="featured-card" aria-label="AxisVTU platform highlight">
+        <aside class="featured-card reveal" aria-label="AxisVTU platform highlight">
           <div class="feature-label">FEATURED</div>
           <h2>AXISVTU</h2>
           <p>Reliable VTU platform with clear wallet and receipt flow.</p>
@@ -70,7 +69,7 @@
 
     <section class="section reveal" id="wallet-preview">
       <div class="container">
-        <div class="panel">
+        <div class="panel reveal">
           <div class="panel-head">
             <h2>Automated Bank Transfer</h2>
             <a class="mini-link" href="/app/wallet">Manage Wallet</a>
@@ -83,82 +82,45 @@
             <span>Upgrade Account</span>
           </div>
 
-          <div class="account-grid">
-            <div class="account-box">
-              <div class="k">Account Number</div>
-              <div class="v">6666227606</div>
-            </div>
-            <div class="account-box">
-              <div class="k">Bank Name</div>
-              <div class="v">PalmPay</div>
-            </div>
-            <div class="account-box">
-              <div class="k">Account Name</div>
-              <div class="v">AXISVTU USER</div>
-            </div>
-            <div class="account-box">
-              <div class="k">Charges</div>
-              <div class="v">1% capped at ₦50</div>
-            </div>
+          <div class="account-grid stagger">
+            <div class="account-box"><div class="k">Account Number</div><div class="v">6666227606</div></div>
+            <div class="account-box"><div class="k">Bank Name</div><div class="v">PalmPay</div></div>
+            <div class="account-box"><div class="k">Account Name</div><div class="v">AXISVTU USER</div></div>
+            <div class="account-box"><div class="k">Charges</div><div class="v">1% capped at ₦50</div></div>
           </div>
         </div>
 
-        <div class="stat-grid">
-          <article class="stat-card">
-            <p>Wallet Balance</p>
-            <h3>₦98,055.00</h3>
-          </article>
-          <article class="stat-card">
-            <p>Earning Balance</p>
-            <h3>₦0.00</h3>
-          </article>
-          <article class="stat-card">
-            <p>Data Purchased Today</p>
-            <h3>0GB</h3>
-          </article>
+        <div class="stat-grid stagger">
+          <article class="stat-card"><p>Wallet Balance</p><h3>₦98,055.00</h3></article>
+          <article class="stat-card"><p>Earning Balance</p><h3>₦0.00</h3></article>
+          <article class="stat-card"><p>Data Purchased Today</p><h3>0GB</h3></article>
         </div>
       </div>
     </section>
 
     <section id="services" class="section reveal">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal">
           <h2>Services</h2>
           <p>Core products your users need every day.</p>
         </div>
 
-        <div class="services-grid">
-          <article class="service-card">
-            <span class="service-icon">◉</span>
-            <h3>Buy Data</h3>
-            <p>Fast purchase flow with structured plan selection.</p>
-          </article>
-          <article class="service-card">
-            <span class="service-icon">◉</span>
-            <h3>Buy Airtime</h3>
-            <p>Network-aware airtime top up with clear results.</p>
-          </article>
-          <article class="service-card">
-            <span class="service-icon">◉</span>
-            <h3>Fund Wallet</h3>
-            <p>Dedicated account generation and automated credit.</p>
-          </article>
-          <article class="service-card">
-            <span class="service-icon">◉</span>
-            <h3>Transactions</h3>
-            <p>Readable history with reference and status clarity.</p>
-          </article>
+        <div class="services-grid stagger">
+          <article class="service-card"><span class="service-icon">◉</span><h3>Buy Data</h3><p>Fast purchase flow with structured plan selection.</p></article>
+          <article class="service-card"><span class="service-icon">◉</span><h3>Buy Airtime</h3><p>Network-aware airtime top up with clear results.</p></article>
+          <article class="service-card"><span class="service-icon">◉</span><h3>Fund Wallet</h3><p>Dedicated account generation and automated credit.</p></article>
+          <article class="service-card"><span class="service-icon">◉</span><h3>Transactions</h3><p>Readable history with reference and status clarity.</p></article>
         </div>
       </div>
     </section>
 
     <section id="how" class="section muted-section reveal">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal">
           <h2>How It Works</h2>
           <p>Simple for users, stable for operations.</p>
         </div>
-        <div class="steps-grid">
+        <div class="steps-grid stagger">
           <article class="step-card"><span>01</span><h3>Create account</h3><p>Register and set up profile quickly.</p></article>
           <article class="step-card"><span>02</span><h3>Fund wallet</h3><p>Transfer to generated account number.</p></article>
           <article class="step-card"><span>03</span><h3>Buy service</h3><p>Pick network and complete purchase.</p></article>
@@ -169,55 +131,26 @@
 
     <section id="why" class="section reveal">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal">
           <h2>Why AxisVTU</h2>
           <p>Built with a practical dashboard-first approach.</p>
         </div>
-        <div class="why-grid">
+        <div class="why-grid stagger">
           <article class="why-card"><h3>Clear interface</h3><p>Straightforward screens users understand fast.</p></article>
           <article class="why-card"><h3>Fast workflow</h3><p>Reduced clicks and direct access to core tasks.</p></article>
           <article class="why-card"><h3>Reliable records</h3><p>Status, amount, and reference always visible.</p></article>
-          <article class="why-card"><h3>Growth ready</h3><p>Designed to expand with your business model.</p></article>
-        </div>
-      </div>
-    </section>
-
-    <section id="pricing" class="section reveal">
-      <div class="container">
-        <div class="section-head">
-          <h2>Pricing</h2>
-          <p>Start lean and scale with transaction volume.</p>
-        </div>
-        <div class="pricing-grid">
-          <article class="price-card">
-            <p class="price-tier">Starter</p>
-            <h3>₦0<span>/month</span></h3>
-            <ul><li>Wallet dashboard</li><li>Data and airtime flow</li><li>Transaction history</li></ul>
-            <a class="btn btn-ghost" href="/app/">Open App</a>
-          </article>
-          <article class="price-card featured">
-            <p class="price-tier">Growth</p>
-            <h3>Custom<span>/month</span></h3>
-            <ul><li>Admin pricing controls</li><li>Operational insights</li><li>Priority support</li></ul>
-            <a class="btn btn-primary" href="/app/">Get Started</a>
-          </article>
-          <article class="price-card">
-            <p class="price-tier">Business</p>
-            <h3>Custom<span>/month</span></h3>
-            <ul><li>Custom rollout</li><li>Advanced controls</li><li>Launch support</li></ul>
-            <a class="btn btn-ghost" href="#faq">Talk to Team</a>
-          </article>
+          <article class="why-card"><h3>Scale ready</h3><p>Designed to expand with your business model.</p></article>
         </div>
       </div>
     </section>
 
     <section id="faq" class="section reveal">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head reveal">
           <h2>Frequently Asked Questions</h2>
           <p>Quick answers for operators and users.</p>
         </div>
-        <div class="faq-list">
+        <div class="faq-list stagger">
           <details><summary>How does wallet funding work?</summary><p>Generate account details in wallet and transfer. Credit reflects after webhook confirmation.</p></details>
           <details><summary>Can I track every transaction?</summary><p>Yes. History contains amount, receiver, type, status, and reference.</p></details>
           <details><summary>Can services be expanded later?</summary><p>Yes. Cable, electricity, exam pin, and more providers can be integrated progressively.</p></details>
@@ -257,7 +190,7 @@
 
   <script>
     window.addEventListener('load', () => {
-      const blocks = document.querySelectorAll('.reveal');
+      const blocks = document.querySelectorAll('.reveal, .stagger');
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
