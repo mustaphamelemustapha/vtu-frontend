@@ -238,7 +238,10 @@ a:focus-visible {
   position: absolute;
   right: 0;
   top: 46px;
-  width: 330px;
+  width: min(330px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: min(68vh, 560px);
+  overflow: auto;
   background: var(--panel);
   border: 1px solid var(--stroke);
   border-radius: 14px;
@@ -3971,8 +3974,14 @@ a.pill:active::after {
     font-size: 12px;
   }
   .notif-panel {
-    width: min(360px, calc(100vw - 44px));
-    right: 0;
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + 86px);
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+    max-height: min(64vh, 520px);
+    border-radius: 16px;
   }
   .grid-2,
   .grid-3 {
