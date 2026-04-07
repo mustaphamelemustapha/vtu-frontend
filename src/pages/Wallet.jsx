@@ -85,17 +85,18 @@ export default function Wallet() {
   const savePhoneAndRetry = async (e) => {
     e.preventDefault();
     if (!phoneInput.trim()) return;
+    const normalizedPhone = String(phoneInput).replace(/\D/g, "");
+    if (normalizedPhone.length < 10) {
+      showToast("Enter a valid phone number.", "error");
+      return;
+    }
     setTransferBusy(true);
     try {
-      await apiFetch("/auth/me", {
-        method: "PATCH",
-        body: JSON.stringify({ phone_number: phoneInput.trim() }),
-      });
       setPhonePromptOpen(false);
       // Retry generation without requiring BVN/NIN; backend will accept phone for Paystack.
       const res = await apiFetch("/wallet/bank-transfer-accounts", {
         method: "POST",
-        body: JSON.stringify({}),
+        body: JSON.stringify({ phone_number: normalizedPhone }),
       });
       hydrateTransferState(res, transferProvider || "paystack");
       showToast("Bank transfer account generated.", "success");
