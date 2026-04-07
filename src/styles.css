@@ -716,6 +716,18 @@ a:focus-visible {
     color-mix(in srgb, var(--panel) 94%, #ffffff 6%);
 }
 
+.profile-page,
+.profile-page .card,
+.profile-ux-user-card,
+.profile-ux-user-meta,
+.profile-ux-menu-item,
+.profile-ux-menu-left,
+.profile-ux-menu-text,
+.profile-ux-credit,
+.profile-ux-about-card {
+  text-align: left;
+}
+
 .profile-page .section {
   margin-top: 10px;
 }
