@@ -2,7 +2,19 @@
   "redirects": [
     { "source": "/login", "destination": "/app/login", "permanent": true },
     { "source": "/register", "destination": "/app/register", "permanent": true },
-    { "source": "/reset-password", "destination": "/app/reset-password", "permanent": true }
+    { "source": "/reset-password", "destination": "/app/reset-password", "permanent": true },
+    { "source": "/admin-login", "destination": "/app/admin-login", "permanent": true },
+    { "source": "/wallet", "destination": "/app/wallet", "permanent": true },
+    { "source": "/data", "destination": "/app/data", "permanent": true },
+    { "source": "/services", "destination": "/app/services", "permanent": true },
+    { "source": "/airtime", "destination": "/app/airtime", "permanent": true },
+    { "source": "/cable", "destination": "/app/cable", "permanent": true },
+    { "source": "/electricity", "destination": "/app/electricity", "permanent": true },
+    { "source": "/exam", "destination": "/app/exam", "permanent": true },
+    { "source": "/transactions", "destination": "/app/transactions", "permanent": true },
+    { "source": "/support", "destination": "/app/support", "permanent": true },
+    { "source": "/profile", "destination": "/app/profile", "permanent": true },
+    { "source": "/admin", "destination": "/app/admin", "permanent": true }
   ],
   "rewrites": [
     {
@@ -10,7 +22,7 @@
       "destination": "https://vtu-backend-8gsi.onrender.com/api/v1/:path*"
     },
     { "source": "/app", "destination": "/index.html" },
-    { "source": "/app/(.*)", "destination": "/index.html" },
+    { "source": "/app/:path*", "destination": "/index.html" },
     { "source": "/", "destination": "/landing/index.html" }
   ]
 }
