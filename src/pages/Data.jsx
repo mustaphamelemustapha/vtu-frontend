@@ -743,6 +743,7 @@ export default function Data() {
             <label>
               Phone Number
               <input
+                data-testid="data-phone-input"
                 placeholder="08012345678"
                 value={phone}
                 onChange={(e) => {
@@ -875,6 +876,7 @@ export default function Data() {
             <button
               type="button"
               className="card plan-card data-plan-card"
+              data-testid={`data-plan-${String(plan.plan_code || "").replace(/[^a-zA-Z0-9_-]/g, "-")}`}
               key={plan.plan_code}
               onClick={() => setSelected(plan)}
             >
@@ -990,6 +992,7 @@ export default function Data() {
               <button className="ghost" onClick={() => setSelected(null)}>Cancel</button>
               <button
                 className="primary"
+                data-testid="data-confirm-buy"
                 disabled={loading || (wallet && Number(wallet.balance) < Number(selected.price))}
                 onClick={() => buy(selected.plan_code)}
               >
@@ -1027,13 +1030,19 @@ export default function Data() {
       )}
 
       {purchaseResult && (
-        <div className="success-screen data-result-screen" role="dialog" aria-live="polite" aria-modal="true">
+        <div
+          className="success-screen data-result-screen"
+          role="dialog"
+          aria-live="polite"
+          aria-modal="true"
+          data-testid="data-result-screen"
+        >
           <div className="data-result-shell">
             <div className="data-result-head">
               <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>
                 Back
               </button>
-              <button className="ghost" type="button" onClick={() => navigate("/transactions")}>
+              <button className="ghost" type="button" data-testid="data-result-history" onClick={() => navigate("/transactions")}>
                 History
               </button>
             </div>
@@ -1050,7 +1059,7 @@ export default function Data() {
               {resultStatusKey(purchaseResult.status) === "success" ? "✓" : resultStatusKey(purchaseResult.status) === "pending" ? "…" : "!"}
             </div>
 
-            <h2 className="data-result-title">
+            <h2 className="data-result-title" data-testid="data-result-title">
               {resultStatusKey(purchaseResult.status) === "success"
                 ? "Purchase Successful"
                 : resultStatusKey(purchaseResult.status) === "pending"
@@ -1149,7 +1158,7 @@ export default function Data() {
               </button>
               <button className="ghost" onClick={shareReceipt}>Share</button>
               <button className="ghost" onClick={shareReceiptWhatsApp}>WhatsApp</button>
-              <button className="primary" onClick={() => setPurchaseResult(null)}>Dismiss</button>
+              <button className="primary" data-testid="data-result-dismiss" onClick={() => setPurchaseResult(null)}>Dismiss</button>
             </div>
           </div>
 

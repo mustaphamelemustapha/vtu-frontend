@@ -467,6 +467,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             <label>Email</label>
               <input
                 type="email"
+                data-testid="auth-email"
                 placeholder="Email"
                 value={form.email}
                 onChange={(e) => {
@@ -483,6 +484,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
+                data-testid="auth-password"
                 placeholder={mode === "register" ? "Create password" : "Password"}
                 value={form.password}
                 onChange={(e) => {
@@ -553,7 +555,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           )}
           {error && <div className="error">{error}</div>}
           {notice && <div className="notice">{notice}</div>}
-          <button className="primary" type="submit">
+          <button className="primary" type="submit" data-testid="auth-submit">
             {loading ? "Please wait..." : mode === "login" ? "Login" : "Register"}
           </button>
         </form>

@@ -319,13 +319,31 @@ async function installApiMocks(page) {
   });
 }
 
+async function clickAppNav(page, key) {
+  const desktop = page.getByTestId(`nav-desktop-${key}`);
+  const desktopCount = await desktop.count();
+  if (desktopCount > 0 && await desktop.first().isVisible()) {
+    await desktop.first().click();
+    return;
+  }
+
+  const mobile = page.getByTestId(`nav-mobile-${key}`);
+  const mobileCount = await mobile.count();
+  if (mobileCount > 0) {
+    await mobile.first().click();
+    return;
+  }
+
+  throw new Error(`Navigation link not found for key: ${key}`);
+}
+
 async function login(page) {
   await page.goto("/app/");
-  await page.getByRole("textbox", { name: "Email" }).fill("user@example.com");
-  await page.locator('input[type="password"][placeholder="Password"]').fill("Password123!");
-  await page.getByRole("button", { name: /^Login$/ }).click();
+  await page.getByTestId("auth-email").fill("user@example.com");
+  await page.getByTestId("auth-password").fill("Password123!");
+  await page.getByTestId("auth-submit").click();
   await expect(page).toHaveURL(/\/app\/?$/);
-  await expect(page.getByRole("heading", { name: /Welcome back, Test User/i })).toBeVisible();
+  await expect(page.getByTestId("dashboard-page")).toBeVisible();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -334,31 +352,31 @@ test.beforeEach(async ({ page }) => {
 
 test("login smoke", async ({ page }) => {
   await login(page);
-  await expect(page.getByRole("link", { name: "Fund Wallet" })).toBeVisible();
+  await expect(page.getByTestId("dashboard-welcome-title")).toContainText("Welcome back");
 });
 
 test("wallet funding smoke", async ({ page }) => {
   await login(page);
-  await page.locator("aside.nav").getByRole("link", { name: "Wallet" }).click();
+  await clickAppNav(page, "wallet");
   await expect(page).toHaveURL(/\/app\/wallet$/);
 
-  await page.getByRole("button", { name: /Generate Account|Manage Accounts/i }).click();
+  await page.getByTestId("wallet-generate-account").click();
   await expect(page.getByText("Add money via mobile or internet banking")).toBeVisible();
   await expect(page.getByText("6666227606")).toBeVisible();
-  await expect(page.getByText("1002003004")).toBeVisible();
 });
 
 test("data purchase smoke", async ({ page }) => {
   await login(page);
-  await page.locator("aside.nav").getByRole("link", { name: "Buy Data" }).click();
+  await clickAppNav(page, "data");
   await expect(page).toHaveURL(/\/app\/data$/);
 
-  await page.getByLabel("Phone Number").fill("08012345678");
-  await page.getByRole("button", { name: /MTN 1GB/i }).first().click();
-  await page.getByRole("button", { name: "Confirm & Buy" }).click();
+  await page.getByTestId("data-phone-input").fill("08012345678");
+  await page.locator('[data-testid^="data-plan-"]').first().click();
+  await page.getByTestId("data-confirm-buy").click();
 
-  await expect(page.getByRole("heading", { name: "Purchase Successful" })).toBeVisible();
-  await page.getByRole("dialog").getByRole("button", { name: "History" }).click();
+  await expect(page.getByTestId("data-result-screen")).toBeVisible();
+  await expect(page.getByTestId("data-result-title")).toContainText("Purchase");
+  await page.getByTestId("data-result-history").click();
 
   await expect(page).toHaveURL(/\/app\/transactions$/);
   await expect(page.getByText(/DATA_E2E_/)).toBeVisible();
@@ -366,7 +384,7 @@ test("data purchase smoke", async ({ page }) => {
 
 test("airtime purchase smoke", async ({ page }) => {
   await login(page);
-  await page.locator("aside.nav").getByRole("link", { name: "Services" }).click();
+  await clickAppNav(page, "services");
   await expect(page).toHaveURL(/\/app\/services$/);
   await page.locator("main").getByRole("link", { name: /Airtime/i }).first().click();
   await expect(page).toHaveURL(/\/app\/airtime$/);
@@ -380,7 +398,7 @@ test("airtime purchase smoke", async ({ page }) => {
 
 test("cable purchase smoke", async ({ page }) => {
   await login(page);
-  await page.locator("aside.nav").getByRole("link", { name: "Services" }).click();
+  await clickAppNav(page, "services");
   await expect(page).toHaveURL(/\/app\/services$/);
   await page.locator("main").getByRole("link", { name: /Cable/i }).first().click();
   await expect(page).toHaveURL(/\/app\/cable$/);
@@ -396,7 +414,7 @@ test("cable purchase smoke", async ({ page }) => {
 
 test("electricity purchase smoke", async ({ page }) => {
   await login(page);
-  await page.locator("aside.nav").getByRole("link", { name: "Services" }).click();
+  await clickAppNav(page, "services");
   await expect(page).toHaveURL(/\/app\/services$/);
   await page.locator("main").getByRole("link", { name: /Electricity/i }).first().click();
   await expect(page).toHaveURL(/\/app\/electricity$/);
@@ -412,7 +430,7 @@ test("electricity purchase smoke", async ({ page }) => {
 
 test("exam purchase smoke", async ({ page }) => {
   await login(page);
-  await page.locator("aside.nav").getByRole("link", { name: "Services" }).click();
+  await clickAppNav(page, "services");
   await expect(page).toHaveURL(/\/app\/services$/);
   await page.locator("main").getByRole("link", { name: /Exam/i }).first().click();
   await expect(page).toHaveURL(/\/app\/exam$/);

@@ -129,7 +129,13 @@ export default function Wallet() {
         </div>
         <div className="hero-actions wallet-hero-actions-premium">
           {ENABLE_BANK_TRANSFER && (
-            <button className="primary" type="button" onClick={openTransfer} disabled={transferBusy}>
+            <button
+              className="primary"
+              type="button"
+              data-testid="wallet-generate-account"
+              onClick={openTransfer}
+              disabled={transferBusy}
+            >
               {hasGeneratedAccounts ? "Manage Accounts" : "Generate Account"}
             </button>
           )}

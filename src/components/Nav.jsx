@@ -83,20 +83,20 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
       <div className="nav-section">
         <div className="nav-section-title">General</div>
         <nav className="nav-links">
-          <NavLink to="/" end><Icon><HomeIcon /></Icon>Dashboard</NavLink>
-          <NavLink to="/wallet"><Icon><WalletIcon /></Icon>Wallet</NavLink>
-          <NavLink to="/data"><Icon><DataIcon /></Icon>Buy Data</NavLink>
-          <NavLink to="/services"><Icon><ServicesIcon /></Icon>Services</NavLink>
-          <NavLink to="/transactions"><Icon><TxIcon /></Icon>Transactions</NavLink>
+          <NavLink to="/" end data-testid="nav-desktop-dashboard"><Icon><HomeIcon /></Icon>Dashboard</NavLink>
+          <NavLink to="/wallet" data-testid="nav-desktop-wallet"><Icon><WalletIcon /></Icon>Wallet</NavLink>
+          <NavLink to="/data" data-testid="nav-desktop-data"><Icon><DataIcon /></Icon>Buy Data</NavLink>
+          <NavLink to="/services" data-testid="nav-desktop-services"><Icon><ServicesIcon /></Icon>Services</NavLink>
+          <NavLink to="/transactions" data-testid="nav-desktop-transactions"><Icon><TxIcon /></Icon>Transactions</NavLink>
         </nav>
       </div>
 
       <div className="nav-section nav-section-soft">
         <div className="nav-section-title">Account</div>
         <nav className="nav-links">
-          <NavLink to="/support"><Icon><SupportIcon /></Icon>Support</NavLink>
-          <NavLink to="/profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
-          {isAdmin && <NavLink to="/admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
+          <NavLink to="/support" data-testid="nav-desktop-support"><Icon><SupportIcon /></Icon>Support</NavLink>
+          <NavLink to="/profile" data-testid="nav-desktop-profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
+          {isAdmin && <NavLink to="/admin" data-testid="nav-desktop-admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
         </nav>
       </div>
 
@@ -110,11 +110,11 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
       </div>
     </aside>
     <nav className="bottom-nav">
-      <NavLink to="/" end><Icon><HomeIcon /></Icon><span>Home</span></NavLink>
-      <NavLink to="/wallet"><Icon><WalletIcon /></Icon><span>Wallet</span></NavLink>
-      <NavLink to="/services"><Icon><DataIcon /></Icon><span>Buy</span></NavLink>
-      <NavLink to="/transactions"><Icon><TxIcon /></Icon><span>History</span></NavLink>
-      <NavLink to="/profile"><Icon><ProfileIcon /></Icon><span>Profile</span></NavLink>
+      <NavLink to="/" end data-testid="nav-mobile-dashboard"><Icon><HomeIcon /></Icon><span>Home</span></NavLink>
+      <NavLink to="/wallet" data-testid="nav-mobile-wallet"><Icon><WalletIcon /></Icon><span>Wallet</span></NavLink>
+      <NavLink to="/services" data-testid="nav-mobile-services"><Icon><DataIcon /></Icon><span>Buy</span></NavLink>
+      <NavLink to="/transactions" data-testid="nav-mobile-transactions"><Icon><TxIcon /></Icon><span>History</span></NavLink>
+      <NavLink to="/profile" data-testid="nav-mobile-profile"><Icon><ProfileIcon /></Icon><span>Profile</span></NavLink>
     </nav>
     </>
   );

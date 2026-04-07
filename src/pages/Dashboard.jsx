@@ -394,12 +394,12 @@ export default function Dashboard() {
   }, [profile?.full_name]);
 
   return (
-    <div className="page dashboard-page">
+    <div className="page dashboard-page" data-testid="dashboard-page">
       <section className="dashboard-shell-top">
         <div className="hero-card dashboard-welcome-card">
           <div className="dashboard-welcome-head">
             <div className="label">DASHBOARD</div>
-            <h2 className="dashboard-welcome-title">Welcome back, {greetingName}!</h2>
+            <h2 className="dashboard-welcome-title" data-testid="dashboard-welcome-title">Welcome back, {greetingName}!</h2>
             <div className="muted">Your account is active and ready for instant VTU purchases.</div>
           </div>
           <div className="hero-value">{loadingWallet ? "Loading..." : `₦ ${wallet?.balance || "0.00"}`}</div>
