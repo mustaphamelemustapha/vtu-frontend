@@ -5,6 +5,10 @@ import { loadBeneficiaries } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
 const DASHBOARD_CACHE_KEY = "axisvtu_dashboard_cache_v1";
+const keepPrimaryAccountOnly = (items) => {
+  if (!Array.isArray(items) || items.length === 0) return [];
+  return [items[0]];
+};
 
 function readDashboardCache() {
   try {
@@ -13,7 +17,7 @@ function readDashboardCache() {
       wallet: raw?.wallet && typeof raw.wallet === "object" ? raw.wallet : null,
       txs: Array.isArray(raw?.txs) ? raw.txs : [],
       announcements: Array.isArray(raw?.announcements) ? raw.announcements : [],
-      fundingAccounts: Array.isArray(raw?.fundingAccounts) ? raw.fundingAccounts : [],
+      fundingAccounts: keepPrimaryAccountOnly(raw?.fundingAccounts),
     };
   } catch {
     return {
@@ -166,8 +170,8 @@ export default function Dashboard() {
         !partialFailures.has("bank_transfer_accounts") &&
         Array.isArray(summary?.bank_transfer_accounts?.accounts)
       ) {
-        nextFundingAccounts = summary.bank_transfer_accounts.accounts;
-        setFundingAccounts(summary.bank_transfer_accounts.accounts);
+        nextFundingAccounts = keepPrimaryAccountOnly(summary.bank_transfer_accounts.accounts);
+        setFundingAccounts(nextFundingAccounts);
       }
     } catch {
       const [walletRes, txRes, announcementRes, fundingAccountRes] = await Promise.allSettled([
@@ -196,7 +200,7 @@ export default function Dashboard() {
         setAnnouncements((prev) => prev);
       }
       if (fundingAccountRes.status === "fulfilled") {
-        nextFundingAccounts = Array.isArray(fundingAccountRes.value?.accounts) ? fundingAccountRes.value.accounts : [];
+        nextFundingAccounts = keepPrimaryAccountOnly(fundingAccountRes.value?.accounts);
         setFundingAccounts(nextFundingAccounts);
       } else {
         // keep previous/cached funding accounts on transient errors
@@ -438,22 +442,22 @@ export default function Dashboard() {
             <div className="muted">No account generated yet. Open Wallet and tap Generate Account.</div>
           ) : (
             <div className="funding-account-grid">
-              {fundingAccounts.map((acc) => (
-                <div className="funding-account-card" key={`${acc.bank_name}-${acc.account_number}`}>
+              {primaryFundingAccount && (
+                <div className="funding-account-card" key={`${primaryFundingAccount.bank_name}-${primaryFundingAccount.account_number}`}>
                   <div className="funding-account-top">
-                    <div className="label">{acc.bank_name}</div>
+                    <div className="label">{primaryFundingAccount.bank_name}</div>
                     <button
                       className="ghost account-copy-btn"
                       type="button"
-                      onClick={() => copyAccountNumber(acc.account_number)}
+                      onClick={() => copyAccountNumber(primaryFundingAccount.account_number)}
                     >
                       Copy
                     </button>
                   </div>
-                  <div className="funding-account-number">{acc.account_number}</div>
-                  <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
+                  <div className="funding-account-number">{primaryFundingAccount.account_number}</div>
+                  <div className="muted">{primaryFundingAccount.account_name || "AxisVTU Wallet"}</div>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
