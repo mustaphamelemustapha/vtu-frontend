@@ -1,20 +1,51 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch, getProfile } from "../services/api";
 import { loadBeneficiaries } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 
+const DASHBOARD_CACHE_KEY = "axisvtu_dashboard_cache_v1";
+
+function readDashboardCache() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(DASHBOARD_CACHE_KEY) || "{}");
+    return {
+      wallet: raw?.wallet && typeof raw.wallet === "object" ? raw.wallet : null,
+      txs: Array.isArray(raw?.txs) ? raw.txs : [],
+      announcements: Array.isArray(raw?.announcements) ? raw.announcements : [],
+      fundingAccounts: Array.isArray(raw?.fundingAccounts) ? raw.fundingAccounts : [],
+    };
+  } catch {
+    return {
+      wallet: null,
+      txs: [],
+      announcements: [],
+      fundingAccounts: [],
+    };
+  }
+}
+
+function writeDashboardCache(payload) {
+  try {
+    localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(payload || {}));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 export default function Dashboard() {
   const { showToast } = useToast();
-  const [wallet, setWallet] = useState(null);
-  const [txs, setTxs] = useState([]);
-  const [announcements, setAnnouncements] = useState([]);
-  const [fundingAccounts, setFundingAccounts] = useState([]);
-  const [loadingWallet, setLoadingWallet] = useState(true);
-  const [loadingTxs, setLoadingTxs] = useState(true);
+  const cached = readDashboardCache();
+  const [wallet, setWallet] = useState(cached.wallet);
+  const [txs, setTxs] = useState(cached.txs);
+  const [announcements, setAnnouncements] = useState(cached.announcements);
+  const [fundingAccounts, setFundingAccounts] = useState(cached.fundingAccounts);
+  const [loadingWallet, setLoadingWallet] = useState(!cached.wallet);
+  const [loadingTxs, setLoadingTxs] = useState(cached.txs.length === 0);
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
   const [quickBeneficiaries, setQuickBeneficiaries] = useState([]);
+  const retryTimerRef = useRef(null);
   const profile = getProfile();
 
   const toServiceRoute = (service, fields = {}) => {
@@ -93,48 +124,125 @@ export default function Dashboard() {
       .slice(0, 8);
   };
 
-  const loadDashboardData = async () => {
-    setLoadError("");
-    setLoadingWallet(true);
-    setLoadingTxs(true);
-    const [walletRes, txRes, announcementRes, fundingAccountRes] = await Promise.allSettled([
-      apiFetch("/wallet/me"),
-      apiFetch("/transactions/me"),
-      apiFetch("/notifications/broadcast"),
-      apiFetch("/wallet/bank-transfer-accounts"),
-    ]);
+  const loadDashboardData = async ({ silent = false, attempt = 1 } = {}) => {
+    if (!silent) {
+      setLoadError("");
+      if (!wallet) setLoadingWallet(true);
+      if (txs.length === 0) setLoadingTxs(true);
+    }
 
-    if (walletRes.status === "fulfilled") {
-      setWallet(walletRes.value);
+    let nextWallet = wallet;
+    let nextTxs = txs;
+    let nextAnnouncements = announcements;
+    let nextFundingAccounts = fundingAccounts;
+    let walletFailed = false;
+    let txFailed = false;
+
+    try {
+      const summary = await apiFetch("/dashboard/summary");
+      const partialFailures = new Set(
+        Array.isArray(summary?.partial_failures) ? summary.partial_failures.map((item) => String(item || "")) : []
+      );
+
+      walletFailed = partialFailures.has("wallet");
+      txFailed = partialFailures.has("transactions");
+
+      if (!walletFailed && summary?.wallet && typeof summary.wallet === "object") {
+        nextWallet = summary.wallet;
+        setWallet(summary.wallet);
+      }
+
+      if (!txFailed && Array.isArray(summary?.transactions)) {
+        nextTxs = summary.transactions;
+        setTxs(summary.transactions);
+      }
+
+      if (!partialFailures.has("announcements") && Array.isArray(summary?.announcements)) {
+        nextAnnouncements = summary.announcements;
+        setAnnouncements(summary.announcements);
+      }
+
+      if (
+        !partialFailures.has("bank_transfer_accounts") &&
+        Array.isArray(summary?.bank_transfer_accounts?.accounts)
+      ) {
+        nextFundingAccounts = summary.bank_transfer_accounts.accounts;
+        setFundingAccounts(summary.bank_transfer_accounts.accounts);
+      }
+    } catch {
+      const [walletRes, txRes, announcementRes, fundingAccountRes] = await Promise.allSettled([
+        apiFetch("/wallet/me"),
+        apiFetch("/transactions/me"),
+        apiFetch("/notifications/broadcast"),
+        apiFetch("/wallet/bank-transfer-accounts"),
+      ]);
+
+      walletFailed = walletRes.status !== "fulfilled";
+      txFailed = txRes.status !== "fulfilled";
+
+      if (walletRes.status === "fulfilled") {
+        nextWallet = walletRes.value;
+        setWallet(walletRes.value);
+      }
+      if (txRes.status === "fulfilled") {
+        nextTxs = txRes.value;
+        setTxs(txRes.value);
+      }
+      if (announcementRes.status === "fulfilled") {
+        nextAnnouncements = Array.isArray(announcementRes.value) ? announcementRes.value : [];
+        setAnnouncements(nextAnnouncements);
+      } else {
+        // keep previous/cached announcements on transient errors
+        setAnnouncements((prev) => prev);
+      }
+      if (fundingAccountRes.status === "fulfilled") {
+        nextFundingAccounts = Array.isArray(fundingAccountRes.value?.accounts) ? fundingAccountRes.value.accounts : [];
+        setFundingAccounts(nextFundingAccounts);
+      } else {
+        // keep previous/cached funding accounts on transient errors
+        setFundingAccounts((prev) => prev);
+      }
+    }
+
+    if (nextWallet || (Array.isArray(nextTxs) && nextTxs.length > 0)) {
+      writeDashboardCache({
+        wallet: nextWallet,
+        txs: nextTxs,
+        announcements: nextAnnouncements,
+        fundingAccounts: nextFundingAccounts,
+        cached_at: Date.now(),
+      });
+    }
+
+    const hasEssentialData = !!nextWallet || (Array.isArray(nextTxs) && nextTxs.length > 0);
+    const criticalFailed = walletFailed && txFailed;
+
+    if (!criticalFailed) {
+      setLoadError("");
     } else {
-      setLoadError(walletRes.reason?.message || "Failed to load dashboard.");
+      setLoadError(
+        hasEssentialData
+          ? "Live update delayed. Showing last available dashboard data."
+          : "Dashboard is taking longer than usual. Retrying..."
+      );
     }
-    if (txRes.status === "fulfilled") {
-      setTxs(txRes.value);
-    } else {
-      setLoadError((prev) => prev || txRes.reason?.message || "Failed to load dashboard.");
+
+    if (criticalFailed && attempt < 3) {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = setTimeout(() => {
+        loadDashboardData({ silent: true, attempt: attempt + 1 });
+      }, 1100 * attempt);
+    } else if (criticalFailed && !hasEssentialData && !silent) {
+      showToast("Dashboard is slow right now. Please hold on a moment.", "warning");
     }
-    if (announcementRes.status === "fulfilled") {
-      setAnnouncements(Array.isArray(announcementRes.value) ? announcementRes.value : []);
-    } else {
-      setAnnouncements([]);
-    }
-    if (fundingAccountRes.status === "fulfilled") {
-      const rows = Array.isArray(fundingAccountRes.value?.accounts) ? fundingAccountRes.value.accounts : [];
-      setFundingAccounts(rows);
-    } else {
-      setFundingAccounts([]);
-    }
-    if (walletRes.status !== "fulfilled" || txRes.status !== "fulfilled") {
-      showToast("Some dashboard data failed to load.", "warning");
-    }
+
     setQuickBeneficiaries(getQuickBeneficiaries());
     setLoadingWallet(false);
     setLoadingTxs(false);
   };
 
   useEffect(() => {
-    loadDashboardData();
+    loadDashboardData({ silent: false, attempt: 1 });
     try {
       const stored = JSON.parse(localStorage.getItem("vtu_last_recipient") || "null");
       if (stored && typeof stored === "object" && typeof stored.phone === "string" && stored.phone.trim()) {
@@ -144,6 +252,9 @@ export default function Dashboard() {
       // ignore
     }
     setQuickBeneficiaries(getQuickBeneficiaries());
+    return () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    };
   }, []);
 
   const chartData = useMemo(() => {
