@@ -1,6 +1,8 @@
 {
   "redirects": [
-    { "source": "/", "destination": "/landing/", "permanent": false }
+    { "source": "/login", "destination": "/app/login", "permanent": true },
+    { "source": "/register", "destination": "/app/register", "permanent": true },
+    { "source": "/reset-password", "destination": "/app/reset-password", "permanent": true }
   ],
   "rewrites": [
     {
@@ -8,6 +10,7 @@
       "destination": "https://vtu-backend-8gsi.onrender.com/api/v1/:path*"
     },
     { "source": "/app", "destination": "/index.html" },
-    { "source": "/app/(.*)", "destination": "/index.html" }
+    { "source": "/app/(.*)", "destination": "/index.html" },
+    { "source": "/", "destination": "/landing/index.html" }
   ]
 }

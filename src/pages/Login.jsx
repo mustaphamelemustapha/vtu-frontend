@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch, setAuthTokens, setProfile, warmBackend } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 
-export default function Login({ onAuth }) {
+export default function Login({ onAuth, modeRoute = "login" }) {
   const navigate = useNavigate();
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({
@@ -78,6 +78,27 @@ export default function Login({ onAuth }) {
     }
     throw lastError || new Error("Failed to load profile");
   };
+
+  useEffect(() => {
+    setError("");
+    setNotice("");
+    setFieldErrors({});
+    if (modeRoute === "register") {
+      setMode("register");
+      setForgotMode(false);
+      setResetMode(false);
+      return;
+    }
+    if (modeRoute === "reset") {
+      setMode("login");
+      setForgotMode(true);
+      setResetMode(false);
+      return;
+    }
+    setMode("login");
+    setForgotMode(false);
+    setResetMode(false);
+  }, [modeRoute]);
 
   useEffect(() => {
     // Email reset link support: /app/?reset=1&token=...
@@ -249,6 +270,7 @@ export default function Login({ onAuth }) {
         showToast("Account created. Please log in.", "success");
         setMode("login");
         setForm({ email: form.email, password: "", confirm_password: "", full_name: "" });
+        navigate("/login", { replace: true });
         setLoading(false);
         return;
       }
@@ -395,7 +417,7 @@ export default function Login({ onAuth }) {
             <button className="primary" type="submit">
               {loading ? "Please wait..." : "Reset password"}
             </button>
-            <button className="link" type="button" onClick={() => setResetMode(false)}>
+            <button className="link" type="button" onClick={() => navigate("/login")}>
               Back to login
             </button>
           </form>
@@ -419,7 +441,7 @@ export default function Login({ onAuth }) {
             <button className="link" type="button" onClick={() => { setForgotMode(false); setResetMode(true); }}>
               I have a reset token
             </button>
-            <button className="link" type="button" onClick={() => setForgotMode(false)}>
+            <button className="link" type="button" onClick={() => navigate("/login")}>
               Back to login
             </button>
           </form>
@@ -457,11 +479,11 @@ export default function Login({ onAuth }) {
             {fieldErrors.email && <div className="error inline">{fieldErrors.email}</div>}
           </div>
           <div className="field">
-            <label>Password</label>
+            <label>{mode === "register" ? "Create password" : "Password"}</label>
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Password"
+                placeholder={mode === "register" ? "Create password" : "Password"}
                 value={form.password}
                 onChange={(e) => {
                   setForm({ ...form, password: e.target.value });
@@ -493,7 +515,7 @@ export default function Login({ onAuth }) {
               <div className="input-group">
                 <input
                   type={showConfirm ? "text" : "password"}
-                  placeholder="Confirm password"
+                  placeholder="Confirm created password"
                   value={form.confirm_password}
                   onChange={(e) => {
                     setForm({ ...form, confirm_password: e.target.value });
@@ -524,7 +546,7 @@ export default function Login({ onAuth }) {
                 />
                 Remember me
               </label>
-              <button className="link" type="button" onClick={() => setForgotMode(true)}>
+              <button className="link" type="button" onClick={() => navigate("/reset-password")}>
                 Forgot password?
               </button>
             </div>
@@ -543,7 +565,7 @@ export default function Login({ onAuth }) {
             setError("");
             setNotice("");
             setFieldErrors({});
-            setMode(mode === "login" ? "register" : "login");
+            navigate(mode === "login" ? "/register" : "/login");
           }}
         >
           {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}

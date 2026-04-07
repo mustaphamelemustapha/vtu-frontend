@@ -18,6 +18,7 @@ import AdminLogin from "./pages/AdminLogin.jsx";
 import { apiFetch, getToken, clearToken, getProfile, setProfile, warmBackend, prefetchDataPageCache } from "./services/api";
 import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
+import { applySeo } from "./utils/seo.js";
 
 const NOTIF_ITEMS_KEY = "axisvtu_notif_items";
 const NOTIF_SNAPSHOT_KEY = "axisvtu_notif_snapshot";
@@ -238,6 +239,64 @@ export default function App() {
   const [notifItems, setNotifItems] = useState(() => _loadNotifItems());
   const [notifSyncAt, setNotifSyncAt] = useState(null);
   const [notifSyncing, setNotifSyncing] = useState(false);
+
+  useEffect(() => {
+    if (authenticated) {
+      const appPageTitleMap = {
+        "/": "Dashboard | AxisVTU",
+        "/wallet": "Wallet | AxisVTU",
+        "/data": "Buy Data | AxisVTU",
+        "/airtime": "Buy Airtime | AxisVTU",
+        "/cable": "Cable TV Subscription | AxisVTU",
+        "/electricity": "Electricity Bills | AxisVTU",
+        "/exam": "Exam PINs | AxisVTU",
+        "/transactions": "Transaction History | AxisVTU",
+        "/profile": "Profile | AxisVTU",
+        "/support": "Help & Support | AxisVTU",
+        "/admin": "Admin Dashboard | AxisVTU",
+      };
+      const title = appPageTitleMap[location.pathname] || "AxisVTU App";
+      applySeo({
+        title,
+        description: "Secure AxisVTU dashboard for wallet, purchases, and transaction records.",
+        path: `/app${location.pathname === "/" ? "" : location.pathname}`,
+        noindex: true,
+      });
+      return;
+    }
+
+    const path = location.pathname || "/";
+    if (path === "/register") {
+      applySeo({
+        title: "Create AxisVTU Account | AxisVTU",
+        description: "Register on AxisVTU to buy data, airtime, cable TV and electricity with fast wallet funding.",
+        path: "/app/register",
+      });
+      return;
+    }
+    if (path === "/reset-password") {
+      applySeo({
+        title: "Reset Password | AxisVTU",
+        description: "Reset your AxisVTU account password securely and continue your VTU operations.",
+        path: "/app/reset-password",
+      });
+      return;
+    }
+    if (path === "/admin-login") {
+      applySeo({
+        title: "Admin Login | AxisVTU",
+        description: "AxisVTU admin sign-in portal.",
+        path: "/app/admin-login",
+        noindex: true,
+      });
+      return;
+    }
+    applySeo({
+      title: "Login to AxisVTU | AxisVTU",
+      description: "Sign in to AxisVTU for fast data, airtime, cable TV and electricity bill payments.",
+      path: "/app/login",
+    });
+  }, [authenticated, location.pathname]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [canInstall, setCanInstall] = useState(false);
@@ -581,6 +640,7 @@ export default function App() {
       <ToastHost />
       {!authenticated ? (
         <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route
             path="/admin-login"
             element={
@@ -596,9 +656,10 @@ export default function App() {
             }
           />
           <Route
-            path="*"
+            path="/login"
             element={
               <Login
+                modeRoute="login"
                 onAuth={(nextProfile) => {
                   if (nextProfile) {
                     setProfile(nextProfile);
@@ -608,6 +669,40 @@ export default function App() {
                 }}
               />
             }
+          />
+          <Route
+            path="/register"
+            element={
+              <Login
+                modeRoute="register"
+                onAuth={(nextProfile) => {
+                  if (nextProfile) {
+                    setProfile(nextProfile);
+                    setProfileState(nextProfile);
+                  }
+                  setAuthenticated(true);
+                }}
+              />
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <Login
+                modeRoute="reset"
+                onAuth={(nextProfile) => {
+                  if (nextProfile) {
+                    setProfile(nextProfile);
+                    setProfileState(nextProfile);
+                  }
+                  setAuthenticated(true);
+                }}
+              />
+            }
+          />
+          <Route
+            path="*"
+            element={<Navigate to="/login" replace />}
           />
         </Routes>
       ) : (
