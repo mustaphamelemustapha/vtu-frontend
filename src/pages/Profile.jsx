@@ -240,12 +240,6 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <button className="primary" type="button" onClick={() => setAccountOpen(true)}>
             Edit Account
           </button>
-          <button className="ghost" type="button" onClick={() => setSecurityOpen(true)}>
-            Security
-          </button>
-          <button className="ghost" type="button" onClick={() => navigate("/support")}>
-            Support
-          </button>
         </div>
       </section>
 

@@ -893,7 +893,7 @@ a:focus-visible {
 
 .profile-ux-quick-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   border: 1px solid var(--stroke);
   border-radius: 16px;
@@ -3173,6 +3173,21 @@ input, select, textarea {
   background: var(--panel-light);
   color: var(--ink);
   font-family: inherit;
+}
+
+/* Prevent iOS Safari zoom/jump on input focus */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .auth input,
+  .auth select,
+  .auth textarea {
+    font-size: 16px;
+  }
 }
 
 textarea {
