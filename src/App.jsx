@@ -384,6 +384,58 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") return undefined;
+    const body = document.body;
+    let locked = false;
+
+    const lock = () => {
+      if (locked) return;
+      const y = window.scrollY || 0;
+      body.dataset.overlayLockY = String(y);
+      body.classList.add("overlay-open");
+      body.style.position = "fixed";
+      body.style.top = `-${y}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      body.style.overflow = "hidden";
+      locked = true;
+    };
+
+    const unlock = () => {
+      if (!locked) return;
+      const y = Number(body.dataset.overlayLockY || 0);
+      body.classList.remove("overlay-open");
+      delete body.dataset.overlayLockY;
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      window.scrollTo(0, Number.isFinite(y) ? y : 0);
+      locked = false;
+    };
+
+    const syncLock = () => {
+      const hasOverlay = !!document.querySelector(
+        ".modal-backdrop, .success-screen, .purchase-loading-screen"
+      );
+      if (hasOverlay) lock();
+      else unlock();
+    };
+
+    syncLock();
+    const observer = new MutationObserver(() => syncLock());
+    observer.observe(body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      unlock();
+    };
+  }, []);
+
+  useEffect(() => {
     if (authenticated) {
       fetchProfile();
       refreshNotifications({ bootstrap: true });

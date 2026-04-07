@@ -2725,7 +2725,7 @@ body:has(.purchase-loading-screen) {
 .hero-card {
   background: linear-gradient(135deg, rgba(15, 118, 110, 0.1), rgba(245, 158, 11, 0.12));
   border: 1px solid rgba(15, 118, 110, 0.2);
-  padding: 26px;
+  padding: 22px;
   border-radius: var(--radius-lg);
   display: flex;
   justify-content: space-between;
@@ -4825,6 +4825,39 @@ a.pill:active::after {
     padding: 12px;
   }
 
+  .hero-card {
+    padding: 14px;
+    border-radius: 14px;
+    gap: 12px;
+  }
+
+  .section h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+  }
+
+  .grid,
+  .grid-2,
+  .grid-3,
+  .plan-grid,
+  .card-list {
+    gap: 10px;
+  }
+
+  .list-card {
+    padding: 10px 12px;
+    border-radius: 12px;
+    gap: 10px;
+  }
+
+  .action-card {
+    border-radius: 12px;
+  }
+
+  .action-card .value {
+    font-size: 20px;
+  }
+
   .dashboard-announcement {
     padding: 10px 12px;
     border-radius: 12px;
@@ -4938,6 +4971,11 @@ a.pill:active::after {
     margin-top: 8px;
   }
 
+  .hero-card {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
   .dashboard-page .dashboard-welcome-title {
     font-size: 20px;
   }
@@ -4965,6 +5003,29 @@ a.pill:active::after {
   textarea {
     padding: 9px 10px;
     border-radius: 12px;
+  }
+
+  .data-page .plan-card {
+    padding: 9px;
+    border-radius: 11px;
+  }
+
+  .data-page .plan-cap {
+    font-size: 14px;
+  }
+
+  .data-page .plan-name {
+    margin: 7px 0 3px;
+    font-size: 12.5px;
+  }
+
+  .data-page .plan-meta {
+    font-size: 10.5px;
+  }
+
+  .data-page .plan-foot {
+    margin-top: 6px;
+    font-size: 10.5px;
   }
 }
 
