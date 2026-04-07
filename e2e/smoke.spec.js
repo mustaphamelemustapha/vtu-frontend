@@ -295,6 +295,26 @@ async function installApiMocks(page) {
       return json(route, state.transactions);
     }
 
+    if (method === "GET" && path === "/dashboard/summary") {
+      return json(route, {
+        wallet: {
+          balance: state.walletBalance.toFixed(2),
+          is_locked: false,
+        },
+        transactions: state.transactions,
+        announcements: [],
+        bank_transfer_accounts: {
+          provider: "paystack",
+          account_reference: "AXISVTU_99",
+          accounts: state.transferAccounts,
+          requires_kyc: false,
+          requires_phone: false,
+          message: null,
+        },
+        partial_failures: [],
+      });
+    }
+
     return json(route, { detail: `Unhandled mock route: ${method} ${path}` }, 404);
   });
 }
@@ -304,7 +324,8 @@ async function login(page) {
   await page.getByRole("textbox", { name: "Email" }).fill("user@example.com");
   await page.locator('input[type="password"][placeholder="Password"]').fill("Password123!");
   await page.getByRole("button", { name: /^Login$/ }).click();
-  await expect(page.getByText("Wallet Balance")).toBeVisible();
+  await expect(page).toHaveURL(/\/app\/?$/);
+  await expect(page.getByRole("heading", { name: /Welcome back, Test User/i })).toBeVisible();
 }
 
 test.beforeEach(async ({ page }) => {
@@ -313,8 +334,7 @@ test.beforeEach(async ({ page }) => {
 
 test("login smoke", async ({ page }) => {
   await login(page);
-  await expect(page).toHaveURL(/\/app\/?$/);
-  await expect(page.getByText("Hi, Test User")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Fund Wallet" })).toBeVisible();
 });
 
 test("wallet funding smoke", async ({ page }) => {
@@ -322,7 +342,7 @@ test("wallet funding smoke", async ({ page }) => {
   await page.locator("aside.nav").getByRole("link", { name: "Wallet" }).click();
   await expect(page).toHaveURL(/\/app\/wallet$/);
 
-  await page.getByRole("button", { name: "Generate Account" }).click();
+  await page.getByRole("button", { name: /Generate Account|Manage Accounts/i }).click();
   await expect(page.getByText("Add money via mobile or internet banking")).toBeVisible();
   await expect(page.getByText("6666227606")).toBeVisible();
   await expect(page.getByText("1002003004")).toBeVisible();
@@ -338,7 +358,7 @@ test("data purchase smoke", async ({ page }) => {
   await page.getByRole("button", { name: "Confirm & Buy" }).click();
 
   await expect(page.getByRole("heading", { name: "Purchase Successful" })).toBeVisible();
-  await page.getByRole("button", { name: "History" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "History" }).click();
 
   await expect(page).toHaveURL(/\/app\/transactions$/);
   await expect(page.getByText(/DATA_E2E_/)).toBeVisible();
