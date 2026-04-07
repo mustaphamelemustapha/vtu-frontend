@@ -1666,6 +1666,7 @@ a:focus-visible {
   place-items: center;
   z-index: 30;
   padding: 20px;
+  overscroll-behavior: contain;
 }
 
 .modal {
@@ -1958,6 +1959,7 @@ a:focus-visible {
   display: grid;
   place-items: center;
   z-index: 70;
+  overscroll-behavior: contain;
 }
 
 .purchase-loading-screen {
@@ -1968,6 +1970,7 @@ a:focus-visible {
   display: grid;
   place-items: center;
   z-index: 72;
+  overscroll-behavior: contain;
 }
 
 .purchase-loading-card {
@@ -2105,16 +2108,22 @@ a:focus-visible {
 }
 
 .data-result-screen {
-  background: #eef2f7;
-  backdrop-filter: none;
-  place-items: start center;
-  overflow: auto;
+  background: rgba(6, 8, 12, 0.62);
+  backdrop-filter: blur(9px);
+  place-items: center;
+  overflow: hidden;
+  padding: 14px;
 }
 
 .data-result-shell {
-  width: min(640px, 100%);
-  min-height: 100%;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 28px;
+  width: min(680px, 100%);
+  max-height: min(92dvh, 900px);
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 24px;
+  background: #eef2f7;
+  box-shadow: 0 24px 56px rgba(2, 6, 23, 0.36);
+  overflow: auto;
 }
 
 .data-result-head {
@@ -2123,6 +2132,11 @@ a:focus-visible {
   align-items: center;
   gap: 12px;
   margin-bottom: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-top: 2px;
+  background: linear-gradient(180deg, #eef2f7 82%, rgba(238, 242, 247, 0));
 }
 
 .data-result-head .ghost {
@@ -2159,7 +2173,7 @@ a:focus-visible {
 .data-result-title {
   margin: 0 0 14px;
   text-align: center;
-  font-size: clamp(28px, 5.7vw, 52px);
+  font-size: clamp(24px, 4.2vw, 42px);
   line-height: 1.05;
   font-weight: 900;
   letter-spacing: -0.02em;
@@ -2290,7 +2304,13 @@ a:focus-visible {
 }
 
 .dark .data-result-screen {
-  background: #0b0f16;
+  background: rgba(8, 12, 18, 0.74);
+}
+
+.dark .data-result-shell {
+  background: #0f1521;
+  border-color: #253043;
+  box-shadow: 0 28px 56px rgba(0, 0, 0, 0.6);
 }
 
 .dark .data-result-receipt {
@@ -2315,6 +2335,10 @@ a:focus-visible {
 .dark .data-result-switch-row {
   background: #141b28;
   border-color: #253043;
+}
+
+.dark .data-result-head {
+  background: linear-gradient(180deg, #0f1521 82%, rgba(15, 21, 33, 0));
 }
 
 .dark .tx-receipt-card {
@@ -2492,8 +2516,19 @@ a:focus-visible {
 }
 
 @media (max-width: 640px) {
+  .data-result-screen {
+    padding: 8px;
+  }
+
+  .data-result-shell {
+    width: min(100%, 560px);
+    max-height: calc(100dvh - 12px);
+    border-radius: 18px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+
   .data-result-title {
-    font-size: clamp(34px, 10vw, 48px);
+    font-size: clamp(28px, 8vw, 38px);
   }
 
   .data-result-icon {
@@ -2532,6 +2567,16 @@ a:focus-visible {
   .data-result-actions .ghost {
     min-height: 42px;
   }
+}
+
+/* Lock page scroll whenever an overlay/modal is visible */
+html:has(.modal-backdrop),
+html:has(.success-screen),
+html:has(.purchase-loading-screen),
+body:has(.modal-backdrop),
+body:has(.success-screen),
+body:has(.purchase-loading-screen) {
+  overflow: hidden;
 }
 
 @keyframes purchase-ring {
@@ -4777,7 +4822,7 @@ a.pill:active::after {
   .card,
   .dashboard-page .card {
     border-radius: 14px;
-    padding: 14px;
+    padding: 12px;
   }
 
   .dashboard-announcement {
@@ -4794,6 +4839,72 @@ a.pill:active::after {
     border: 0;
     border-radius: 0;
     background: transparent;
+  }
+
+  .data-page .service-hero,
+  .airtime-page .service-hero {
+    padding: 14px;
+    border-radius: 14px;
+    gap: 12px;
+  }
+
+  .data-page .data-recipient-card,
+  .data-page .data-catalog-toolbar,
+  .airtime-page .airtime-form-card {
+    padding: 10px;
+    border-radius: 13px;
+  }
+
+  .data-page .plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .data-page .plan-card {
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .data-page .plan-cap {
+    font-size: 15px;
+  }
+
+  .data-page .plan-name {
+    margin: 8px 0 4px;
+    font-size: 13px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .data-page .plan-meta {
+    font-size: 11px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .data-page .plan-foot {
+    margin-top: 8px;
+    align-items: flex-start;
+    gap: 6px;
+    flex-direction: column;
+  }
+
+  .data-page .tab-row {
+    gap: 6px;
+    margin: 6px 0 4px;
+  }
+
+  .data-page .pill.tab {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .data-page .beneficiary-grid,
+  .airtime-page .beneficiary-grid {
+    gap: 8px;
   }
 }
 
@@ -4818,7 +4929,7 @@ a.pill:active::after {
 
   .card,
   .dashboard-page .card {
-    padding: 12px;
+    padding: 10px;
     border-radius: 12px;
   }
 
@@ -4833,5 +4944,32 @@ a.pill:active::after {
 
   .dashboard-page .hero-value {
     font-size: 26px;
+  }
+
+  .primary {
+    min-height: 42px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  .ghost {
+    min-height: 40px;
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  input,
+  select,
+  textarea {
+    padding: 9px 10px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .data-page .plan-grid {
+    grid-template-columns: 1fr;
   }
 }
