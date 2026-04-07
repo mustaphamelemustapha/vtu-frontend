@@ -205,24 +205,21 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
   return (
     <div className="page profile-ux profile-page">
       <section className="section">
-        <div className="profile-ux-topbar card">
-          <div className="profile-ux-topbar-left">
-            <button className="ghost profile-ux-back" type="button" onClick={() => navigate("/")}>
-              ←
-            </button>
+        <div className="card profile-ux-user-card">
+          <div className="profile-ux-user-card-head">
             <div>
-              <div className="profile-ux-topbar-title">Profile</div>
-              <div className="muted profile-ux-topbar-subtitle">Manage account and security</div>
+              <div className="profile-ux-user-card-title">My Profile</div>
+              <div className="muted">Manage account, security and support access</div>
+            </div>
+            <div className="profile-ux-user-card-head-actions">
+              <button className="ghost profile-ux-mini-btn" type="button" onClick={() => navigate("/")}>
+                Home
+              </button>
+              <button className="ghost profile-ux-mini-btn" type="button" onClick={() => onToggleTheme?.()}>
+                Theme
+              </button>
             </div>
           </div>
-          <button className="ghost profile-ux-gear" type="button" onClick={() => onToggleTheme?.()}>
-            ⚙
-          </button>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="card profile-ux-user-card">
           <div className="profile-ux-user-avatar">{initials}</div>
           <div className="profile-ux-user-meta">
             <div className="profile-ux-user-name">{displayName}</div>
@@ -232,6 +229,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
               <span className="profile-ux-email-chip" title={profile.email || ""}>
                 {profile.email || "No email"}
               </span>
+              {phoneNumber ? <span className="profile-ux-phone-chip">{phoneNumber}</span> : null}
             </div>
           </div>
         </div>

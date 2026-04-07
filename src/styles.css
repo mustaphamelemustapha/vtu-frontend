@@ -702,6 +702,25 @@ a:focus-visible {
   gap: 14px;
 }
 
+.profile-page {
+  gap: 0;
+  border-radius: 24px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--stroke) 86%, transparent);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.12), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(15, 118, 110, 0.08), transparent 55%),
+    color-mix(in srgb, var(--panel) 94%, #ffffff 6%);
+}
+
+.profile-page .section {
+  margin-top: 10px;
+}
+
+.profile-page .section:first-child {
+  margin-top: 0;
+}
+
 .profile-ux-topbar {
   display: flex;
   align-items: center;
@@ -762,10 +781,40 @@ a:focus-visible {
   gap: 14px;
   border: 1px solid var(--stroke);
   border-radius: 20px;
+  padding: 14px;
   background:
-    radial-gradient(circle at 85% 5%, rgba(245, 158, 11, 0.12), transparent 45%),
-    radial-gradient(circle at 0% 90%, rgba(15, 118, 110, 0.10), transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.12), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(15, 118, 110, 0.08), transparent 55%),
     var(--panel);
+}
+
+.profile-ux-user-card-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-ux-user-card-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.profile-ux-user-card-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-ux-mini-btn {
+  min-height: 34px;
+  padding: 6px 11px;
+  border-radius: 11px;
+  font-size: 12px;
 }
 
 .profile-ux-user-avatar {
@@ -813,6 +862,18 @@ a:focus-visible {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.profile-ux-phone-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel-light) 88%, transparent);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
 }
 
 .profile-ux-quick-actions {
@@ -2316,6 +2377,14 @@ a:focus-visible {
   background: #141b28;
 }
 
+.dark .profile-page {
+  border-color: #2a3547;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(56, 189, 248, 0.12), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(34, 197, 94, 0.1), transparent 55%),
+    #111827;
+}
+
 .dark .profile-ux-menu-left,
 .dark .profile-ux-user-name,
 .dark .profile-ux-icon {
@@ -2323,7 +2392,8 @@ a:focus-visible {
 }
 
 .dark .profile-ux-topbar-title,
-.dark .profile-ux-menu-title {
+.dark .profile-ux-menu-title,
+.dark .profile-ux-user-card-title {
   color: #f5f7fb;
 }
 
@@ -2335,6 +2405,12 @@ a:focus-visible {
 .dark .profile-ux-email-chip {
   border-color: #2a3547;
   background: #1b2535;
+}
+
+.dark .profile-ux-phone-chip {
+  border-color: #2a3547;
+  background: #1b2535;
+  color: #f5f7fb;
 }
 
 .dark .profile-ux-chevron {
@@ -4256,6 +4332,32 @@ a.pill:active::after {
   }
   .profile-ux-user-name {
     font-size: 18px;
+  }
+  .profile-page {
+    padding: 6px;
+    border-radius: 18px;
+  }
+  .profile-page .section {
+    margin-top: 8px;
+  }
+  .profile-ux-user-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+  .profile-ux-user-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .profile-ux-user-card-head-actions {
+    width: 100%;
+  }
+  .profile-ux-mini-btn {
+    flex: 1 1 0;
+  }
+  .profile-ux-user-avatar {
+    width: 58px;
+    height: 58px;
   }
   .profile-ux-user-chips {
     gap: 6px;

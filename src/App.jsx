@@ -307,8 +307,13 @@ export default function App() {
     if (path === "/") return "Dashboard";
     if (path.startsWith("/wallet")) return "Wallet";
     if (path.startsWith("/data")) return "Buy Data";
+    if (path.startsWith("/airtime")) return "Buy Airtime";
+    if (path.startsWith("/cable")) return "Cable TV";
+    if (path.startsWith("/electricity")) return "Electricity";
+    if (path.startsWith("/exam")) return "Exam PIN";
     if (path.startsWith("/transactions")) return "Transactions";
     if (path.startsWith("/support")) return "Support";
+    if (path.startsWith("/profile")) return "Profile";
     if (path.startsWith("/admin")) return "Admin";
     return "Dashboard";
   })();
