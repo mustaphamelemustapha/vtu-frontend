@@ -1,19 +1,19 @@
 :root {
-  --bg: #f7f6f2;
+  --bg: #f3f6fb;
   --panel: #ffffff;
-  --panel-light: #f2f4f8;
-  --stroke: #e2e5ec;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --accent: #0f766e;
-  --accent-2: #f59e0b;
-  --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
-  --shadow-2: 0 24px 70px rgba(15, 23, 42, 0.12);
-  --ring: rgba(15, 118, 110, 0.22);
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 22px;
-  --radius-xl: 28px;
+  --panel-light: #f7f9fc;
+  --stroke: #d9e1eb;
+  --ink: #111827;
+  --muted: #667085;
+  --accent: #2563eb;
+  --accent-2: #0ea5e9;
+  --shadow: 0 10px 26px rgba(17, 24, 39, 0.08);
+  --shadow-2: 0 16px 36px rgba(17, 24, 39, 0.12);
+  --ring: rgba(37, 99, 235, 0.22);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
   /* Design tokens (type + spacing) */
   --text-xs: 12px;
   --text-sm: 13px;
@@ -33,10 +33,10 @@
   --space-8: 40px;
   --space-9: 56px;
   --space-10: 80px;
-  --font-body: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  --font-auth-body: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  --font-auth-display: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Public Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Public Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-auth-body: "Public Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-auth-display: "Public Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 260ms;
@@ -48,30 +48,22 @@ body {
   font-family: var(--font-body);
   line-height: 1.45;
   background:
-    radial-gradient(circle at 20% 10%, rgba(15, 118, 110, 0.10), transparent 42%),
-    radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.14), transparent 46%),
-    radial-gradient(circle at 80% 90%, rgba(15, 118, 110, 0.06), transparent 55%),
-    repeating-linear-gradient(
-      90deg,
-      rgba(15, 23, 42, 0.03) 0,
-      rgba(15, 23, 42, 0.03) 1px,
-      transparent 1px,
-      transparent 24px
-    ),
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.08), transparent 44%),
+    radial-gradient(circle at 88% 100%, rgba(14, 165, 233, 0.08), transparent 50%),
     var(--bg);
   color: var(--ink);
 }
 
 h1, h2, h3, .brand-title, .hello, .plan-name {
   font-family: var(--font-display);
-  letter-spacing: -0.012em;
+  letter-spacing: -0.01em;
 }
 
 p, .muted, .subtle, .label, .value, .pill, .chip, .notice, .error {
   letter-spacing: 0;
 }
 
-.topbar h1 { letter-spacing: -0.014em; }
+.topbar h1 { letter-spacing: -0.01em; }
 
 a {
   color: inherit;
@@ -103,13 +95,10 @@ a:focus-visible {
   gap: 16px;
   margin-bottom: 24px;
   padding: 12px 14px;
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid var(--stroke);
-  background:
-    radial-gradient(circle at 8% 0%, rgba(15, 118, 110, 0.08), transparent 40%),
-    radial-gradient(circle at 90% 10%, rgba(245, 158, 11, 0.08), transparent 40%),
-    var(--panel);
-  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  background: var(--panel);
+  box-shadow: 0 8px 20px rgba(17, 24, 39, 0.08);
   transition: box-shadow var(--motion-base) ease, border-color var(--motion-base) ease;
 }
 
@@ -122,13 +111,12 @@ a:focus-visible {
 .avatar {
   width: 46px;
   height: 46px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border-radius: 12px;
+  background: linear-gradient(145deg, #2563eb, #1d4ed8);
   color: white;
   display: grid;
   place-items: center;
-  font-weight: 800;
-  animation: pop 0.4s ease;
+  font-weight: 700;
 }
 
 .hello {
@@ -2697,17 +2685,15 @@ body:has(.purchase-loading-screen) {
   background: var(--panel);
   border: 1px solid var(--stroke);
   border-radius: var(--radius-md);
-  padding: 18px;
+  padding: 16px;
   box-shadow: var(--shadow);
   transition:
-    transform var(--motion-fast) var(--ease-standard),
     box-shadow var(--motion-base) ease,
     border-color var(--motion-base) ease;
 }
 
 .card:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-2);
+  box-shadow: 0 14px 30px rgba(17, 24, 39, 0.1);
 }
 
 .label {
@@ -2721,15 +2707,15 @@ body:has(.purchase-loading-screen) {
 }
 
 .hero-card {
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.1), rgba(245, 158, 11, 0.12));
-  border: 1px solid rgba(15, 118, 110, 0.2);
-  padding: 22px;
+  background: linear-gradient(180deg, #f5f8ff, #edf3ff);
+  border: 1px solid #d6e3ff;
+  padding: 20px;
   border-radius: var(--radius-lg);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  box-shadow: var(--shadow-2);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12);
 }
 
 .wallet-hero {
@@ -2741,16 +2727,13 @@ body:has(.purchase-loading-screen) {
 }
 
 .wallet-hero.wallet-hero-premium {
-  background:
-    radial-gradient(circle at 12% 10%, rgba(14, 165, 233, 0.18), transparent 46%),
-    radial-gradient(circle at 90% 0%, rgba(15, 118, 110, 0.16), transparent 56%),
-    var(--panel);
-  border-color: rgba(14, 165, 233, 0.25);
+  background: linear-gradient(180deg, #f6f9ff, #edf4ff);
+  border-color: #cfe0ff;
 }
 
 .wallet-hero-actions-premium .primary {
-  background: linear-gradient(135deg, #0284c7, #0f766e);
-  box-shadow: 0 12px 20px rgba(2, 132, 199, 0.26);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.24);
 }
 
 .wallet-account-board {
@@ -2837,11 +2820,8 @@ body:has(.purchase-loading-screen) {
 .dashboard-welcome-card {
   display: grid;
   gap: 12px;
-  background:
-    radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.18), transparent 46%),
-    radial-gradient(circle at 90% 0%, rgba(14, 116, 144, 0.16), transparent 58%),
-    var(--panel);
-  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: linear-gradient(180deg, #f5f8ff, #eef3ff);
+  border: 1px solid #d8e4ff;
 }
 
 .dashboard-welcome-head {
@@ -2852,7 +2832,7 @@ body:has(.purchase-loading-screen) {
 .dashboard-welcome-title {
   margin: 0;
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   font-size: clamp(24px, 3vw, 34px);
 }
 
@@ -2869,10 +2849,8 @@ body:has(.purchase-loading-screen) {
 }
 
 .dashboard-funded-account {
-  border: 1px solid rgba(15, 118, 110, 0.24);
-  background:
-    radial-gradient(circle at 12% 10%, rgba(15, 118, 110, 0.10), transparent 46%),
-    var(--panel);
+  border: 1px solid #d9e4f7;
+  background: #f8fbff;
   border-radius: 16px;
   padding: 12px 14px;
   display: grid;
@@ -2905,8 +2883,8 @@ body:has(.purchase-loading-screen) {
 }
 
 .dashboard-hero-actions .primary.hero-cta {
-  background: linear-gradient(135deg, #0f766e, #0ea5a1);
-  box-shadow: 0 12px 22px rgba(15, 118, 110, 0.26);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.24);
 }
 
 .dashboard-hero-actions .ghost.hero-cta {
@@ -3063,15 +3041,13 @@ body:has(.purchase-loading-screen) {
 
 .action-card {
   display: block;
-  border-radius: 18px;
-  border: 1px solid rgba(15, 118, 110, 0.15);
-  background:
-    radial-gradient(circle at 10% 10%, rgba(15, 118, 110, 0.08), transparent 50%),
-    var(--panel);
+  border-radius: 14px;
+  border: 1px solid #dbe3ef;
+  background: var(--panel);
 }
 
 .action-card .value {
-  font-size: 26px;
+  font-size: 23px;
 }
 
 .action-card .label {
@@ -3081,14 +3057,14 @@ body:has(.purchase-loading-screen) {
 }
 
 .primary {
-  background: var(--accent);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   border: none;
   color: white;
-  padding: 12px 18px;
-  min-height: 48px;
-  border-radius: 16px;
+  padding: 11px 16px;
+  min-height: 44px;
+  border-radius: 12px;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -3105,13 +3081,13 @@ body:has(.purchase-loading-screen) {
 }
 
 .ghost {
-  background: var(--panel-light);
+  background: #f8fafc;
   border: 1px solid var(--stroke);
   color: var(--ink);
   cursor: pointer;
-  padding: 12px 16px;
-  min-height: 44px;
-  border-radius: 16px;
+  padding: 10px 14px;
+  min-height: 42px;
+  border-radius: 12px;
   font-weight: 600;
   position: relative;
   overflow: hidden;
@@ -3148,7 +3124,7 @@ select:focus-visible {
 
 .primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.22);
 }
 
 .primary:active {
@@ -3158,12 +3134,12 @@ select:focus-visible {
 }
 
 .ghost:hover {
-  background: rgba(15, 118, 110, 0.12);
+  background: #eef3fb;
 }
 
 .ghost:active {
   transform: translateY(1px) scale(0.985);
-  background: rgba(15, 118, 110, 0.18);
+  background: #e7edf8;
   filter: saturate(1.04);
 }
 
@@ -3296,8 +3272,9 @@ textarea {
   place-items: center;
   padding: 24px;
   font-family: var(--font-auth-body);
-  background: radial-gradient(circle at 20% 20%, rgba(15, 118, 110, 0.14), transparent 45%),
-              radial-gradient(circle at 80% 10%, rgba(245, 158, 11, 0.16), transparent 45%);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.08), transparent 44%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
 }
 
 .auth-shell {
@@ -3314,11 +3291,7 @@ textarea {
 .auth-left {
   position: relative;
   padding: 36px;
-  background:
-    radial-gradient(circle at 20% 10%, rgba(15, 118, 110, 0.18), transparent 52%),
-    radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.18), transparent 58%),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.02), transparent 70%),
-    var(--panel);
+  background: linear-gradient(180deg, #ffffff, #f9fbff);
 }
 
 .auth-left-inner {
@@ -3339,9 +3312,9 @@ textarea {
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
-  border: 1px solid rgba(15, 118, 110, 0.18);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.16);
+  border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 .auth-mark img {
@@ -3354,7 +3327,7 @@ textarea {
 .auth-brand-title {
   font-family: var(--font-auth-display);
   font-weight: 700;
-  letter-spacing: -0.018em;
+  letter-spacing: -0.01em;
   font-size: 24px;
 }
 
