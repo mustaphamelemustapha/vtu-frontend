@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 export default function Services() {
   const [catalog, setCatalog] = useState(null);
@@ -79,9 +80,9 @@ export default function Services() {
             <h3>Available Providers</h3>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span className="muted">{loading ? "Loading..." : loadError ? "Error" : "Loaded"}</span>
-              <button className="ghost" type="button" onClick={loadCatalog} disabled={loading}>
+              <Button variant="ghost" type="button" onClick={loadCatalog} disabled={loading}>
                 {loading ? "Refreshing..." : "Refresh"}
-              </button>
+              </Button>
             </div>
           </div>
           {loadError && <div className="notice">{loadError}</div>}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { downloadReceiptPdf } from "../services/receiptDownload";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 export default function Transactions() {
   const navigate = useNavigate();
@@ -326,8 +327,8 @@ export default function Transactions() {
           </div>
         </div>
         <div className="hero-actions">
-          <button className="ghost" type="button" onClick={() => navigate("/support")}>Support</button>
-          <button className="primary" type="button" onClick={() => navigate("/wallet")}>Wallet</button>
+          <Button variant="ghost" type="button" onClick={() => navigate("/support")}>Support</Button>
+          <Button type="button" onClick={() => navigate("/wallet")}>Wallet</Button>
         </div>
       </section>
 
@@ -346,14 +347,13 @@ export default function Transactions() {
             </div>
           </div>
           <div className="tx-live-actions">
-            <button className="ghost" type="button" onClick={() => refreshTransactions()} disabled={refreshBusy}>
+            <Button variant="ghost" type="button" onClick={() => refreshTransactions()} disabled={refreshBusy}>
               {refreshBusy ? "Refreshing..." : "Refresh Now"}
-            </button>
+            </Button>
             <button
               className={`pill ${liveRefresh ? "active" : ""}`}
               type="button"
-              onClick={() => setLiveRefresh((prev) => !prev)}
-            >
+              onClick={() => setLiveRefresh((prev) => !prev)}>
               {liveRefresh ? "Live On" : "Live Off"}
             </button>
           </div>
@@ -394,8 +394,7 @@ export default function Transactions() {
                 <button
                   key={status}
                   className={`pill ${filter === status ? "active" : ""}`}
-                  onClick={() => setFilter(status)}
-                >
+                  onClick={() => setFilter(status)}>
                   {status === "all" ? "All" : statusLabel(status)}
                 </button>
               ))}
@@ -442,7 +441,7 @@ export default function Transactions() {
           <div className="modal modal-receipt">
             <div className="modal-head">
               <div className="label">Transaction Receipt</div>
-              <button className="ghost" onClick={() => setSelected(null)}>Close</button>
+              <Button variant="ghost" onClick={() => setSelected(null)}>Close</Button>
             </div>
             <div className="modal-body">
               <div className="tx-receipt-hero">
@@ -453,8 +452,7 @@ export default function Transactions() {
                       : statusKey(selected.status) === "pending"
                         ? "pending"
                         : "failed"
-                  }`}
-                >
+                  }`}>
                   {receiptStatusSymbol(selected)}
                 </div>
                 <h3 className="tx-receipt-title">{receiptStatusTitle(selected)}</h3>
@@ -488,27 +486,21 @@ export default function Transactions() {
               )}
             </div>
             <div className="modal-actions">
-              <button className="primary" onClick={downloadReceipt} disabled={downloadBusy}>
+              <Button onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
-              </button>
-              <button
-                className="ghost"
-                onClick={openReportModal}
+              </Button>
+              <Button variant="ghost" onClick={openReportModal}
                 disabled={hasOpenReport(selected)}
-                title={hasOpenReport(selected) ? "Issue already reported" : "Report issue"}
-              >
+                title={hasOpenReport(selected) ? "Issue already reported" : "Report issue"}>
                 {hasOpenReport(selected) ? "Issue Reported" : "Report Issue"}
-              </button>
-              <button
-                className="ghost"
-                onClick={() => {
+              </Button>
+              <Button variant="ghost" onClick={() => {
                   navigator.clipboard?.writeText(selected.reference || "");
                   showToast("Reference copied.", "success");
-                }}
-              >
+                }}>
                 Copy Reference
-              </button>
-              <button className="ghost" onClick={() => setSelected(null)}>Done</button>
+              </Button>
+              <Button variant="ghost" onClick={() => setSelected(null)}>Done</Button>
             </div>
           </div>
           <div className="receipt-capture-layer" aria-hidden="true">
@@ -521,8 +513,7 @@ export default function Transactions() {
                       : statusKey(selected.status) === "pending"
                         ? "pending"
                         : "failed"
-                  }`}
-                >
+                  }`}>
                   {receiptStatusSymbol(selected)}
                 </div>
                 <h3 className="tx-receipt-title">{receiptStatusTitle(selected)}</h3>
@@ -558,9 +549,9 @@ export default function Transactions() {
                 <div className="label">Report Transaction Issue</div>
                 <h3>{selected.reference}</h3>
               </div>
-              <button className="ghost" onClick={() => setReportOpen(false)} disabled={reportBusy}>
+              <Button variant="ghost" onClick={() => setReportOpen(false)} disabled={reportBusy}>
                 Close
-              </button>
+              </Button>
             </div>
             <form className="form-grid" onSubmit={submitReport}>
               <label>
@@ -568,8 +559,7 @@ export default function Transactions() {
                 <select
                   value={reportForm.category}
                   onChange={(e) => setReportForm((prev) => ({ ...prev, category: e.target.value }))}
-                  disabled={reportBusy}
-                >
+                  disabled={reportBusy}>
                   <option value="delivery_issue">Delivery issue</option>
                   <option value="wrong_recipient">Wrong recipient</option>
                   <option value="duplicate_charge">Duplicate charge</option>
@@ -587,17 +577,14 @@ export default function Transactions() {
                 />
               </label>
               <div className="modal-actions">
-                <button
-                  className="ghost"
-                  type="button"
+                <Button variant="ghost" type="button"
                   onClick={() => setReportOpen(false)}
-                  disabled={reportBusy}
-                >
+                  disabled={reportBusy}>
                   Cancel
-                </button>
-                <button className="primary" type="submit" disabled={reportBusy}>
+                </Button>
+                <Button type="submit" disabled={reportBusy}>
                   {reportBusy ? "Submitting..." : "Submit Report"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

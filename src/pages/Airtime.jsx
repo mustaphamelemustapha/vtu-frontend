@@ -4,6 +4,7 @@ import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
 
@@ -33,7 +34,7 @@ export default function Airtime() {
       ...prev,
       network: qNetwork || prev.network,
       phone_number: qPhone || prev.phone_number,
-      amount: Number.isFinite(qAmount) && qAmount > 0 ? qAmount : prev.amount,
+      amount: Number.isFinite(qAmount) && qAmount> 0 ? qAmount : prev.amount,
     }));
   }, [searchParams]);
 
@@ -44,17 +45,17 @@ export default function Airtime() {
     const amount = Number(form.amount);
 
     if (!network) nextErrors.network = "Select a network.";
-    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
+    if (phoneNumber.length < 10 || phoneNumber.length> 15) {
       nextErrors.phone_number = "Enter a valid phone number.";
     }
     if (!Number.isFinite(amount) || amount < 50) {
       nextErrors.amount = "Minimum airtime amount is ₦50.";
-    } else if (amount > 500000) {
+    } else if (amount> 500000) {
       nextErrors.amount = "Maximum airtime amount is ₦500,000.";
     }
 
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return null;
+    if (Object.keys(nextErrors).length> 0) return null;
     return { network, phone_number: phoneNumber, amount };
   };
 
@@ -234,7 +235,7 @@ export default function Airtime() {
 
   const saveCurrentBeneficiary = () => {
     const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
-    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
+    if (phoneNumber.length < 10 || phoneNumber.length> 15) {
       showToast("Enter valid phone number first.", "error");
       return;
     }
@@ -279,8 +280,8 @@ export default function Airtime() {
           <div className="muted">Fast airtime delivery with a receipt you can track.</div>
         </div>
         <div className="hero-actions">
-          <button className="ghost" type="button" onClick={() => navigate("/services")}>All Services</button>
-          <button className="primary" type="button" onClick={() => navigate("/wallet")}>Fund Wallet</button>
+          <Button variant="ghost" type="button" onClick={() => navigate("/services")}>All Services</Button>
+          <Button type="button" onClick={() => navigate("/wallet")}>Fund Wallet</Button>
         </div>
       </section>
 
@@ -298,8 +299,7 @@ export default function Airtime() {
                 onChange={(e) => {
                   setForm({ ...form, network: e.target.value });
                   if (errors.network) setErrors((prev) => ({ ...prev, network: "" }));
-                }}
-              >
+                }}>
                 {networks.map((n) => (
                   <option key={n} value={n}>{String(n).toUpperCase()}</option>
                 ))}
@@ -335,9 +335,9 @@ export default function Airtime() {
               />
               {errors.amount && <div className="error inline">{errors.amount}</div>}
             </label>
-            <button className="primary" type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading}>
               {loading ? "Processing..." : "Buy Airtime"}
-            </button>
+            </Button>
           </form>
           <div className="beneficiary-head row-between">
             <div className="label">Saved Beneficiaries</div>
@@ -359,8 +359,7 @@ export default function Airtime() {
                     type="button"
                     className="beneficiary-remove"
                     aria-label={`Remove ${item.label}`}
-                    onClick={() => removeSavedBeneficiary(item.id)}
-                  >
+                    onClick={() => removeSavedBeneficiary(item.id)}>
                     Remove
                   </button>
                 </div>
@@ -438,13 +437,13 @@ export default function Airtime() {
               </div>
             </div>
             <div className="modal-actions">
-              <button className="primary" type="button" onClick={downloadReceipt} disabled={downloadBusy}>
+              <Button type="button" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
-              </button>
-              <button className="ghost" type="button" onClick={shareReceipt}>Share Receipt</button>
-              <button className="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</button>
-              <button className="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</button>
-              <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</button>
+              </Button>
+              <Button variant="ghost" type="button" onClick={shareReceipt}>Share Receipt</Button>
+              <Button variant="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</Button>
+              <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</Button>
+              <Button variant="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</Button>
             </div>
           </div>
           {renderReceiptSheet && (

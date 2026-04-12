@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch, getProfile, setProfile } from "../services/api";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 const PHONE_KEY = "axisvtu_profile_phone";
 const JOINED_LABEL_KEY = "axisvtu_joined_label";
@@ -129,7 +130,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
       showToast("Full name is too short.", "error");
       return;
     }
-    if (nextPhone && (nextPhone.length < 10 || nextPhone.length > 15)) {
+    if (nextPhone && (nextPhone.length < 10 || nextPhone.length> 15)) {
       showToast("Phone number must be 10 to 15 digits.", "error");
       return;
     }
@@ -212,12 +213,12 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
               <div className="muted">Manage account, security and support access</div>
             </div>
             <div className="profile-ux-user-card-head-actions">
-              <button className="ghost profile-ux-mini-btn" type="button" onClick={() => navigate("/")}>
+              <Button variant="ghost" className="profile-ux-mini-btn" type="button" onClick={() => navigate("/")}>
                 Home
-              </button>
-              <button className="ghost profile-ux-mini-btn" type="button" onClick={() => onToggleTheme?.()}>
+              </Button>
+              <Button variant="ghost" className="profile-ux-mini-btn" type="button" onClick={() => onToggleTheme?.()}>
                 Theme
-              </button>
+              </Button>
             </div>
           </div>
           <div className="profile-ux-user-avatar">{initials}</div>
@@ -237,9 +238,9 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
 
       <section className="section">
         <div className="profile-ux-quick-actions card">
-          <button className="primary" type="button" onClick={() => setAccountOpen(true)}>
+          <Button type="button" onClick={() => setAccountOpen(true)}>
             Edit Account
-          </button>
+          </Button>
         </div>
       </section>
 
@@ -307,8 +308,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <button
             className="card profile-ux-menu-item profile-ux-credit-toggle"
             type="button"
-            onClick={() => setCreditOpen((prev) => !prev)}
-          >
+            onClick={() => setCreditOpen((prev) => !prev)}>
             <span className="profile-ux-menu-left">
               <span className="profile-ux-icon"><AboutIcon /></span>
               <span>Designed by M.Mele · MMTECHGLOBE</span>
@@ -337,7 +337,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <div className="modal modal-receipt">
             <div className="modal-head">
               <h3>Account</h3>
-              <button className="ghost" type="button" onClick={() => setAccountOpen(false)}>Close</button>
+              <Button variant="ghost" type="button" onClick={() => setAccountOpen(false)}>Close</Button>
             </div>
             <div className="form-grid">
               <label>
@@ -358,12 +358,12 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
                 <input value={roleLabel(profile.role)} disabled />
               </label>
               <div className="modal-actions">
-                <button className="primary" type="button" onClick={saveAccountDetails} disabled={saving}>
+                <Button type="button" onClick={saveAccountDetails} disabled={saving}>
                   {saving ? "Saving..." : "Save Details"}
-                </button>
-                <button className="ghost danger" type="button" onClick={deleteAccount} disabled={deleting}>
+                </Button>
+                <Button variant="ghost" className="danger" type="button" onClick={deleteAccount} disabled={deleting}>
                   {deleting ? "Deleting..." : "Delete Account"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -375,7 +375,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <div className="modal modal-receipt">
             <div className="modal-head">
               <h3>Security</h3>
-              <button className="ghost" type="button" onClick={() => setSecurityOpen(false)}>Close</button>
+              <Button variant="ghost" type="button" onClick={() => setSecurityOpen(false)}>Close</Button>
             </div>
             <div className="settings-grid">
               <div className="setting-row">
@@ -383,16 +383,16 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
                   <div className="label">Change Password</div>
                   <div className="muted">Update your password anytime.</div>
                 </div>
-                <button className="primary" type="button" onClick={() => setPwOpen(true)}>
+                <Button type="button" onClick={() => setPwOpen(true)}>
                   Change
-                </button>
+                </Button>
               </div>
               <div className="setting-row">
                 <div>
                   <div className="label">Logout</div>
                   <div className="muted">Sign out of this session.</div>
                 </div>
-                <button className="ghost" type="button" onClick={onLogout}>Logout</button>
+                <Button variant="ghost" type="button" onClick={onLogout}>Logout</Button>
               </div>
             </div>
           </div>
@@ -404,7 +404,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <div className="modal modal-receipt">
             <div className="modal-head">
               <h3>About</h3>
-              <button className="ghost" type="button" onClick={() => setAboutOpen(false)}>Close</button>
+              <Button variant="ghost" type="button" onClick={() => setAboutOpen(false)}>Close</Button>
             </div>
             <div className="profile-ux-about-card">
               <div className="label">App Version</div>
@@ -419,7 +419,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <div className="modal modal-receipt">
             <div className="modal-head">
               <h3>Help</h3>
-              <button className="ghost" type="button" onClick={() => setHelpOpen(false)}>Close</button>
+              <Button variant="ghost" type="button" onClick={() => setHelpOpen(false)}>Close</Button>
             </div>
             <div className="form-grid">
               <div className="notice">
@@ -428,16 +428,13 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
               <a className="ghost legal-link-btn" href="/landing/terms.html" target="_blank" rel="noreferrer">Terms</a>
               <a className="ghost legal-link-btn" href="/landing/privacy.html" target="_blank" rel="noreferrer">Privacy</a>
               <a className="ghost legal-link-btn" href="/landing/refund-policy.html" target="_blank" rel="noreferrer">Refund Policy</a>
-              <button
-                className="primary"
-                type="button"
+              <Button type="button"
                 onClick={() => {
                   setHelpOpen(false);
                   navigate("/support");
-                }}
-              >
+                }}>
                 My Support Reports
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -448,7 +445,7 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
           <div className="modal modal-receipt">
             <div className="modal-head">
               <h3>Change Password</h3>
-              <button className="ghost" type="button" onClick={() => setPwOpen(false)}>Close</button>
+              <Button variant="ghost" type="button" onClick={() => setPwOpen(false)}>Close</Button>
             </div>
             <form className="form-grid" onSubmit={submitPassword}>
               <label>
@@ -470,12 +467,12 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
                 />
               </label>
               <div className="modal-actions">
-                <button className="ghost" type="button" onClick={() => setPwOpen(false)} disabled={pwLoading}>
+                <Button variant="ghost" type="button" onClick={() => setPwOpen(false)} disabled={pwLoading}>
                   Cancel
-                </button>
-                <button className="primary" type="submit" disabled={pwLoading}>
+                </Button>
+                <Button type="submit" disabled={pwLoading}>
                   {pwLoading ? "Updating..." : "Update Password"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>

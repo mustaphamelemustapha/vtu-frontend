@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch, clearToken, setAuthTokens, setProfile, warmBackend } from "../services/api";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 export default function AdminLogin({ onAuth }) {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function AdminLogin({ onAuth }) {
     if (isTransientConnectionError(raw)) {
       return "Connection is unstable. Server may be waking up, please try again.";
     }
-    if (raw.length > 160) return fallback;
+    if (raw.length> 160) return fallback;
     return raw;
   };
 
@@ -109,9 +110,9 @@ export default function AdminLogin({ onAuth }) {
             Remember me
           </label>
           {error && <div className="error">{error}</div>}
-          <button className="primary" type="submit">
+          <Button type="submit">
             {loading ? "Signing in..." : "Login"}
-          </button>
+          </Button>
         </form>
       </div>
     </div>

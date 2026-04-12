@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 const SUPPORT_CONTACTS = {
   customer_care_phone: "+2348141114647",
@@ -143,12 +144,12 @@ export default function Support() {
             <div className="muted">Contact support quickly, get answers, and track your reported issues.</div>
           </div>
           <div className="support-head-actions">
-            <button className="ghost" type="button" onClick={() => navigate("/transactions")}>
+            <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>
               Go to Transactions
-            </button>
-            <button className="primary" type="button" onClick={load} disabled={loading}>
+            </Button>
+            <Button type="button" onClick={load} disabled={loading}>
               {loading ? "Refreshing..." : "Refresh"}
-            </button>
+            </Button>
           </div>
         </div>
       </section>
@@ -181,8 +182,7 @@ export default function Support() {
               WHATSAPP_PREFILL
             )}`}
             target="_blank"
-            rel="noreferrer"
-          >
+            rel="noreferrer">
             <div className="label">WhatsApp Support</div>
             <div className="value">Chat on WhatsApp</div>
             <div className="muted">Fast chat support</div>
@@ -265,8 +265,7 @@ export default function Support() {
                 key={item}
                 className={`pill ${filter === item ? "active" : ""}`}
                 type="button"
-                onClick={() => setFilter(item)}
-              >
+                onClick={() => setFilter(item)}>
                 {item === "all" ? "All" : statusLabel(item)}
               </button>
             ))}
@@ -341,19 +340,16 @@ export default function Support() {
                   )}
 
                   <div className="modal-actions">
-                    <button
-                      className="ghost"
-                      type="button"
+                    <Button variant="ghost" type="button"
                       onClick={() => {
                         navigator.clipboard?.writeText(report.transaction_reference || "");
                         showToast("Reference copied.", "success");
-                      }}
-                    >
+                      }}>
                       Copy Reference
-                    </button>
-                    <button className="ghost" type="button" onClick={() => navigate("/transactions")}>
+                    </Button>
+                    <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>
                       Open Receipt
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -363,9 +359,9 @@ export default function Support() {
             <div className="card">
               <div className="empty">No reports found for this filter.</div>
               <div className="modal-actions">
-                <button className="primary" type="button" onClick={() => navigate("/transactions")}>
+                <Button type="button" onClick={() => navigate("/transactions")}>
                   View Transactions
-                </button>
+                </Button>
               </div>
             </div>
           )}

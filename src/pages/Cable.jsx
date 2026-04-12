@@ -4,6 +4,7 @@ import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
 
@@ -43,7 +44,7 @@ export default function Cable() {
       smartcard_number: qSmartcard || prev.smartcard_number,
       phone_number: qPhone || prev.phone_number,
       package_code: qPackageCode || prev.package_code,
-      amount: Number.isFinite(qAmount) && qAmount > 0 ? qAmount : prev.amount,
+      amount: Number.isFinite(qAmount) && qAmount> 0 ? qAmount : prev.amount,
     }));
   }, [searchParams]);
 
@@ -59,20 +60,20 @@ export default function Cable() {
     if (!/^[a-zA-Z0-9]{5,20}$/.test(smartcardNumber)) {
       nextErrors.smartcard_number = "Use 5-20 letters/numbers for smartcard.";
     }
-    if (phoneNumber.length < 7 || phoneNumber.length > 15) {
+    if (phoneNumber.length < 7 || phoneNumber.length> 15) {
       nextErrors.phone_number = "Enter a valid phone number.";
     }
-    if (packageCode.length < 2 || packageCode.length > 64) {
+    if (packageCode.length < 2 || packageCode.length> 64) {
       nextErrors.package_code = "Enter a valid package code.";
     }
     if (!Number.isFinite(amount) || amount < 500) {
       nextErrors.amount = "Minimum cable amount is ₦500.";
-    } else if (amount > 500000) {
+    } else if (amount> 500000) {
       nextErrors.amount = "Maximum cable amount is ₦500,000.";
     }
 
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return null;
+    if (Object.keys(nextErrors).length> 0) return null;
     return {
       provider,
       smartcard_number: smartcardNumber,
@@ -319,8 +320,8 @@ export default function Cable() {
           <div className="muted">Pay for subscriptions with one clean receipt.</div>
         </div>
         <div className="hero-actions">
-          <button className="ghost" type="button" onClick={() => navigate("/services")}>All Services</button>
-          <button className="primary" type="button" onClick={() => navigate("/wallet")}>Fund Wallet</button>
+          <Button variant="ghost" type="button" onClick={() => navigate("/services")}>All Services</Button>
+          <Button type="button" onClick={() => navigate("/wallet")}>Fund Wallet</Button>
         </div>
       </section>
 
@@ -338,8 +339,7 @@ export default function Cable() {
                 onChange={(e) => {
                   setForm({ ...form, provider: e.target.value });
                   if (errors.provider) setErrors((prev) => ({ ...prev, provider: "" }));
-                }}
-              >
+                }}>
                 {providers.map((p) => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
@@ -401,9 +401,9 @@ export default function Cable() {
               />
               {errors.amount && <div className="error inline">{errors.amount}</div>}
             </label>
-            <button className="primary" type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading}>
               {loading ? "Processing..." : "Pay Cable"}
-            </button>
+            </Button>
           </form>
           <div className="beneficiary-head row-between">
             <div className="label">Saved Beneficiaries</div>
@@ -425,8 +425,7 @@ export default function Cable() {
                     type="button"
                     className="beneficiary-remove"
                     aria-label={`Remove ${item.label}`}
-                    onClick={() => removeSavedBeneficiary(item.id)}
-                  >
+                    onClick={() => removeSavedBeneficiary(item.id)}>
                     Remove
                   </button>
                 </div>
@@ -513,13 +512,13 @@ export default function Cable() {
               </div>
             </div>
             <div className="modal-actions">
-              <button className="primary" type="button" onClick={downloadReceipt} disabled={downloadBusy}>
+              <Button type="button" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
-              </button>
-              <button className="ghost" type="button" onClick={shareReceipt}>Share Receipt</button>
-              <button className="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</button>
-              <button className="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</button>
-              <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</button>
+              </Button>
+              <Button variant="ghost" type="button" onClick={shareReceipt}>Share Receipt</Button>
+              <Button variant="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</Button>
+              <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</Button>
+              <Button variant="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</Button>
             </div>
           </div>
           {renderReceiptSheet && (

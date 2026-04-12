@@ -47,7 +47,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
     if (isTransientConnectionError(raw)) {
       return "Connection is unstable. Server may be waking up, please try again.";
     }
-    if (raw.length > 160) return fallback;
+    if (raw.length> 160) return fallback;
     return raw;
   };
 
@@ -73,7 +73,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
         lastError = err;
         const msg = String(err?.message || "").toLowerCase();
         const isBusy = msg.includes("service is busy") || msg.includes("503");
-        if (!isBusy || attempt >= retries) break;
+        if (!isBusy || attempt>= retries) break;
         await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
       }
     }
@@ -107,7 +107,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
       const params = new URLSearchParams(window.location.search || "");
       const token = params.get("token") || params.get("reset_token");
       const wantsReset = params.get("reset") === "1" || params.get("reset") === "true";
-      if (token && (wantsReset || token.length > 10)) {
+      if (token && (wantsReset || token.length> 10)) {
         setForgotMode(false);
         setMode("login");
         setResetMode(true);
@@ -142,7 +142,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
 
   const passwordStrength = (value) => {
     let score = 0;
-    if (value.length >= 8) score += 1;
+    if (value.length>= 8) score += 1;
     if (/[A-Z]/.test(value)) score += 1;
     if (/[0-9]/.test(value)) score += 1;
     if (/[^A-Za-z0-9]/.test(value)) score += 1;
@@ -381,8 +381,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   type="button"
                   className="input-btn"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
+                  aria-label={showPassword ? "Hide password" : "Show password"}>
                   {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
@@ -407,8 +406,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   type="button"
                   className="input-btn"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  aria-label={showConfirm ? "Hide password" : "Show password"}
-                >
+                  aria-label={showConfirm ? "Hide password" : "Show password"}>
                   {showConfirm ? "Hide" : "Show"}
                 </button>
               </div>
@@ -499,8 +497,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                 type="button"
                 className="input-btn"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
+                aria-label={showPassword ? "Hide password" : "Show password"}>
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
@@ -531,8 +528,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   type="button"
                   className="input-btn"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  aria-label={showConfirm ? "Hide password" : "Show password"}
-                >
+                  aria-label={showConfirm ? "Hide password" : "Show password"}>
                   {showConfirm ? "Hide" : "Show"}
                 </button>
               </div>
@@ -569,8 +565,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             setNotice("");
             setFieldErrors({});
             navigate(mode === "login" ? "/register" : "/login");
-          }}
-        >
+          }}>
           {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
         </button>
           </div>

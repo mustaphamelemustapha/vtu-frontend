@@ -525,8 +525,7 @@ export default function Admin() {
                   key={t.id}
                   type="button"
                   className={`pill tab ${tab === t.id ? "active" : ""}`}
-                  onClick={() => setTab(t.id)}
-                >
+                  onClick={() => setTab(t.id)}>
                   {t.label}
                 </button>
               ))}
@@ -663,8 +662,7 @@ export default function Admin() {
               />
               <select
                 value={txFilters.status}
-                onChange={(e) => setTxFilters({ ...txFilters, status: e.target.value })}
-              >
+                onChange={(e) => setTxFilters({ ...txFilters, status: e.target.value })}>
                 <option value="">All Status</option>
                 <option value="success">Success</option>
                 <option value="pending">Pending</option>
@@ -673,8 +671,7 @@ export default function Admin() {
               </select>
               <select
                 value={txFilters.tx_type}
-                onChange={(e) => setTxFilters({ ...txFilters, tx_type: e.target.value })}
-              >
+                onChange={(e) => setTxFilters({ ...txFilters, tx_type: e.target.value })}>
                 <option value="">All Types</option>
                 <option value="data">Data</option>
                 <option value="airtime">Airtime</option>
@@ -687,8 +684,7 @@ export default function Admin() {
                 className="primary"
                 type="button"
                 onClick={() => fetchTransactions({ page: 1 })}
-                disabled={txBusy}
-              >
+                disabled={txBusy}>
                 {txBusy ? "Loading..." : "Search"}
               </button>
             </div>
@@ -702,16 +698,14 @@ export default function Admin() {
                   className="ghost"
                   type="button"
                   onClick={() => fetchTransactions({ page: Math.max(1, (txState.page || 1) - 1) })}
-                  disabled={txBusy || (txState.page || 1) <= 1}
-                >
+                  disabled={txBusy || (txState.page || 1) <= 1}>
                   Prev
                 </button>
                 <button
                   className="ghost"
                   type="button"
                   onClick={() => fetchTransactions({ page: Math.min(txPages, (txState.page || 1) + 1) })}
-                  disabled={txBusy || (txState.page || 1) >= txPages}
-                >
+                  disabled={txBusy || (txState.page || 1)>= txPages}>
                   Next
                 </button>
               </div>
@@ -786,8 +780,7 @@ export default function Admin() {
               />
               <select
                 value={reportFilters.status}
-                onChange={(e) => setReportFilters({ ...reportFilters, status: e.target.value })}
-              >
+                onChange={(e) => setReportFilters({ ...reportFilters, status: e.target.value })}>
                 <option value="">All Status</option>
                 <option value="open">Open</option>
                 <option value="resolved">Resolved</option>
@@ -797,8 +790,7 @@ export default function Admin() {
                 className="primary"
                 type="button"
                 onClick={() => fetchReports({ page: 1 })}
-                disabled={reportBusy}
-              >
+                disabled={reportBusy}>
                 {reportBusy ? "Loading..." : "Search"}
               </button>
             </div>
@@ -812,16 +804,14 @@ export default function Admin() {
                   className="ghost"
                   type="button"
                   onClick={() => fetchReports({ page: Math.max(1, (reportState.page || 1) - 1) })}
-                  disabled={reportBusy || (reportState.page || 1) <= 1}
-                >
+                  disabled={reportBusy || (reportState.page || 1) <= 1}>
                   Prev
                 </button>
                 <button
                   className="ghost"
                   type="button"
                   onClick={() => fetchReports({ page: Math.min(reportPages, (reportState.page || 1) + 1) })}
-                  disabled={reportBusy || (reportState.page || 1) >= reportPages}
-                >
+                  disabled={reportBusy || (reportState.page || 1)>= reportPages}>
                   Next
                 </button>
               </div>
@@ -862,16 +852,14 @@ export default function Admin() {
                               className="ghost"
                               type="button"
                               onClick={() => updateReportStatus(item, "resolved")}
-                              disabled={reportActionBusyId === `${item.id}:resolved`}
-                            >
+                              disabled={reportActionBusyId === `${item.id}:resolved`}>
                               {reportActionBusyId === `${item.id}:resolved` ? "Saving..." : "Resolve"}
                             </button>
                             <button
                               className="ghost danger"
                               type="button"
                               onClick={() => updateReportStatus(item, "rejected")}
-                              disabled={reportActionBusyId === `${item.id}:rejected`}
-                            >
+                              disabled={reportActionBusyId === `${item.id}:rejected`}>
                               {reportActionBusyId === `${item.id}:rejected` ? "Saving..." : "Reject"}
                             </button>
                           </>
@@ -908,16 +896,14 @@ export default function Admin() {
                             className="ghost"
                             type="button"
                             onClick={() => updateReportStatus(item, "resolved")}
-                            disabled={reportActionBusyId === `${item.id}:resolved`}
-                          >
+                            disabled={reportActionBusyId === `${item.id}:resolved`}>
                             Resolve
                           </button>
                           <button
                             className="ghost danger"
                             type="button"
                             onClick={() => updateReportStatus(item, "rejected")}
-                            disabled={reportActionBusyId === `${item.id}:rejected`}
-                          >
+                            disabled={reportActionBusyId === `${item.id}:rejected`}>
                             Reject
                           </button>
                         </div>
@@ -957,16 +943,14 @@ export default function Admin() {
                   className="ghost"
                   type="button"
                   onClick={() => fetchUsers({ page: Math.max(1, (userState.page || 1) - 1) })}
-                  disabled={userBusy || (userState.page || 1) <= 1}
-                >
+                  disabled={userBusy || (userState.page || 1) <= 1}>
                   Prev
                 </button>
                 <button
                   className="ghost"
                   type="button"
                   onClick={() => fetchUsers({ page: Math.min(userPages, (userState.page || 1) + 1) })}
-                  disabled={userBusy || (userState.page || 1) >= userPages}
-                >
+                  disabled={userBusy || (userState.page || 1)>= userPages}>
                   Next
                 </button>
               </div>
@@ -1086,8 +1070,7 @@ export default function Admin() {
                       tx_type: nextType,
                       provider: defaults[0] || "",
                     });
-                  }}
-                >
+                  }}>
                   <option value="data">Data</option>
                   <option value="airtime">Airtime</option>
                   <option value="cable">Cable</option>
@@ -1098,11 +1081,10 @@ export default function Admin() {
               <label>
                 Provider / Network
                 {Array.isArray(SERVICE_PROVIDER_OPTIONS[pricingForm.tx_type]) &&
-                SERVICE_PROVIDER_OPTIONS[pricingForm.tx_type].length > 0 ? (
+                SERVICE_PROVIDER_OPTIONS[pricingForm.tx_type].length> 0 ? (
                   <select
                     value={pricingForm.provider}
-                    onChange={(e) => setPricingForm({ ...pricingForm, provider: e.target.value })}
-                  >
+                    onChange={(e) => setPricingForm({ ...pricingForm, provider: e.target.value })}>
                     {SERVICE_PROVIDER_OPTIONS[pricingForm.tx_type].map((item) => (
                       <option key={item} value={item}>
                         {String(item).toUpperCase()}
@@ -1208,8 +1190,7 @@ export default function Admin() {
                 Level
                 <select
                   value={announceForm.level}
-                  onChange={(e) => setAnnounceForm({ ...announceForm, level: e.target.value })}
-                >
+                  onChange={(e) => setAnnounceForm({ ...announceForm, level: e.target.value })}>
                   {ANNOUNCEMENT_LEVEL_OPTIONS.map((level) => (
                     <option value={level} key={level}>
                       {level.toUpperCase()}
@@ -1295,8 +1276,7 @@ export default function Admin() {
                           className={`ghost ${item.is_active ? "danger" : ""}`}
                           type="button"
                           onClick={() => toggleAnnouncement(item)}
-                          disabled={announceActionBusyId === item.id}
-                        >
+                          disabled={announceActionBusyId === item.id}>
                           {announceActionBusyId === item.id
                             ? "Saving..."
                             : (item.is_active ? "Disable" : "Enable")}
@@ -1338,8 +1318,7 @@ export default function Admin() {
                         className={`ghost ${item.is_active ? "danger" : ""}`}
                         type="button"
                         onClick={() => toggleAnnouncement(item)}
-                        disabled={announceActionBusyId === item.id}
-                      >
+                        disabled={announceActionBusyId === item.id}>
                         {announceActionBusyId === item.id
                           ? "Saving..."
                           : (item.is_active ? "Disable" : "Enable")}
@@ -1370,8 +1349,7 @@ export default function Admin() {
                 onClick={() => {
                   setUserDetailOpen(false);
                   setUserDetailData(null);
-                }}
-              >
+                }}>
                 Close
               </button>
             </div>
@@ -1440,31 +1418,27 @@ export default function Admin() {
                 className="ghost"
                 type="button"
                 onClick={() => fetchUserDetails(userDetailData?.user?.id || selectedUser.id)}
-                disabled={userDetailBusy}
-              >
+                disabled={userDetailBusy}>
                 {userDetailBusy ? "Refreshing..." : "Refresh"}
               </button>
               <button
                 className="ghost"
                 type="button"
-                onClick={() => openFund(userDetailData?.user || selectedUser)}
-              >
+                onClick={() => openFund(userDetailData?.user || selectedUser)}>
                 Fund Wallet
               </button>
               {(userDetailData?.user?.is_active ?? selectedUser.is_active) ? (
                 <button
                   className="ghost danger"
                   type="button"
-                  onClick={() => suspendUser(userDetailData?.user || selectedUser)}
-                >
+                  onClick={() => suspendUser(userDetailData?.user || selectedUser)}>
                   Suspend User
                 </button>
               ) : (
                 <button
                   className="ghost"
                   type="button"
-                  onClick={() => activateUser(userDetailData?.user || selectedUser)}
-                >
+                  onClick={() => activateUser(userDetailData?.user || selectedUser)}>
                   Activate User
                 </button>
               )}
@@ -1474,8 +1448,7 @@ export default function Admin() {
                 onClick={() => {
                   setUserDetailOpen(false);
                   setUserDetailData(null);
-                }}
-              >
+                }}>
                 Done
               </button>
             </div>
@@ -1541,8 +1514,7 @@ export default function Admin() {
                 onClick={() => {
                   navigator.clipboard?.writeText(selectedTx.reference || "");
                   showToast("Reference copied.", "success");
-                }}
-              >
+                }}>
                 Copy Reference
               </button>
               <button className="primary" type="button" onClick={() => setSelectedTx(null)}>

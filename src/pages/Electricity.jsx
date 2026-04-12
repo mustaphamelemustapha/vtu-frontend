@@ -4,6 +4,7 @@ import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
 
@@ -43,7 +44,7 @@ export default function Electricity() {
       meter_type: qMeterType || prev.meter_type,
       meter_number: qMeterNumber || prev.meter_number,
       phone_number: qPhone || prev.phone_number,
-      amount: Number.isFinite(qAmount) && qAmount > 0 ? qAmount : prev.amount,
+      amount: Number.isFinite(qAmount) && qAmount> 0 ? qAmount : prev.amount,
     }));
   }, [searchParams]);
 
@@ -59,20 +60,20 @@ export default function Electricity() {
     if (!["prepaid", "postpaid"].includes(meterType)) {
       nextErrors.meter_type = "Select a valid meter type.";
     }
-    if (meterNumber.length < 6 || meterNumber.length > 13) {
+    if (meterNumber.length < 6 || meterNumber.length> 13) {
       nextErrors.meter_number = "Enter a valid meter number.";
     }
-    if (phoneNumber.length < 7 || phoneNumber.length > 15) {
+    if (phoneNumber.length < 7 || phoneNumber.length> 15) {
       nextErrors.phone_number = "Enter a valid phone number.";
     }
     if (!Number.isFinite(amount) || amount < 500) {
       nextErrors.amount = "Minimum electricity amount is ₦500.";
-    } else if (amount > 500000) {
+    } else if (amount> 500000) {
       nextErrors.amount = "Maximum electricity amount is ₦500,000.";
     }
 
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return null;
+    if (Object.keys(nextErrors).length> 0) return null;
     return {
       disco,
       meter_type: meterType,
@@ -269,7 +270,7 @@ export default function Electricity() {
 
   const saveCurrentBeneficiary = () => {
     const meterNumber = String(form.meter_number || "").replace(/\D/g, "");
-    if (meterNumber.length < 6 || meterNumber.length > 13) {
+    if (meterNumber.length < 6 || meterNumber.length> 13) {
       showToast("Enter valid meter number first.", "error");
       return;
     }
@@ -318,8 +319,8 @@ export default function Electricity() {
           <div className="muted">Pay from your wallet and get your token instantly.</div>
         </div>
         <div className="hero-actions">
-          <button className="ghost" type="button" onClick={() => navigate("/services")}>All Services</button>
-          <button className="primary" type="button" onClick={() => navigate("/wallet")}>Fund Wallet</button>
+          <Button variant="ghost" type="button" onClick={() => navigate("/services")}>All Services</Button>
+          <Button type="button" onClick={() => navigate("/wallet")}>Fund Wallet</Button>
         </div>
       </section>
 
@@ -337,8 +338,7 @@ export default function Electricity() {
                 onChange={(e) => {
                   setForm({ ...form, disco: e.target.value });
                   if (errors.disco) setErrors((prev) => ({ ...prev, disco: "" }));
-                }}
-              >
+                }}>
                 {discos.map((d) => (
                   <option key={d} value={d}>{String(d).toUpperCase()}</option>
                 ))}
@@ -352,8 +352,7 @@ export default function Electricity() {
                 onChange={(e) => {
                   setForm({ ...form, meter_type: e.target.value });
                   if (errors.meter_type) setErrors((prev) => ({ ...prev, meter_type: "" }));
-                }}
-              >
+                }}>
                 <option value="prepaid">Prepaid</option>
                 <option value="postpaid">Postpaid</option>
               </select>
@@ -401,9 +400,9 @@ export default function Electricity() {
               />
               {errors.amount && <div className="error inline">{errors.amount}</div>}
             </label>
-            <button className="primary" type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading}>
               {loading ? "Processing..." : "Buy Electricity"}
-            </button>
+            </Button>
           </form>
           <div className="beneficiary-head row-between">
             <div className="label">Saved Beneficiaries</div>
@@ -425,8 +424,7 @@ export default function Electricity() {
                     type="button"
                     className="beneficiary-remove"
                     aria-label={`Remove ${item.label}`}
-                    onClick={() => removeSavedBeneficiary(item.id)}
-                  >
+                    onClick={() => removeSavedBeneficiary(item.id)}>
                     Remove
                   </button>
                 </div>
@@ -516,13 +514,13 @@ export default function Electricity() {
               </div>
             </div>
             <div className="modal-actions">
-              <button className="primary" type="button" onClick={downloadReceipt} disabled={downloadBusy}>
+              <Button type="button" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
-              </button>
-              <button className="ghost" type="button" onClick={shareReceipt}>Share Receipt</button>
-              <button className="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</button>
-              <button className="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</button>
-              <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</button>
+              </Button>
+              <Button variant="ghost" type="button" onClick={shareReceipt}>Share Receipt</Button>
+              <Button variant="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</Button>
+              <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</Button>
+              <Button variant="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</Button>
             </div>
           </div>
           {renderReceiptSheet && (

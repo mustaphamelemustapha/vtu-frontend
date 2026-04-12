@@ -4,6 +4,7 @@ import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
 
@@ -32,7 +33,7 @@ export default function Exam() {
     setForm((prev) => ({
       ...prev,
       exam: qExam || prev.exam,
-      quantity: Number.isInteger(qQuantity) && qQuantity > 0 ? qQuantity : prev.quantity,
+      quantity: Number.isInteger(qQuantity) && qQuantity> 0 ? qQuantity : prev.quantity,
       phone_number: qPhone || prev.phone_number,
     }));
   }, [searchParams]);
@@ -44,15 +45,15 @@ export default function Exam() {
     const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
 
     if (!exam) nextErrors.exam = "Select an exam type.";
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity> 10) {
       nextErrors.quantity = "Quantity must be between 1 and 10.";
     }
-    if (phoneNumber && (phoneNumber.length < 10 || phoneNumber.length > 15)) {
+    if (phoneNumber && (phoneNumber.length < 10 || phoneNumber.length> 15)) {
       nextErrors.phone_number = "Enter a valid phone number or leave blank.";
     }
 
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return null;
+    if (Object.keys(nextErrors).length> 0) return null;
     return {
       exam,
       quantity,
@@ -253,7 +254,7 @@ export default function Exam() {
 
   const saveCurrentBeneficiary = () => {
     const phoneNumber = String(form.phone_number || "").replace(/\D/g, "");
-    if (phoneNumber && (phoneNumber.length < 10 || phoneNumber.length > 15)) {
+    if (phoneNumber && (phoneNumber.length < 10 || phoneNumber.length> 15)) {
       showToast("Phone number is invalid.", "error");
       return;
     }
@@ -303,8 +304,8 @@ export default function Exam() {
           <div className="muted">Purchase securely. Copy pins instantly. Keep receipts in history.</div>
         </div>
         <div className="hero-actions">
-          <button className="ghost" type="button" onClick={() => navigate("/services")}>All Services</button>
-          <button className="primary" type="button" onClick={() => navigate("/wallet")}>Fund Wallet</button>
+          <Button variant="ghost" type="button" onClick={() => navigate("/services")}>All Services</Button>
+          <Button type="button" onClick={() => navigate("/wallet")}>Fund Wallet</Button>
         </div>
       </section>
 
@@ -322,8 +323,7 @@ export default function Exam() {
                 onChange={(e) => {
                   setForm({ ...form, exam: e.target.value });
                   if (errors.exam) setErrors((prev) => ({ ...prev, exam: "" }));
-                }}
-              >
+                }}>
                 {exams.map((x) => (
                   <option key={x} value={x}>{String(x).toUpperCase()}</option>
                 ))}
@@ -358,9 +358,9 @@ export default function Exam() {
               />
               {errors.phone_number && <div className="error inline">{errors.phone_number}</div>}
             </label>
-            <button className="primary" type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading}>
               {loading ? "Processing..." : "Buy Pins"}
-            </button>
+            </Button>
           </form>
           <div className="beneficiary-head row-between">
             <div className="label">Saved Beneficiaries</div>
@@ -382,8 +382,7 @@ export default function Exam() {
                     type="button"
                     className="beneficiary-remove"
                     aria-label={`Remove ${item.label}`}
-                    onClick={() => removeSavedBeneficiary(item.id)}
-                  >
+                    onClick={() => removeSavedBeneficiary(item.id)}>
                     Remove
                   </button>
                 </div>
@@ -466,16 +465,16 @@ export default function Exam() {
               </div>
             </div>
             <div className="modal-actions">
-              <button className="primary" type="button" onClick={downloadReceipt} disabled={downloadBusy}>
+              <Button type="button" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
-              </button>
-              <button className="ghost" type="button" onClick={shareReceipt}>Share Receipt</button>
-              <button className="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</button>
-              {purchaseResult.ok && (purchaseResult.pins || []).length > 0 && (
-                <button className="ghost" type="button" onClick={copyPins}>Copy Pins</button>
+              </Button>
+              <Button variant="ghost" type="button" onClick={shareReceipt}>Share Receipt</Button>
+              <Button variant="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</Button>
+              {purchaseResult.ok && (purchaseResult.pins || []).length> 0 && (
+                <Button variant="ghost" type="button" onClick={copyPins}>Copy Pins</Button>
               )}
-              <button className="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</button>
-              <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</button>
+              <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</Button>
+              <Button variant="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</Button>
             </div>
           </div>
           {renderReceiptSheet && (

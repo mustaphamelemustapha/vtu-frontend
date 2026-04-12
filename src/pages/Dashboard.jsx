@@ -5,6 +5,7 @@ import { apiFetch, getProfile } from "../services/api";
 import { loadBeneficiaries } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 import { queryKeys } from "../query/client.js";
+import Button from "../components/ui/Button.jsx";
 
 const DASHBOARD_CACHE_KEY = "axisvtu_dashboard_cache_v1";
 const keepPrimaryAccountOnly = (items) => {
@@ -231,7 +232,7 @@ export default function Dashboard() {
       }
     }
 
-    if (nextWallet || (Array.isArray(nextTxs) && nextTxs.length > 0)) {
+    if (nextWallet || (Array.isArray(nextTxs) && nextTxs.length> 0)) {
       writeDashboardCache({
         wallet: nextWallet,
         txs: nextTxs,
@@ -241,7 +242,7 @@ export default function Dashboard() {
       });
     }
 
-    const hasEssentialData = !!nextWallet || (Array.isArray(nextTxs) && nextTxs.length > 0);
+    const hasEssentialData = !!nextWallet || (Array.isArray(nextTxs) && nextTxs.length> 0);
     const criticalFailed = walletFailed && txFailed;
 
     if (!criticalFailed) {
@@ -338,7 +339,7 @@ export default function Dashboard() {
   };
 
   const primaryFundingAccount = useMemo(
-    () => (Array.isArray(fundingAccounts) && fundingAccounts.length > 0 ? fundingAccounts[0] : null),
+    () => (Array.isArray(fundingAccounts) && fundingAccounts.length> 0 ? fundingAccounts[0] : null),
     [fundingAccounts]
   );
 
@@ -404,9 +405,9 @@ export default function Dashboard() {
       else if (level === "success") score = Math.max(score, 2);
       else if (level === "info") score = Math.max(score, 1);
     }
-    if (score >= 4) return "critical";
-    if (score >= 3) return "warning";
-    if (score >= 2) return "success";
+    if (score>= 4) return "critical";
+    if (score>= 3) return "warning";
+    if (score>= 2) return "success";
     return "info";
   }, [announcements]);
 
@@ -437,9 +438,9 @@ export default function Dashboard() {
                 <div className="label">Primary Funding Account</div>
                 <div className="dashboard-funded-account-row">
                   <div className="account-number">{primaryFundingAccount.account_number}</div>
-                  <button className="ghost account-copy-btn" type="button" onClick={copyFundingAccount}>
+                  <Button variant="ghost" className="account-copy-btn" type="button" onClick={copyFundingAccount}>
                     Copy
-                  </button>
+                  </Button>
                 </div>
                 <div className="muted">
                   {primaryFundingAccount.bank_name} • {primaryFundingAccount.account_name || "AxisVTU Wallet"}
@@ -469,13 +470,11 @@ export default function Dashboard() {
                 <div className="funding-account-card" key={`${primaryFundingAccount.bank_name}-${primaryFundingAccount.account_number}`}>
                   <div className="funding-account-top">
                     <div className="label">{primaryFundingAccount.bank_name}</div>
-                    <button
-                      className="ghost account-copy-btn"
+                    <Button variant="ghost" className="account-copy-btn"
                       type="button"
-                      onClick={() => copyAccountNumber(primaryFundingAccount.account_number)}
-                    >
+                      onClick={() => copyAccountNumber(primaryFundingAccount.account_number)}>
                       Copy
-                    </button>
+                    </Button>
                   </div>
                   <div className="funding-account-number">{primaryFundingAccount.account_number}</div>
                   <div className="muted">{primaryFundingAccount.account_name || "AxisVTU Wallet"}</div>

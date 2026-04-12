@@ -6,6 +6,7 @@ import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../servic
 import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
 import { queryKeys } from "../query/client.js";
+import Button from "../components/ui/Button.jsx";
 
 const RESULT_PREFS_KEY = "vtu_data_result_prefs";
 const DELIVERED_HINTS = ["success", "successful", "delivered", "gifted", "completed"];
@@ -102,7 +103,7 @@ export default function Data() {
     }
     const cached = readJsonCache(DATA_PLANS_CACHE_KEY);
     const cachedRows = Array.isArray(cached?.plans) ? cached.plans : [];
-    const hasCached = cachedRows.length > 0;
+    const hasCached = cachedRows.length> 0;
     const isFresh =
       hasCached &&
       Number.isFinite(Number(cached?.cached_at)) &&
@@ -364,12 +365,12 @@ export default function Data() {
           if (Math.abs(txAmount - targetAmount) < 0.01) score += 2;
           if (now - Date.parse(tx?.created_at || 0) <= 2 * 60 * 1000) score += 1;
 
-          if (score > bestScore) {
+          if (score> bestScore) {
             best = tx;
             bestScore = score;
           }
         }
-        if (best && bestScore >= 4) return best;
+        if (best && bestScore>= 4) return best;
       } catch {
         // ignore and continue polling
       }
@@ -643,7 +644,7 @@ export default function Data() {
     setCompare((prev) => {
       const exists = prev.find((p) => p.plan_code === plan.plan_code);
       if (exists) return prev.filter((p) => p.plan_code !== plan.plan_code);
-      if (prev.length >= 2) return prev;
+      if (prev.length>= 2) return prev;
       return [...prev, plan];
     });
   };
@@ -743,10 +744,10 @@ export default function Data() {
           </div>
         </div>
         <div className="hero-actions">
-          <button className="ghost" type="button" onClick={() => navigate("/transactions")}>History</button>
-          <button className="primary" type="button" onClick={() => navigate("/wallet")}>
+          <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>History</Button>
+          <Button type="button" onClick={() => navigate("/wallet")}>
             Wallet: ₦ {wallet?.balance || "0.00"}
-          </button>
+          </Button>
         </div>
       </section>
 
@@ -810,8 +811,7 @@ export default function Data() {
                     type="button"
                     className="beneficiary-remove"
                     aria-label={`Remove ${item.label}`}
-                    onClick={() => removeSavedBeneficiary(item.id)}
-                  >
+                    onClick={() => removeSavedBeneficiary(item.id)}>
                     Remove
                   </button>
                 </div>
@@ -827,14 +827,11 @@ export default function Data() {
           <h3>Data Plans</h3>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div className="muted">{sorted.length} plans</div>
-            <button
-              className="ghost"
-              type="button"
+            <Button variant="ghost" type="button"
               onClick={() => loadPlans({ forceRefresh: true })}
-              disabled={refreshingPlans}
-            >
+              disabled={refreshingPlans}>
               {refreshingPlans ? "Refreshing..." : "Refresh"}
-            </button>
+            </Button>
           </div>
         </div>
         {(plansError || walletError) && (
@@ -855,8 +852,7 @@ export default function Data() {
               key={item.id}
               type="button"
               className={`pill tab ${network === item.id ? "active" : ""}`}
-              onClick={() => setNetwork(item.id)}
-            >
+              onClick={() => setNetwork(item.id)}>
               {item.label}
             </button>
           ))}
@@ -892,8 +888,7 @@ export default function Data() {
               className="card plan-card data-plan-card"
               data-testid={`data-plan-${String(plan.plan_code || "").replace(/[^a-zA-Z0-9_-]/g, "-")}`}
               key={plan.plan_code}
-              onClick={() => setSelected(plan)}
-            >
+              onClick={() => setSelected(plan)}>
               <div className="plan-top">
                 <span className={`badge ${networkClass(plan.network)}`}>
                   <span className={`logo ${networkClass(plan.network)}`} />
@@ -927,8 +922,7 @@ export default function Data() {
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleCompare(plan);
-                  }}
-                >
+                  }}>
                   Compare
                 </button>
               </div>
@@ -942,7 +936,7 @@ export default function Data() {
         <div className="compare-card card data-compare-card">
           <div className="section-head">
             <h3>Plan Comparison</h3>
-            <button className="ghost" onClick={() => setCompare([])}>Clear</button>
+            <Button variant="ghost" onClick={() => setCompare([])}>Clear</Button>
           </div>
           <div className="compare-grid">
             {compare.map((plan) => (
@@ -965,7 +959,7 @@ export default function Data() {
                 <div className="label">Confirm Purchase</div>
                 <h3>{selected.plan_name}</h3>
               </div>
-              <button className="ghost" onClick={() => setSelected(null)}>Close</button>
+              <Button variant="ghost" onClick={() => setSelected(null)}>Close</Button>
             </div>
             <div className="modal-body">
               <div className="list-card">
@@ -1003,15 +997,12 @@ export default function Data() {
               )}
             </div>
             <div className="modal-actions">
-              <button className="ghost" onClick={() => setSelected(null)}>Cancel</button>
-              <button
-                className="primary"
-                data-testid="data-confirm-buy"
+              <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
+              <Button data-testid="data-confirm-buy"
                 disabled={loading || (wallet && Number(wallet.balance) < Number(selected.price))}
-                onClick={() => buy(selected.plan_code)}
-              >
+                onClick={() => buy(selected.plan_code)}>
                 {loading ? "Processing..." : "Confirm & Buy"}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -1049,16 +1040,15 @@ export default function Data() {
           role="dialog"
           aria-live="polite"
           aria-modal="true"
-          data-testid="data-result-screen"
-        >
+          data-testid="data-result-screen">
           <div className="data-result-shell">
             <div className="data-result-head">
-              <button className="ghost" type="button" onClick={() => setPurchaseResult(null)}>
+              <Button variant="ghost" type="button" onClick={() => setPurchaseResult(null)}>
                 Back
-              </button>
-              <button className="ghost" type="button" data-testid="data-result-history" onClick={() => navigate("/transactions")}>
+              </Button>
+              <Button variant="ghost" type="button" data-testid="data-result-history" onClick={() => navigate("/transactions")}>
                 History
-              </button>
+              </Button>
             </div>
 
             <div
@@ -1068,8 +1058,7 @@ export default function Data() {
                   : resultStatusKey(purchaseResult.status) === "pending"
                     ? "pending"
                     : "failed"
-              }`}
-            >
+              }`}>
               {resultStatusKey(purchaseResult.status) === "success" ? "✓" : resultStatusKey(purchaseResult.status) === "pending" ? "…" : "!"}
             </div>
 
@@ -1144,8 +1133,7 @@ export default function Data() {
                   type="button"
                   className={`toggle-switch ${resultPrefs.save_beneficiary ? "on" : ""}`}
                   onClick={() => updateResultPref("save_beneficiary", !resultPrefs.save_beneficiary)}
-                  aria-label="Toggle beneficiaries auto save"
-                >
+                  aria-label="Toggle beneficiaries auto save">
                   <span />
                 </button>
               </div>
@@ -1159,20 +1147,19 @@ export default function Data() {
                   type="button"
                   className={`toggle-switch ${resultPrefs.amigo_bolt ? "on" : ""}`}
                   onClick={() => updateResultPref("amigo_bolt", !resultPrefs.amigo_bolt)}
-                  aria-label="Toggle fast route"
-                >
+                  aria-label="Toggle fast route">
                   <span />
                 </button>
               </div>
             </div>
 
             <div className="data-result-actions">
-              <button className="ghost" onClick={downloadReceipt} disabled={downloadBusy}>
+              <Button variant="ghost" onClick={downloadReceipt} disabled={downloadBusy}>
                 {downloadBusy ? "Preparing..." : "Download Receipt"}
-              </button>
-              <button className="ghost" onClick={shareReceipt}>Share</button>
-              <button className="ghost" onClick={shareReceiptWhatsApp}>WhatsApp</button>
-              <button className="primary" data-testid="data-result-dismiss" onClick={() => setPurchaseResult(null)}>Dismiss</button>
+              </Button>
+              <Button variant="ghost" onClick={shareReceipt}>Share</Button>
+              <Button variant="ghost" onClick={shareReceiptWhatsApp}>WhatsApp</Button>
+              <Button data-testid="data-result-dismiss" onClick={() => setPurchaseResult(null)}>Dismiss</Button>
             </div>
           </div>
 

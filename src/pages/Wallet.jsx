@@ -144,7 +144,7 @@ export default function Wallet() {
     }
   };
 
-  const hasGeneratedAccounts = transferAccounts.length > 0;
+  const hasGeneratedAccounts = transferAccounts.length> 0;
   const primaryAccount = hasGeneratedAccounts ? transferAccounts[0] : null;
 
   return (
@@ -157,11 +157,9 @@ export default function Wallet() {
         </div>
         <div className="hero-actions wallet-hero-actions-premium">
           {ENABLE_BANK_TRANSFER && (
-            <Button
-              data-testid="wallet-generate-account"
+            <Button data-testid="wallet-generate-account"
               onClick={openTransfer}
-              disabled={transferBusy}
-            >
+              disabled={transferBusy}>
               {hasGeneratedAccounts ? "Manage Accounts" : "Generate Account"}
             </Button>
           )}
@@ -182,11 +180,9 @@ export default function Wallet() {
                 <div className="wallet-primary-account-number">{primaryAccount.account_number}</div>
                 <div className="muted">{primaryAccount.account_name || "AxisVTU Wallet"}</div>
               </div>
-              <Button
-                variant="ghost"
+              <Button variant="ghost"
                 className="account-copy-btn"
-                onClick={() => copyText(primaryAccount.account_number)}
-              >
+                onClick={() => copyText(primaryAccount.account_number)}>
                 Copy
               </Button>
             </div>
@@ -196,18 +192,16 @@ export default function Wallet() {
             </div>
           )}
 
-          {transferAccounts.length > 1 && (
+          {transferAccounts.length> 1 && (
             <div className="wallet-account-grid">
               {transferAccounts.slice(1).map((acc, idx) => (
                 <div className="wallet-account-card" key={`${acc.bank_name}-${acc.account_number}-${idx}`}>
                   <div className="label">{acc.bank_name}</div>
                   <div className="wallet-account-number">{acc.account_number}</div>
                   <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
-                  <Button
-                    variant="ghost"
+                  <Button variant="ghost"
                     className="beneficiary-save-btn"
-                    onClick={() => copyText(acc.account_number)}
-                  >
+                    onClick={() => copyText(acc.account_number)}>
                     Copy Account
                   </Button>
                 </div>
@@ -251,9 +245,9 @@ export default function Wallet() {
                 <div className="label">Bank Transfer</div>
                 <h3>Add money via mobile or internet banking</h3>
               </div>
-              <button className="ghost" type="button" onClick={() => setTransferOpen(false)}>
+              <Button variant="ghost" type="button" onClick={() => setTransferOpen(false)}>
                 Close
-              </button>
+              </Button>
             </div>
 
             {transferBusy && <div className="notice">Loading...</div>}
@@ -280,9 +274,9 @@ export default function Wallet() {
                       placeholder="Enter NIN"
                     />
                   </label>
-                  <button className="primary" type="submit" disabled={transferBusy}>
+                  <Button type="submit" disabled={transferBusy}>
                     {transferBusy ? "Generating..." : "Generate Account Numbers"}
-                  </button>
+                  </Button>
                 </form>
               </div>
             )}
@@ -293,9 +287,9 @@ export default function Wallet() {
                   Paystack needs your phone number to generate your dedicated account.
                 </div>
                 <div style={{ marginTop: 12 }}>
-                  <button className="primary" type="button" onClick={() => setPhonePromptOpen(true)} disabled={transferBusy}>
+                  <Button type="button" onClick={() => setPhonePromptOpen(true)} disabled={transferBusy}>
                     Add Phone Number
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -306,14 +300,14 @@ export default function Wallet() {
                   {transferMessage || "We could not fetch your dedicated account right now. Please try again shortly."}
                 </div>
                 <div style={{ marginTop: 12 }}>
-                  <button className="primary" type="button" onClick={createTransfer} disabled={transferBusy}>
+                  <Button type="button" onClick={createTransfer} disabled={transferBusy}>
                     Try Again
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
 
-            {!transferBusy && transferAccounts.length > 0 && (
+            {!transferBusy && transferAccounts.length> 0 && (
               <div className="receipt-grid">
                 {transferAccounts.map((acc, idx) => (
                   <div key={`${acc.bank_name}-${acc.account_number}-${idx}`}>
@@ -321,28 +315,28 @@ export default function Wallet() {
                     <div className="value" style={{ fontSize: 18 }}>{acc.account_number}</div>
                     <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
                     <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <button className="ghost" type="button" onClick={() => copyText(acc.account_number)}>
+                      <Button variant="ghost" type="button" onClick={() => copyText(acc.account_number)}>
                         Copy Account
-                      </button>
-                      <button className="ghost" type="button" onClick={() => copyText(acc.bank_name)}>
+                      </Button>
+                      <Button variant="ghost" type="button" onClick={() => copyText(acc.bank_name)}>
                         Copy Bank
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {!transferBusy && transferAccounts.length > 0 && (
+            {!transferBusy && transferAccounts.length> 0 && (
               <div className="notice">
                 Transfer to this account from PalmPay, 9PSB, or any bank app. Your wallet credits automatically after confirmation.
               </div>
             )}
 
             <div className="modal-actions">
-              <button className="ghost" type="button" onClick={() => setTransferOpen(false)}>
+              <Button variant="ghost" type="button" onClick={() => setTransferOpen(false)}>
                 Done
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -356,9 +350,9 @@ export default function Wallet() {
                 <div className="label">Phone number required</div>
                 <h3>Add your phone to generate bank account</h3>
               </div>
-              <button className="ghost" type="button" onClick={() => setPhonePromptOpen(false)}>
+              <Button variant="ghost" type="button" onClick={() => setPhonePromptOpen(false)}>
                 Close
-              </button>
+              </Button>
             </div>
             <form onSubmit={savePhoneAndRetry} className="form-grid">
               <label>
@@ -370,9 +364,9 @@ export default function Wallet() {
                   required
                 />
               </label>
-              <button className="primary" type="submit" disabled={transferBusy}>
+              <Button type="submit" disabled={transferBusy}>
                 {transferBusy ? "Saving..." : "Save & Generate"}
-              </button>
+              </Button>
             </form>
           </div>
         </div>
