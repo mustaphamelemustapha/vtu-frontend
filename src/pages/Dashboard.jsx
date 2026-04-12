@@ -8,6 +8,73 @@ import { queryKeys } from "../query/client.js";
 import Button from "../components/ui/Button.jsx";
 
 const DASHBOARD_CACHE_KEY = "axisvtu_dashboard_cache_v1";
+
+function ServiceIcon({ type }) {
+  if (type === "data") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 8C5.5 5.5 8.4 4.2 12 4.2C15.6 4.2 18.5 5.5 21 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M6 11.2C7.8 9.5 9.8 8.7 12 8.7C14.2 8.7 16.2 9.5 18 11.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M9.1 14.4C10 13.6 10.9 13.2 12 13.2C13.1 13.2 14 13.6 14.9 14.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <circle cx="12" cy="18" r="1.6" fill="currentColor" />
+      </svg>
+    );
+  }
+
+  if (type === "airtime") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="8" y="3" width="8" height="18" rx="2.2" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M10.8 5.8H13.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <circle cx="12" cy="17.7" r="1.2" fill="currentColor" />
+        <path d="M4 10.4C5.2 9.1 6.5 8.5 8.1 8.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M20 10.4C18.8 9.1 17.5 8.5 15.9 8.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (type === "electricity") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="4" y="3.5" width="16" height="17" rx="2.2" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M7.6 7.6H16.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M7.6 11.5H12.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M11.8 12.6L9.6 16H12.2L11.1 18.8L14.6 14.3H12.3L13.5 12.6H11.8Z" fill="currentColor" />
+      </svg>
+    );
+  }
+
+  if (type === "cable") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="12" rx="2.2" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M8 20H16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M12 17V20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M8.5 8.5L15.5 13.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (type === "exam") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M7 3.8H14.8L18.5 7.5V20.2H7V3.8Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M14.8 3.8V7.5H18.5" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M9.5 11H15.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M9.5 14.5H13.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 21C16.4 21 20 17.4 20 13V8.4L12 4L4 8.4V13C4 17.4 7.6 21 12 21Z" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M12 9V13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="12" cy="16.5" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 const keepPrimaryAccountOnly = (items) => {
   if (!Array.isArray(items) || items.length === 0) return [];
   return [items[0]];
@@ -520,37 +587,37 @@ export default function Dashboard() {
       <section className="section">
         <h3>Services</h3>
         <div className="grid-3 dashboard-services-grid">
-          <Link className="card action-card dashboard-service-card" to={quickBuyLink}>
-            <div className="label">Data</div>
-            <div className="value">{lastRecipient?.phone ? maskPhone(lastRecipient.phone) : "All Networks"}</div>
-            <div className="muted">
-              {lastRecipient?.phone ? "Use your last recipient instantly" : "Fast, reliable delivery"}
+          <Link className="card action-card dashboard-service-card service-primary-card" to={quickBuyLink}>
+            <div className="service-icon-wrap"><ServiceIcon type="data" /></div>
+            <div className="service-title">Buy Data</div>
+            <div className="service-subtitle">
+              {lastRecipient?.phone ? `Quick buy ${maskPhone(lastRecipient.phone)}` : "All networks"}
             </div>
           </Link>
-          <Link className="card action-card dashboard-service-card" to="/airtime">
-            <div className="label">Airtime</div>
-            <div className="value">Topup</div>
-            <div className="muted">All major networks</div>
+          <Link className="card action-card dashboard-service-card service-primary-card" to="/airtime">
+            <div className="service-icon-wrap"><ServiceIcon type="airtime" /></div>
+            <div className="service-title">Buy Airtime</div>
+            <div className="service-subtitle">Instant topup</div>
           </Link>
-          <Link className="card action-card dashboard-service-card" to="/electricity">
-            <div className="label">Electricity</div>
-            <div className="value">Token</div>
-            <div className="muted">Prepaid and postpaid</div>
+          <Link className="card action-card dashboard-service-card service-primary-card" to="/electricity">
+            <div className="service-icon-wrap"><ServiceIcon type="electricity" /></div>
+            <div className="service-title">Electricity Bill</div>
+            <div className="service-subtitle">Prepaid & postpaid</div>
           </Link>
-          <Link className="card action-card dashboard-service-card" to="/cable">
-            <div className="label">Cable TV</div>
-            <div className="value">Subscriptions</div>
-            <div className="muted">DStv, GOtv, Startimes</div>
+          <Link className="card action-card dashboard-service-card service-primary-card" to="/cable">
+            <div className="service-icon-wrap"><ServiceIcon type="cable" /></div>
+            <div className="service-title">Cable Subscription</div>
+            <div className="service-subtitle">DStv, GOtv, Startimes</div>
           </Link>
-          <Link className="card action-card dashboard-service-card" to="/exam">
-            <div className="label">Exam PIN</div>
-            <div className="value">WAEC / NECO</div>
-            <div className="muted">Instant pin delivery</div>
+          <Link className="card action-card dashboard-service-card service-primary-card" to="/exam">
+            <div className="service-icon-wrap"><ServiceIcon type="exam" /></div>
+            <div className="service-title">Result Checker</div>
+            <div className="service-subtitle">WAEC, NECO, JAMB</div>
           </Link>
-          <Link className="card action-card dashboard-service-card" to="/support">
-            <div className="label">Help & Support</div>
-            <div className="value">Contact Team</div>
-            <div className="muted">FAQ, calls, WhatsApp and report tracking</div>
+          <Link className="card action-card dashboard-service-card service-primary-card" to="/support">
+            <div className="service-icon-wrap"><ServiceIcon type="support" /></div>
+            <div className="service-title">Support Center</div>
+            <div className="service-subtitle">Get help quickly</div>
           </Link>
         </div>
       </section>
