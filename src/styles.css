@@ -33,10 +33,10 @@
   --space-8: 40px;
   --space-9: 56px;
   --space-10: 80px;
-  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Sora", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-auth-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-auth-display: "Sora", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-auth-body: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-auth-display: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
   --motion-fast: 120ms;
   --motion-base: 180ms;
   --motion-slow: 260ms;
@@ -64,14 +64,14 @@ body {
 
 h1, h2, h3, .brand-title, .hello, .plan-name {
   font-family: var(--font-display);
-  letter-spacing: -0.018em;
+  letter-spacing: -0.012em;
 }
 
 p, .muted, .subtle, .label, .value, .pill, .chip, .notice, .error {
   letter-spacing: 0;
 }
 
-.topbar h1 { letter-spacing: -0.022em; }
+.topbar h1 { letter-spacing: -0.014em; }
 
 a {
   color: inherit;

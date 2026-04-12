@@ -16,8 +16,8 @@
   --radius-md: 14px;
   --shadow-soft: 0 14px 38px rgba(9, 18, 38, 0.08);
   --shadow-card: 0 14px 34px rgba(31, 86, 214, 0.16);
-  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Sora", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Nunito Sans", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -35,7 +35,7 @@ body {
 }
 
 h1, h2, h3, p { margin: 0; }
-h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.018em; }
+h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.012em; }
 a { color: inherit; text-decoration: none; }
 
 .container {
