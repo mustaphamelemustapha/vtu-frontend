@@ -115,7 +115,6 @@ export default function Dashboard() {
   const [announcements, setAnnouncements] = useState(cached.announcements);
   const [fundingAccounts, setFundingAccounts] = useState(cached.fundingAccounts);
   const [loadingWallet, setLoadingWallet] = useState(!cached.wallet);
-  const [loadingTxs, setLoadingTxs] = useState(cached.txs.length === 0);
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
   const retryTimerRef = useRef(null);
@@ -125,7 +124,6 @@ export default function Dashboard() {
     if (!silent) {
       setLoadError("");
       if (!wallet) setLoadingWallet(true);
-      if (txs.length === 0) setLoadingTxs(true);
     }
 
     let nextWallet = wallet;
@@ -254,7 +252,6 @@ export default function Dashboard() {
     }
 
     setLoadingWallet(false);
-    setLoadingTxs(false);
   };
 
   useEffect(() => {
@@ -271,16 +268,6 @@ export default function Dashboard() {
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
   }, []);
-
-  const chartData = useMemo(() => {
-    const recent = [...txs].slice(0, 7).reverse();
-    const max = Math.max(1, ...recent.map((t) => Number(t.amount || 0)));
-    return recent.map((t) => ({
-      amount: Number(t.amount || 0),
-      height: Math.max(12, Math.round((Number(t.amount || 0) / max) * 60)),
-      label: t.tx_type,
-    }));
-  }, [txs]);
 
   const statusKey = (value) => String(value || "").toLowerCase();
   const primaryFundingAccount = useMemo(
@@ -421,46 +408,6 @@ export default function Dashboard() {
           <div className="notice">{loadError}</div>
         </section>
       )}
-
-      <section className="section">
-        <div className="stats-grid">
-          <div className="card stat-card">
-            <div className="label">Monthly Spend</div>
-            <div className="value">₦ {txs.reduce((sum, tx) => sum + Number(tx.amount || 0), 0).toFixed(2)}</div>
-            <div className="muted">Across data purchases</div>
-          </div>
-          <div className="card stat-card">
-            <div className="label">Transactions</div>
-            <div className="value">{loadingTxs ? "..." : txs.length}</div>
-            <div className="muted">All time</div>
-          </div>
-          <div className="card stat-card">
-            <div className="label">Success Rate</div>
-            <div className="value">
-              {txs.length === 0 ? "0%" : `${Math.round((txs.filter((t) => statusKey(t.status) === "success").length / txs.length) * 100)}%`}
-            </div>
-            <div className="muted">Last 30 days</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="card">
-          <div className="section-head">
-            <h3>Weekly Activity</h3>
-            <span className="muted">Last 7 transactions</span>
-          </div>
-          <div className="mini-chart">
-            {chartData.length === 0 && <div className="empty">No activity yet.</div>}
-            {chartData.map((bar, idx) => (
-              <div className="bar-wrap" key={`${bar.label}-${idx}`}>
-                <div className="bar" style={{ height: `${bar.height}px` }} />
-                <span>{bar.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <section className="section">
         <h3>Services</h3>
