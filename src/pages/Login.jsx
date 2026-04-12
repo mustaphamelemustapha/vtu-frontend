@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch, setAuthTokens, setProfile, warmBackend } from "../services/api";
 import { useToast } from "../context/toast.jsx";
+import Button from "../components/ui/Button.jsx";
 
 export default function Login({ onAuth, modeRoute = "login" }) {
   const navigate = useNavigate();
@@ -414,9 +415,9 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </div>
             {error && <div className="error">{error}</div>}
             {notice && <div className="notice">{notice}</div>}
-            <button className="primary" type="submit">
+            <Button type="submit">
               {loading ? "Please wait..." : "Reset password"}
-            </button>
+            </Button>
             <button className="link" type="button" onClick={() => navigate("/login")}>
               Back to login
             </button>
@@ -435,9 +436,9 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </div>
             {error && <div className="error">{error}</div>}
             {notice && <div className="notice">{notice}</div>}
-            <button className="primary" type="submit">
+            <Button type="submit">
               {loading ? "Please wait..." : "Send reset link"}
-            </button>
+            </Button>
             <button className="link" type="button" onClick={() => { setForgotMode(false); setResetMode(true); }}>
               I have a reset token
             </button>
@@ -555,9 +556,9 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           )}
           {error && <div className="error">{error}</div>}
           {notice && <div className="notice">{notice}</div>}
-          <button className="primary" type="submit" data-testid="auth-submit">
+          <Button type="submit" data-testid="auth-submit">
             {loading ? "Please wait..." : mode === "login" ? "Login" : "Register"}
-          </button>
+          </Button>
         </form>
         )}
         <button

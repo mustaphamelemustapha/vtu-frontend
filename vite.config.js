@@ -32,5 +32,18 @@ export default defineConfig({
   ],
   server: {
     port: 5173
-  }
+  },
+  build: {
+    target: "es2020",
+    cssCodeSplit: true,
+    modulePreload: { polyfill: true },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          receipts: ["jspdf", "html2canvas"],
+        },
+      },
+    },
+  },
 });

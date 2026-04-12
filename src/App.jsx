@@ -1,24 +1,27 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import Nav from "./components/Nav.jsx";
-import Login from "./pages/Login.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import Wallet from "./pages/Wallet.jsx";
-import Data from "./pages/Data.jsx";
-import Services from "./pages/Services.jsx";
-import Airtime from "./pages/Airtime.jsx";
-import Cable from "./pages/Cable.jsx";
-import Electricity from "./pages/Electricity.jsx";
-import Exam from "./pages/Exam.jsx";
-import Transactions from "./pages/Transactions.jsx";
-import Support from "./pages/Support.jsx";
-import Admin from "./pages/Admin.jsx";
-import Profile from "./pages/Profile.jsx";
-import AdminLogin from "./pages/AdminLogin.jsx";
 import { apiFetch, getToken, clearToken, getProfile, setProfile, warmBackend, prefetchDataPageCache } from "./services/api";
 import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 import { applySeo } from "./utils/seo.js";
+import { queryKeys } from "./query/client.js";
+
+const Login = lazy(() => import("./pages/Login.jsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
+const Wallet = lazy(() => import("./pages/Wallet.jsx"));
+const Data = lazy(() => import("./pages/Data.jsx"));
+const Services = lazy(() => import("./pages/Services.jsx"));
+const Airtime = lazy(() => import("./pages/Airtime.jsx"));
+const Cable = lazy(() => import("./pages/Cable.jsx"));
+const Electricity = lazy(() => import("./pages/Electricity.jsx"));
+const Exam = lazy(() => import("./pages/Exam.jsx"));
+const Transactions = lazy(() => import("./pages/Transactions.jsx"));
+const Support = lazy(() => import("./pages/Support.jsx"));
+const Admin = lazy(() => import("./pages/Admin.jsx"));
+const Profile = lazy(() => import("./pages/Profile.jsx"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin.jsx"));
 
 const NOTIF_ITEMS_KEY = "axisvtu_notif_items";
 const NOTIF_SNAPSHOT_KEY = "axisvtu_notif_snapshot";
@@ -229,7 +232,18 @@ function _deriveInitials(value) {
   return compact.slice(0, 2).toUpperCase();
 }
 
+function AppPageFallback() {
+  return (
+    <section className="section">
+      <div className="card">
+        <div className="muted">Loading page…</div>
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
+  const queryClient = useQueryClient();
   const [authenticated, setAuthenticated] = useState(!!getToken());
   const location = useLocation();
   const navigate = useNavigate();
@@ -258,7 +272,7 @@ export default function App() {
       const title = appPageTitleMap[location.pathname] || "AxisVTU App";
       applySeo({
         title,
-        description: "Secure AxisVTU dashboard for wallet, purchases, and transaction records.",
+        description: "AxisVTU dashboard for instant data, airtime, cable TV and electricity payments with clear wallet and receipt tracking.",
         path: `/app${location.pathname === "/" ? "" : location.pathname}`,
         noindex: true,
       });
@@ -269,16 +283,18 @@ export default function App() {
     if (path === "/register") {
       applySeo({
         title: "Create AxisVTU Account | AxisVTU",
-        description: "Register on AxisVTU to buy data, airtime, cable TV and electricity with fast wallet funding.",
+        description: "Create your AxisVTU account in minutes and start buying data, airtime, cable TV and electricity with a premium user flow.",
         path: "/app/register",
+        keywords: "register axisvtu, create vtu account, nigeria data airtime app",
       });
       return;
     }
     if (path === "/reset-password") {
       applySeo({
         title: "Reset Password | AxisVTU",
-        description: "Reset your AxisVTU account password securely and continue your VTU operations.",
+        description: "Securely reset your AxisVTU password and continue transactions without losing account access.",
         path: "/app/reset-password",
+        keywords: "axisvtu reset password, forgot password axisvtu",
       });
       return;
     }
@@ -293,8 +309,9 @@ export default function App() {
     }
     applySeo({
       title: "Login to AxisVTU | AxisVTU",
-      description: "Sign in to AxisVTU for fast data, airtime, cable TV and electricity bill payments.",
+      description: "Sign in to AxisVTU and manage wallet funding, data purchases, airtime topups and bill payments in one polished dashboard.",
       path: "/app/login",
+      keywords: "axisvtu login, vtu dashboard login nigeria",
     });
   }, [authenticated, location.pathname]);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -451,6 +468,21 @@ export default function App() {
 
     const run = () => {
       prefetchDataPageCache().catch(() => {});
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.dashboardSummary,
+        queryFn: () => apiFetch("/dashboard/summary", { _suppressRetryToast: true }),
+        staleTime: 60 * 1000,
+      });
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.dataPlans,
+        queryFn: () => apiFetch("/data/plans", { _suppressRetryToast: true }),
+        staleTime: 5 * 60 * 1000,
+      });
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.walletMe,
+        queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
+        staleTime: 45 * 1000,
+      });
     };
 
     // Defer cache warm-up to idle-time so we don't block first paint.
@@ -461,7 +493,7 @@ export default function App() {
 
     const timer = window.setTimeout(run, 260);
     return () => window.clearTimeout(timer);
-  }, [authenticated]);
+  }, [authenticated, queryClient]);
 
   useEffect(() => {
     if (!authenticated) return undefined;
@@ -696,72 +728,74 @@ export default function App() {
     <ToastProvider>
       <ToastHost />
       {!authenticated ? (
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route
-            path="/admin-login"
-            element={
-              <AdminLogin
-                onAuth={(nextProfile) => {
-                  if (nextProfile) {
-                    setProfile(nextProfile);
-                    setProfileState(nextProfile);
-                  }
-                  setAuthenticated(true);
-                }}
-              />
-            }
-          />
-          <Route
-            path="/login"
-            element={
-              <Login
-                modeRoute="login"
-                onAuth={(nextProfile) => {
-                  if (nextProfile) {
-                    setProfile(nextProfile);
-                    setProfileState(nextProfile);
-                  }
-                  setAuthenticated(true);
-                }}
-              />
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <Login
-                modeRoute="register"
-                onAuth={(nextProfile) => {
-                  if (nextProfile) {
-                    setProfile(nextProfile);
-                    setProfileState(nextProfile);
-                  }
-                  setAuthenticated(true);
-                }}
-              />
-            }
-          />
-          <Route
-            path="/reset-password"
-            element={
-              <Login
-                modeRoute="reset"
-                onAuth={(nextProfile) => {
-                  if (nextProfile) {
-                    setProfile(nextProfile);
-                    setProfileState(nextProfile);
-                  }
-                  setAuthenticated(true);
-                }}
-              />
-            }
-          />
-          <Route
-            path="*"
-            element={<Navigate to="/login" replace />}
-          />
-        </Routes>
+        <Suspense fallback={<AppPageFallback />}>
+          <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route
+              path="/admin-login"
+              element={
+                <AdminLogin
+                  onAuth={(nextProfile) => {
+                    if (nextProfile) {
+                      setProfile(nextProfile);
+                      setProfileState(nextProfile);
+                    }
+                    setAuthenticated(true);
+                  }}
+                />
+              }
+            />
+            <Route
+              path="/login"
+              element={
+                <Login
+                  modeRoute="login"
+                  onAuth={(nextProfile) => {
+                    if (nextProfile) {
+                      setProfile(nextProfile);
+                      setProfileState(nextProfile);
+                    }
+                    setAuthenticated(true);
+                  }}
+                />
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <Login
+                  modeRoute="register"
+                  onAuth={(nextProfile) => {
+                    if (nextProfile) {
+                      setProfile(nextProfile);
+                      setProfileState(nextProfile);
+                    }
+                    setAuthenticated(true);
+                  }}
+                />
+              }
+            />
+            <Route
+              path="/reset-password"
+              element={
+                <Login
+                  modeRoute="reset"
+                  onAuth={(nextProfile) => {
+                    if (nextProfile) {
+                      setProfile(nextProfile);
+                      setProfileState(nextProfile);
+                    }
+                    setAuthenticated(true);
+                  }}
+                />
+              }
+            />
+            <Route
+              path="*"
+              element={<Navigate to="/login" replace />}
+            />
+          </Routes>
+        </Suspense>
       ) : (
         <div className="app-shell">
           {showOnboarding && (
@@ -910,50 +944,52 @@ export default function App() {
                 </div>
               </div>
             </header>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/wallet" element={<Wallet />} />
-              <Route path="/data" element={<Data />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/airtime" element={<Airtime />} />
-              <Route path="/cable" element={<Cable />} />
-              <Route path="/electricity" element={<Electricity />} />
-              <Route path="/exam" element={<Exam />} />
-              <Route path="/transactions" element={<Transactions />} />
-              <Route path="/support" element={<Support />} />
-              <Route
-                path="/profile"
-                element={
-                  <Profile
-                    onLogout={handleLogout}
-                    onProfileUpdate={(next) => setProfileState(next)}
-                    darkMode={darkMode}
-                    onToggleTheme={toggleTheme}
-                    canInstall={canInstall}
-                    onInstall={handleInstall}
-                  />
-                }
-              />
-              <Route
-                path="/admin"
-                element={
-                  <AdminRouteGuard
-                    currentRole={profile.role}
-                    onProfileSync={(next) => {
-                      setProfile(next);
-                      setProfileState(next);
-                    }}
-                    onAuthExpired={() => {
-                      setProfileState({});
-                      setAuthenticated(false);
-                    }}
-                  >
-                    <Admin />
-                  </AdminRouteGuard>
-                }
-              />
-              <Route path="/admin-login" element={<Navigate to="/" replace />} />
-            </Routes>
+            <Suspense fallback={<AppPageFallback />}>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/wallet" element={<Wallet />} />
+                <Route path="/data" element={<Data />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/airtime" element={<Airtime />} />
+                <Route path="/cable" element={<Cable />} />
+                <Route path="/electricity" element={<Electricity />} />
+                <Route path="/exam" element={<Exam />} />
+                <Route path="/transactions" element={<Transactions />} />
+                <Route path="/support" element={<Support />} />
+                <Route
+                  path="/profile"
+                  element={
+                    <Profile
+                      onLogout={handleLogout}
+                      onProfileUpdate={(next) => setProfileState(next)}
+                      darkMode={darkMode}
+                      onToggleTheme={toggleTheme}
+                      canInstall={canInstall}
+                      onInstall={handleInstall}
+                    />
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRouteGuard
+                      currentRole={profile.role}
+                      onProfileSync={(next) => {
+                        setProfile(next);
+                        setProfileState(next);
+                      }}
+                      onAuthExpired={() => {
+                        setProfileState({});
+                        setAuthenticated(false);
+                      }}
+                    >
+                      <Admin />
+                    </AdminRouteGuard>
+                  }
+                />
+                <Route path="/admin-login" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </main>
         </div>
       )}

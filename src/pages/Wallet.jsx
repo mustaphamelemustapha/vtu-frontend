@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
+import { queryKeys } from "../query/client.js";
+import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
 
 const ENABLE_BANK_TRANSFER = true;
 
 export default function Wallet() {
+  const queryClient = useQueryClient();
   const [wallet, setWallet] = useState(null);
   const [ledger, setLedger] = useState([]);
   const { showToast } = useToast();
@@ -28,18 +33,34 @@ export default function Wallet() {
   };
 
   useEffect(() => {
-    apiFetch("/wallet/me").then(setWallet).catch(() => {});
-    apiFetch("/wallet/ledger").then(setLedger).catch(() => {});
-    apiFetch("/wallet/bank-transfer-accounts")
+    queryClient.fetchQuery({
+      queryKey: queryKeys.walletMe,
+      queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
+      staleTime: 45 * 1000,
+    }).then(setWallet).catch(() => {});
+    queryClient.fetchQuery({
+      queryKey: queryKeys.walletLedger,
+      queryFn: () => apiFetch("/wallet/ledger", { _suppressRetryToast: true }),
+      staleTime: 30 * 1000,
+    }).then(setLedger).catch(() => {});
+    queryClient.fetchQuery({
+      queryKey: queryKeys.transferAccounts,
+      queryFn: () => apiFetch("/wallet/bank-transfer-accounts", { _suppressRetryToast: true }),
+      staleTime: 45 * 1000,
+    })
       .then((res) => hydrateTransferState(res, "monnify"))
       .catch(() => {});
-  }, []);
+  }, [queryClient]);
 
   const openTransfer = async () => {
     setTransferOpen(true);
     setTransferBusy(true);
     try {
-      const res = await apiFetch("/wallet/bank-transfer-accounts");
+      const res = await queryClient.fetchQuery({
+        queryKey: queryKeys.transferAccounts,
+        queryFn: () => apiFetch("/wallet/bank-transfer-accounts", { _suppressRetryToast: true }),
+        staleTime: 45 * 1000,
+      });
       hydrateTransferState(res, "monnify");
     } catch (err) {
       showToast(err.message || "Failed to load bank transfer accounts.", "error");
@@ -66,6 +87,7 @@ export default function Wallet() {
         method: "POST",
         body: JSON.stringify(requestBody),
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transferAccounts });
       hydrateTransferState(res, transferProvider || "monnify");
       showToast("Bank transfer accounts generated.", "success");
     } catch (err) {
@@ -98,9 +120,14 @@ export default function Wallet() {
         method: "POST",
         body: JSON.stringify({ phone_number: normalizedPhone }),
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transferAccounts });
       hydrateTransferState(res, transferProvider || "paystack");
       showToast("Bank transfer account generated.", "success");
-      apiFetch("/wallet/me").then(setWallet).catch(() => {});
+      queryClient.fetchQuery({
+        queryKey: queryKeys.walletMe,
+        queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
+        staleTime: 45 * 1000,
+      }).then(setWallet).catch(() => {});
     } catch (err) {
       showToast(err.message || "Unable to save phone number.", "error");
     } finally {
@@ -130,21 +157,19 @@ export default function Wallet() {
         </div>
         <div className="hero-actions wallet-hero-actions-premium">
           {ENABLE_BANK_TRANSFER && (
-            <button
-              className="primary"
-              type="button"
+            <Button
               data-testid="wallet-generate-account"
               onClick={openTransfer}
               disabled={transferBusy}
             >
               {hasGeneratedAccounts ? "Manage Accounts" : "Generate Account"}
-            </button>
+            </Button>
           )}
         </div>
       </section>
 
       <section className="section">
-        <div className="card wallet-account-board">
+        <Card className="wallet-account-board">
           <div className="section-head">
             <h3>Automated Bank Transfer</h3>
             <span className="muted">{transferProvider === "paystack" ? "Paystack" : "Monnify"}</span>
@@ -157,9 +182,13 @@ export default function Wallet() {
                 <div className="wallet-primary-account-number">{primaryAccount.account_number}</div>
                 <div className="muted">{primaryAccount.account_name || "AxisVTU Wallet"}</div>
               </div>
-              <button className="ghost account-copy-btn" type="button" onClick={() => copyText(primaryAccount.account_number)}>
+              <Button
+                variant="ghost"
+                className="account-copy-btn"
+                onClick={() => copyText(primaryAccount.account_number)}
+              >
                 Copy
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="notice">
@@ -174,14 +203,18 @@ export default function Wallet() {
                   <div className="label">{acc.bank_name}</div>
                   <div className="wallet-account-number">{acc.account_number}</div>
                   <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
-                  <button className="ghost beneficiary-save-btn" type="button" onClick={() => copyText(acc.account_number)}>
+                  <Button
+                    variant="ghost"
+                    className="beneficiary-save-btn"
+                    onClick={() => copyText(acc.account_number)}
+                  >
                     Copy Account
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
           )}
-        </div>
+        </Card>
       </section>
 
       <section className="section">

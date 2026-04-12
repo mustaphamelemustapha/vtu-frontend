@@ -3201,6 +3201,33 @@ select:focus-visible {
   opacity: 0 !important;
 }
 
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.ui-card {
+  transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
+}
+
+.ui-field {
+  margin-bottom: 10px;
+}
+
+.ui-field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.ui-input-error {
+  border-color: #b91c1c !important;
+  box-shadow: 0 0 0 2px rgba(185, 28, 28, 0.15) !important;
+}
+
 .link {
   background: none;
   text-decoration: underline;

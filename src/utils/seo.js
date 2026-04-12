@@ -45,7 +45,25 @@ function upsertCanonical(href) {
   node.setAttribute("href", href);
 }
 
-export function applySeo({ title, description, path = "/", noindex = false }) {
+function upsertMetaById(id, type, json) {
+  if (!id || !type || !json) return;
+  let node = document.querySelector(`script[data-seo-id="${id}"]`);
+  if (!node) {
+    node = document.createElement("script");
+    node.setAttribute("type", type);
+    node.setAttribute("data-seo-id", id);
+    document.head.appendChild(node);
+  }
+  node.textContent = json;
+}
+
+export function applySeo({
+  title,
+  description,
+  path = "/",
+  noindex = false,
+  keywords = "AxisVTU, VTU Nigeria, buy data, buy airtime, cable TV, electricity bill payment",
+}) {
   if (typeof document === "undefined") return;
 
   const origin = resolveOrigin();
@@ -53,17 +71,39 @@ export function applySeo({ title, description, path = "/", noindex = false }) {
   const url = `${origin}${normalizedPath}`;
   const finalTitle = String(title || "AxisVTU");
   const finalDescription = String(description || "AxisVTU");
+  const finalKeywords = String(keywords || "");
   const robotsValue = noindex ? "noindex, nofollow" : "index, follow";
 
   document.title = finalTitle;
   upsertMetaByName("description", finalDescription);
+  upsertMetaByName("keywords", finalKeywords);
   upsertMetaByName("robots", robotsValue);
   upsertMetaByProperty("og:type", "website");
+  upsertMetaByProperty("og:site_name", "AxisVTU");
   upsertMetaByProperty("og:title", finalTitle);
   upsertMetaByProperty("og:description", finalDescription);
   upsertMetaByProperty("og:url", url);
+  upsertMetaByProperty("og:image", `${origin}/pwa/pwa-512-primary.png`);
   upsertMetaByName("twitter:card", "summary_large_image");
+  upsertMetaByName("twitter:url", url);
   upsertMetaByName("twitter:title", finalTitle);
   upsertMetaByName("twitter:description", finalDescription);
+  upsertMetaByName("twitter:image", `${origin}/pwa/pwa-512-primary.png`);
   upsertCanonical(url);
+  upsertMetaById(
+    "axisvtu-seo-webpage",
+    "application/ld+json",
+    JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: finalTitle,
+        description: finalDescription,
+        url,
+        inLanguage: "en-NG",
+      },
+      null,
+      0
+    )
+  );
 }

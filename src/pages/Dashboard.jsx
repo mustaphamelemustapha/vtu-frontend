@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { apiFetch, getProfile } from "../services/api";
 import { loadBeneficiaries } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
+import { queryKeys } from "../query/client.js";
 
 const DASHBOARD_CACHE_KEY = "axisvtu_dashboard_cache_v1";
 const keepPrimaryAccountOnly = (items) => {
@@ -38,6 +40,7 @@ function writeDashboardCache(payload) {
 }
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
   const { showToast } = useToast();
   const cached = readDashboardCache();
   const [wallet, setWallet] = useState(cached.wallet);
@@ -143,7 +146,11 @@ export default function Dashboard() {
     let txFailed = false;
 
     try {
-      const summary = await apiFetch("/dashboard/summary");
+      const summary = await queryClient.fetchQuery({
+        queryKey: queryKeys.dashboardSummary,
+        queryFn: () => apiFetch("/dashboard/summary", { _suppressRetryToast: true }),
+        staleTime: 60 * 1000,
+      });
       const partialFailures = new Set(
         Array.isArray(summary?.partial_failures) ? summary.partial_failures.map((item) => String(item || "")) : []
       );
@@ -175,10 +182,26 @@ export default function Dashboard() {
       }
     } catch {
       const [walletRes, txRes, announcementRes, fundingAccountRes] = await Promise.allSettled([
-        apiFetch("/wallet/me"),
-        apiFetch("/transactions/me"),
-        apiFetch("/notifications/broadcast"),
-        apiFetch("/wallet/bank-transfer-accounts"),
+        queryClient.fetchQuery({
+          queryKey: queryKeys.walletMe,
+          queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
+          staleTime: 45 * 1000,
+        }),
+        queryClient.fetchQuery({
+          queryKey: queryKeys.transactionsMe,
+          queryFn: () => apiFetch("/transactions/me", { _suppressRetryToast: true }),
+          staleTime: 30 * 1000,
+        }),
+        queryClient.fetchQuery({
+          queryKey: queryKeys.notificationsBroadcast,
+          queryFn: () => apiFetch("/notifications/broadcast", { _suppressRetryToast: true }),
+          staleTime: 60 * 1000,
+        }),
+        queryClient.fetchQuery({
+          queryKey: queryKeys.transferAccounts,
+          queryFn: () => apiFetch("/wallet/bank-transfer-accounts", { _suppressRetryToast: true }),
+          staleTime: 45 * 1000,
+        }),
       ]);
 
       walletFailed = walletRes.status !== "fulfilled";
