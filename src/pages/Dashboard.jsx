@@ -343,16 +343,6 @@ export default function Dashboard() {
     [fundingAccounts]
   );
 
-  const copyFundingAccount = async () => {
-    if (!primaryFundingAccount?.account_number) return;
-    try {
-      await navigator.clipboard?.writeText(String(primaryFundingAccount.account_number));
-      showToast("Account number copied.", "success");
-    } catch {
-      showToast("Copy failed. Please copy manually.", "error");
-    }
-  };
-
   const copyAccountNumber = async (value) => {
     if (!value) return;
     try {
@@ -431,27 +421,6 @@ export default function Dashboard() {
             <Link className="primary hero-cta" to="/wallet">Fund Wallet</Link>
             <Link className="ghost hero-cta" to="/data">Buy Data</Link>
             <Link className="ghost hero-cta" to="/services">All Services</Link>
-          </div>
-          <div className={`dashboard-funded-account ${primaryFundingAccount ? "" : "empty"}`}>
-            {primaryFundingAccount ? (
-              <>
-                <div className="label">Primary Funding Account</div>
-                <div className="dashboard-funded-account-row">
-                  <div className="account-number">{primaryFundingAccount.account_number}</div>
-                  <Button variant="ghost" className="account-copy-btn" type="button" onClick={copyFundingAccount}>
-                    Copy
-                  </Button>
-                </div>
-                <div className="muted">
-                  {primaryFundingAccount.bank_name} • {primaryFundingAccount.account_name || "AxisVTU Wallet"}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="label">Funding Account</div>
-                <div className="muted">No generated account yet. Tap Fund Wallet to generate yours.</div>
-              </>
-            )}
           </div>
         </div>
       </section>

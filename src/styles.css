@@ -2787,7 +2787,6 @@ body:has(.purchase-loading-screen) {
 }
 
 .dark .dashboard-feature-card,
-.dark .dashboard-funded-account,
 .dark .funding-account-card,
 .dark .wallet-primary-account,
 .dark .wallet-account-card {
@@ -2848,33 +2847,6 @@ body:has(.purchase-loading-screen) {
   gap: 10px;
 }
 
-.dashboard-funded-account {
-  border: 1px solid #d9e4f7;
-  background: #f8fbff;
-  border-radius: 16px;
-  padding: 12px 14px;
-  display: grid;
-  gap: 4px;
-}
-
-.dashboard-funded-account.empty {
-  border-style: dashed;
-}
-
-.dashboard-funded-account-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.dashboard-funded-account .account-number {
-  font-family: var(--font-display);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  font-size: 20px;
-}
-
 .dashboard-hero-actions .hero-cta {
   min-height: 46px;
   display: inline-flex;
@@ -2928,6 +2900,8 @@ body:has(.purchase-loading-screen) {
 .dashboard-funding-rail {
   display: grid;
   gap: 12px;
+  background: linear-gradient(180deg, #f8fbff, #f5f9ff);
+  border: 1px solid #dbe7ff;
 }
 
 .funding-account-grid {
@@ -2939,10 +2913,10 @@ body:has(.purchase-loading-screen) {
 .funding-account-card {
   border: 1px solid var(--stroke);
   border-radius: 14px;
-  padding: 12px;
+  padding: 14px;
   background: var(--panel-light);
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .funding-account-top {
@@ -4646,16 +4620,6 @@ a.pill:active::after {
     grid-column: 1 / -1;
   }
 
-  .dashboard-funded-account {
-    padding: 10px 12px;
-  }
-
-  .dashboard-funded-account .account-number {
-    font-size: 16px;
-    letter-spacing: 0.03em;
-    word-break: break-word;
-  }
-
   .dashboard-feature-card {
     grid-template-columns: auto 1fr;
     align-items: center;
@@ -4743,15 +4707,6 @@ a.pill:active::after {
 
   .dashboard-page .dashboard-welcome-actions .hero-cta:nth-child(3) {
     grid-column: 1 / -1;
-  }
-
-  .dashboard-page .dashboard-funded-account {
-    padding: 10px 12px;
-  }
-
-  .dashboard-page .dashboard-funded-account .account-number {
-    font-size: 15px;
-    letter-spacing: 0.02em;
   }
 
   .dashboard-page .dashboard-services-grid,
