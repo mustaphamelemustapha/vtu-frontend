@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { apiFetch, getProfile } from "../services/api";
-import { loadBeneficiaries } from "../services/beneficiaries";
 import { useToast } from "../context/toast.jsx";
 import { queryKeys } from "../query/client.js";
 import Button from "../components/ui/Button.jsx";
@@ -119,85 +118,8 @@ export default function Dashboard() {
   const [loadingTxs, setLoadingTxs] = useState(cached.txs.length === 0);
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
-  const [quickBeneficiaries, setQuickBeneficiaries] = useState([]);
   const retryTimerRef = useRef(null);
   const profile = getProfile();
-
-  const toServiceRoute = (service, fields = {}) => {
-    const params = new URLSearchParams();
-    const put = (key, value) => {
-      const raw = String(value ?? "").trim();
-      if (!raw) return;
-      params.set(key, raw);
-    };
-    if (service === "data") {
-      put("phone", fields.phone);
-      put("ported", fields.ported ? "1" : "0");
-      put("network", fields.preferred_network);
-      const q = params.toString();
-      return q ? `/data?${q}` : "/data";
-    }
-    if (service === "airtime") {
-      put("network", fields.network);
-      put("phone_number", fields.phone_number);
-      put("amount", fields.amount);
-      const q = params.toString();
-      return q ? `/airtime?${q}` : "/airtime";
-    }
-    if (service === "cable") {
-      put("provider", fields.provider);
-      put("smartcard_number", fields.smartcard_number);
-      put("package_code", fields.package_code);
-      put("amount", fields.amount);
-      const q = params.toString();
-      return q ? `/cable?${q}` : "/cable";
-    }
-    if (service === "electricity") {
-      put("disco", fields.disco);
-      put("meter_type", fields.meter_type);
-      put("meter_number", fields.meter_number);
-      put("amount", fields.amount);
-      const q = params.toString();
-      return q ? `/electricity?${q}` : "/electricity";
-    }
-    if (service === "exam") {
-      put("exam", fields.exam);
-      put("quantity", fields.quantity);
-      put("phone_number", fields.phone_number);
-      const q = params.toString();
-      return q ? `/exam?${q}` : "/exam";
-    }
-    return "/services";
-  };
-
-  const getQuickBeneficiaries = () => {
-    const serviceOrder = ["data", "airtime", "cable", "electricity", "exam"];
-    const serviceTitles = {
-      data: "Data",
-      airtime: "Airtime",
-      cable: "Cable",
-      electricity: "Electricity",
-      exam: "Exam",
-    };
-    const merged = [];
-    for (const service of serviceOrder) {
-      const rows = loadBeneficiaries(service).slice(0, 4);
-      rows.forEach((item) => {
-        merged.push({
-          id: `${service}:${item.id}`,
-          service,
-          serviceTitle: serviceTitles[service] || "Service",
-          label: item.label || "Saved",
-          subtitle: item.subtitle || "Beneficiary",
-          to: toServiceRoute(service, item.fields || {}),
-          last_used_at: item.last_used_at || "",
-        });
-      });
-    }
-    return merged
-      .sort((a, b) => String(b.last_used_at || "").localeCompare(String(a.last_used_at || "")))
-      .slice(0, 8);
-  };
 
   const loadDashboardData = async ({ silent = false, attempt = 1 } = {}) => {
     if (!silent) {
@@ -331,7 +253,6 @@ export default function Dashboard() {
       showToast("Dashboard is slow right now. Please hold on a moment.", "warning");
     }
 
-    setQuickBeneficiaries(getQuickBeneficiaries());
     setLoadingWallet(false);
     setLoadingTxs(false);
   };
@@ -346,7 +267,6 @@ export default function Dashboard() {
     } catch {
       // ignore
     }
-    setQuickBeneficiaries(getQuickBeneficiaries());
     return () => {
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
@@ -363,48 +283,6 @@ export default function Dashboard() {
   }, [txs]);
 
   const statusKey = (value) => String(value || "").toLowerCase();
-  const txTypeKey = (value) => String(value || "").toLowerCase();
-  const formatAmount = (value) =>
-    Number(value || 0).toLocaleString("en-NG", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
-
-  const txTypeLabel = (tx) => {
-    const key = txTypeKey(tx?.tx_type);
-    if (key === "wallet_fund") return "Credit";
-    if (key === "data") return "Data";
-    if (key === "airtime") return "Airtime";
-    if (key === "cable") return "Cable TV";
-    if (key === "electricity") return "Electricity";
-    if (key === "exam") return "Exam PIN";
-    return "Transaction";
-  };
-
-  const txRecipientPhone = (tx) =>
-    tx?.meta?.recipient_phone ||
-    tx?.meta?.phone_number ||
-    tx?.phone_number ||
-    "";
-
-  const txBodyText = (tx) => {
-    const key = txTypeKey(tx?.tx_type);
-    const recipient = txRecipientPhone(tx);
-    if (key === "wallet_fund") return "Wallet funding received.";
-    if (key === "data") return recipient ? `Data sent to ${maskPhone(recipient)}.` : "Data purchase completed.";
-    if (key === "airtime") return recipient ? `Airtime sent to ${maskPhone(recipient)}.` : "Airtime purchase completed.";
-    if (key === "cable") return "Cable subscription payment completed.";
-    if (key === "electricity") return "Electricity purchase completed.";
-    if (key === "exam") return "Exam PIN purchase completed.";
-    return "Transaction update.";
-  };
-
-  const isCreditTx = (tx) => {
-    const key = txTypeKey(tx?.tx_type);
-    const status = statusKey(tx?.status);
-    return key === "wallet_fund" || status === "refunded";
-  };
-
   const primaryFundingAccount = useMemo(
     () => (Array.isArray(fundingAccounts) && fundingAccounts.length> 0 ? fundingAccounts[0] : null),
     [fundingAccounts]
@@ -623,53 +501,14 @@ export default function Dashboard() {
       </section>
 
       <section className="section">
-        <div className="section-head">
-          <h3>Quick Buy</h3>
-          <span className="muted">{quickBeneficiaries.length} saved</span>
-        </div>
-        {quickBeneficiaries.length === 0 ? (
-          <div className="card">
-            <div className="muted">
-              Save beneficiaries from Data/Airtime/Cable/Electricity/Exam pages to quick-buy here.
+        <div className="card dashboard-tx-cta-card">
+          <div className="section-head">
+            <div>
+              <h3>Transactions</h3>
+              <div className="muted">View full history and receipts in one place.</div>
             </div>
+            <Link className="primary dashboard-history-link" to="/transactions">Open History</Link>
           </div>
-        ) : (
-          <div className="grid-3 dashboard-quick-grid">
-            {quickBeneficiaries.map((item) => (
-              <Link className="card action-card dashboard-service-card beneficiary-quick-card" to={item.to} key={item.id}>
-                <div className="label">{item.serviceTitle}</div>
-                <div className="value">{item.label}</div>
-                <div className="muted">{item.subtitle}</div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="section">
-        <div className="section-head">
-          <h3>Recent Transactions</h3>
-          <Link className="link" to="/transactions">View all</Link>
-        </div>
-        <div className="card-list">
-          {txs.slice(0, 4).map((tx) => (
-            <div className="list-card tx-list-card" key={tx.id}>
-              <div className="tx-main">
-                <div className="list-title">{txTypeLabel(tx)}</div>
-                <div className="muted">{txBodyText(tx)}</div>
-                <div className="muted">Ref: {tx.reference}</div>
-              </div>
-              <div className="list-meta tx-list-meta">
-                <div className={`tx-amount ${isCreditTx(tx) ? "credit" : "debit"}`}>
-                  {isCreditTx(tx) ? "+" : "-"}₦ {formatAmount(tx.amount)}
-                </div>
-                <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
-              </div>
-            </div>
-          ))}
-          {txs.length === 0 && (
-            <div className="empty">No transactions yet.</div>
-          )}
         </div>
       </section>
     </div>

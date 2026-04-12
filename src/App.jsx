@@ -218,20 +218,6 @@ function _deriveDisplayName(profile) {
   return "User";
 }
 
-function _deriveInitials(value) {
-  const raw = String(value || "").trim();
-  if (!raw) return "U";
-  const words = raw
-    .split(/\s+/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-  if (words.length >= 2) {
-    return `${words[0][0] || ""}${words[1][0] || ""}`.toUpperCase();
-  }
-  const compact = words[0] || raw;
-  return compact.slice(0, 2).toUpperCase();
-}
-
 function AppPageFallback() {
   return (
     <section className="section">
@@ -708,7 +694,7 @@ export default function App() {
   const profile = profileState || {};
   const fullName = _deriveDisplayName(profile);
   const isAdmin = (profile.role || "").toLowerCase() === "admin";
-  const initials = _deriveInitials(fullName);
+  const isDashboardRoute = location.pathname === "/";
 
   const handleLogout = () => {
     clearToken();
@@ -848,17 +834,13 @@ export default function App() {
             onInstall={handleInstall}
           />
           <main className="main">
-            <header className="topbar">
+            <header className={`topbar ${isDashboardRoute ? "topbar-dashboard" : ""}`}>
               <div className="top-left">
-                {location.pathname === "/" ? (
-                  <>
-                    <div className="avatar">
-                      <span>{initials}</span>
-                    </div>
-                    <div>
-                      <div className="hello">Hi, {fullName}</div>
-                    </div>
-                  </>
+                {isDashboardRoute ? (
+                  <div className="page-head dashboard-head">
+                    <div className="eyebrow">AxisVTU</div>
+                    <div className="hello">Dashboard</div>
+                  </div>
                 ) : (
                   <div>
                     <div className="hello">{pageTitle}</div>
