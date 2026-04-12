@@ -3742,7 +3742,8 @@ textarea {
 }
 
 button.pill,
-a.pill {
+a.pill,
+.pill[role="button"] {
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -3758,9 +3759,15 @@ a.pill {
 }
 
 button.pill:active,
-a.pill:active {
+a.pill:active,
+.pill[role="button"]:active {
   transform: translateY(1px) scale(0.985);
   filter: saturate(1.04);
+}
+
+.pill[role="button"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 button.pill::after,

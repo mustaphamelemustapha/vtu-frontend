@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
 
 export default function Services() {
   const [catalog, setCatalog] = useState(null);
@@ -46,36 +47,36 @@ export default function Services() {
       <section className="section">
         <h3>Services</h3>
         <div className="grid-3">
-          <Link className="card action-card" to="/data">
+          <Card as={Link} className="action-card" to="/data">
             <div className="label">Data</div>
             <div className="value">Buy</div>
             <div className="muted">Plans and quick buy</div>
-          </Link>
-          <Link className="card action-card" to="/airtime">
+          </Card>
+          <Card as={Link} className="action-card" to="/airtime">
             <div className="label">Airtime</div>
             <div className="value">Top up</div>
             <div className="muted">MTN, Glo, Airtel, 9mobile</div>
-          </Link>
-          <Link className="card action-card" to="/electricity">
+          </Card>
+          <Card as={Link} className="action-card" to="/electricity">
             <div className="label">Electricity</div>
             <div className="value">Token</div>
             <div className="muted">Prepaid and postpaid meters</div>
-          </Link>
-          <Link className="card action-card" to="/cable">
+          </Card>
+          <Card as={Link} className="action-card" to="/cable">
             <div className="label">Cable TV</div>
             <div className="value">Renew</div>
             <div className="muted">DStv, GOtv, StarTimes</div>
-          </Link>
-          <Link className="card action-card" to="/exam">
+          </Card>
+          <Card as={Link} className="action-card" to="/exam">
             <div className="label">Exam Pins</div>
             <div className="value">Buy</div>
             <div className="muted">WAEC, NECO, JAMB</div>
-          </Link>
+          </Card>
         </div>
       </section>
 
       <section className="section">
-        <div className="card">
+        <Card>
           <div className="section-head">
             <h3>Available Providers</h3>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -88,16 +89,16 @@ export default function Services() {
           {loadError && <div className="notice">{loadError}</div>}
           {catalog && !loadError ? (
             <div className="grid-2">
-              <div className="card" style={{ background: "transparent" }}>
+              <Card style={{ background: "transparent" }}>
                 <div className="label">Airtime networks</div>
                 <div className="value" style={{ fontSize: 16 }}>{(catalog.airtime_networks || []).join(", ")}</div>
-              </div>
-              <div className="card" style={{ background: "transparent" }}>
+              </Card>
+              <Card style={{ background: "transparent" }}>
                 <div className="label">Cable providers</div>
                 <div className="value" style={{ fontSize: 16 }}>
                   {(catalog.cable_providers || []).map((p) => p?.name || p?.id).filter(Boolean).join(", ")}
                 </div>
-              </div>
+              </Card>
             </div>
           ) : (
             <div className="empty">{loading ? "Loading catalog…" : "Catalog unavailable. Tap refresh to retry."}</div>
@@ -105,7 +106,7 @@ export default function Services() {
           <div className="hint">
             If “Install” isn’t available on your device, use Profile → Add to Home Screen for iPhone Safari.
           </div>
-        </div>
+        </Card>
       </section>
     </div>
   );

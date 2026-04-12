@@ -4,6 +4,7 @@ import { apiFetch } from "../services/api";
 import { downloadReceiptPdf } from "../services/receiptDownload";
 import { useToast } from "../context/toast.jsx";
 import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
 
 export default function Transactions() {
   const navigate = useNavigate();
@@ -333,7 +334,7 @@ export default function Transactions() {
       </section>
 
       <section className="section">
-        <div className="card tx-live-card">
+        <Card className="tx-live-card">
           <div>
             <div className="label">Live Status Tracking</div>
             <div className="muted">
@@ -357,32 +358,32 @@ export default function Transactions() {
               {liveRefresh ? "Live On" : "Live Off"}
             </button>
           </div>
-        </div>
+        </Card>
       </section>
 
       <section className="section">
         <div className="stats-grid">
-          <div className="card stat-card">
+          <Card className="stat-card">
             <div className="label">All</div>
             <div className="value">{counts.all}</div>
-          </div>
-          <div className="card stat-card">
+          </Card>
+          <Card className="stat-card">
             <div className="label">Success</div>
             <div className="value">{counts.success}</div>
-          </div>
-          <div className="card stat-card">
+          </Card>
+          <Card className="stat-card">
             <div className="label">Pending</div>
             <div className="value">{counts.pending}</div>
-          </div>
-          <div className="card stat-card">
+          </Card>
+          <Card className="stat-card">
             <div className="label">Failed</div>
             <div className="value">{counts.failed}</div>
-          </div>
+          </Card>
         </div>
       </section>
 
       <section className="section">
-        <div className="card">
+        <Card>
           <div className="filter-row">
             <input
               placeholder="Search by reference, type, phone, meter, smartcard..."
@@ -403,7 +404,7 @@ export default function Transactions() {
               </button>
             </div>
           </div>
-        </div>
+        </Card>
       </section>
 
       <section className="section">

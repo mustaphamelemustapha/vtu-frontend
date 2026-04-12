@@ -253,7 +253,7 @@ export default function Wallet() {
             {transferBusy && <div className="notice">Loading...</div>}
 
             {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider !== "paystack" && (
-              <div className="card">
+              <Card>
                 <div className="muted">
                   Complete one-time verification details to generate your dedicated funding account.
                 </div>
@@ -278,11 +278,11 @@ export default function Wallet() {
                     {transferBusy ? "Generating..." : "Generate Account Numbers"}
                   </Button>
                 </form>
-              </div>
+              </Card>
             )}
 
             {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider === "paystack" && transferNeedsPhone && (
-              <div className="card">
+              <Card>
                 <div className="muted">
                   Paystack needs your phone number to generate your dedicated account.
                 </div>
@@ -291,11 +291,11 @@ export default function Wallet() {
                     Add Phone Number
                   </Button>
                 </div>
-              </div>
+              </Card>
             )}
 
             {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider === "paystack" && !transferNeedsPhone && (
-              <div className="card">
+              <Card>
                 <div className="muted">
                   {transferMessage || "We could not fetch your dedicated account right now. Please try again shortly."}
                 </div>
@@ -304,7 +304,7 @@ export default function Wallet() {
                     Try Again
                   </Button>
                 </div>
-              </div>
+              </Card>
             )}
 
             {!transferBusy && transferAccounts.length> 0 && (

@@ -407,9 +407,9 @@ export default function Cable() {
           </form>
           <div className="beneficiary-head row-between">
             <div className="label">Saved Beneficiaries</div>
-            <button type="button" className="ghost beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
+            <Button variant="ghost" type="button" className="beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
               Save Current
-            </button>
+            </Button>
           </div>
           {beneficiaries.length === 0 ? (
             <div className="hint">No saved beneficiaries yet.</div>

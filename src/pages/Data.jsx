@@ -7,6 +7,7 @@ import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from 
 import { useToast } from "../context/toast.jsx";
 import { queryKeys } from "../query/client.js";
 import Button from "../components/ui/Button.jsx";
+import Card from "../components/ui/Card.jsx";
 
 const RESULT_PREFS_KEY = "vtu_data_result_prefs";
 const DELIVERED_HINTS = ["success", "successful", "delivered", "gifted", "completed"];
@@ -752,7 +753,7 @@ export default function Data() {
       </section>
 
       <section className="section">
-        <div className="card data-recipient-card">
+        <Card className="data-recipient-card">
           <h3>Recipient</h3>
           <div className="form-grid">
             <label>
@@ -793,9 +794,9 @@ export default function Data() {
           </div>
           <div className="beneficiary-head row-between">
             <div className="label">Saved Beneficiaries</div>
-            <button type="button" className="ghost beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
+            <Button variant="ghost" type="button" className="beneficiary-save-btn" onClick={saveCurrentBeneficiary}>
               Save Current
-            </button>
+            </Button>
           </div>
           {beneficiaries.length === 0 ? (
             <div className="hint">No saved beneficiaries yet.</div>
@@ -819,7 +820,7 @@ export default function Data() {
             </div>
           )}
           {fieldError && <div className="error">{fieldError}</div>}
-        </div>
+        </Card>
       </section>
 
       <section className="section">
@@ -839,7 +840,7 @@ export default function Data() {
             {plansError || walletError}
           </div>
         )}
-        <div className="card data-catalog-toolbar">
+        <Card className="data-catalog-toolbar">
         <div className="tab-row">
           {[
             { id: "all", label: "All" },
@@ -870,17 +871,17 @@ export default function Data() {
             <option value="data_high">Data: High to Low</option>
           </select>
         </div>
-        </div>
+        </Card>
         <div className="plan-grid">
           {loadingPlans && Array.from({ length: 6 }).map((_, idx) => (
-            <div className="card plan-card skeleton" key={`s-${idx}`}>
+            <Card className="plan-card skeleton" key={`s-${idx}`}>
               <div className="skeleton-line w-40" />
               <div className="skeleton-line w-60" />
               <div className="skeleton-line w-80" />
-            </div>
+            </Card>
           ))}
           {!loadingPlans && sorted.length === 0 && (
-            <div className="empty card">No plans found. Try another network or search term.</div>
+            <Card className="empty">No plans found. Try another network or search term.</Card>
           )}
           {!loadingPlans && sorted.map((plan) => (
             <button
@@ -916,15 +917,23 @@ export default function Data() {
                 <div className="best-badge">Best Value</div>
               )}
               <div className="compare-row">
-                <button
-                  type="button"
+                <span
+                  role="button"
+                  tabIndex={0}
                   className={`pill ${compare.find((p) => p.plan_code === plan.plan_code) ? "active" : ""}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleCompare(plan);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleCompare(plan);
+                    }
                   }}>
                   Compare
-                </button>
+                </span>
               </div>
             </button>
           ))}
@@ -933,7 +942,7 @@ export default function Data() {
       </section>
 
       {compare.length === 2 && (
-        <div className="compare-card card data-compare-card">
+        <Card className="compare-card data-compare-card">
           <div className="section-head">
             <h3>Plan Comparison</h3>
             <Button variant="ghost" onClick={() => setCompare([])}>Clear</Button>
@@ -948,7 +957,7 @@ export default function Data() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {selected && (
