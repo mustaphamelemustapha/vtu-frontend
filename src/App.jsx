@@ -970,6 +970,7 @@ export default function App() {
                   }
                 />
                 <Route path="/admin-login" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
           </main>
