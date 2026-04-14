@@ -1232,8 +1232,18 @@ a:focus-visible {
 }
 
 @media (min-width: 901px) {
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
   .app-shell {
     display: block;
+    height: 100dvh;
+    overflow: hidden;
   }
 
   .nav {
@@ -1251,6 +1261,10 @@ a:focus-visible {
   .main {
     margin: 0 20px 0 300px;
     max-width: min(1160px, calc(100vw - 320px));
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
   }
 }
 
