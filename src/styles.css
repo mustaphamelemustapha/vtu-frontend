@@ -1231,6 +1231,29 @@ a:focus-visible {
   box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
 }
 
+@media (min-width: 901px) {
+  .app-shell {
+    display: block;
+  }
+
+  .nav {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    margin: 0;
+    width: 266px;
+    height: calc(100dvh - 28px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 25;
+  }
+
+  .main {
+    margin: 0 20px 0 300px;
+    max-width: min(1160px, calc(100vw - 320px));
+  }
+}
+
 .nav-links {
   display: flex;
   flex-direction: column;
@@ -2824,9 +2847,16 @@ body:has(.purchase-loading-screen) {
   letter-spacing: 0.04em;
 }
 
-.dark .dashboard-welcome-card,
+.dark .hero-card,
 .dark .wallet-hero.wallet-hero-premium {
-  border-color: rgba(56, 189, 248, 0.28);
+  border-color: #2a3547;
+  background: linear-gradient(180deg, #151f30, #131c2a);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34);
+}
+
+.dark .dashboard-welcome-card {
+  border-color: #2a3547;
+  background: linear-gradient(180deg, #151f30, #131c2a);
 }
 
 .dark .dashboard-feature-card,
@@ -2834,6 +2864,11 @@ body:has(.purchase-loading-screen) {
 .dark .wallet-primary-account,
 .dark .wallet-account-card {
   border-color: rgba(255, 255, 255, 0.14);
+}
+
+.dark .dashboard-funding-rail {
+  border-color: #2a3547;
+  background: linear-gradient(180deg, #151f30, #131c2a);
 }
 
 .hero-value {
