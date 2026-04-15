@@ -5876,3 +5876,280 @@ a.pill:active::after {
     grid-template-columns: 1fr;
   }
 }
+
+/* Final mobile density lock: compact Buy/Wallet/Profile like a production app. */
+@media (max-width: 900px) {
+  .dashboard-page .dashboard-service-card.service-primary-card {
+    min-height: 138px;
+    padding: 12px;
+  }
+
+  .dashboard-page .service-icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+  }
+
+  .dashboard-page .service-icon-wrap svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .dashboard-page .service-title {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+
+  .dashboard-page .service-subtitle {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .wallet-hero {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .wallet-hero .hero-value {
+    font-size: clamp(24px, 7.2vw, 30px);
+    line-height: 1.06;
+  }
+
+  .wallet-primary-account {
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  .wallet-primary-account-number {
+    font-size: clamp(18px, 6.4vw, 24px);
+    letter-spacing: 0.03em;
+  }
+
+  .wallet-account-card {
+    padding: 10px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+
+  .wallet-account-number {
+    font-size: 17px;
+    letter-spacing: 0.02em;
+  }
+
+  .profile-ux-user-card {
+    padding: 12px;
+    border-radius: 16px;
+    gap: 12px;
+  }
+
+  .profile-ux-user-card-head {
+    gap: 10px;
+  }
+
+  .profile-ux-user-card-title {
+    font-size: 17px;
+  }
+
+  .profile-ux-user-avatar {
+    width: 52px;
+    height: 52px;
+    font-size: 16px;
+  }
+
+  .profile-ux-user-name {
+    font-size: clamp(18px, 5.4vw, 22px);
+  }
+
+  .profile-ux-email-chip,
+  .profile-ux-phone-chip {
+    max-width: 100%;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .profile-ux-menu {
+    gap: 10px;
+  }
+
+  .profile-ux-menu-item {
+    padding: 12px 13px;
+    border-radius: 14px;
+  }
+
+  .profile-ux-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .profile-ux-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .profile-ux-menu-title {
+    font-size: 15px;
+  }
+
+  .profile-ux-menu-subtitle {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .data-page .hero-card {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .data-page .hero-value {
+    font-size: clamp(24px, 7vw, 30px);
+  }
+
+  .data-page .data-recipient-card,
+  .data-page .data-catalog-toolbar {
+    padding: 9px;
+    border-radius: 12px;
+  }
+
+  .data-page .data-recipient-card .form-grid {
+    gap: 8px;
+  }
+
+  .data-page .data-plan-card {
+    padding: 9px;
+    border-radius: 11px;
+  }
+
+  .data-page .data-plan-card .plan-cap {
+    font-size: 13px;
+  }
+
+  .data-page .data-plan-card .plan-name {
+    font-size: 12.5px;
+    line-height: 1.25;
+    margin: 7px 0 3px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .data-page .data-plan-card .plan-meta {
+    font-size: 10.5px;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .data-page .data-plan-card .plan-foot {
+    margin-top: 6px;
+    font-size: 10.5px;
+    gap: 5px;
+  }
+
+  .data-page .data-plan-card .plan-foot .pill {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .data-page .data-plan-card .best-badge {
+    top: 8px;
+    right: 8px;
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .data-result-shell {
+    width: min(100%, 560px);
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-radius: 18px;
+  }
+
+  .data-result-icon {
+    width: 108px;
+    height: 108px;
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .data-result-title {
+    font-size: clamp(22px, 7.2vw, 32px);
+    margin-bottom: 10px;
+  }
+
+  .data-result-receipt {
+    border-radius: 16px;
+  }
+
+  .data-result-receipt-name {
+    font-size: 17px;
+  }
+
+  .data-result-row {
+    padding: 10px 2px;
+  }
+
+  .data-result-row span {
+    font-size: 13px;
+  }
+
+  .data-result-row strong {
+    font-size: 15px;
+    max-width: 56%;
+  }
+
+  .data-result-actions .primary {
+    min-height: 50px;
+    font-size: 20px;
+  }
+
+  .data-result-actions .ghost {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-page .dashboard-services-grid {
+    gap: 8px;
+  }
+
+  .dashboard-page .dashboard-service-card.service-primary-card {
+    min-height: 126px;
+    padding: 10px;
+  }
+
+  .dashboard-page .service-title {
+    font-size: 16px;
+  }
+
+  .dashboard-page .service-subtitle {
+    font-size: 10.5px;
+  }
+
+  .wallet-account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-ux-user-card-head-actions {
+    gap: 6px;
+  }
+
+  .profile-ux-mini-btn {
+    min-height: 32px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .data-page .data-plan-card .best-badge {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .data-page .plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .data-page .data-plan-card .plan-name {
+    font-size: 12px;
+  }
+}
