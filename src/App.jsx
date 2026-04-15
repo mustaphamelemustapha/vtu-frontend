@@ -235,7 +235,14 @@ export default function App() {
   const navigate = useNavigate();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileState, setProfileState] = useState(getProfile());
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    try {
+      if (typeof document !== "undefined" && document.body.classList.contains("dark")) return true;
+      return localStorage.getItem("theme") === "dark";
+    } catch {
+      return false;
+    }
+  });
   const [notifItems, setNotifItems] = useState(() => _loadNotifItems());
   const [notifSyncAt, setNotifSyncAt] = useState(null);
   const [notifSyncing, setNotifSyncing] = useState(false);

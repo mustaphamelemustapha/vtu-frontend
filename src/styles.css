@@ -2680,9 +2680,17 @@ a:focus-visible {
 }
 
 .dark .notice {
-  border: 1px solid rgba(96, 211, 255, 0.3);
-  background: rgba(96, 211, 255, 0.14);
-  color: #e8f2ff;
+  border: 1px solid rgba(96, 211, 255, 0.34);
+  background:
+    linear-gradient(180deg, rgba(96, 211, 255, 0.18), rgba(96, 211, 255, 0.1));
+  color: #e9f4ff;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.32);
+}
+
+.dark .notice::before {
+  color: #d9f2ff;
+  background: rgba(96, 211, 255, 0.2);
+  border-color: rgba(96, 211, 255, 0.5);
 }
 
 .dark .pending-card {
@@ -3823,10 +3831,36 @@ textarea {
 }
 
 .notice {
+  position: relative;
   margin-top: 12px;
-  background: rgba(15, 118, 110, 0.12);
-  padding: 10px;
+  padding: 11px 12px 11px 40px;
   border-radius: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.24);
+  background:
+    linear-gradient(180deg, rgba(15, 118, 110, 0.14), rgba(15, 118, 110, 0.08));
+  color: color-mix(in srgb, var(--ink) 86%, #0f4f4a 14%);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.38;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+}
+
+.notice::before {
+  content: "i";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 900;
+  color: #0b4f49;
+  background: rgba(15, 118, 110, 0.18);
+  border: 1px solid rgba(15, 118, 110, 0.45);
 }
 
 .page {
@@ -4232,6 +4266,12 @@ a.pill:active::after {
 }
 
 @media (max-width: 900px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
   }
