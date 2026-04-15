@@ -25,6 +25,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
   const [resetMode, setResetMode] = useState(false);
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
   const { showToast } = useToast();
+  const isPlainLoginView = mode === "login" && !forgotMode && !resetMode;
 
   const isTransientConnectionError = (value) => {
     const msg = String(value || "").toLowerCase();
@@ -331,31 +332,49 @@ export default function Login({ onAuth, modeRoute = "login" }) {
 
   return (
     <div className="auth">
-      <div className="auth-shell">
-        <div className="auth-left">
-          <div className="auth-left-inner">
+      <div className={`auth-shell ${isPlainLoginView ? "auth-shell-simple" : ""}`}>
+        <div className={`auth-left ${isPlainLoginView ? "auth-left-simple" : ""}`}>
+          <div className={`auth-left-inner ${isPlainLoginView ? "auth-left-inner-simple" : ""}`}>
             <div className="auth-brand">
               <div className="auth-mark">
                 <img src="/pwa/pwa-192.png" alt="AxisVTU" />
               </div>
               <div>
                 <div className="auth-brand-title">AxisVTU</div>
-                <div className="auth-brand-sub">Fast VTU. Clean receipts. Wallet-first.</div>
+                <div className="auth-brand-sub">Reliable VTU platform</div>
               </div>
             </div>
-            <h2 className="auth-pitch">Welcome to AxisVTU</h2>
-            <p className="muted">Sign in to buy data, airtime, pay bills, and manage your wallet in one place.</p>
-            <div className="auth-tags">
-              <span className="auth-tag">Fast login</span>
-              <span className="auth-tag">Secure wallet</span>
-              <span className="auth-tag">Instant purchases</span>
-            </div>
+            {isPlainLoginView ? (
+              <h2 className="auth-pitch auth-pitch-simple">Hi, Welcome Back</h2>
+            ) : (
+              <>
+                <h2 className="auth-pitch">Welcome to AxisVTU</h2>
+                <p className="muted">Sign in to buy data, airtime, pay bills, and manage your wallet in one place.</p>
+                <div className="auth-tags">
+                  <span className="auth-tag">Fast login</span>
+                  <span className="auth-tag">Secure wallet</span>
+                  <span className="auth-tag">Instant purchases</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
-        <div className="auth-right">
-          <div className="auth-card">
-            <h1>{mode === "login" ? "Welcome back" : "Create account"}</h1>
-            <p className="muted">{mode === "login" ? "Enter your email and password to continue." : "Create your account to start using AxisVTU."}</p>
+        <div className={`auth-right ${isPlainLoginView ? "auth-right-simple" : ""}`}>
+          {isPlainLoginView && (
+            <div className="auth-quick-link">
+              <span>Don&apos;t have an account?</span>{" "}
+              <button
+                type="button"
+                className="link auth-quick-link-btn"
+                onClick={() => navigate("/register")}
+              >
+                Get started
+              </button>
+            </div>
+          )}
+          <div className={`auth-card ${isPlainLoginView ? "auth-card-simple" : ""}`}>
+            <h1>{mode === "login" ? "Sign in to AxisVTU" : "Create account"}</h1>
+            <p className="muted">{mode === "login" ? "Enter your details below." : "Create your account to start using AxisVTU."}</p>
         {resetMode ? (
           <form onSubmit={submitReset} className="auth-wide">
             <div className="field">
@@ -445,7 +464,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </button>
           </form>
         ) : (
-        <form onSubmit={submit}>
+        <form onSubmit={submit} className={isPlainLoginView ? "auth-form-simple" : ""}>
           {mode === "register" && (
             <div className="field">
               <label>Full name</label>
@@ -463,11 +482,11 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </div>
           )}
           <div className="field">
-            <label>Email</label>
+            {!isPlainLoginView && <label>Email</label>}
               <input
                 type="email"
                 data-testid="auth-email"
-                placeholder="Email"
+                placeholder={isPlainLoginView ? "Username or Email" : "Email"}
                 value={form.email}
                 onChange={(e) => {
                   setForm({ ...form, email: e.target.value });
@@ -479,7 +498,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             {fieldErrors.email && <div className="error inline">{fieldErrors.email}</div>}
           </div>
           <div className="field">
-            <label>{mode === "register" ? "Create password" : "Password"}</label>
+            {!isPlainLoginView && <label>{mode === "register" ? "Create password" : "Password"}</label>}
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
@@ -501,12 +520,14 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-            <div className="strength">
-              <div className={`bar s${passwordStrength(form.password)}`} />
-              <span>
-                {["Too weak", "Weak", "Okay", "Strong", "Excellent"][passwordStrength(form.password)]}
-              </span>
-            </div>
+            {mode === "register" && (
+              <div className="strength">
+                <div className={`bar s${passwordStrength(form.password)}`} />
+                <span>
+                  {["Too weak", "Weak", "Okay", "Strong", "Excellent"][passwordStrength(form.password)]}
+                </span>
+              </div>
+            )}
             {fieldErrors.password && <div className="error inline">{fieldErrors.password}</div>}
           </div>
           {mode === "register" && (
@@ -557,17 +578,19 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           </Button>
         </form>
         )}
-        <button
-          className="link"
-          disabled={loading}
-          onClick={() => {
-            setError("");
-            setNotice("");
-            setFieldErrors({});
-            navigate(mode === "login" ? "/register" : "/login");
-          }}>
-          {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
-        </button>
+        {!isPlainLoginView && (
+          <button
+            className="link"
+            disabled={loading}
+            onClick={() => {
+              setError("");
+              setNotice("");
+              setFieldErrors({});
+              navigate(mode === "login" ? "/register" : "/login");
+            }}>
+            {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
+          </button>
+        )}
           </div>
         </div>
       </div>
