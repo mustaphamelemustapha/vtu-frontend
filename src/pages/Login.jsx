@@ -335,19 +335,29 @@ export default function Login({ onAuth, modeRoute = "login" }) {
       <div className={`auth-shell ${isPlainLoginView ? "auth-shell-simple" : ""}`}>
         <div className={`auth-left ${isPlainLoginView ? "auth-left-simple" : ""}`}>
           <div className={`auth-left-inner ${isPlainLoginView ? "auth-left-inner-simple" : ""}`}>
-            <div className="auth-brand">
-              <div className="auth-mark">
-                <img src="/pwa/pwa-192.png" alt="AxisVTU" />
-              </div>
-              <div>
-                <div className="auth-brand-title">AxisVTU</div>
-                <div className="auth-brand-sub">Reliable VTU platform</div>
-              </div>
-            </div>
             {isPlainLoginView ? (
-              <h2 className="auth-pitch auth-pitch-simple">Hi, Welcome Back</h2>
+              <>
+                <div className="auth-brand auth-brand-simple">
+                  <div className="auth-mark auth-mark-simple">
+                    <img src="/pwa/pwa-192.png" alt="AxisVTU" />
+                  </div>
+                </div>
+                <div className="auth-simple-copy">
+                  <h2 className="auth-pitch auth-pitch-simple">Hi, Welcome Back</h2>
+                  <p className="muted auth-simple-sub">Sign in to continue with fast airtime, data and bill payments.</p>
+                </div>
+              </>
             ) : (
               <>
+                <div className="auth-brand">
+                  <div className="auth-mark">
+                    <img src="/pwa/pwa-192.png" alt="AxisVTU" />
+                  </div>
+                  <div>
+                    <div className="auth-brand-title">AxisVTU</div>
+                    <div className="auth-brand-sub">Reliable VTU platform</div>
+                  </div>
+                </div>
                 <h2 className="auth-pitch">Welcome to AxisVTU</h2>
                 <p className="muted">Sign in to buy data, airtime, pay bills, and manage your wallet in one place.</p>
                 <div className="auth-tags">
@@ -486,7 +496,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
               <input
                 type="email"
                 data-testid="auth-email"
-                placeholder={isPlainLoginView ? "Username or Email" : "Email"}
+                placeholder={isPlainLoginView ? "Username or Phone Number or Email" : "Email"}
                 value={form.email}
                 onChange={(e) => {
                   setForm({ ...form, email: e.target.value });
