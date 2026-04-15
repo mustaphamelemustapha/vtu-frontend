@@ -9,6 +9,15 @@ import Button from "../components/ui/Button.jsx";
 const MIN_PURCHASE_LOADING_MS = 1200;
 const PENDING_CONFIRMATION_MESSAGE =
   "Provider confirmation is delayed. Your request is being verified. Check History shortly.";
+const NETWORK_PREFIXES = {
+  mtn: new Set([
+    "0803", "0806", "0703", "0706", "0810", "0813", "0814", "0816",
+    "0903", "0906", "0913", "0916", "0704", "07025", "07026",
+  ]),
+  airtel: new Set(["0802", "0808", "0708", "0812", "0701", "0902", "0907", "0901", "0912"]),
+  glo: new Set(["0805", "0807", "0705", "0811", "0815", "0905", "0915"]),
+  "9mobile": new Set(["0809", "0817", "0818", "0908", "0909"]),
+};
 
 function isUncertainPurchaseError(message) {
   const text = String(message || "").toLowerCase();
@@ -20,6 +29,23 @@ function isUncertainPurchaseError(message) {
     text.includes("network error") ||
     text.includes("connection")
   );
+}
+
+function normalizePhoneForNetworkInference(phoneNumber) {
+  const digits = String(phoneNumber || "").replace(/\D/g, "");
+  if (digits.startsWith("234") && digits.length >= 13) return `0${digits.slice(3)}`;
+  return digits;
+}
+
+function inferNigerianNetwork(phoneNumber) {
+  const normalized = normalizePhoneForNetworkInference(phoneNumber);
+  if (normalized.length < 4) return "";
+  const prefix5 = normalized.slice(0, 5);
+  const prefix4 = normalized.slice(0, 4);
+  for (const [network, prefixes] of Object.entries(NETWORK_PREFIXES)) {
+    if (prefixes.has(prefix5) || prefixes.has(prefix4)) return network;
+  }
+  return "";
 }
 
 export default function Airtime() {
@@ -61,6 +87,10 @@ export default function Airtime() {
     if (!network) nextErrors.network = "Select a network.";
     if (phoneNumber.length < 10 || phoneNumber.length> 15) {
       nextErrors.phone_number = "Enter a valid phone number.";
+    }
+    const inferred = inferNigerianNetwork(phoneNumber);
+    if (inferred && inferred !== network) {
+      nextErrors.network = `Detected ${inferred.toUpperCase()} number. Please use ${inferred.toUpperCase()} network.`;
     }
     if (!Number.isFinite(amount) || amount < 50) {
       nextErrors.amount = "Minimum airtime amount is ₦50.";
@@ -301,6 +331,7 @@ export default function Airtime() {
   };
 
   const networks = catalog?.airtime_networks || ["mtn", "glo", "airtel", "9mobile"];
+  const inferredNetwork = inferNigerianNetwork(form.phone_number);
 
   return (
     <div className="page airtime-page">
@@ -345,12 +376,22 @@ export default function Airtime() {
                 inputMode="numeric"
                 autoComplete="tel"
                 onChange={(e) => {
-                  setForm({ ...form, phone_number: e.target.value });
+                  const value = e.target.value;
+                  const detected = inferNigerianNetwork(value);
+                  setForm((prev) => ({
+                    ...prev,
+                    phone_number: value,
+                    network: detected || prev.network,
+                  }));
                   if (errors.phone_number) setErrors((prev) => ({ ...prev, phone_number: "" }));
+                  if (errors.network) setErrors((prev) => ({ ...prev, network: "" }));
                 }}
                 required
               />
               {errors.phone_number && <div className="error inline">{errors.phone_number}</div>}
+              {inferredNetwork && (
+                <div className="hint">Detected network: <strong>{inferredNetwork.toUpperCase()}</strong></div>
+              )}
             </label>
             <label className={errors.amount ? "field-error" : ""}>
               Amount (₦)
