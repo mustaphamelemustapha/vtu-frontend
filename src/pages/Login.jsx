@@ -373,7 +373,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
         <div className={`auth-right ${isPlainLoginView ? "auth-right-simple" : ""}`}>
           {(isPlainLoginView || isRegisterView) && (
             <div className="auth-quick-link">
-              <span>{isPlainLoginView ? "Don&apos;t have an account?" : "Already have an account?"}</span>{" "}
+              <span>{isPlainLoginView ? "Don't have an account?" : "Already have an account?"}</span>{" "}
               <button
                 type="button"
                 className="link auth-quick-link-btn"
