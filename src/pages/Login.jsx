@@ -26,6 +26,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
   const { showToast } = useToast();
   const isPlainLoginView = mode === "login" && !forgotMode && !resetMode;
+  const isRegisterView = mode === "register" && !forgotMode && !resetMode;
 
   const isTransientConnectionError = (value) => {
     const msg = String(value || "").toLowerCase();
@@ -370,29 +371,46 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           </div>
         </div>
         <div className={`auth-right ${isPlainLoginView ? "auth-right-simple" : ""}`}>
-          {isPlainLoginView && (
+          {(isPlainLoginView || isRegisterView) && (
             <div className="auth-quick-link">
-              <span>Don&apos;t have an account?</span>{" "}
+              <span>{isPlainLoginView ? "Don&apos;t have an account?" : "Already have an account?"}</span>{" "}
               <button
                 type="button"
                 className="link auth-quick-link-btn"
-                onClick={() => navigate("/register")}
+                onClick={() => navigate(isPlainLoginView ? "/register" : "/login")}
               >
-                Get started
+                {isPlainLoginView ? "Get started" : "Sign in"}
               </button>
             </div>
           )}
-          <div className={`auth-card ${isPlainLoginView ? "auth-card-simple" : ""}`}>
-            <h1>{mode === "login" ? "Sign in to AxisVTU" : "Create account"}</h1>
-            <p className="muted">{mode === "login" ? "Enter your details below." : "Create your account to start using AxisVTU."}</p>
+          <div className={`auth-card ${isPlainLoginView ? "auth-card-simple" : "auth-card-compact"}`}>
+            <h1>
+              {resetMode
+                ? "Set new password"
+                : forgotMode
+                  ? "Reset password"
+                  : mode === "login"
+                    ? "Sign in to AxisVTU"
+                    : "Create account"}
+            </h1>
+            <p className="muted">
+              {resetMode
+                ? "Use your reset token and set a fresh password."
+                : forgotMode
+                  ? "Enter your email to receive a reset link."
+                  : mode === "login"
+                    ? "Enter your details below."
+                    : "Create your account to start using AxisVTU."}
+            </p>
         {resetMode ? (
-          <form onSubmit={submitReset} className="auth-wide">
+          <form onSubmit={submitReset} className="auth-wide auth-form-compact">
             <div className="field">
               <label>Reset token</label>
               <input
                 placeholder="Paste reset token"
                 value={resetForm.token}
                 onChange={(e) => setResetForm({ ...resetForm, token: e.target.value })}
+                autoComplete="one-time-code"
                 required
               />
             </div>
@@ -404,6 +422,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   placeholder="New password"
                   value={resetForm.password}
                   onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
+                  autoComplete="new-password"
                   required
                 />
                 <button
@@ -429,6 +448,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   placeholder="Confirm password"
                   value={resetForm.confirm}
                   onChange={(e) => setResetForm({ ...resetForm, confirm: e.target.value })}
+                  autoComplete="new-password"
                   required
                 />
                 <button
@@ -450,7 +470,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </button>
           </form>
         ) : forgotMode ? (
-          <form onSubmit={submitForgot}>
+          <form onSubmit={submitForgot} className="auth-form-compact">
             <div className="field">
               <label>Email</label>
               <input
@@ -458,6 +478,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                 placeholder="Email"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
+                autoComplete="email"
                 required
               />
             </div>
@@ -474,7 +495,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </button>
           </form>
         ) : (
-        <form onSubmit={submit} className={isPlainLoginView ? "auth-form-simple" : ""}>
+        <form onSubmit={submit} className={isPlainLoginView ? "auth-form-simple" : "auth-form-compact"}>
           {mode === "register" && (
             <div className="field">
               <label>Full name</label>
@@ -486,6 +507,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   validateField("full_name", e.target.value);
                 }}
                 onBlur={(e) => validateField("full_name", e.target.value)}
+                autoComplete="name"
                 required
               />
               {fieldErrors.full_name && <div className="error inline">{fieldErrors.full_name}</div>}
@@ -494,15 +516,16 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           <div className="field">
             {!isPlainLoginView && <label>Email</label>}
               <input
-                type="email"
+                type={mode === "login" ? "text" : "email"}
                 data-testid="auth-email"
-                placeholder={isPlainLoginView ? "Username or Phone Number or Email" : "Email"}
+                placeholder={isPlainLoginView ? "Email address" : "Email"}
                 value={form.email}
                 onChange={(e) => {
                   setForm({ ...form, email: e.target.value });
                   validateField("email", e.target.value);
                 }}
                 onBlur={(e) => validateField("email", e.target.value)}
+                autoComplete={mode === "login" ? "username" : "email"}
                 required
               />
             {fieldErrors.email && <div className="error inline">{fieldErrors.email}</div>}
@@ -520,6 +543,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   validateField("password", e.target.value);
                 }}
                 onBlur={(e) => validateField("password", e.target.value)}
+                autoComplete={mode === "register" ? "new-password" : "current-password"}
                 required
               />
               <button
@@ -584,7 +608,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           {error && <div className="error">{error}</div>}
           {notice && <div className="notice">{notice}</div>}
           <Button type="submit" data-testid="auth-submit">
-            {loading ? "Please wait..." : mode === "login" ? "Login" : "Register"}
+            {loading ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}
           </Button>
         </form>
         )}

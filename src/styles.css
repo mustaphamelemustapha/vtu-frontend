@@ -4908,6 +4908,38 @@ a.pill:active::after {
   color: #7a869a;
 }
 
+.auth-card-compact {
+  width: min(460px, 100%);
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--stroke) 86%, transparent);
+  background: color-mix(in srgb, var(--panel) 94%, #f8fbff 6%);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  padding: 28px;
+}
+
+.auth-card-compact h1 {
+  font-size: clamp(30px, 3.1vw, 38px);
+  letter-spacing: -0.02em;
+}
+
+.auth-form-compact .field {
+  margin-bottom: 12px;
+}
+
+.auth-form-compact input {
+  min-height: 46px;
+  border-radius: 10px;
+}
+
+.auth-form-compact .input-btn {
+  min-height: 46px;
+  border-radius: 10px;
+}
+
+.auth-form-compact .row-between {
+  margin: 8px 0 10px;
+}
+
 .auth-form-simple .field {
   margin-bottom: 12px;
 }
@@ -4980,6 +5012,12 @@ a.pill:active::after {
 
 .dark .auth-quick-link-btn {
   color: #7fb5ff;
+}
+
+.dark .auth-card-compact {
+  border-color: #2a3547;
+  background: color-mix(in srgb, #101726 92%, #172033 8%);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.42);
 }
 
 .dark .auth-mark-simple {
