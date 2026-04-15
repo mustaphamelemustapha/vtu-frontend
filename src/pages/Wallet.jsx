@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
@@ -32,25 +32,40 @@ export default function Wallet() {
     setTransferProvider(String(res?.provider || fallbackProvider).toLowerCase());
   };
 
-  useEffect(() => {
-    queryClient.fetchQuery({
-      queryKey: queryKeys.walletMe,
-      queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
-      staleTime: 45 * 1000,
-    }).then(setWallet).catch(() => {});
-    queryClient.fetchQuery({
-      queryKey: queryKeys.walletLedger,
-      queryFn: () => apiFetch("/wallet/ledger", { _suppressRetryToast: true }),
-      staleTime: 30 * 1000,
-    }).then(setLedger).catch(() => {});
-    queryClient.fetchQuery({
-      queryKey: queryKeys.transferAccounts,
-      queryFn: () => apiFetch("/wallet/bank-transfer-accounts", { _suppressRetryToast: true }),
-      staleTime: 45 * 1000,
-    })
-      .then((res) => hydrateTransferState(res, "monnify"))
-      .catch(() => {});
+  const refreshWalletViews = useCallback(async () => {
+    const [walletRes, ledgerRes, transferRes] = await Promise.allSettled([
+      queryClient.fetchQuery({
+        queryKey: queryKeys.walletMe,
+        queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
+        staleTime: 15 * 1000,
+      }),
+      queryClient.fetchQuery({
+        queryKey: queryKeys.walletLedger,
+        queryFn: () => apiFetch("/wallet/ledger", { _suppressRetryToast: true }),
+        staleTime: 15 * 1000,
+      }),
+      queryClient.fetchQuery({
+        queryKey: queryKeys.transferAccounts,
+        queryFn: () => apiFetch("/wallet/bank-transfer-accounts", { _suppressRetryToast: true }),
+        staleTime: 15 * 1000,
+      }),
+    ]);
+    if (walletRes.status === "fulfilled") setWallet(walletRes.value);
+    if (ledgerRes.status === "fulfilled") setLedger(ledgerRes.value);
+    if (transferRes.status === "fulfilled") hydrateTransferState(transferRes.value, "monnify");
   }, [queryClient]);
+
+  useEffect(() => {
+    refreshWalletViews().catch(() => {});
+  }, [refreshWalletViews]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (document.hidden) return;
+      refreshWalletViews().catch(() => {});
+    }, 15000);
+    return () => window.clearInterval(timer);
+  }, [refreshWalletViews]);
 
   const openTransfer = async () => {
     setTransferOpen(true);
@@ -123,11 +138,7 @@ export default function Wallet() {
       queryClient.invalidateQueries({ queryKey: queryKeys.transferAccounts });
       hydrateTransferState(res, transferProvider || "paystack");
       showToast("Bank transfer account generated.", "success");
-      queryClient.fetchQuery({
-        queryKey: queryKeys.walletMe,
-        queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
-        staleTime: 45 * 1000,
-      }).then(setWallet).catch(() => {});
+      refreshWalletViews().catch(() => {});
     } catch (err) {
       showToast(err.message || "Unable to save phone number.", "error");
     } finally {
