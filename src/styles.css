@@ -6153,3 +6153,91 @@ a.pill:active::after {
     font-size: 12px;
   }
 }
+
+/* Phase hardening: dark-mode contrast lock across dashboard/wallet/buy/profile. */
+.dark .icon-btn {
+  background: #1a2335;
+  border-color: #36445d;
+  color: #edf3ff;
+}
+
+.dark .icon-btn:hover {
+  background: #212c42;
+  border-color: #496188;
+}
+
+.dark .muted,
+.dark .subtle,
+.dark .label,
+.dark .hint {
+  color: #c4cedd;
+}
+
+.dark .dashboard-page .dashboard-service-card.service-primary-card,
+.dark .dashboard-page .dashboard-tx-cta-card,
+.dark .wallet-hero.wallet-hero-premium,
+.dark .wallet-primary-account,
+.dark .wallet-account-card,
+.dark .profile-ux-menu-item,
+.dark .profile-ux-credit,
+.dark .profile-ux-user-card,
+.dark .data-page .data-recipient-card,
+.dark .data-page .data-catalog-toolbar,
+.dark .data-page .data-plan-card,
+.dark .transactions-page .tx-list-item,
+.dark .transactions-page .tx-live-card {
+  background: #141b28;
+  border-color: #2a3547;
+}
+
+.dark .dashboard-page .dashboard-service-card .value,
+.dark .dashboard-page .dashboard-service-card .label,
+.dark .dashboard-page .dashboard-service-card .muted {
+  color: #f5f7fb;
+}
+
+.dark .dashboard-page .dashboard-service-card .muted {
+  color: #c4cedd;
+}
+
+.dark .wallet-page .wallet-primary-account-number,
+.dark .wallet-account-number,
+.dark .funding-account-number {
+  color: #f5f7fb;
+}
+
+.dark .account-copy-btn,
+.dark .beneficiary-save-btn,
+.dark .dashboard-history-link,
+.dark .wallet-hero .ghost,
+.dark .wallet-account-board .ghost,
+.dark .profile-page .ghost {
+  background: #1a2335;
+  border-color: #36445d;
+  color: #edf3ff;
+}
+
+.dark .account-copy-btn:hover,
+.dark .beneficiary-save-btn:hover,
+.dark .dashboard-history-link:hover,
+.dark .wallet-hero .ghost:hover,
+.dark .wallet-account-board .ghost:hover,
+.dark .profile-page .ghost:hover {
+  background: #212c42;
+  border-color: #496188;
+}
+
+.dark .tx-receipt-icon.success {
+  background: rgba(34, 197, 94, 0.28);
+  color: #7ee8b0;
+}
+
+.dark .tx-receipt-icon.pending {
+  background: rgba(245, 158, 11, 0.28);
+  color: #ffd08a;
+}
+
+.dark .tx-receipt-icon.failed {
+  background: rgba(239, 68, 68, 0.24);
+  color: #ffb4b4;
+}
