@@ -115,13 +115,16 @@ export default function Dashboard() {
   const [announcements, setAnnouncements] = useState(cached.announcements);
   const [fundingAccounts, setFundingAccounts] = useState(cached.fundingAccounts);
   const [loadingWallet, setLoadingWallet] = useState(!cached.wallet);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
   const retryTimerRef = useRef(null);
   const profile = getProfile();
 
   const loadDashboardData = async ({ silent = false, attempt = 1 } = {}) => {
-    if (!silent) {
+    if (silent) {
+      setIsRefreshing(true);
+    } else {
       setLoadError("");
       if (!wallet) setLoadingWallet(true);
     }
@@ -252,6 +255,7 @@ export default function Dashboard() {
     }
 
     setLoadingWallet(false);
+    setIsRefreshing(false);
   };
 
   useEffect(() => {
@@ -339,6 +343,8 @@ export default function Dashboard() {
     return fallback;
   }, [profile?.full_name]);
 
+  const showFundingSkeleton = loadingWallet && !primaryFundingAccount;
+
   return (
     <div className="page dashboard-page" data-testid="dashboard-page">
       <section className="dashboard-shell-top">
@@ -346,7 +352,13 @@ export default function Dashboard() {
           <div className="dashboard-welcome-head">
             <div className="label">DASHBOARD</div>
             <h2 className="dashboard-welcome-title" data-testid="dashboard-welcome-title">Welcome back, {greetingName}!</h2>
-            <div className="muted">Your account is active and ready for instant VTU purchases.</div>
+            <div className="muted">
+              {isRefreshing
+                ? "Refreshing live balances..."
+                : loadError
+                  ? "Live sync delayed. Showing best available data."
+                  : "Your account is active and ready for instant VTU purchases."}
+            </div>
           </div>
           <div className="hero-value">{loadingWallet ? "Loading..." : `₦ ${wallet?.balance || "0.00"}`}</div>
           <div className="dashboard-welcome-actions">
@@ -363,7 +375,15 @@ export default function Dashboard() {
             <h3>Automated Bank Transfer</h3>
             <Link className="ghost beneficiary-save-btn" to="/wallet">Manage</Link>
           </div>
-          {fundingAccounts.length === 0 ? (
+          {showFundingSkeleton ? (
+            <div className="funding-account-grid">
+              <div className="funding-account-card skeleton">
+                <div className="skeleton-line w-40" />
+                <div className="skeleton-line w-80" />
+                <div className="skeleton-line w-60" />
+              </div>
+            </div>
+          ) : fundingAccounts.length === 0 ? (
             <div className="muted">No account generated yet. Open Wallet and tap Generate Account.</div>
           ) : (
             <div className="funding-account-grid">
@@ -405,7 +425,12 @@ export default function Dashboard() {
 
       {loadError && (
         <section className="section">
-          <div className="notice">{loadError}</div>
+          <div className="notice notice-inline-action">
+            <span>{loadError}</span>
+            <button className="ghost beneficiary-save-btn" type="button" onClick={() => loadDashboardData({ silent: false, attempt: 1 })}>
+              Retry now
+            </button>
+          </div>
         </section>
       )}
 

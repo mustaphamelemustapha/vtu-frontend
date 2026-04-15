@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../services/api";
 import { useToast } from "../context/toast.jsx";
@@ -12,6 +12,8 @@ export default function Wallet() {
   const queryClient = useQueryClient();
   const [wallet, setWallet] = useState(null);
   const [ledger, setLedger] = useState([]);
+  const [walletLoading, setWalletLoading] = useState(true);
+  const [walletError, setWalletError] = useState("");
   const { showToast } = useToast();
   const [transferOpen, setTransferOpen] = useState(false);
   const [transferBusy, setTransferBusy] = useState(false);
@@ -23,6 +25,17 @@ export default function Wallet() {
   const [transferForm, setTransferForm] = useState({ bvn: "", nin: "" });
   const [phonePromptOpen, setPhonePromptOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState("");
+  const retryTimerRef = useRef(null);
+  const walletRef = useRef(wallet);
+  const ledgerRef = useRef(ledger);
+
+  useEffect(() => {
+    walletRef.current = wallet;
+  }, [wallet]);
+
+  useEffect(() => {
+    ledgerRef.current = ledger;
+  }, [ledger]);
 
   const hydrateTransferState = (res, fallbackProvider = "monnify") => {
     setTransferAccounts(res?.accounts || []);
@@ -32,7 +45,8 @@ export default function Wallet() {
     setTransferProvider(String(res?.provider || fallbackProvider).toLowerCase());
   };
 
-  const refreshWalletViews = useCallback(async () => {
+  const refreshWalletViews = useCallback(async ({ silent = false, attempt = 1 } = {}) => {
+    if (!silent) setWalletError("");
     const [walletRes, ledgerRes, transferRes] = await Promise.allSettled([
       queryClient.fetchQuery({
         queryKey: queryKeys.walletMe,
@@ -53,16 +67,47 @@ export default function Wallet() {
     if (walletRes.status === "fulfilled") setWallet(walletRes.value);
     if (ledgerRes.status === "fulfilled") setLedger(ledgerRes.value);
     if (transferRes.status === "fulfilled") hydrateTransferState(transferRes.value, "monnify");
-  }, [queryClient]);
+
+    const criticalFailed = walletRes.status !== "fulfilled" && ledgerRes.status !== "fulfilled";
+    const hasEssentialData =
+      !!walletRef.current ||
+      (Array.isArray(ledgerRef.current) && ledgerRef.current.length > 0) ||
+      walletRes.status === "fulfilled" ||
+      (ledgerRes.status === "fulfilled" && Array.isArray(ledgerRes.value) && ledgerRes.value.length > 0);
+
+    if (!criticalFailed) {
+      setWalletError("");
+    } else {
+      setWalletError(
+        hasEssentialData
+          ? "Live wallet update delayed. Showing last available data."
+          : "Wallet is taking longer than usual. Retrying..."
+      );
+    }
+
+    if (criticalFailed && attempt < 3) {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = setTimeout(() => {
+        refreshWalletViews({ silent: true, attempt: attempt + 1 });
+      }, 1000 * attempt);
+    } else if (criticalFailed && !hasEssentialData && !silent) {
+      showToast("Wallet is slow right now. Please hold on a moment.", "warning");
+    }
+
+    setWalletLoading(false);
+  }, [queryClient, showToast]);
 
   useEffect(() => {
     refreshWalletViews().catch(() => {});
+    return () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    };
   }, [refreshWalletViews]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (document.hidden) return;
-      refreshWalletViews().catch(() => {});
+      refreshWalletViews({ silent: true }).catch(() => {});
     }, 15000);
     return () => window.clearInterval(timer);
   }, [refreshWalletViews]);
@@ -157,13 +202,14 @@ export default function Wallet() {
 
   const hasGeneratedAccounts = transferAccounts.length> 0;
   const primaryAccount = hasGeneratedAccounts ? transferAccounts[0] : null;
+  const showWalletLoadingState = walletLoading && !wallet && ledger.length === 0;
 
   return (
     <div className="page">
       <section className="hero-card wallet-hero wallet-hero-premium">
         <div>
           <div className="label">Wallet</div>
-          <div className="hero-value">₦ {wallet?.balance || "0.00"}</div>
+          <div className="hero-value">{walletLoading ? "Loading..." : `₦ ${wallet?.balance || "0.00"}`}</div>
           <div className="muted">Automated funding with your personal account number.</div>
         </div>
         <div className="hero-actions wallet-hero-actions-premium">
@@ -197,6 +243,14 @@ export default function Wallet() {
                 Copy
               </Button>
             </div>
+          ) : showWalletLoadingState ? (
+            <div className="wallet-account-grid">
+              <div className="wallet-account-card skeleton">
+                <div className="skeleton-line w-40" />
+                <div className="skeleton-line w-80" />
+                <div className="skeleton-line w-60" />
+              </div>
+            </div>
           ) : (
             <div className="notice">
               {transferMessage || "No dedicated account yet. Tap Generate Account to create one."}
@@ -227,7 +281,23 @@ export default function Wallet() {
           <h3>Wallet Ledger</h3>
           <span className="muted">Latest credits and debits</span>
         </div>
+        {walletError && (
+          <div className="notice notice-inline-action notice-compact">
+            <span>{walletError}</span>
+            <button className="ghost beneficiary-save-btn" type="button" onClick={() => refreshWalletViews({ silent: false, attempt: 1 })}>
+              Retry now
+            </button>
+          </div>
+        )}
         <div className="card-list">
+          {showWalletLoadingState && (
+            <div className="list-card skeleton">
+              <div style={{ width: "100%" }}>
+                <div className="skeleton-line w-40" />
+                <div className="skeleton-line w-80" />
+              </div>
+            </div>
+          )}
           {ledger.map((entry) => (
             <div className="list-card" key={entry.id}>
               <div>
@@ -242,7 +312,7 @@ export default function Wallet() {
               </div>
             </div>
           ))}
-          {ledger.length === 0 && (
+          {ledger.length === 0 && !showWalletLoadingState && (
             <div className="empty">No ledger entries yet.</div>
           )}
         </div>

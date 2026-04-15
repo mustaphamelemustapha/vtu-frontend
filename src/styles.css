@@ -1637,6 +1637,10 @@ a:focus-visible {
   animation: shimmer 1.2s infinite;
 }
 
+.dark .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
 .skeleton-line {
   height: 10px;
   border-radius: 999px;
@@ -3861,6 +3865,25 @@ textarea {
   color: #0b4f49;
   background: rgba(15, 118, 110, 0.18);
   border: 1px solid rgba(15, 118, 110, 0.45);
+}
+
+.notice.notice-inline-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.notice.notice-inline-action .ghost {
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.notice.notice-compact {
+  margin-top: 0;
+  margin-bottom: 10px;
 }
 
 .page {
