@@ -460,8 +460,8 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                 </button>
               </div>
             </div>
-            {error && <div className="error">{error}</div>}
-            {notice && <div className="notice">{notice}</div>}
+            {error && <div className="auth-feedback auth-feedback-error">{error}</div>}
+            {notice && <div className="auth-feedback auth-feedback-note">{notice}</div>}
             <Button type="submit">
               {loading ? "Please wait..." : "Reset password"}
             </Button>
@@ -482,8 +482,8 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                 required
               />
             </div>
-            {error && <div className="error">{error}</div>}
-            {notice && <div className="notice">{notice}</div>}
+            {error && <div className="auth-feedback auth-feedback-error">{error}</div>}
+            {notice && <div className="auth-feedback auth-feedback-note">{notice}</div>}
             <Button type="submit">
               {loading ? "Please wait..." : "Send reset link"}
             </Button>
@@ -605,8 +605,8 @@ export default function Login({ onAuth, modeRoute = "login" }) {
               </button>
             </div>
           )}
-          {error && <div className="error">{error}</div>}
-          {notice && <div className="notice">{notice}</div>}
+          {error && <div className="auth-feedback auth-feedback-error">{error}</div>}
+          {notice && <div className="auth-feedback auth-feedback-note">{notice}</div>}
           <Button type="submit" data-testid="auth-submit">
             {loading ? "Please wait..." : mode === "login" ? "Sign in" : "Create account"}
           </Button>

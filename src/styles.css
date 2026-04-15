@@ -4929,6 +4929,8 @@ a.pill:active::after {
 .auth-form-compact input {
   min-height: 46px;
   border-radius: 10px;
+  padding-inline: 14px;
+  font-size: 15px;
 }
 
 .auth-form-compact .input-btn {
@@ -4949,6 +4951,8 @@ a.pill:active::after {
   border-radius: 8px;
   border-color: #dbe3ef;
   background: #f4f7fb;
+  padding-inline: 14px;
+  font-size: 15px;
   transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease, background var(--motion-base) ease;
 }
 
@@ -4967,6 +4971,28 @@ a.pill:active::after {
   margin: 10px 0 12px;
 }
 
+.auth .row-between .link {
+  color: #355ec8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth .row-between .link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.auth .check {
+  color: #5f6c81;
+  font-size: 13px;
+}
+
+.auth .check input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: #2563eb;
+}
+
 .auth-form-simple .primary {
   min-height: 48px;
   border-radius: 8px;
@@ -4980,10 +5006,109 @@ a.pill:active::after {
   box-shadow: 0 10px 22px rgba(37, 99, 235, 0.26);
 }
 
+.auth .input-btn {
+  font-weight: 600;
+}
+
+.auth .input-btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--stroke));
+}
+
+.auth .field label {
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+}
+
+.auth .field input::placeholder {
+  color: #8a96aa;
+}
+
+.auth .error.inline {
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.auth-feedback {
+  position: relative;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  padding: 11px 12px 11px 40px;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  animation: auth-feedback-pop 180ms ease;
+}
+
+.auth-feedback::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 900;
+  transform: translateY(-50%);
+}
+
+.auth-feedback::after {
+  content: none;
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  border-radius: 8px;
+}
+
+.auth-feedback-note {
+  color: #0f4f4a;
+  background: linear-gradient(180deg, rgba(15, 118, 110, 0.12), rgba(15, 118, 110, 0.07));
+  border-color: rgba(15, 118, 110, 0.28);
+}
+
+.auth-feedback-note::before {
+  content: "i";
+  color: #0b4f49;
+  background: rgba(15, 118, 110, 0.18);
+  border: 1px solid rgba(15, 118, 110, 0.45);
+}
+
+.auth-feedback-error {
+  color: #9a1f1f;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.07));
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+.auth-feedback-error::before {
+  content: "!";
+  color: #8f1616;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
 @keyframes auth-card-fade {
   from {
     opacity: 0;
     transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes auth-feedback-pop {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -5035,10 +5160,51 @@ a.pill:active::after {
   color: #f5f7fb;
 }
 
+.dark .auth-form-simple input::placeholder,
+.dark .auth-form-compact input::placeholder {
+  color: #96a6be;
+}
+
 .dark .auth-form-simple .input-btn {
   background: #1a2335;
   border-color: #36445d;
   color: #edf3ff;
+}
+
+.dark .auth .check {
+  color: #b7c4d8;
+}
+
+.dark .auth .row-between .link {
+  color: #8bb9ff;
+}
+
+.dark .auth .row-between .link:hover {
+  color: #b5d5ff;
+}
+
+.dark .auth-feedback-note {
+  color: #c8f6e6;
+  background: linear-gradient(180deg, rgba(53, 208, 127, 0.2), rgba(53, 208, 127, 0.1));
+  border-color: rgba(53, 208, 127, 0.36);
+}
+
+.dark .auth-feedback-note::before {
+  color: #d8ffef;
+  background: rgba(53, 208, 127, 0.24);
+  border-color: rgba(53, 208, 127, 0.62);
+}
+
+.dark .auth-feedback-error {
+  color: #ffc5c5;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.22), rgba(239, 68, 68, 0.12));
+  border-color: rgba(239, 68, 68, 0.42);
+}
+
+.dark .auth-feedback-error::before {
+  color: #ffdede;
+  background: rgba(239, 68, 68, 0.28);
+  border-color: rgba(255, 140, 140, 0.76);
 }
 
 .dark .auth-form-simple .primary {
