@@ -7,6 +7,20 @@ import { useToast } from "../context/toast.jsx";
 import Button from "../components/ui/Button.jsx";
 
 const MIN_PURCHASE_LOADING_MS = 1200;
+const PENDING_CONFIRMATION_MESSAGE =
+  "Provider confirmation is delayed. Your request is being verified. Check History shortly.";
+
+function isUncertainPurchaseError(message) {
+  const text = String(message || "").toLowerCase();
+  return (
+    text.includes("timed out") ||
+    text.includes("timeout") ||
+    text.includes("unable to reach server") ||
+    text.includes("failed to fetch") ||
+    text.includes("network error") ||
+    text.includes("connection")
+  );
+}
 
 export default function Airtime() {
   const navigate = useNavigate();
@@ -108,7 +122,10 @@ export default function Airtime() {
         network: payload.network,
         phone: payload.phone_number,
         amount: payload.amount,
-        failure_reason: "",
+        failure_reason:
+          String(res.status || "").toLowerCase() === "pending"
+            ? res.message || PENDING_CONFIRMATION_MESSAGE
+            : "",
       });
       setBeneficiaries(
         saveBeneficiary("airtime", {
@@ -125,17 +142,31 @@ export default function Airtime() {
       apiFetch("/wallet/me").then(setWallet).catch(() => {});
     } catch (err) {
       const message = err?.message || "Airtime failed.";
-      setPurchaseResult({
-        ok: false,
-        reference: `AXIS-AIRTIME-ATTEMPT-${Date.now()}`,
-        status: "failed",
-        created_at: new Date().toISOString(),
-        network: payload.network,
-        phone: payload.phone_number,
-        amount: payload.amount,
-        failure_reason: message,
-      });
-      showToast(message, "error");
+      if (isUncertainPurchaseError(message)) {
+        setPurchaseResult({
+          ok: true,
+          reference: `AXIS-AIRTIME-PENDING-${Date.now()}`,
+          status: "pending",
+          created_at: new Date().toISOString(),
+          network: payload.network,
+          phone: payload.phone_number,
+          amount: payload.amount,
+          failure_reason: PENDING_CONFIRMATION_MESSAGE,
+        });
+        showToast("Purchase submitted. Confirmation is in progress.", "info");
+      } else {
+        setPurchaseResult({
+          ok: false,
+          reference: `AXIS-AIRTIME-ATTEMPT-${Date.now()}`,
+          status: "failed",
+          created_at: new Date().toISOString(),
+          network: payload.network,
+          phone: payload.phone_number,
+          amount: payload.amount,
+          failure_reason: message,
+        });
+        showToast(message, "error");
+      }
     } finally {
       const elapsed = Date.now() - startedAt;
       if (elapsed < MIN_PURCHASE_LOADING_MS) {
@@ -410,7 +441,9 @@ export default function Airtime() {
             </div>
             <div className="success-sub">
               {purchaseResult.ok
-                ? "Your top up has been processed."
+                ? statusKey(purchaseResult.status) === "pending"
+                  ? "We have submitted your top up. Final confirmation may take a moment."
+                  : "Your top up has been processed."
                 : "Your request could not be completed. You can download receipt details."}
             </div>
             {!!purchaseResult.failure_reason && (
