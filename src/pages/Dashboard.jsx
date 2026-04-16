@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { apiFetch, getActiveAuthScope, getProfile } from "../services/api";
@@ -127,19 +127,41 @@ export default function Dashboard() {
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
   const retryTimerRef = useRef(null);
+  const mountedRef = useRef(true);
+  const walletRef = useRef(cached.wallet);
+  const txsRef = useRef(cached.txs);
+  const announcementsRef = useRef(cached.announcements);
+  const fundingAccountsRef = useRef(cached.fundingAccounts);
 
-  const loadDashboardData = async ({ silent = false, attempt = 1 } = {}) => {
+  useEffect(() => {
+    walletRef.current = wallet;
+  }, [wallet]);
+
+  useEffect(() => {
+    txsRef.current = txs;
+  }, [txs]);
+
+  useEffect(() => {
+    announcementsRef.current = announcements;
+  }, [announcements]);
+
+  useEffect(() => {
+    fundingAccountsRef.current = fundingAccounts;
+  }, [fundingAccounts]);
+
+  const loadDashboardData = useCallback(async ({ silent = false, attempt = 1 } = {}) => {
+    if (!mountedRef.current) return;
     if (silent) {
       setIsRefreshing(true);
     } else {
       setLoadError("");
-      if (!wallet) setLoadingWallet(true);
+      if (!walletRef.current) setLoadingWallet(true);
     }
 
-    let nextWallet = wallet;
-    let nextTxs = txs;
-    let nextAnnouncements = announcements;
-    let nextFundingAccounts = fundingAccounts;
+    let nextWallet = walletRef.current;
+    let nextTxs = txsRef.current;
+    let nextAnnouncements = announcementsRef.current;
+    let nextFundingAccounts = fundingAccountsRef.current;
     let walletFailed = false;
     let txFailed = false;
 
@@ -158,17 +180,17 @@ export default function Dashboard() {
 
       if (!walletFailed && summary?.wallet && typeof summary.wallet === "object") {
         nextWallet = summary.wallet;
-        setWallet(summary.wallet);
+        if (mountedRef.current) setWallet(summary.wallet);
       }
 
       if (!txFailed && Array.isArray(summary?.transactions)) {
         nextTxs = summary.transactions;
-        setTxs(summary.transactions);
+        if (mountedRef.current) setTxs(summary.transactions);
       }
 
       if (!partialFailures.has("announcements") && Array.isArray(summary?.announcements)) {
         nextAnnouncements = summary.announcements;
-        setAnnouncements(summary.announcements);
+        if (mountedRef.current) setAnnouncements(summary.announcements);
       }
 
       if (
@@ -176,7 +198,7 @@ export default function Dashboard() {
         Array.isArray(summary?.bank_transfer_accounts?.accounts)
       ) {
         nextFundingAccounts = keepPrimaryAccountOnly(summary.bank_transfer_accounts.accounts);
-        setFundingAccounts(nextFundingAccounts);
+        if (mountedRef.current) setFundingAccounts(nextFundingAccounts);
       }
     } catch {
       const [walletRes, txRes, announcementRes, fundingAccountRes] = await Promise.allSettled([
@@ -207,25 +229,25 @@ export default function Dashboard() {
 
       if (walletRes.status === "fulfilled") {
         nextWallet = walletRes.value;
-        setWallet(walletRes.value);
+        if (mountedRef.current) setWallet(walletRes.value);
       }
       if (txRes.status === "fulfilled") {
         nextTxs = txRes.value;
-        setTxs(txRes.value);
+        if (mountedRef.current) setTxs(txRes.value);
       }
       if (announcementRes.status === "fulfilled") {
         nextAnnouncements = Array.isArray(announcementRes.value) ? announcementRes.value : [];
-        setAnnouncements(nextAnnouncements);
+        if (mountedRef.current) setAnnouncements(nextAnnouncements);
       } else {
         // keep previous/cached announcements on transient errors
-        setAnnouncements((prev) => prev);
+        if (mountedRef.current) setAnnouncements((prev) => prev);
       }
       if (fundingAccountRes.status === "fulfilled") {
         nextFundingAccounts = keepPrimaryAccountOnly(fundingAccountRes.value?.accounts);
-        setFundingAccounts(nextFundingAccounts);
+        if (mountedRef.current) setFundingAccounts(nextFundingAccounts);
       } else {
         // keep previous/cached funding accounts on transient errors
-        setFundingAccounts((prev) => prev);
+        if (mountedRef.current) setFundingAccounts((prev) => prev);
       }
     }
 
@@ -243,13 +265,15 @@ export default function Dashboard() {
     const criticalFailed = walletFailed && txFailed;
 
     if (!criticalFailed) {
-      setLoadError("");
+      if (mountedRef.current) setLoadError("");
     } else {
-      setLoadError(
-        hasEssentialData
-          ? "Live update delayed. Showing last available dashboard data."
-          : "Dashboard is taking longer than usual. Retrying..."
-      );
+      if (mountedRef.current) {
+        setLoadError(
+          hasEssentialData
+            ? "Live update delayed. Showing last available dashboard data."
+            : "Dashboard is taking longer than usual. Retrying..."
+        );
+      }
     }
 
     if (criticalFailed && attempt < 3) {
@@ -258,14 +282,19 @@ export default function Dashboard() {
         loadDashboardData({ silent: true, attempt: attempt + 1 });
       }, 1100 * attempt);
     } else if (criticalFailed && !hasEssentialData && !silent) {
-      showToast("Dashboard is slow right now. Please hold on a moment.", "warning");
+      if (mountedRef.current) {
+        showToast("Dashboard is slow right now. Please hold on a moment.", "warning");
+      }
     }
 
-    setLoadingWallet(false);
-    setIsRefreshing(false);
-  };
+    if (mountedRef.current) {
+      setLoadingWallet(false);
+      setIsRefreshing(false);
+    }
+  }, [authScope, cacheKey, queryClient, showToast]);
 
   useEffect(() => {
+    mountedRef.current = true;
     loadDashboardData({ silent: false, attempt: 1 });
     try {
       const stored = JSON.parse(localStorage.getItem(recipientCacheKey) || "null");
@@ -276,9 +305,25 @@ export default function Dashboard() {
       // ignore
     }
     return () => {
+      mountedRef.current = false;
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
-  }, [authScope, cacheKey, recipientCacheKey]);
+  }, [loadDashboardData, recipientCacheKey]);
+
+  useEffect(() => {
+    const handleOnline = () => loadDashboardData({ silent: true, attempt: 1 });
+    const handleVisible = () => {
+      if (document.visibilityState === "visible") {
+        loadDashboardData({ silent: true, attempt: 1 });
+      }
+    };
+    window.addEventListener("online", handleOnline);
+    document.addEventListener("visibilitychange", handleVisible);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      document.removeEventListener("visibilitychange", handleVisible);
+    };
+  }, [loadDashboardData]);
 
   const statusKey = (value) => String(value || "").toLowerCase();
   const primaryFundingAccount = useMemo(
