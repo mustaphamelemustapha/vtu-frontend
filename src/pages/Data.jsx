@@ -34,13 +34,13 @@ export default function Data() {
   const [searchParams] = useSearchParams();
   const [plans, setPlans] = useState([]);
   const [phone, setPhone] = useState("");
-  const [network, setNetwork] = useState("all");
+  const [network, setNetwork] = useState("");
   const [ported, setPorted] = useState(false);
+  const [transactionPin, setTransactionPin] = useState("");
+  const [planType, setPlanType] = useState("all");
+  const [selectedPlanCode, setSelectedPlanCode] = useState("");
   const [message, setMessage] = useState("");
-  const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState("recommended");
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [refreshingPlans, setRefreshingPlans] = useState(false);
   const [purchaseResult, setPurchaseResult] = useState(null);
@@ -59,15 +59,6 @@ export default function Data() {
   const scopedPlansCacheKey = `${DATA_PLANS_CACHE_KEY}:${cacheScope || "guest"}`;
   const scopedWalletCacheKey = `${DATA_WALLET_CACHE_KEY}:${cacheScope || "guest"}`;
   const recipientCacheKey = `vtu_last_recipient:${cacheScope || "guest"}`;
-
-  const parseSize = (value) => {
-    if (!value) return null;
-    const str = String(value).toLowerCase();
-    const num = parseFloat(str);
-    if (Number.isNaN(num)) return null;
-    if (str.includes("mb")) return num / 1024;
-    return num;
-  };
 
   const sanitizePlanText = (value) =>
     String(value || "")
@@ -131,13 +122,6 @@ export default function Data() {
     }
 
     return curated;
-  };
-
-  const networkClass = (value) => {
-    const raw = String(value || "").toLowerCase();
-    if (!raw) return "";
-    if (raw === "9mobile") return "network-9mobile";
-    return raw.replace(/[^a-z0-9_-]/g, "-");
   };
 
   const inferProviderLabel = (provider, networkValue) => {
@@ -279,7 +263,7 @@ export default function Data() {
         setPorted(nextPorted);
         saveRecipient({ phone: qpPhone, ported: nextPorted });
       }
-      if (qpNetwork && ["all", "mtn", "glo", "airtel", "9mobile"].includes(qpNetwork)) {
+      if (qpNetwork && ["mtn", "glo", "airtel", "9mobile"].includes(qpNetwork)) {
         setNetwork(qpNetwork);
       }
     } catch {
@@ -288,6 +272,53 @@ export default function Data() {
     loadPlans();
     loadWallet();
   }, [cacheScope, queryClient, searchParams, recipientCacheKey]);
+
+  useEffect(() => {
+    const detectDays = (plan) => {
+      const raw = String(plan?.validity || plan?.plan_name || "").toLowerCase();
+      const match = raw.match(/(\d+)\s*(day|days|month|months|week|weeks|d)/i);
+      if (!match) return null;
+      const amount = Number(match[1]);
+      if (!Number.isFinite(amount)) return null;
+      const unit = String(match[2] || "").toLowerCase();
+      if (unit.startsWith("month")) return amount * 30;
+      if (unit.startsWith("week")) return amount * 7;
+      return amount;
+    };
+    const detectType = (plan) => {
+      const text = `${plan?.plan_name || ""} ${plan?.validity || ""}`.toLowerCase();
+      const days = detectDays(plan);
+      if (text.includes("sme")) return "SME";
+      if (text.includes("corporate")) return "Corporate";
+      if (days != null && days <= 2) return "Daily";
+      if (days != null && days <= 10) return "Weekly";
+      if (days != null && days <= 45) return "Monthly";
+      return "Other";
+    };
+    const nextPlans = plans
+      .filter((plan) => String(plan?.network || "").toLowerCase() === String(network || "").toLowerCase())
+      .sort((a, b) => Number(a?.price || 0) - Number(b?.price || 0));
+    if (!nextPlans.length) {
+      if (selectedPlanCode) setSelectedPlanCode("");
+      return;
+    }
+    const types = Array.from(
+      new Set(
+        nextPlans.map((plan) => detectType(plan))
+      )
+    );
+    if (planType !== "all" && !types.includes(planType)) {
+      setPlanType("all");
+    }
+    const filtered = nextPlans.filter((plan) => {
+      if (planType === "all") return true;
+      return detectType(plan) === planType;
+    });
+    const list = filtered.length ? filtered : nextPlans;
+    if (!list.some((plan) => String(plan?.plan_code || "") === String(selectedPlanCode || ""))) {
+      setSelectedPlanCode(String(list[0]?.plan_code || ""));
+    }
+  }, [plans, network, planType, selectedPlanCode]);
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -471,7 +502,6 @@ export default function Data() {
       purchaseLockRef.current = true;
       setFieldError("");
       const chosenPlan = plans.find((p) => p.plan_code === planCode) || null;
-      setSelected(null);
       setLoading(true);
       const res = await apiFetch("/data/purchase", {
         method: "POST",
@@ -706,23 +736,28 @@ export default function Data() {
     );
   };
 
-  const filtered = plans.filter((plan) => {
-    const matchesNetwork = network === "all" ? true : (plan.network || "").toLowerCase() === network;
-    const haystack = `${plan.plan_name} ${plan.data_size} ${plan.validity}`.toLowerCase();
-    const matchesQuery = query ? haystack.includes(query.toLowerCase()) : true;
-    return matchesNetwork && matchesQuery;
-  });
+  const planTypeOf = (plan) => {
+    const text = `${plan?.plan_name || ""} ${plan?.validity || ""}`.toLowerCase();
+    const days = validityDays(plan);
+    if (text.includes("sme")) return "SME";
+    if (text.includes("corporate")) return "Corporate";
+    if (days != null && days <= 2) return "Daily";
+    if (days != null && days <= 10) return "Weekly";
+    if (days != null && days <= 45) return "Monthly";
+    return "Other";
+  };
 
-  const sorted = [...filtered].sort((a, b) => {
-    if (sort === "price_low") return Number(a.price) - Number(b.price);
-    if (sort === "price_high") return Number(b.price) - Number(a.price);
-    if (sort === "data_high") {
-      const aVal = parseSize(a.data_size) || 0;
-      const bVal = parseSize(b.data_size) || 0;
-      return bVal - aVal;
-    }
-    return 0;
-  });
+  const networkPlans = plans
+    .filter((plan) => String(plan?.network || "").toLowerCase() === String(network || "").toLowerCase())
+    .sort((a, b) => Number(a?.price || 0) - Number(b?.price || 0));
+
+  const planTypeOptions = Array.from(new Set(networkPlans.map(planTypeOf)));
+
+  const selectablePlans = networkPlans.filter((plan) =>
+    planType === "all" ? true : planTypeOf(plan) === planType
+  );
+
+  const selectedPlan = selectablePlans.find((plan) => String(plan?.plan_code || "") === String(selectedPlanCode || ""));
 
   const formatAmount = (value) => {
     const num = Number(value ?? 0);
@@ -773,9 +808,57 @@ export default function Data() {
   return (
     <div className="page data-page">
       <section className="section">
-        <Card className="data-recipient-card">
-          <h3>Recipient</h3>
-          <div className="form-grid">
+        <Card className="data-recipient-card" style={{ maxWidth: 520, marginInline: "auto" }}>
+          <h3 style={{ marginBottom: 4 }}>Buy Data</h3>
+          <div className="muted" style={{ marginBottom: 16 }}>Dashboard • Data</div>
+
+          <div style={{ display: "grid", gap: 12 }}>
+            <label>
+              Network
+              <select
+                value={network}
+                onChange={(e) => {
+                  const nextNetwork = e.target.value;
+                  setNetwork(nextNetwork);
+                }}>
+                <option value="">Select Network</option>
+                <option value="mtn">MTN</option>
+                <option value="glo">Glo</option>
+                <option value="airtel">Airtel</option>
+                <option value="9mobile">9mobile</option>
+              </select>
+            </label>
+
+            <label>
+              Plan Type
+              <select value={planType} onChange={(e) => setPlanType(e.target.value)} disabled={!network}>
+                <option value="all">All</option>
+                {planTypeOptions.map((type) => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Data Plan
+              <select
+                value={selectedPlanCode}
+                onChange={(e) => setSelectedPlanCode(e.target.value)}
+                disabled={!network || loadingPlans || selectablePlans.length === 0}>
+                {!network ? (
+                  <option value="">Select Network First</option>
+                ) : selectablePlans.length === 0 ? (
+                  <option value="">No Plans Available</option>
+                ) : (
+                  selectablePlans.map((plan) => (
+                    <option key={plan.plan_code} value={plan.plan_code}>
+                      {plan.data_size || plan.plan_name} - ₦ {formatAmount(plan.price)}
+                    </option>
+                  ))
+                )}
+              </select>
+            </label>
+
             <label>
               Phone Number
               <input
@@ -789,164 +872,70 @@ export default function Data() {
                 }}
               />
             </label>
+
             <label>
-              Network
-              <select value={network} onChange={(e) => setNetwork(e.target.value)}>
-                <option value="all">All Networks</option>
-                <option value="mtn">MTN</option>
-                <option value="glo">Glo</option>
-                <option value="airtel">Airtel</option>
-                <option value="9mobile">9mobile</option>
-              </select>
+              Transaction Pin
+              <input
+                type="password"
+                maxLength={4}
+                placeholder="Enter 4-digit pin"
+                value={transactionPin}
+                onChange={(e) => setTransactionPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              />
+            </label>
+
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={ported}
+                onChange={(e) => {
+                  const nextPorted = e.target.checked;
+                  setPorted(nextPorted);
+                  saveRecipient({ phone, ported: nextPorted });
+                }}
+              />
+              Bypass Phone Number
             </label>
           </div>
-          {fieldError && <div className="error">{fieldError}</div>}
-        </Card>
-      </section>
 
-      <section className="section">
-        <div className="section-head data-section-head">
-          <h3>Data Plans</h3>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className="muted">{sorted.length} plans</div>
-            <Button variant="ghost" type="button"
-              onClick={() => loadPlans({ forceRefresh: true })}
-              disabled={refreshingPlans}>
-              {refreshingPlans ? "Refreshing..." : "Refresh"}
-            </Button>
-          </div>
-        </div>
         {(plansError || walletError) && (
-          <div className="notice">
-            {plansError || walletError}
+          <div className="notice" style={{ marginTop: 12 }}>{plansError || walletError}</div>
+        )}
+        <div className="muted" style={{ marginTop: 12 }}>
+          {network ? `${selectablePlans.length} plans available` : "Choose a network to load plans"}
+        </div>
+
+        <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
+          <Button
+            type="button"
+            onClick={() => loadPlans({ forceRefresh: true })}
+            variant="ghost"
+            disabled={refreshingPlans}>
+            {refreshingPlans ? "Refreshing..." : "Refresh Plans"}
+          </Button>
+          <Button
+            data-testid="data-confirm-buy"
+            disabled={loading || !selectedPlan || (wallet && Number(wallet.balance) < Number(selectedPlan.price))}
+            onClick={() => {
+              if (!selectedPlanCode) {
+                setFieldError("Select a data plan.");
+                return;
+              }
+              buy(selectedPlanCode);
+            }}>
+            {loading ? "Processing..." : "Purchase"}
+          </Button>
+        </div>
+
+        {fieldError && <div className="error" style={{ marginTop: 12 }}>{fieldError}</div>}
+        {wallet && selectedPlan && Number(wallet.balance) < Number(selectedPlan.price) && (
+          <div className="notice" style={{ marginTop: 12 }}>
+            Insufficient balance. Please fund your wallet to continue.
           </div>
         )}
-        <Card className="data-catalog-toolbar">
-        <div className="tab-row">
-          {[
-            { id: "all", label: "All" },
-            { id: "mtn", label: "MTN" },
-            { id: "glo", label: "Glo" },
-            { id: "airtel", label: "Airtel" },
-            { id: "9mobile", label: "9mobile" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`pill tab ${network === item.id ? "active" : ""}`}
-              onClick={() => setNetwork(item.id)}>
-              {item.label}
-            </button>
-          ))}
-        </div>
-        <div className="filter-bar">
-          <input
-            placeholder="Search plans (e.g. 1GB, 30d)"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="recommended">Recommended</option>
-            <option value="price_high">Price: High to Low</option>
-            <option value="data_high">Data: High to Low</option>
-          </select>
-        </div>
-        </Card>
-        <div className="plan-grid">
-          {loadingPlans && Array.from({ length: 6 }).map((_, idx) => (
-            <Card className="plan-card skeleton" key={`s-${idx}`}>
-              <div className="skeleton-line w-40" />
-              <div className="skeleton-line w-60" />
-              <div className="skeleton-line w-80" />
-            </Card>
-          ))}
-          {!loadingPlans && sorted.length === 0 && (
-            <Card className="empty">No plans found. Try another network or search term.</Card>
-          )}
-          {!loadingPlans && sorted.map((plan) => (
-            <button
-              type="button"
-              className="card plan-card data-plan-card"
-              data-testid={`data-plan-${String(plan.plan_code || "").replace(/[^a-zA-Z0-9_-]/g, "-")}`}
-              key={plan.plan_code}
-              onClick={() => setSelected(plan)}>
-              <div className="plan-top">
-                <span className={`badge ${networkClass(plan.network)}`}>
-                  <span className={`logo ${networkClass(plan.network)}`} />
-                  {plan.network?.toUpperCase()}
-                </span>
-                <span className="plan-cap">{plan.data_size}</span>
-              </div>
-              <div className="plan-name">{plan.plan_name}</div>
-              <div className="plan-meta">
-                <span>Validity {plan.validity}</span>
-                <span className="price">₦ {plan.price}</span>
-              </div>
-              <div className="plan-foot">
-                <span className="pill">Tap to buy</span>
-              </div>
-            </button>
-          ))}
-        </div>
         {message && <div className="notice">{message}</div>}
+        </Card>
       </section>
-
-      {selected && (
-        <div className="modal-backdrop">
-          <div className="modal">
-            <div className="modal-head">
-              <div>
-                <div className="label">Confirm Purchase</div>
-                <h3>{selected.plan_name}</h3>
-              </div>
-              <Button variant="ghost" onClick={() => setSelected(null)}>Close</Button>
-            </div>
-            <div className="modal-body">
-              <div className="list-card">
-                <div>
-                  <div className="list-title">Recipient</div>
-                  <div className="muted">{phone || "No number entered"}</div>
-                </div>
-                <div className="list-meta">
-                  <div className="value">₦ {selected.price}</div>
-                  <span className="pill">{selected.validity}</span>
-                </div>
-              </div>
-              <div className="receipt-grid">
-                <div>
-                  <div className="label">Network</div>
-                  <div>{selected.network?.toUpperCase()}</div>
-                </div>
-                <div>
-                  <div className="label">Ported</div>
-                  <div>{ported ? "Yes" : "No"}</div>
-                </div>
-                <div>
-                  <div className="label">Wallet Balance</div>
-                  <div>₦ {wallet?.balance || "0.00"}</div>
-                </div>
-                <div>
-                  <div className="label">Plan Code</div>
-                  <div>{selected.plan_code}</div>
-                </div>
-              </div>
-              {wallet && Number(wallet.balance) < Number(selected.price) && (
-                <div className="notice">
-                  Insufficient balance. Please fund your wallet to continue.
-                </div>
-              )}
-            </div>
-            <div className="modal-actions">
-              <Button variant="ghost" onClick={() => setSelected(null)}>Cancel</Button>
-              <Button data-testid="data-confirm-buy"
-                disabled={loading || (wallet && Number(wallet.balance) < Number(selected.price))}
-                onClick={() => buy(selected.plan_code)}>
-                {loading ? "Processing..." : "Confirm & Buy"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {loading && (
         <div className="purchase-loading-screen" role="status" aria-live="polite">
