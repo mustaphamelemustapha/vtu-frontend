@@ -1473,59 +1473,6 @@ a:focus-visible {
     var(--panel);
 }
 
-.data-page .data-hero-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(180px, 0.85fr);
-  gap: 16px;
-  padding: 16px;
-  border-radius: 20px;
-  align-items: stretch;
-}
-
-.data-page .data-hero-copy {
-  display: grid;
-  gap: 8px;
-  align-content: start;
-}
-
-.data-page .data-hero-copy h2 {
-  margin: 0;
-  font-family: var(--font-display);
-  letter-spacing: -0.03em;
-  font-size: clamp(24px, 4vw, 34px);
-  line-height: 1.08;
-}
-
-.data-page .data-hero-copy .muted {
-  max-width: 34ch;
-}
-
-.data-page .data-hero-metrics {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
-
-.data-page .data-hero-metric {
-  display: grid;
-  gap: 4px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(216, 225, 236, 0.92);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
-}
-
-.data-page .data-hero-metric span {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.data-page .data-hero-metric strong {
-  font-size: 17px;
-  letter-spacing: -0.02em;
-}
-
 .data-page .data-recipient-head {
   display: flex;
   align-items: flex-start;
@@ -2732,7 +2679,6 @@ a:focus-visible {
 }
 
 .dark .service-hero,
-.dark .data-page .data-hero-card,
 .dark .data-page .data-recipient-card,
 .dark .airtime-page .airtime-form-card,
 .dark .transactions-page .tx-live-card,
@@ -2742,26 +2688,6 @@ a:focus-visible {
 .dark .airtime-page .airtime-success-card,
 .dark .transactions-page .tx-list-item {
   border-color: #2a3547;
-}
-
-.dark .data-page .data-hero-card {
-  background:
-    radial-gradient(circle at 14% 0%, rgba(56, 189, 248, 0.12), transparent 52%),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.94));
-}
-
-.dark .data-page .data-hero-metric {
-  background: rgba(15, 23, 42, 0.6);
-  border-color: #2a3547;
-  box-shadow: none;
-}
-
-.dark .data-page .data-hero-metric span {
-  color: #c4cedd;
-}
-
-.dark .data-page .data-hero-metric strong {
-  color: #f5f7fb;
 }
 
 .dark .data-page .data-catalog-title {

@@ -724,8 +724,6 @@ export default function Data() {
     return 0;
   });
 
-  const displayNetwork = network === "all" ? "All Networks" : String(network || "").toUpperCase();
-
   const formatAmount = (value) => {
     const num = Number(value ?? 0);
     if (Number.isNaN(num)) return String(value ?? "0.00");
@@ -774,32 +772,6 @@ export default function Data() {
 
   return (
     <div className="page data-page">
-      <section className="section">
-        <Card className="service-hero service-hero-data data-hero-card">
-          <div className="data-hero-copy">
-            <div className="eyebrow">Data Purchase</div>
-            <h2>Buy Data</h2>
-            <p className="muted">
-              Choose a network, compare plans, and complete purchases with a clean receipt flow.
-            </p>
-          </div>
-          <div className="data-hero-metrics" aria-label="Data purchase summary">
-            <div className="data-hero-metric">
-              <span>Wallet Balance</span>
-              <strong>₦ {formatAmount(wallet?.balance || 0)}</strong>
-            </div>
-            <div className="data-hero-metric">
-              <span>Plans Available</span>
-              <strong>{sorted.length}</strong>
-            </div>
-            <div className="data-hero-metric">
-              <span>Selected Network</span>
-              <strong>{displayNetwork}</strong>
-            </div>
-          </div>
-        </Card>
-      </section>
-
       <section className="section">
         <Card className="data-recipient-card">
           <div className="data-recipient-head">
@@ -863,7 +835,6 @@ export default function Data() {
             <div className="data-catalog-title">Narrow down to the bundle that fits.</div>
           </div>
           <div className="data-catalog-toolbar-meta">
-            <span className="pill">{displayNetwork}</span>
             <span className="pill">{sort === "recommended" ? "Recommended" : "Sorted"}</span>
           </div>
         </div>
