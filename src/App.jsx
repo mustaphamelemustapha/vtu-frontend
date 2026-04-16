@@ -255,6 +255,7 @@ export default function App() {
   const [notifItems, setNotifItems] = useState(() => _loadNotifItems());
   const [notifSyncAt, setNotifSyncAt] = useState(null);
   const [notifSyncing, setNotifSyncing] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const authScopeRef = useRef(null);
 
   useEffect(() => {
@@ -317,6 +318,10 @@ export default function App() {
       keywords: "axisvtu login, vtu dashboard login nigeria",
     });
   }, [authenticated, location.pathname]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [canInstall, setCanInstall] = useState(false);
@@ -755,6 +760,11 @@ export default function App() {
     setAuthenticated(true);
   };
 
+  const openMobileRoute = (path) => {
+    setMobileMenuOpen(false);
+    navigate(path);
+  };
+
   return (
     <ToastProvider>
       <ToastHost />
@@ -870,6 +880,18 @@ export default function App() {
                 )}
               </div>
               <div className="top-actions">
+                <button
+                  className="icon-btn mobile-menu-btn"
+                  aria-label="Open menu"
+                  onClick={() => {
+                    setMobileMenuOpen((prev) => !prev);
+                    if (notificationsOpen) setNotificationsOpen(false);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                  </svg>
+                </button>
                 <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
@@ -946,6 +968,42 @@ export default function App() {
                   )}
                 </div>
               </div>
+              {mobileMenuOpen && (
+                <div className="mobile-top-menu" role="menu" aria-label="Main menu">
+                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/")}>Dashboard</button>
+                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/wallet")}>Wallet</button>
+                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/data")}>Buy Data</button>
+                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/services")}>Services</button>
+                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/transactions")}>Transactions</button>
+                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/profile")}>Profile</button>
+                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/support")}>Support</button>
+                  {isAdmin && (
+                    <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/admin")}>Admin</button>
+                  )}
+                  {canInstall && (
+                    <button
+                      className="mobile-top-menu-item"
+                      type="button"
+                      onClick={async () => {
+                        setMobileMenuOpen(false);
+                        await handleInstall?.();
+                      }}
+                    >
+                      Install App
+                    </button>
+                  )}
+                  <button
+                    className="mobile-top-menu-item danger"
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </header>
             <Suspense fallback={<AppPageFallback />}>
               <Routes>

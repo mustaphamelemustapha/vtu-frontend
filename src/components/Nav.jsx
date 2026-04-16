@@ -109,13 +109,6 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
         <button className="ghost nav-action nav-logout" type="button" onClick={onLogout}>Logout</button>
       </div>
     </aside>
-    <nav className="bottom-nav">
-      <NavLink to="/" end data-testid="nav-mobile-dashboard"><Icon><HomeIcon /></Icon><span>Home</span></NavLink>
-      <NavLink to="/wallet" data-testid="nav-mobile-wallet"><Icon><WalletIcon /></Icon><span>Wallet</span></NavLink>
-      <NavLink to="/services" data-testid="nav-mobile-services"><Icon><DataIcon /></Icon><span>Buy</span></NavLink>
-      <NavLink to="/transactions" data-testid="nav-mobile-transactions"><Icon><TxIcon /></Icon><span>History</span></NavLink>
-      <NavLink to="/profile" data-testid="nav-mobile-profile"><Icon><ProfileIcon /></Icon><span>Profile</span></NavLink>
-    </nav>
     </>
   );
 }
