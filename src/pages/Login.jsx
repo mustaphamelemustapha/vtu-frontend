@@ -282,7 +282,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
         showToast("Please fix the highlighted fields.", "error");
         return;
       }
-      warmBackend(9000).catch(() => {});
+      await warmBackend(6500).catch(() => false);
       const data = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email: form.email, password: form.password }),

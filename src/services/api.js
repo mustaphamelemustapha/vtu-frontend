@@ -395,8 +395,21 @@ export async function apiFetch(path, options = {}) {
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const message = parseError(data);
-      const retryableStatus = res.status === 503 || res.status === 502 || res.status === 504 || res.status === 429;
+      let message = parseError(data);
+      if (message === "Request failed") {
+        if (res.status >= 500) {
+          message = "Server is temporarily unavailable. Please try again.";
+        } else if (res.status === 404) {
+          message = "Service endpoint not found. Please refresh and try again.";
+        } else if (res.status === 429) {
+          message = "Too many requests. Please wait a moment and retry.";
+        } else if (res.status === 401) {
+          message = "Session expired. Please log in again.";
+        } else if (res.status === 400) {
+          message = "Invalid request. Please check your details and try again.";
+        }
+      }
+      const retryableStatus = res.status >= 500 || res.status === 429;
       if (retryableStatus && attempt < maxAttempts) {
         if (!_suppressRetryToast) {
           emitRetryEvent(path, attempt, maxAttempts, `http_${res.status}`);
