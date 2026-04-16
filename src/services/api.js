@@ -43,7 +43,7 @@ const REFRESH_SESSION_KEY = "vtu_refresh_token_session";
 const PROFILE_KEY = "vtu_profile";
 const ACTIVE_PROFILE_KEY = "axisvtu_active_profile_v1";
 const AUTH_EXPIRED = "AUTH_EXPIRED";
-const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v1";
+const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v3";
 const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
 
 let refreshInFlight = null;
@@ -109,6 +109,8 @@ function clearAccountScopedUiCache() {
   const exactKeys = [
     DATA_PLANS_CACHE_KEY,
     "axisvtu_data_plans_cache_v2",
+    "axisvtu_data_plans_cache_v1",
+    "axisvtu_data_plans_cache_v3",
     DATA_WALLET_CACHE_KEY,
     "axisvtu_dashboard_cache_v1",
     "axisvtu_notif_items",
@@ -121,6 +123,7 @@ function clearAccountScopedUiCache() {
   const scopedPrefixes = [
     "axisvtu_data_plans_cache_v1:",
     "axisvtu_data_plans_cache_v2:",
+    "axisvtu_data_plans_cache_v3:",
     "axisvtu_data_wallet_cache_v1:",
     "axisvtu_dashboard_cache_v1:",
     "axisvtu_notif_items:",
@@ -474,6 +477,7 @@ export async function prefetchDataPageCache() {
   const plansKey = scope ? `${DATA_PLANS_CACHE_KEY}:${scope}` : DATA_PLANS_CACHE_KEY;
   const walletKey = scope ? `${DATA_WALLET_CACHE_KEY}:${scope}` : DATA_WALLET_CACHE_KEY;
   const plansV2Key = scope ? `axisvtu_data_plans_cache_v2:${scope}` : "axisvtu_data_plans_cache_v2";
+  const plansV3Key = scope ? `axisvtu_data_plans_cache_v3:${scope}` : "axisvtu_data_plans_cache_v3";
 
   if (plans.status === "fulfilled" && Array.isArray(plans.value)) {
     const payload = {
@@ -482,6 +486,7 @@ export async function prefetchDataPageCache() {
     };
     writeJsonCache(plansKey, payload);
     writeJsonCache(plansV2Key, payload);
+    writeJsonCache(plansV3Key, payload);
   }
   if (wallet.status === "fulfilled" && wallet.value && typeof wallet.value === "object") {
     writeJsonCache(walletKey, wallet.value);

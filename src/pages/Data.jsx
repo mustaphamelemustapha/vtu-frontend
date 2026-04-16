@@ -11,9 +11,22 @@ import Card from "../components/ui/Card.jsx";
 
 const RESULT_PREFS_KEY = "vtu_data_result_prefs";
 const DELIVERED_HINTS = ["success", "successful", "delivered", "gifted", "completed"];
-const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v2";
+const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v3";
 const DATA_PLANS_CACHE_TTL_MS = 10 * 60 * 1000;
 const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
+const PLAN_KEYWORD_BLOCKLIST = [
+  "night",
+  "social",
+  "weekend",
+  "daily",
+  "awoof",
+  "bonus",
+  "router",
+  "mifi",
+  "youtube",
+  "unlimited",
+];
+const CURATED_MAX_PER_NETWORK = 8;
 
 export default function Data() {
   const MIN_PURCHASE_LOADING_MS = 1200;
@@ -55,6 +68,55 @@ export default function Data() {
     if (Number.isNaN(num)) return null;
     if (str.includes("mb")) return num / 1024;
     return num;
+  };
+
+  const planPrice = (plan) => {
+    const value = Number(plan?.price);
+    return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
+  };
+
+  const planLabel = (plan) =>
+    `${String(plan?.plan_name || "")} ${String(plan?.data_size || "")} ${String(plan?.validity || "")}`.toLowerCase();
+
+  const validityDays = (plan) => {
+    const raw = String(plan?.validity || plan?.plan_name || "").toLowerCase();
+    const match = raw.match(/(\d+)\s*(day|days|month|months|week|weeks|d)/i);
+    if (!match) return null;
+    const amount = Number(match[1]);
+    if (!Number.isFinite(amount)) return null;
+    const unit = String(match[2] || "").toLowerCase();
+    if (unit.startsWith("month")) return amount * 30;
+    if (unit.startsWith("week")) return amount * 7;
+    return amount;
+  };
+
+  const curatePlans = (rows) => {
+    const input = Array.isArray(rows) ? rows : [];
+    if (!input.length) return [];
+
+    const grouped = new Map();
+    for (const item of input) {
+      const networkKey = String(item?.network || "").toLowerCase().trim() || "unknown";
+      if (!grouped.has(networkKey)) grouped.set(networkKey, []);
+      grouped.get(networkKey).push(item);
+    }
+
+    const curated = [];
+    for (const [, networkPlans] of grouped) {
+      const clean = networkPlans.filter((plan) => {
+        const label = planLabel(plan);
+        const noisy = PLAN_KEYWORD_BLOCKLIST.some((keyword) => label.includes(keyword));
+        const validDays = validityDays(plan);
+        const tooShort = Number.isFinite(validDays) && validDays < 7;
+        return !noisy && !tooShort;
+      });
+
+      const source = clean.length >= 4 ? clean : networkPlans;
+      source.sort((a, b) => planPrice(a) - planPrice(b));
+      curated.push(...source.slice(0, CURATED_MAX_PER_NETWORK));
+    }
+
+    return curated;
   };
 
   const networkClass = (value) => {
@@ -114,7 +176,7 @@ export default function Data() {
       Date.now() - Number(cached.cached_at) < DATA_PLANS_CACHE_TTL_MS;
 
     if (hasCached) {
-      setPlans(cachedRows);
+      setPlans(curatePlans(cachedRows));
       setLoadingPlans(false);
     } else {
       setLoadingPlans(true);
@@ -131,9 +193,10 @@ export default function Data() {
         queryFn: () => apiFetch("/data/plans", { _suppressRetryToast: true }),
         staleTime: DATA_PLANS_CACHE_TTL_MS,
       });
-      setPlans(data);
+      const curated = curatePlans(data);
+      setPlans(curated);
       writeJsonCache(scopedPlansCacheKey, {
-        plans: Array.isArray(data) ? data : [],
+        plans: curated,
         cached_at: Date.now(),
       });
     } catch (err) {
