@@ -420,6 +420,14 @@ export default function App() {
     if (path.startsWith("/admin")) return "Admin";
     return "Dashboard";
   })();
+  const hasResetQuery = useMemo(() => {
+    try {
+      const params = new URLSearchParams(location.search || "");
+      return params.get("reset") === "1" || params.get("reset") === "true" || !!params.get("token") || !!params.get("reset_token");
+    } catch {
+      return false;
+    }
+  }, [location.search]);
 
   const unreadCount = useMemo(
     () => notifItems.filter((item) => !item?.seen).length,
@@ -867,7 +875,10 @@ export default function App() {
       {!authenticated ? (
         <Suspense fallback={<AppPageFallback />}>
           <Routes>
-            <Route path="/" element={<Navigate to={`/login${location.search}`} replace />} />
+            <Route
+              path="/"
+              element={<Navigate to={`${hasResetQuery ? "/reset-password" : "/login"}${location.search}`} replace />}
+            />
             <Route
               path="/admin-login"
               element={
@@ -880,7 +891,7 @@ export default function App() {
               path="/login"
               element={
                 <Login
-                  modeRoute="login"
+                  modeRoute={hasResetQuery ? "reset" : "login"}
                   onAuth={handleAuthSuccess}
                 />
               }
@@ -905,7 +916,7 @@ export default function App() {
             />
             <Route
               path="*"
-              element={<Navigate to={`/login${location.search}`} replace />}
+              element={<Navigate to={`${hasResetQuery ? "/reset-password" : "/login"}${location.search}`} replace />}
             />
           </Routes>
         </Suspense>
