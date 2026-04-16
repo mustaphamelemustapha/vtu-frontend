@@ -5798,34 +5798,46 @@ a.pill:active::after {
   }
 
   .dashboard-services-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
   .dashboard-service-card.service-primary-card {
-    min-height: 160px;
-    padding: 14px;
+    grid-template-columns: 58px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 4px;
+    align-items: center;
+    min-height: 0;
+    padding: 12px 14px;
   }
 
-  .service-icon-wrap {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+  .dashboard-service-card.service-primary-card .service-icon-wrap {
+    grid-row: 1 / span 2;
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
   }
 
-  .service-icon-wrap svg {
-    width: 34px;
-    height: 34px;
+  .dashboard-service-card.service-primary-card .service-icon-wrap svg {
+    width: 32px;
+    height: 32px;
   }
 
-  .service-title {
-    font-size: 20px;
+  .dashboard-service-card.service-primary-card .service-title {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .dashboard-service-card.service-primary-card .service-subtitle {
+    font-size: 11px;
+    line-height: 1.35;
   }
 }
 
 @media (max-width: 520px) {
   .dashboard-services-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 8px;
   }
 }
@@ -5881,14 +5893,31 @@ a.pill:active::after {
   }
 
   .dashboard-page .dashboard-services-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
   .dashboard-page .dashboard-service-card.service-primary-card {
-    padding: 14px;
-    min-height: 154px;
-    border-radius: 13px;
+    grid-template-columns: 52px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 4px;
+    align-items: center;
+    padding: 12px 14px;
+    min-height: 0;
+    border-radius: 14px;
+  }
+
+  .dashboard-page .dashboard-service-card.service-primary-card .service-icon-wrap {
+    grid-row: 1 / span 2;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+
+  .dashboard-page .dashboard-service-card.service-primary-card .service-icon-wrap svg {
+    width: 30px;
+    height: 30px;
   }
 
   .dashboard-page .dashboard-service-card .label {
@@ -5896,7 +5925,7 @@ a.pill:active::after {
   }
 
   .dashboard-page .dashboard-service-card .value {
-    font-size: 17px;
+    font-size: 16px;
   }
 
   .dashboard-page .dashboard-service-card .muted {
@@ -5934,10 +5963,6 @@ a.pill:active::after {
 
   .dashboard-page .dashboard-welcome-actions .hero-cta:nth-child(3) {
     grid-column: auto;
-  }
-
-  .dashboard-page .dashboard-services-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dashboard-tx-cta-card .section-head {
@@ -6050,23 +6075,23 @@ a.pill:active::after {
   }
 
   .data-page .plan-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
   .data-page .plan-card {
-    padding: 10px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 14px;
   }
 
   .data-page .plan-cap {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .data-page .plan-name {
     margin: 8px 0 4px;
-    font-size: 13px;
-    line-height: 1.3;
+    font-size: 14px;
+    line-height: 1.35;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -6083,7 +6108,8 @@ a.pill:active::after {
     margin-top: 8px;
     align-items: flex-start;
     gap: 6px;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
   .data-page .tab-row {
@@ -6179,8 +6205,8 @@ a.pill:active::after {
   }
 
   .data-page .plan-card {
-    padding: 9px;
-    border-radius: 11px;
+    padding: 11px;
+    border-radius: 13px;
   }
 
   .data-page .plan-cap {
@@ -6189,7 +6215,7 @@ a.pill:active::after {
 
   .data-page .plan-name {
     margin: 7px 0 3px;
-    font-size: 12.5px;
+    font-size: 13px;
   }
 
   .data-page .plan-meta {
@@ -6443,12 +6469,29 @@ a.pill:active::after {
   }
 
   .dashboard-page .dashboard-service-card.service-primary-card {
-    min-height: 126px;
-    padding: 10px;
+    grid-template-columns: 48px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 3px;
+    align-items: center;
+    min-height: 0;
+    padding: 11px 12px;
+  }
+
+  .dashboard-page .dashboard-service-card.service-primary-card .service-icon-wrap {
+    grid-row: 1 / span 2;
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+  }
+
+  .dashboard-page .dashboard-service-card.service-primary-card .service-icon-wrap svg {
+    width: 28px;
+    height: 28px;
   }
 
   .dashboard-page .service-title {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .dashboard-page .service-subtitle {
@@ -6476,12 +6519,12 @@ a.pill:active::after {
 
 @media (max-width: 420px) {
   .data-page .plan-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 8px;
   }
 
   .data-page .data-plan-card .plan-name {
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 
