@@ -22,11 +22,14 @@ export default function Login({ onAuth, modeRoute = "login" }) {
   const [rememberMe, setRememberMe] = useState(true);
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSuccess, setForgotSuccess] = useState(false);
   const [resetMode, setResetMode] = useState(false);
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
   const { showToast } = useToast();
   const isPlainLoginView = mode === "login" && !forgotMode && !resetMode;
   const isRegisterView = mode === "register" && !forgotMode && !resetMode;
+  const isResetRequestView = forgotMode && !resetMode;
+  const isResetSuccessView = forgotSuccess && !resetMode;
 
   const isTransientConnectionError = (value) => {
     const msg = String(value || "").toLowerCase();
@@ -89,17 +92,20 @@ export default function Login({ onAuth, modeRoute = "login" }) {
     if (modeRoute === "register") {
       setMode("register");
       setForgotMode(false);
+      setForgotSuccess(false);
       setResetMode(false);
       return;
     }
     if (modeRoute === "reset") {
       setMode("login");
       setForgotMode(true);
+      setForgotSuccess(false);
       setResetMode(false);
       return;
     }
     setMode("login");
     setForgotMode(false);
+    setForgotSuccess(false);
     setResetMode(false);
   }, [modeRoute]);
 
@@ -113,6 +119,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
         setForgotMode(false);
         setMode("login");
         setResetMode(true);
+        setForgotSuccess(false);
         setResetForm({ token, password: "", confirm: "" });
         setNotice("Set a new password to finish resetting your account.");
       }
@@ -186,14 +193,17 @@ export default function Login({ onAuth, modeRoute = "login" }) {
       if (res?.reset_token) {
         // Dev/test convenience: backend may return a token outside production.
         setResetForm({ token: res.reset_token, password: "", confirm: "" });
+        setForgotSuccess(false);
         setNotice("Reset token generated. Set a new password.");
         showToast("Reset token generated. Set a new password.", "success");
         setForgotMode(false);
         setResetMode(true);
       } else {
+        setForgotSuccess(true);
         setNotice(message);
         showToast(message, "info");
         setForgotMode(false);
+        setResetMode(false);
       }
     } catch (err) {
       const next = presentError(err, "Password reset request failed.");
@@ -333,9 +343,16 @@ export default function Login({ onAuth, modeRoute = "login" }) {
 
   return (
     <div className="auth">
-      <div className={`auth-shell ${isPlainLoginView ? "auth-shell-simple" : ""}`}>
-        <div className={`auth-left ${isPlainLoginView ? "auth-left-simple" : ""}`}>
-          <div className={`auth-left-inner ${isPlainLoginView ? "auth-left-inner-simple" : ""}`}>
+      <div
+        className={[
+          "auth-shell",
+          isPlainLoginView ? "auth-shell-simple" : "",
+          isResetRequestView ? "auth-shell-reset" : "",
+        ].filter(Boolean).join(" ")}
+      >
+        {!isResetRequestView && (
+          <div className={`auth-left ${isPlainLoginView ? "auth-left-simple" : ""}`}>
+            <div className={`auth-left-inner ${isPlainLoginView ? "auth-left-inner-simple" : ""}`}>
             {isPlainLoginView ? (
               <>
                 <div className="auth-brand auth-brand-simple">
@@ -368,9 +385,17 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                 </div>
               </>
             )}
+            </div>
           </div>
-        </div>
-        <div className={`auth-right ${isPlainLoginView ? "auth-right-simple" : ""}`}>
+        )}
+        <div
+          className={[
+            "auth-right",
+            isPlainLoginView ? "auth-right-simple" : "",
+            isResetRequestView ? "auth-right-reset" : "",
+            isResetSuccessView ? "auth-right-reset" : "",
+          ].filter(Boolean).join(" ")}
+        >
           {(isPlainLoginView || isRegisterView) && (
             <div className="auth-quick-link">
               <span>{isPlainLoginView ? "Don't have an account?" : "Already have an account?"}</span>{" "}
@@ -383,7 +408,46 @@ export default function Login({ onAuth, modeRoute = "login" }) {
               </button>
             </div>
           )}
-          <div className={`auth-card ${isPlainLoginView ? "auth-card-simple" : "auth-card-compact"}`}>
+          {isResetSuccessView ? (
+            <div className="auth-reset-success">
+              <div className="auth-reset-success-icon" aria-hidden="true">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M25 60L94 28L68 60L25 60Z" fill="url(#planeGrad)" />
+                  <path d="M68 60L94 28L75 85L61 63L68 60Z" fill="#2f56c7" />
+                  <path d="M58 61L61 63L75 85L52 60L58 61Z" fill="#1f3f9e" />
+                  <path
+                    d="M60 72C80 81 94 88 94 95C94 102 82 108 60 108"
+                    stroke="#aac1ff"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeDasharray="1 7"
+                  />
+                  <defs>
+                    <linearGradient id="planeGrad" x1="25" y1="28" x2="94" y2="60" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#4e78df" />
+                      <stop offset="1" stopColor="#2f56c7" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <h1>Request sent successfully</h1>
+              <p className="muted auth-reset-success-copy">
+                We have sent a confirmation email to <strong>{forgotEmail || "your email address"}</strong> if not found kindly check spam folder
+              </p>
+              <p className="auth-reset-success-note">Please check your email.</p>
+              <button className="primary auth-reset-back" type="button" onClick={() => navigate("/login")}>
+                Back
+              </button>
+            </div>
+          ) : (
+          <div
+          className={[
+              "auth-card",
+              isPlainLoginView ? "auth-card-simple" : "",
+              isResetRequestView ? "auth-card-reset" : "auth-card-compact",
+              isResetSuccessView ? "auth-card-success" : "",
+            ].filter(Boolean).join(" ")}
+          >
             <h1>
               {resetMode
                 ? "Set new password"
@@ -403,7 +467,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                     : "Create your account to start using AxisVTU."}
             </p>
         {resetMode ? (
-          <form onSubmit={submitReset} className="auth-wide auth-form-compact">
+          <form onSubmit={submitReset} className="auth-wide auth-form-compact auth-form-reset">
             <div className="field">
               <label>Reset token</label>
               <input
@@ -470,12 +534,12 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </button>
           </form>
         ) : forgotMode ? (
-          <form onSubmit={submitForgot} className="auth-form-compact">
+          <form onSubmit={submitForgot} className="auth-form-compact auth-form-reset">
             <div className="field">
-              <label>Email</label>
+              <label>Email address</label>
               <input
                 type="email"
-                placeholder="Email"
+                placeholder="Email address"
                 value={forgotEmail}
                 onChange={(e) => setForgotEmail(e.target.value)}
                 autoComplete="email"
@@ -487,9 +551,6 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             <Button type="submit">
               {loading ? "Please wait..." : "Send reset link"}
             </Button>
-            <button className="link" type="button" onClick={() => { setForgotMode(false); setResetMode(true); }}>
-              I have a reset token
-            </button>
             <button className="link" type="button" onClick={() => navigate("/login")}>
               Back to login
             </button>
@@ -624,8 +685,9 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             }}>
             {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
           </button>
-        )}
+          )}
           </div>
+          )}
         </div>
       </div>
     </div>

@@ -5479,6 +5479,156 @@ a.pill:active::after {
   margin: 8px 0 10px;
 }
 
+.auth-shell-reset {
+  width: min(920px, 100%);
+  grid-template-columns: 1fr;
+  background: color-mix(in srgb, var(--panel) 96%, #f7f9fd 4%);
+}
+
+.auth-right-reset {
+  min-height: 620px;
+  padding: 42px 36px;
+  justify-items: center;
+  align-content: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.05), transparent 52%),
+    #f8fafd;
+}
+
+.auth-card-reset {
+  width: min(420px, 100%);
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+
+.auth-card-success {
+  width: min(500px, 100%);
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+
+.auth-reset-success {
+  width: min(500px, 100%);
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px 0;
+}
+
+.auth-reset-success-icon {
+  width: 132px;
+  height: 132px;
+  margin: 0 auto 10px;
+  display: grid;
+  place-items: center;
+}
+
+.auth-reset-success-icon svg {
+  width: 132px;
+  height: 132px;
+  display: block;
+}
+
+.auth-reset-success h1 {
+  margin: 0;
+  font-size: clamp(24px, 3.2vw, 34px);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.auth-reset-success-copy {
+  margin: 0;
+  max-width: 340px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #5f6c81;
+}
+
+.auth-reset-success-copy strong {
+  color: #273045;
+  font-weight: 800;
+}
+
+.auth-reset-success-note {
+  margin: 0;
+  font-size: 14px;
+  color: #5f6c81;
+}
+
+.auth-reset-back {
+  width: fit-content;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.auth-card-reset h1 {
+  font-size: clamp(30px, 3.1vw, 38px);
+  letter-spacing: -0.025em;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.auth-card-success h1 {
+  font-size: clamp(24px, 3.2vw, 34px);
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0;
+  text-align: center;
+}
+
+.auth-card-reset p.muted {
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: #7a869a;
+}
+
+.auth-card-success p.muted {
+  margin: 0;
+}
+
+.auth-form-reset .field {
+  margin-bottom: 12px;
+}
+
+.auth-form-reset input {
+  min-height: 48px;
+  border-radius: 10px;
+  padding-inline: 14px;
+  font-size: 15px;
+}
+
+.auth-form-reset .input-btn {
+  min-height: 48px;
+  border-radius: 10px;
+}
+
+.auth-form-reset .primary {
+  min-height: 48px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.22);
+}
+
+.auth-form-reset .link {
+  display: inline-flex;
+  justify-content: center;
+  width: fit-content;
+  margin-inline: auto;
+}
+
 .auth-form-simple .field {
   margin-bottom: 12px;
 }
@@ -5748,6 +5898,66 @@ a.pill:active::after {
   box-shadow: 0 10px 22px rgba(37, 99, 235, 0.34);
 }
 
+.dark .auth-shell-reset {
+  background: #0f1521;
+  border-color: #2a3547;
+}
+
+.dark .auth-right-reset {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.08), transparent 52%),
+    #0f1521;
+}
+
+.dark .auth-card-reset p.muted {
+  color: #b7c4d8;
+}
+
+.dark .auth-card-success {
+  color: #eef3ff;
+}
+
+.dark .auth-reset-success h1 {
+  color: #eef3ff;
+}
+
+.dark .auth-reset-success-copy,
+.dark .auth-reset-success-note {
+  color: #b7c4d8;
+}
+
+.dark .auth-reset-success-copy strong {
+  color: #f5f7fb;
+}
+
+.dark .auth-reset-back {
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.34);
+}
+
+.dark .auth-form-reset input {
+  background: #141b28;
+  border-color: #2a3547;
+  color: #f5f7fb;
+}
+
+.dark .auth-form-reset input::placeholder {
+  color: #96a6be;
+}
+
+.dark .auth-form-reset .input-btn {
+  background: #1a2335;
+  border-color: #36445d;
+  color: #edf3ff;
+}
+
+.dark .auth-form-reset .primary {
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.34);
+}
+
+.dark .auth-form-reset .link {
+  color: #8bb9ff;
+}
+
 @media (max-width: 980px) {
   .auth-shell-simple {
     grid-template-columns: 1fr;
@@ -5767,8 +5977,37 @@ a.pill:active::after {
     justify-items: stretch;
   }
 
+  .auth-shell-reset {
+    width: min(560px, 100%);
+    grid-template-columns: 1fr;
+  }
+
+  .auth-right-reset {
+    min-height: 0;
+    padding: 22px 20px;
+  }
+
   .auth-card-simple {
     width: 100%;
+  }
+
+  .auth-card-reset {
+    width: 100%;
+  }
+
+  .auth-reset-success {
+    width: 100%;
+    padding: 10px 0 0;
+  }
+
+  .auth-reset-success-icon {
+    width: 112px;
+    height: 112px;
+  }
+
+  .auth-reset-success-icon svg {
+    width: 112px;
+    height: 112px;
   }
 
   .auth-quick-link {
