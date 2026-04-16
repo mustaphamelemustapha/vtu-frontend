@@ -175,7 +175,6 @@ export default function Login({ onAuth, modeRoute = "login" }) {
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  const hasResetToken = Boolean(String(resetForm.token || "").trim());
 
   const submitForgot = async (e) => {
     e.preventDefault();
@@ -377,18 +376,9 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   <div className="auth-mark">
                     <img src="/pwa/pwa-192.png" alt="AxisVTU" />
                   </div>
-                  <div>
-                    <div className="auth-brand-title">AxisVTU</div>
-                    <div className="auth-brand-sub">Reliable VTU platform</div>
-                  </div>
                 </div>
-                <h2 className="auth-pitch">Welcome to AxisVTU</h2>
-                <p className="muted">Sign in to buy data, airtime, pay bills, and manage your wallet in one place.</p>
-                <div className="auth-tags">
-                  <span className="auth-tag">Fast login</span>
-                  <span className="auth-tag">Secure wallet</span>
-                  <span className="auth-tag">Instant purchases</span>
-                </div>
+                <h2 className="auth-pitch">Hi, Welcome Back</h2>
+                <p className="muted">Sign in to continue with your AxisVTU account.</p>
               </>
             )}
             </div>
@@ -467,7 +457,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           >
             <h1>
               {resetMode
-                ? "Set new password"
+                ? "Reset Password"
                 : forgotMode
                   ? "Reset password"
                   : mode === "login"
@@ -476,7 +466,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </h1>
             <p className="muted">
               {resetMode
-                ? "Use your reset token and set a fresh password."
+                ? "Please enter a strong password"
                 : forgotMode
                   ? "Enter your email to receive a reset link."
                   : mode === "login"
@@ -485,18 +475,6 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </p>
         {resetMode ? (
           <form onSubmit={submitReset} className="auth-wide auth-form-compact auth-form-reset">
-            {!hasResetToken && (
-              <div className="field">
-                <label>Reset token</label>
-                <input
-                  placeholder="Paste reset token"
-                  value={resetForm.token}
-                  onChange={(e) => setResetForm({ ...resetForm, token: e.target.value })}
-                  autoComplete="one-time-code"
-                  required
-                />
-              </div>
-            )}
             <div className="field">
               <label>New password</label>
               <div className="input-group">
