@@ -41,11 +41,66 @@ const SESSION_KEY = "vtu_access_token_session";
 const REFRESH_KEY = "vtu_refresh_token";
 const REFRESH_SESSION_KEY = "vtu_refresh_token_session";
 const PROFILE_KEY = "vtu_profile";
+const ACTIVE_PROFILE_KEY = "axisvtu_active_profile_v1";
 const AUTH_EXPIRED = "AUTH_EXPIRED";
 const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v1";
 const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
 
 let refreshInFlight = null;
+
+function safeParseJson(raw, fallback = null) {
+  try {
+    const parsed = JSON.parse(raw || "");
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function profileCacheScope(profile) {
+  const email = String(profile?.email || "").trim().toLowerCase();
+  if (email) return email;
+  const fullName = String(profile?.full_name || "").trim().toLowerCase();
+  if (fullName) return fullName;
+  return "";
+}
+
+function clearAccountScopedUiCache() {
+  if (typeof localStorage === "undefined") return;
+  const exactKeys = [
+    DATA_PLANS_CACHE_KEY,
+    "axisvtu_data_plans_cache_v2",
+    DATA_WALLET_CACHE_KEY,
+    "axisvtu_dashboard_cache_v1",
+    "axisvtu_notif_items",
+    "axisvtu_notif_snapshot",
+    "axisvtu_profile_phone",
+    "axisvtu_joined_label",
+    "axisvtu_beneficiaries_v1",
+    "vtu_last_recipient",
+  ];
+  const scopedPrefixes = [
+    "axisvtu_data_plans_cache_v1:",
+    "axisvtu_data_plans_cache_v2:",
+    "axisvtu_data_wallet_cache_v1:",
+    "axisvtu_dashboard_cache_v1:",
+    "axisvtu_notif_items:",
+    "axisvtu_notif_snapshot:",
+    "axisvtu_profile_phone:",
+    "axisvtu_joined_label:",
+    "axisvtu_beneficiaries_v1:",
+    "vtu_last_recipient:",
+  ];
+
+  exactKeys.forEach((key) => localStorage.removeItem(key));
+  for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    if (scopedPrefixes.some((prefix) => key.startsWith(prefix))) {
+      localStorage.removeItem(key);
+    }
+  }
+}
 
 function getBackendOrigin() {
   if (String(API_BASE).startsWith("/")) {
@@ -95,6 +150,8 @@ export function clearToken() {
   sessionStorage.removeItem(SESSION_KEY);
   sessionStorage.removeItem(REFRESH_SESSION_KEY);
   localStorage.removeItem(PROFILE_KEY);
+  localStorage.removeItem(ACTIVE_PROFILE_KEY);
+  clearAccountScopedUiCache();
 }
 
 export function getAuthPersisted() {
@@ -112,7 +169,14 @@ export function setAuthPersisted(persist) {
 }
 
 export function setProfile(profile) {
+  const previousProfile = safeParseJson(localStorage.getItem(PROFILE_KEY), {});
+  const previousScope = profileCacheScope(previousProfile);
+  const nextScope = profileCacheScope(profile);
+  if (previousScope && nextScope && previousScope !== nextScope) {
+    clearAccountScopedUiCache();
+  }
   localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  localStorage.setItem(ACTIVE_PROFILE_KEY, nextScope || "");
 }
 
 export function getProfile() {
@@ -338,14 +402,20 @@ export async function prefetchDataPageCache() {
     apiFetch("/data/plans", { _suppressRetryToast: true }),
     apiFetch("/wallet/me", { _suppressRetryToast: true }),
   ]);
+  const scope = profileCacheScope(getProfile());
+  const plansKey = scope ? `${DATA_PLANS_CACHE_KEY}:${scope}` : DATA_PLANS_CACHE_KEY;
+  const walletKey = scope ? `${DATA_WALLET_CACHE_KEY}:${scope}` : DATA_WALLET_CACHE_KEY;
+  const plansV2Key = scope ? `axisvtu_data_plans_cache_v2:${scope}` : "axisvtu_data_plans_cache_v2";
 
   if (plans.status === "fulfilled" && Array.isArray(plans.value)) {
-    writeJsonCache(DATA_PLANS_CACHE_KEY, {
+    const payload = {
       plans: plans.value,
       cached_at: Date.now(),
-    });
+    };
+    writeJsonCache(plansKey, payload);
+    writeJsonCache(plansV2Key, payload);
   }
   if (wallet.status === "fulfilled" && wallet.value && typeof wallet.value === "object") {
-    writeJsonCache(DATA_WALLET_CACHE_KEY, wallet.value);
+    writeJsonCache(walletKey, wallet.value);
   }
 }

@@ -43,6 +43,12 @@ export default function Data() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const profile = getProfile();
+  const cacheScope = String(profile?.email || profile?.full_name || "guest")
+    .trim()
+    .toLowerCase();
+  const scopedPlansCacheKey = `${DATA_PLANS_CACHE_KEY}:${cacheScope || "guest"}`;
+  const scopedWalletCacheKey = `${DATA_WALLET_CACHE_KEY}:${cacheScope || "guest"}`;
+  const recipientCacheKey = `vtu_last_recipient:${cacheScope || "guest"}`;
 
   const parseSize = (value) => {
     if (!value) return null;
@@ -74,7 +80,7 @@ export default function Data() {
 
   const saveRecipient = (next) => {
     try {
-      localStorage.setItem("vtu_last_recipient", JSON.stringify(next));
+      localStorage.setItem(recipientCacheKey, JSON.stringify(next));
     } catch {
       // ignore storage errors (private mode, quota, etc.)
     }
@@ -101,7 +107,7 @@ export default function Data() {
     if (forceRefresh) {
       queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans });
     }
-    const cached = readJsonCache(DATA_PLANS_CACHE_KEY);
+    const cached = readJsonCache(scopedPlansCacheKey);
     const cachedRows = Array.isArray(cached?.plans) ? cached.plans : [];
     const hasCached = cachedRows.length> 0;
     const isFresh =
@@ -128,7 +134,7 @@ export default function Data() {
         staleTime: DATA_PLANS_CACHE_TTL_MS,
       });
       setPlans(data);
-      writeJsonCache(DATA_PLANS_CACHE_KEY, {
+      writeJsonCache(scopedPlansCacheKey, {
         plans: Array.isArray(data) ? data : [],
         cached_at: Date.now(),
       });
@@ -148,7 +154,7 @@ export default function Data() {
 
   const loadWallet = async () => {
     setWalletError("");
-    const cached = readJsonCache(DATA_WALLET_CACHE_KEY);
+    const cached = readJsonCache(scopedWalletCacheKey);
     if (cached && typeof cached === "object") {
       setWallet(cached);
     }
@@ -159,7 +165,7 @@ export default function Data() {
         staleTime: 45 * 1000,
       });
       setWallet(data);
-      writeJsonCache(DATA_WALLET_CACHE_KEY, data);
+      writeJsonCache(scopedWalletCacheKey, data);
     } catch (err) {
       const msg = err?.message || "Failed to load wallet balance.";
       setWalletError(msg);
@@ -180,7 +186,7 @@ export default function Data() {
 
   useEffect(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem("vtu_last_recipient") || "null");
+      const stored = JSON.parse(localStorage.getItem(recipientCacheKey) || "null");
       if (stored && typeof stored === "object") {
         if (typeof stored.phone === "string") setPhone(stored.phone);
         if (typeof stored.ported === "boolean") setPorted(stored.ported);
@@ -207,7 +213,7 @@ export default function Data() {
     loadPlans();
     loadWallet();
     setBeneficiaries(loadBeneficiaries("data"));
-  }, [queryClient, searchParams]);
+  }, [queryClient, searchParams, recipientCacheKey]);
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

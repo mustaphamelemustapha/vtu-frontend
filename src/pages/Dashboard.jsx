@@ -79,9 +79,21 @@ const keepPrimaryAccountOnly = (items) => {
   return [items[0]];
 };
 
-function readDashboardCache() {
+function cacheScopeFromProfile(profile) {
+  const email = String(profile?.email || "").trim().toLowerCase();
+  if (email) return email;
+  const fullName = String(profile?.full_name || "").trim().toLowerCase();
+  if (fullName) return fullName;
+  return "guest";
+}
+
+function dashboardCacheKey(profile) {
+  return `${DASHBOARD_CACHE_KEY}:${cacheScopeFromProfile(profile)}`;
+}
+
+function readDashboardCache(cacheKey) {
   try {
-    const raw = JSON.parse(localStorage.getItem(DASHBOARD_CACHE_KEY) || "{}");
+    const raw = JSON.parse(localStorage.getItem(cacheKey) || "{}");
     return {
       wallet: raw?.wallet && typeof raw.wallet === "object" ? raw.wallet : null,
       txs: Array.isArray(raw?.txs) ? raw.txs : [],
@@ -98,9 +110,9 @@ function readDashboardCache() {
   }
 }
 
-function writeDashboardCache(payload) {
+function writeDashboardCache(cacheKey, payload) {
   try {
-    localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(payload || {}));
+    localStorage.setItem(cacheKey, JSON.stringify(payload || {}));
   } catch {
     // ignore storage errors
   }
@@ -109,7 +121,10 @@ function writeDashboardCache(payload) {
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const cached = readDashboardCache();
+  const profile = getProfile();
+  const cacheKey = dashboardCacheKey(profile);
+  const recipientCacheKey = `vtu_last_recipient:${cacheScopeFromProfile(profile)}`;
+  const cached = readDashboardCache(cacheKey);
   const [wallet, setWallet] = useState(cached.wallet);
   const [txs, setTxs] = useState(cached.txs);
   const [announcements, setAnnouncements] = useState(cached.announcements);
@@ -119,7 +134,6 @@ export default function Dashboard() {
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
   const retryTimerRef = useRef(null);
-  const profile = getProfile();
 
   const loadDashboardData = async ({ silent = false, attempt = 1 } = {}) => {
     if (silent) {
@@ -223,7 +237,7 @@ export default function Dashboard() {
     }
 
     if (nextWallet || (Array.isArray(nextTxs) && nextTxs.length> 0)) {
-      writeDashboardCache({
+      writeDashboardCache(cacheKey, {
         wallet: nextWallet,
         txs: nextTxs,
         announcements: nextAnnouncements,
@@ -261,7 +275,7 @@ export default function Dashboard() {
   useEffect(() => {
     loadDashboardData({ silent: false, attempt: 1 });
     try {
-      const stored = JSON.parse(localStorage.getItem("vtu_last_recipient") || "null");
+      const stored = JSON.parse(localStorage.getItem(recipientCacheKey) || "null");
       if (stored && typeof stored === "object" && typeof stored.phone === "string" && stored.phone.trim()) {
         setLastRecipient({ phone: stored.phone.trim(), ported: !!stored.ported });
       }
@@ -271,7 +285,7 @@ export default function Dashboard() {
     return () => {
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
-  }, []);
+  }, [cacheKey, recipientCacheKey]);
 
   const statusKey = (value) => String(value || "").toLowerCase();
   const primaryFundingAccount = useMemo(
