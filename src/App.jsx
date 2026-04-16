@@ -237,6 +237,75 @@ function AppPageFallback() {
   );
 }
 
+function MobileMenuIcon({ type }) {
+  if (type === "dashboard") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    );
+  }
+  if (type === "wallet") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h15a1 1 0 0 1 1 1v3h-6a2 2 0 0 0 0 4h6v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M14 13h6" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    );
+  }
+  if (type === "data") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 18c0-4 4-8 8-8s8 4 8 8" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M6 18c0-3 3-6 6-6s6 3 6 6" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M9 18c0-2 1.5-3.5 3-3.5S15 16 15 18" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    );
+  }
+  if (type === "services") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 6.5a2 2 0 0 1 2-2h3.5a2 2 0 0 1 2 2V10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6.5z" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M14.5 6.5a2 2 0 0 1 2-2H18a2 2 0 0 1 2 2V10a2 2 0 0 1-2 2h-1.5a2 2 0 0 1-2-2V6.5z" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M4 15a2 2 0 0 1 2-2h3.5a2 2 0 0 1 2 2v2.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V15z" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M14.5 15a2 2 0 0 1 2-2H18a2 2 0 0 1 2 2v2.5a2 2 0 0 1-2 2h-1.5a2 2 0 0 1-2-2V15z" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    );
+  }
+  if (type === "transactions") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h16M4 12h10M4 17h13" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    );
+  }
+  if (type === "profile") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    );
+  }
+  if (type === "support") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M9.6 9.7a2.4 2.4 0 1 1 4.1 1.8c-.6.6-1.4 1-1.7 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M12 17.2h.01" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (type === "admin") {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3l8 3v6c0 4.4-3 7.7-8 9-5-1.3-8-4.6-8-9V6l8-3z" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    );
+  }
+  return null;
+}
+
 export default function App() {
   const queryClient = useQueryClient();
   const [authenticated, setAuthenticated] = useState(!!getToken());
@@ -322,6 +391,15 @@ export default function App() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileMenuOpen]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [canInstall, setCanInstall] = useState(false);
@@ -451,7 +529,7 @@ export default function App() {
 
     const syncLock = () => {
       const hasOverlay = !!document.querySelector(
-        ".modal-backdrop, .success-screen, .purchase-loading-screen, .onboard-overlay"
+        ".modal-backdrop, .success-screen, .purchase-loading-screen, .onboard-overlay, .mobile-menu-backdrop"
       );
       if (hasOverlay) lock();
       else unlock();
@@ -731,8 +809,26 @@ export default function App() {
 
   const profile = profileState || {};
   const fullName = _deriveDisplayName(profile);
+  const initials = useMemo(() => {
+    const parts = fullName.split(/\s+/).filter(Boolean);
+    if (!parts.length) return "AX";
+    return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || "").join("");
+  }, [fullName]);
   const isAdmin = (profile.role || "").toLowerCase() === "admin";
   const isDashboardRoute = location.pathname === "/";
+  const mobileMenuItems = useMemo(() => {
+    const base = [
+      { path: "/", label: "Dashboard", icon: "dashboard", group: "general" },
+      { path: "/wallet", label: "Fund Wallet", icon: "wallet", group: "general" },
+      { path: "/data", label: "Buy Data", icon: "data", group: "general" },
+      { path: "/services", label: "Services", icon: "services", group: "general" },
+      { path: "/transactions", label: "Transactions", icon: "transactions", group: "manage" },
+      { path: "/profile", label: "Profile", icon: "profile", group: "manage" },
+      { path: "/support", label: "Support", icon: "support", group: "manage" },
+    ];
+    if (isAdmin) base.push({ path: "/admin", label: "Admin", icon: "admin", group: "manage" });
+    return base;
+  }, [isAdmin]);
 
   const handleLogout = () => {
     clearToken();
@@ -969,40 +1065,93 @@ export default function App() {
                 </div>
               </div>
               {mobileMenuOpen && (
-                <div className="mobile-top-menu" role="menu" aria-label="Main menu">
-                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/")}>Dashboard</button>
-                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/wallet")}>Wallet</button>
-                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/data")}>Buy Data</button>
-                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/services")}>Services</button>
-                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/transactions")}>Transactions</button>
-                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/profile")}>Profile</button>
-                  <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/support")}>Support</button>
-                  {isAdmin && (
-                    <button className="mobile-top-menu-item" type="button" onClick={() => openMobileRoute("/admin")}>Admin</button>
-                  )}
+                <>
+                  <button
+                    className="mobile-menu-backdrop"
+                    type="button"
+                    aria-label="Close menu"
+                    onClick={() => setMobileMenuOpen(false)}
+                  />
+                  <aside className="mobile-side-menu open" role="menu" aria-label="Main menu">
+                    <div className="mobile-side-menu-head">
+                      <div className="mobile-side-menu-brand">
+                        <img src="/brand/axisvtu-icon.png" alt="AxisVTU" />
+                        <span>AxisVTU</span>
+                      </div>
+                      <button
+                        className="mobile-side-menu-close"
+                        type="button"
+                        aria-label="Close menu"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        ×
+                      </button>
+                    </div>
+
+                    <div className="mobile-side-user-card">
+                      <span className="mobile-side-user-avatar">{initials || "AX"}</span>
+                      <span className="mobile-side-user-meta">
+                        <strong>{fullName}</strong>
+                        <small>{isAdmin ? "ADMIN" : "SMART"}</small>
+                      </span>
+                    </div>
+
+                    <div className="mobile-side-menu-section">GENERAL</div>
+                    {mobileMenuItems
+                      .filter((item) => item.group === "general")
+                      .map((item) => (
+                        <button
+                          key={item.path}
+                          className={`mobile-side-menu-item ${location.pathname === item.path ? "active" : ""}`}
+                          type="button"
+                          onClick={() => openMobileRoute(item.path)}
+                        >
+                          <span className="mobile-side-menu-item-icon"><MobileMenuIcon type={item.icon} /></span>
+                          <span>{item.label}</span>
+                        </button>
+                      ))}
+
+                    <div className="mobile-side-menu-section">MANAGEMENT</div>
+                    {mobileMenuItems
+                      .filter((item) => item.group === "manage")
+                      .map((item) => (
+                        <button
+                          key={item.path}
+                          className={`mobile-side-menu-item ${location.pathname === item.path ? "active" : ""}`}
+                          type="button"
+                          onClick={() => openMobileRoute(item.path)}
+                        >
+                          <span className="mobile-side-menu-item-icon"><MobileMenuIcon type={item.icon} /></span>
+                          <span>{item.label}</span>
+                        </button>
+                      ))}
+
                   {canInstall && (
                     <button
-                      className="mobile-top-menu-item"
+                        className="mobile-side-menu-item"
                       type="button"
                       onClick={async () => {
                         setMobileMenuOpen(false);
                         await handleInstall?.();
                       }}
                     >
+                        <span className="mobile-side-menu-item-icon">⬇</span>
                       Install App
                     </button>
                   )}
                   <button
-                    className="mobile-top-menu-item danger"
+                      className="mobile-side-menu-item danger"
                     type="button"
                     onClick={() => {
                       setMobileMenuOpen(false);
                       handleLogout();
                     }}
                   >
+                      <span className="mobile-side-menu-item-icon">↩</span>
                     Logout
                   </button>
-                </div>
+                  </aside>
+                </>
               )}
             </header>
             <Suspense fallback={<AppPageFallback />}>

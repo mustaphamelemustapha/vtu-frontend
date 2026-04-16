@@ -412,11 +412,13 @@ export default function Dashboard() {
                   : "Your account is active and ready for instant VTU purchases."}
             </div>
           </div>
-          <div className="hero-value">{loadingWallet ? "Loading..." : `₦ ${wallet?.balance || "0.00"}`}</div>
           <div className="dashboard-welcome-actions">
-            <Link className="primary hero-cta" to="/wallet">Fund Wallet</Link>
-            <Link className="ghost hero-cta" to="/data">Buy Data</Link>
-            <Link className="ghost hero-cta" to="/services">All Services</Link>
+            <Link className="primary hero-cta hero-cta-fund" to="/wallet">Fund Wallet</Link>
+            <Link className="ghost hero-cta hero-cta-kyc" to="/profile">Update Profile</Link>
+          </div>
+          <div className="dashboard-welcome-visual" aria-hidden="true">
+            <div className="dashboard-welcome-blob" />
+            <img src="/brand/axisvtu-icon.png" alt="" />
           </div>
         </div>
       </section>
