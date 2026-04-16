@@ -1714,10 +1714,13 @@ a:focus-visible {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.35);
-  display: grid;
-  place-items: center;
-  z-index: 30;
-  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
@@ -1731,7 +1734,7 @@ a:focus-visible {
   display: grid;
   gap: 16px;
   /* Prevent modals from overflowing small viewports; scroll inside instead. */
-  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
   overflow: auto;
 }
 
@@ -1740,6 +1743,8 @@ a:focus-visible {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-2);
   padding: 22px;
+  display: flex;
+  flex-direction: column;
   background:
     radial-gradient(circle at 20% 0%, rgba(15, 118, 110, 0.10), transparent 55%),
     radial-gradient(circle at 85% 5%, rgba(245, 158, 11, 0.10), transparent 55%),
@@ -1774,9 +1779,21 @@ a:focus-visible {
   border-radius: var(--radius-lg);
 }
 
+.modal.modal-receipt .modal-body {
+  min-height: 0;
+  overflow: auto;
+}
+
 .modal.modal-receipt .modal-actions {
   justify-content: space-between;
   flex-wrap: wrap;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: 2px;
+  padding-top: 10px;
+  padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--panel) 34%);
 }
 
 .modal.modal-receipt .notice {
@@ -2110,7 +2127,7 @@ a:focus-visible {
   box-shadow: var(--shadow);
   text-align: center;
   animation: pop 0.35s ease;
-  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   overflow: auto;
 }
 
@@ -2734,6 +2751,20 @@ a:focus-visible {
 }
 
 @media (max-width: 640px) {
+  .modal-backdrop {
+    align-items: flex-start;
+    padding:
+      calc(10px + env(safe-area-inset-top, 0px))
+      10px
+      calc(10px + env(safe-area-inset-bottom, 0px) + 72px);
+  }
+
+  .modal {
+    max-height: calc(100dvh - 20px);
+    border-radius: 18px;
+    padding: 14px;
+  }
+
   .data-result-screen {
     padding: 8px;
   }
@@ -2830,7 +2861,7 @@ body:has(.purchase-loading-screen) {
   width: min(560px, 92vw);
   box-shadow: var(--shadow);
   animation: pop 0.35s ease;
-  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   overflow: auto;
 }
 

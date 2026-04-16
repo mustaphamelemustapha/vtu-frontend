@@ -410,15 +410,20 @@ export default function App() {
 
     const lock = () => {
       if (locked) return;
-      const y = window.scrollY || 0;
-      body.dataset.overlayLockY = String(y);
       body.classList.add("overlay-open");
-      body.style.position = "fixed";
-      body.style.top = `-${y}px`;
-      body.style.left = "0";
-      body.style.right = "0";
-      body.style.width = "100%";
       body.style.overflow = "hidden";
+      const isTouchDevice =
+        (typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches) ||
+        ("ontouchstart" in window);
+      if (!isTouchDevice) {
+        const y = window.scrollY || 0;
+        body.dataset.overlayLockY = String(y);
+        body.style.position = "fixed";
+        body.style.top = `-${y}px`;
+        body.style.left = "0";
+        body.style.right = "0";
+        body.style.width = "100%";
+      }
       locked = true;
     };
 
@@ -433,7 +438,9 @@ export default function App() {
       body.style.right = "";
       body.style.width = "";
       body.style.overflow = "";
-      window.scrollTo(0, Number.isFinite(y) ? y : 0);
+      if (Number.isFinite(y) && y > 0) {
+        window.scrollTo(0, y);
+      }
       locked = false;
     };
 
