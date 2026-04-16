@@ -47,6 +47,8 @@ const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v1";
 const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
 
 let refreshInFlight = null;
+let refreshInFlightEpoch = -1;
+let authEpoch = 0;
 
 function safeParseJson(raw, fallback = null) {
   try {
@@ -57,12 +59,44 @@ function safeParseJson(raw, fallback = null) {
   }
 }
 
+function decodeJwtPayload(token) {
+  try {
+    const raw = String(token || "").split(".")[1];
+    if (!raw) return {};
+    const base64 = raw.replace(/-/g, "+").replace(/_/g, "/");
+    const normalized = base64.padEnd(base64.length + ((4 - (base64.length % 4 || 4)) % 4), "=");
+    const json = atob(normalized);
+    return safeParseJson(json, {}) || {};
+  } catch {
+    return {};
+  }
+}
+
+function tokenCacheScope(token) {
+  const payload = decodeJwtPayload(token);
+  const sub = String(payload?.sub || payload?.user_id || payload?.id || "").trim();
+  if (sub) return `uid:${sub}`;
+  const email = String(payload?.email || "").trim().toLowerCase();
+  if (email) return `mail:${email}`;
+  return "";
+}
+
 function profileCacheScope(profile) {
   const email = String(profile?.email || "").trim().toLowerCase();
   if (email) return email;
   const fullName = String(profile?.full_name || "").trim().toLowerCase();
   if (fullName) return fullName;
   return "";
+}
+
+export function getActiveAuthScope() {
+  const fromToken = tokenCacheScope(getToken());
+  if (fromToken) return fromToken;
+  const fromStored = String(localStorage.getItem(ACTIVE_PROFILE_KEY) || "").trim();
+  if (fromStored) return fromStored;
+  const fromProfile = profileCacheScope(getProfile());
+  if (fromProfile) return `profile:${fromProfile}`;
+  return "guest";
 }
 
 function clearAccountScopedUiCache() {
@@ -127,6 +161,7 @@ export function getRefreshToken() {
 }
 
 export function setAuthTokens(accessToken, refreshToken, persist = true) {
+  authEpoch += 1;
   if (persist) {
     localStorage.setItem(TOKEN_KEY, accessToken);
     if (refreshToken) localStorage.setItem(REFRESH_KEY, refreshToken);
@@ -145,6 +180,7 @@ export function setToken(token, persist = true) {
 }
 
 export function clearToken() {
+  authEpoch += 1;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_KEY);
   sessionStorage.removeItem(SESSION_KEY);
@@ -170,8 +206,8 @@ export function setAuthPersisted(persist) {
 
 export function setProfile(profile) {
   const previousProfile = safeParseJson(localStorage.getItem(PROFILE_KEY), {});
-  const previousScope = profileCacheScope(previousProfile);
-  const nextScope = profileCacheScope(profile);
+  const previousScope = String(localStorage.getItem(ACTIVE_PROFILE_KEY) || "").trim() || profileCacheScope(previousProfile);
+  const nextScope = tokenCacheScope(getToken()) || profileCacheScope(profile);
   if (previousScope && nextScope && previousScope !== nextScope) {
     clearAccountScopedUiCache();
   }
@@ -244,15 +280,21 @@ function emitRetryEvent(path, attempt, maxAttempts, reason) {
 }
 
 async function refreshAccessToken() {
-  if (refreshInFlight) return refreshInFlight;
+  if (refreshInFlight && refreshInFlightEpoch === authEpoch) return refreshInFlight;
+  if (refreshInFlight && refreshInFlightEpoch !== authEpoch) {
+    refreshInFlight = null;
+    refreshInFlightEpoch = -1;
+  }
 
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
     throw makeError("Session expired. Please log in again.", AUTH_EXPIRED);
   }
+  const epochAtStart = authEpoch;
 
   const persist =
     !!localStorage.getItem(TOKEN_KEY) || !!localStorage.getItem(REFRESH_KEY);
+  refreshInFlightEpoch = epochAtStart;
 
   refreshInFlight = (async () => {
     const res = await fetchWithTimeout(`${API_BASE}/auth/refresh`, {
@@ -264,10 +306,18 @@ async function refreshAccessToken() {
     if (!res.ok || !data?.access_token || !data?.refresh_token) {
       throw makeError("Session expired. Please log in again.", AUTH_EXPIRED);
     }
+    if (epochAtStart !== authEpoch || getRefreshToken() !== refreshToken) {
+      const latestToken = getToken();
+      if (latestToken) return latestToken;
+      throw makeError("Session expired. Please log in again.", AUTH_EXPIRED);
+    }
     setAuthTokens(data.access_token, data.refresh_token, persist);
     return data.access_token;
   })().finally(() => {
-    refreshInFlight = null;
+    if (refreshInFlightEpoch === epochAtStart) {
+      refreshInFlight = null;
+      refreshInFlightEpoch = -1;
+    }
   });
 
   return refreshInFlight;
@@ -307,7 +357,7 @@ export async function apiFetch(path, options = {}) {
     attempt += 1;
     let res;
     try {
-      res = await fetchWithTimeout(url, { ...requestOptions, headers }, requestTimeoutMs);
+      res = await fetchWithTimeout(url, { ...requestOptions, headers, cache: "no-store" }, requestTimeoutMs);
     } catch (err) {
       const timedOut = err?.name === "AbortError";
       const retryableNetworkError =
@@ -402,7 +452,7 @@ export async function prefetchDataPageCache() {
     apiFetch("/data/plans", { _suppressRetryToast: true }),
     apiFetch("/wallet/me", { _suppressRetryToast: true }),
   ]);
-  const scope = profileCacheScope(getProfile());
+  const scope = getActiveAuthScope();
   const plansKey = scope ? `${DATA_PLANS_CACHE_KEY}:${scope}` : DATA_PLANS_CACHE_KEY;
   const walletKey = scope ? `${DATA_WALLET_CACHE_KEY}:${scope}` : DATA_WALLET_CACHE_KEY;
   const plansV2Key = scope ? `axisvtu_data_plans_cache_v2:${scope}` : "axisvtu_data_plans_cache_v2";

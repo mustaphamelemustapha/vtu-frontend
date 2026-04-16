@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { apiFetch, getProfile } from "../services/api";
+import { apiFetch, getActiveAuthScope, getProfile } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
 import { buildReceiptShareText, shareReceiptCapture, shareReceiptCaptureOnWhatsApp } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
@@ -43,9 +43,7 @@ export default function Data() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const profile = getProfile();
-  const cacheScope = String(profile?.email || profile?.full_name || "guest")
-    .trim()
-    .toLowerCase();
+  const cacheScope = getActiveAuthScope();
   const scopedPlansCacheKey = `${DATA_PLANS_CACHE_KEY}:${cacheScope || "guest"}`;
   const scopedWalletCacheKey = `${DATA_WALLET_CACHE_KEY}:${cacheScope || "guest"}`;
   const recipientCacheKey = `vtu_last_recipient:${cacheScope || "guest"}`;
@@ -105,7 +103,7 @@ export default function Data() {
   const loadPlans = async ({ forceRefresh = false } = {}) => {
     setPlansError("");
     if (forceRefresh) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dataPlans(cacheScope) });
     }
     const cached = readJsonCache(scopedPlansCacheKey);
     const cachedRows = Array.isArray(cached?.plans) ? cached.plans : [];
@@ -129,7 +127,7 @@ export default function Data() {
     setRefreshingPlans(true);
     try {
       const data = await queryClient.fetchQuery({
-        queryKey: queryKeys.dataPlans,
+        queryKey: queryKeys.dataPlans(cacheScope),
         queryFn: () => apiFetch("/data/plans", { _suppressRetryToast: true }),
         staleTime: DATA_PLANS_CACHE_TTL_MS,
       });
@@ -160,7 +158,7 @@ export default function Data() {
     }
     try {
       const data = await queryClient.fetchQuery({
-        queryKey: queryKeys.walletMe,
+        queryKey: queryKeys.walletMe(cacheScope),
         queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
         staleTime: 45 * 1000,
       });
@@ -213,7 +211,7 @@ export default function Data() {
     loadPlans();
     loadWallet();
     setBeneficiaries(loadBeneficiaries("data"));
-  }, [queryClient, searchParams, recipientCacheKey]);
+  }, [cacheScope, queryClient, searchParams, recipientCacheKey]);
 
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

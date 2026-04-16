@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { apiFetch, getProfile } from "../services/api";
+import { apiFetch, getActiveAuthScope, getProfile } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 import { queryKeys } from "../query/client.js";
 import Button from "../components/ui/Button.jsx";
@@ -79,16 +79,8 @@ const keepPrimaryAccountOnly = (items) => {
   return [items[0]];
 };
 
-function cacheScopeFromProfile(profile) {
-  const email = String(profile?.email || "").trim().toLowerCase();
-  if (email) return email;
-  const fullName = String(profile?.full_name || "").trim().toLowerCase();
-  if (fullName) return fullName;
-  return "guest";
-}
-
-function dashboardCacheKey(profile) {
-  return `${DASHBOARD_CACHE_KEY}:${cacheScopeFromProfile(profile)}`;
+function dashboardCacheKey(authScope) {
+  return `${DASHBOARD_CACHE_KEY}:${authScope || "guest"}`;
 }
 
 function readDashboardCache(cacheKey) {
@@ -122,8 +114,9 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const profile = getProfile();
-  const cacheKey = dashboardCacheKey(profile);
-  const recipientCacheKey = `vtu_last_recipient:${cacheScopeFromProfile(profile)}`;
+  const authScope = getActiveAuthScope();
+  const cacheKey = dashboardCacheKey(authScope);
+  const recipientCacheKey = `vtu_last_recipient:${authScope || "guest"}`;
   const cached = readDashboardCache(cacheKey);
   const [wallet, setWallet] = useState(cached.wallet);
   const [txs, setTxs] = useState(cached.txs);
@@ -152,7 +145,7 @@ export default function Dashboard() {
 
     try {
       const summary = await queryClient.fetchQuery({
-        queryKey: queryKeys.dashboardSummary,
+        queryKey: queryKeys.dashboardSummary(authScope),
         queryFn: () => apiFetch("/dashboard/summary", { _suppressRetryToast: true }),
         staleTime: 60 * 1000,
       });
@@ -188,22 +181,22 @@ export default function Dashboard() {
     } catch {
       const [walletRes, txRes, announcementRes, fundingAccountRes] = await Promise.allSettled([
         queryClient.fetchQuery({
-          queryKey: queryKeys.walletMe,
+          queryKey: queryKeys.walletMe(authScope),
           queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
           staleTime: 45 * 1000,
         }),
         queryClient.fetchQuery({
-          queryKey: queryKeys.transactionsMe,
+          queryKey: queryKeys.transactionsMe(authScope),
           queryFn: () => apiFetch("/transactions/me", { _suppressRetryToast: true }),
           staleTime: 30 * 1000,
         }),
         queryClient.fetchQuery({
-          queryKey: queryKeys.notificationsBroadcast,
+          queryKey: queryKeys.notificationsBroadcast(authScope),
           queryFn: () => apiFetch("/notifications/broadcast", { _suppressRetryToast: true }),
           staleTime: 60 * 1000,
         }),
         queryClient.fetchQuery({
-          queryKey: queryKeys.transferAccounts,
+          queryKey: queryKeys.transferAccounts(authScope),
           queryFn: () => apiFetch("/wallet/bank-transfer-accounts", { _suppressRetryToast: true }),
           staleTime: 45 * 1000,
         }),
@@ -285,7 +278,7 @@ export default function Dashboard() {
     return () => {
       if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
     };
-  }, [cacheKey, recipientCacheKey]);
+  }, [authScope, cacheKey, recipientCacheKey]);
 
   const statusKey = (value) => String(value || "").toLowerCase();
   const primaryFundingAccount = useMemo(

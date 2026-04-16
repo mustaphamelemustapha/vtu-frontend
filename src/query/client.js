@@ -30,12 +30,12 @@ export const queryClient = new QueryClient({
 });
 
 export const queryKeys = {
-  dashboardSummary: ["dashboard", "summary"],
-  walletMe: ["wallet", "me"],
-  walletLedger: ["wallet", "ledger"],
-  transferAccounts: ["wallet", "transfer-accounts"],
-  dataPlans: ["data", "plans"],
-  transactionsMe: ["transactions", "me"],
-  notificationsBroadcast: ["notifications", "broadcast"],
-  reportsMe: ["transactions", "reports", "me"],
+  dashboardSummary: (scope = "guest") => ["dashboard", "summary", scope],
+  walletMe: (scope = "guest") => ["wallet", "me", scope],
+  walletLedger: (scope = "guest") => ["wallet", "ledger", scope],
+  transferAccounts: (scope = "guest") => ["wallet", "transfer-accounts", scope],
+  dataPlans: (scope = "guest") => ["data", "plans", scope],
+  transactionsMe: (scope = "guest") => ["transactions", "me", scope],
+  notificationsBroadcast: (scope = "guest") => ["notifications", "broadcast", scope],
+  reportsMe: (scope = "guest") => ["transactions", "reports", "me", scope],
 };

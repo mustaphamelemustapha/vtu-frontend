@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { apiFetch } from "../services/api";
+import { apiFetch, getActiveAuthScope } from "../services/api";
 import { useToast } from "../context/toast.jsx";
 import { queryKeys } from "../query/client.js";
 import Button from "../components/ui/Button.jsx";
@@ -10,6 +10,7 @@ const ENABLE_BANK_TRANSFER = true;
 
 export default function Wallet() {
   const queryClient = useQueryClient();
+  const authScope = getActiveAuthScope();
   const [wallet, setWallet] = useState(null);
   const [ledger, setLedger] = useState([]);
   const [walletLoading, setWalletLoading] = useState(true);
@@ -49,17 +50,17 @@ export default function Wallet() {
     if (!silent) setWalletError("");
     const [walletRes, ledgerRes, transferRes] = await Promise.allSettled([
       queryClient.fetchQuery({
-        queryKey: queryKeys.walletMe,
+        queryKey: queryKeys.walletMe(authScope),
         queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
         staleTime: 15 * 1000,
       }),
       queryClient.fetchQuery({
-        queryKey: queryKeys.walletLedger,
+        queryKey: queryKeys.walletLedger(authScope),
         queryFn: () => apiFetch("/wallet/ledger", { _suppressRetryToast: true }),
         staleTime: 15 * 1000,
       }),
       queryClient.fetchQuery({
-        queryKey: queryKeys.transferAccounts,
+        queryKey: queryKeys.transferAccounts(authScope),
         queryFn: () => apiFetch("/wallet/bank-transfer-accounts", { _suppressRetryToast: true }),
         staleTime: 15 * 1000,
       }),
@@ -95,7 +96,7 @@ export default function Wallet() {
     }
 
     setWalletLoading(false);
-  }, [queryClient, showToast]);
+  }, [authScope, queryClient, showToast]);
 
   useEffect(() => {
     refreshWalletViews().catch(() => {});
@@ -117,7 +118,7 @@ export default function Wallet() {
     setTransferBusy(true);
     try {
       const res = await queryClient.fetchQuery({
-        queryKey: queryKeys.transferAccounts,
+        queryKey: queryKeys.transferAccounts(authScope),
         queryFn: () => apiFetch("/wallet/bank-transfer-accounts", { _suppressRetryToast: true }),
         staleTime: 45 * 1000,
       });
@@ -147,7 +148,7 @@ export default function Wallet() {
         method: "POST",
         body: JSON.stringify(requestBody),
       });
-      queryClient.invalidateQueries({ queryKey: queryKeys.transferAccounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transferAccounts(authScope) });
       hydrateTransferState(res, transferProvider || "monnify");
       showToast("Bank transfer accounts generated.", "success");
     } catch (err) {
@@ -180,7 +181,7 @@ export default function Wallet() {
         method: "POST",
         body: JSON.stringify({ phone_number: normalizedPhone }),
       });
-      queryClient.invalidateQueries({ queryKey: queryKeys.transferAccounts });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transferAccounts(authScope) });
       hydrateTransferState(res, transferProvider || "paystack");
       showToast("Bank transfer account generated.", "success");
       refreshWalletViews().catch(() => {});

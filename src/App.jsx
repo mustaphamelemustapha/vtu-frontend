@@ -2,7 +2,16 @@ import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Nav from "./components/Nav.jsx";
-import { apiFetch, getToken, clearToken, getProfile, setProfile, warmBackend, prefetchDataPageCache } from "./services/api";
+import {
+  apiFetch,
+  getToken,
+  clearToken,
+  getProfile,
+  getActiveAuthScope,
+  setProfile,
+  warmBackend,
+  prefetchDataPageCache,
+} from "./services/api";
 import { ToastProvider } from "./context/toast.jsx";
 import ToastHost from "./components/ToastHost.jsx";
 import { applySeo } from "./utils/seo.js";
@@ -216,14 +225,6 @@ function _deriveDisplayName(profile) {
     if (local) return local;
   }
   return "User";
-}
-
-function _profileScope(profile) {
-  const email = String(profile?.email || "").trim().toLowerCase();
-  if (email) return email;
-  const fullName = String(profile?.full_name || "").trim().toLowerCase();
-  if (fullName) return `name:${fullName}`;
-  return "guest";
 }
 
 function AppPageFallback() {
@@ -466,7 +467,7 @@ export default function App() {
   }, [authenticated]);
 
   useEffect(() => {
-    const nextScope = authenticated ? _profileScope(profileState) : null;
+    const nextScope = authenticated ? getActiveAuthScope() : null;
     if (authScopeRef.current !== nextScope) {
       queryClient.clear();
       authScopeRef.current = nextScope;
@@ -479,17 +480,17 @@ export default function App() {
     const run = () => {
       prefetchDataPageCache().catch(() => {});
       queryClient.prefetchQuery({
-        queryKey: queryKeys.dashboardSummary,
+        queryKey: queryKeys.dashboardSummary(getActiveAuthScope()),
         queryFn: () => apiFetch("/dashboard/summary", { _suppressRetryToast: true }),
         staleTime: 60 * 1000,
       });
       queryClient.prefetchQuery({
-        queryKey: queryKeys.dataPlans,
+        queryKey: queryKeys.dataPlans(getActiveAuthScope()),
         queryFn: () => apiFetch("/data/plans", { _suppressRetryToast: true }),
         staleTime: 5 * 60 * 1000,
       });
       queryClient.prefetchQuery({
-        queryKey: queryKeys.walletMe,
+        queryKey: queryKeys.walletMe(getActiveAuthScope()),
         queryFn: () => apiFetch("/wallet/me", { _suppressRetryToast: true }),
         staleTime: 45 * 1000,
       });
@@ -739,7 +740,7 @@ export default function App() {
 
   const handleAuthSuccess = (nextProfile) => {
     queryClient.clear();
-    authScopeRef.current = _profileScope(nextProfile);
+    authScopeRef.current = getActiveAuthScope();
     if (nextProfile) {
       setProfile(nextProfile);
       setProfileState(nextProfile);
