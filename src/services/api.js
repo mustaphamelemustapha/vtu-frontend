@@ -73,11 +73,16 @@ function decodeJwtPayload(token) {
 }
 
 function tokenCacheScope(token) {
+  const rawToken = String(token || "").trim();
   const payload = decodeJwtPayload(token);
   const sub = String(payload?.sub || payload?.user_id || payload?.id || "").trim();
   if (sub) return `uid:${sub}`;
   const email = String(payload?.email || "").trim().toLowerCase();
   if (email) return `mail:${email}`;
+  if (rawToken) {
+    const compact = rawToken.replace(/[^a-zA-Z0-9]/g, "").slice(0, 24);
+    if (compact) return `tok:${compact}`;
+  }
   return "";
 }
 
