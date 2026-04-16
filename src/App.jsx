@@ -446,7 +446,7 @@ export default function App() {
 
     const syncLock = () => {
       const hasOverlay = !!document.querySelector(
-        ".modal-backdrop, .success-screen, .purchase-loading-screen"
+        ".modal-backdrop, .success-screen, .purchase-loading-screen, .onboard-overlay"
       );
       if (hasOverlay) lock();
       else unlock();

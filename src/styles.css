@@ -1731,11 +1731,15 @@ a:focus-visible {
   box-shadow: var(--shadow);
   width: min(520px, 100%);
   padding: 20px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   /* Prevent modals from overflowing small viewports; scroll inside instead. */
   max-height: calc(100dvh - 40px);
   overflow: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal.modal-receipt {
@@ -2012,12 +2016,16 @@ a:focus-visible {
 .modal-body {
   display: grid;
   gap: 10px;
+  min-height: 0;
+  overflow: auto;
 }
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .success-screen {
@@ -2025,9 +2033,13 @@ a:focus-visible {
   inset: 0;
   background: rgba(6, 8, 12, 0.6);
   backdrop-filter: blur(8px);
-  display: grid;
-  place-items: center;
-  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 95;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 12px calc(14px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
@@ -2036,9 +2048,13 @@ a:focus-visible {
   inset: 0;
   background: rgba(6, 8, 12, 0.66);
   backdrop-filter: blur(8px);
-  display: grid;
-  place-items: center;
-  z-index: 72;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 96;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 12px calc(14px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
 
@@ -2053,6 +2069,8 @@ a:focus-visible {
     var(--panel);
   box-shadow: var(--shadow-2);
   text-align: center;
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
 }
 
 .purchase-loading-ring {
@@ -2123,12 +2141,15 @@ a:focus-visible {
   border: 1px solid var(--stroke);
   border-radius: 22px;
   padding: 26px;
-  width: min(520px, 92vw);
+  width: min(520px, 100%);
   box-shadow: var(--shadow);
   text-align: center;
   animation: pop 0.35s ease;
   max-height: calc(100dvh - 48px);
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .success-icon {
@@ -2193,6 +2214,9 @@ a:focus-visible {
   background: #eef2f7;
   box-shadow: 0 24px 56px rgba(2, 6, 23, 0.36);
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .data-result-head {
@@ -2359,6 +2383,12 @@ a:focus-visible {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding-top: 10px;
+  padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(238, 242, 247, 0), #eef2f7 34%);
 }
 
 .data-result-actions .primary {
@@ -2408,6 +2438,10 @@ a:focus-visible {
 
 .dark .data-result-head {
   background: linear-gradient(180deg, #0f1521 82%, rgba(15, 21, 33, 0));
+}
+
+.dark .data-result-actions {
+  background: linear-gradient(180deg, rgba(15, 21, 33, 0), #0f1521 34%);
 }
 
 .dark .tx-receipt-card {
@@ -2763,6 +2797,43 @@ a:focus-visible {
     max-height: calc(100dvh - 20px);
     border-radius: 18px;
     padding: 14px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .modal .modal-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: linear-gradient(180deg, var(--panel) 86%, rgba(255, 255, 255, 0));
+    padding-top: 2px;
+  }
+
+  .dark .modal .modal-head {
+    background: linear-gradient(180deg, var(--panel) 86%, rgba(16, 22, 35, 0));
+  }
+
+  .modal .modal-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin-top: 8px;
+    padding-top: 10px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0), var(--panel) 34%);
+  }
+
+  .success-screen,
+  .purchase-loading-screen,
+  .onboard-overlay {
+    align-items: flex-start;
+  }
+
+  .success-card,
+  .purchase-loading-card,
+  .onboard-card {
+    width: min(100%, 560px);
+    border-radius: 18px;
+    padding: 16px;
   }
 
   .data-result-screen {
@@ -2822,9 +2893,11 @@ a:focus-visible {
 html:has(.modal-backdrop),
 html:has(.success-screen),
 html:has(.purchase-loading-screen),
+html:has(.onboard-overlay),
 body:has(.modal-backdrop),
 body:has(.success-screen),
-body:has(.purchase-loading-screen) {
+body:has(.purchase-loading-screen),
+body:has(.onboard-overlay) {
   overflow: hidden;
 }
 
@@ -2848,9 +2921,14 @@ body:has(.purchase-loading-screen) {
   inset: 0;
   background: rgba(6, 8, 12, 0.6);
   backdrop-filter: blur(8px);
-  display: grid;
-  place-items: center;
-  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 94;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 12px calc(14px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .onboard-card {
@@ -2858,7 +2936,7 @@ body:has(.purchase-loading-screen) {
   border: 1px solid var(--stroke);
   border-radius: 22px;
   padding: 26px;
-  width: min(560px, 92vw);
+  width: min(560px, 100%);
   box-shadow: var(--shadow);
   animation: pop 0.35s ease;
   max-height: calc(100dvh - 48px);
@@ -4656,12 +4734,12 @@ a.pill:active::after {
   .pending-card > button {
     align-self: stretch;
   }
-  .modal-actions {
-    flex-direction: column-reverse;
+  .modal .modal-actions {
+    flex-direction: column;
     align-items: stretch;
   }
-  .modal-actions .primary,
-  .modal-actions .ghost {
+  .modal .modal-actions .primary,
+  .modal .modal-actions .ghost {
     width: 100%;
   }
   .compare-grid,
