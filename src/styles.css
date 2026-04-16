@@ -54,8 +54,8 @@ body {
   font-family: var(--font-body);
   line-height: 1.5;
   background:
-    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.06), transparent 44%),
-    radial-gradient(circle at 88% 100%, rgba(15, 118, 110, 0.05), transparent 50%),
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.045), transparent 42%),
+    radial-gradient(circle at 88% 100%, rgba(15, 118, 110, 0.035), transparent 50%),
     var(--bg);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
@@ -118,7 +118,7 @@ a:focus-visible {
   border-radius: 14px;
   border: 1px solid var(--stroke);
   background: var(--panel);
-  box-shadow: 0 8px 20px rgba(17, 24, 39, 0.08);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
   transition: box-shadow var(--motion-base) ease, border-color var(--motion-base) ease;
 }
 
@@ -3054,7 +3054,7 @@ body:has(.onboard-overlay) {
 }
 
 .card:hover {
-  box-shadow: 0 14px 30px rgba(17, 24, 39, 0.1);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 .label {
@@ -3068,7 +3068,7 @@ body:has(.onboard-overlay) {
 }
 
 .hero-card {
-  background: linear-gradient(180deg, #f7faff, #eef3fb);
+  background: linear-gradient(180deg, #f9fbfe, #f1f5f9);
   border: 1px solid #d7e2ef;
   padding: 20px;
   border-radius: 16px;
@@ -3076,7 +3076,7 @@ body:has(.onboard-overlay) {
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
 }
 
 .wallet-hero {
@@ -3180,8 +3180,8 @@ body:has(.onboard-overlay) {
 
 .hero-value {
   font-size: clamp(30px, 4vw, 42px);
-  font-weight: 800;
-  line-height: 1.08;
+  font-weight: 700;
+  line-height: 1.06;
 }
 
 .hero-actions {
@@ -3219,7 +3219,7 @@ body:has(.onboard-overlay) {
 .dashboard-welcome-title {
   margin: 0;
   font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.025em;
   font-size: clamp(24px, 3vw, 34px);
 }
 
@@ -3233,7 +3233,7 @@ body:has(.onboard-overlay) {
   min-height: 44px;
   padding: 10px 16px;
   border-radius: 11px;
-  font-weight: 700;
+  font-weight: 600;
   animation: welcome-cta-in 460ms ease both;
 }
 
@@ -3264,7 +3264,7 @@ body:has(.onboard-overlay) {
   height: 138px;
   border-radius: 16px;
   overflow: hidden;
-  background: radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.72), rgba(197, 219, 247, 0.4));
+  background: radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.78), rgba(197, 219, 247, 0.34));
 }
 
 .dashboard-welcome-blob {
@@ -3273,8 +3273,8 @@ body:has(.onboard-overlay) {
   width: 230px;
   height: 180px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 35%, rgba(140, 181, 247, 0.76), rgba(77, 127, 224, 0.48));
-  filter: blur(0.4px);
+  background: radial-gradient(circle at 30% 35%, rgba(140, 181, 247, 0.64), rgba(77, 127, 224, 0.38));
+  filter: blur(0.3px);
   animation: welcome-float 5s ease-in-out infinite;
 }
 
@@ -3324,7 +3324,7 @@ body:has(.onboard-overlay) {
   align-content: start;
   gap: 10px;
   background:
-    radial-gradient(circle at 15% 12%, rgba(15, 23, 42, 0.08), transparent 48%),
+    radial-gradient(circle at 15% 12%, rgba(15, 23, 42, 0.06), transparent 48%),
     var(--panel);
 }
 
@@ -3335,7 +3335,7 @@ body:has(.onboard-overlay) {
   overflow: hidden;
   border: 1px solid var(--stroke);
   background: #0b1220;
-  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.16);
 }
 
 .dashboard-feature-brand img {
@@ -3348,8 +3348,8 @@ body:has(.onboard-overlay) {
 .dashboard-funding-rail {
   display: grid;
   gap: 12px;
-  background: linear-gradient(180deg, #fbfcfe, #f7f9fc);
-  border: 1px solid #dbe3ef;
+  background: linear-gradient(180deg, #fcfdff, #f7fafc);
+  border: 1px solid #d8e1ec;
 }
 
 .funding-account-grid {
@@ -3518,7 +3518,7 @@ body:has(.onboard-overlay) {
   margin: 0 0 12px;
   font-size: clamp(20px, 2.2vw, 24px);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .section-head {
@@ -3552,7 +3552,7 @@ body:has(.onboard-overlay) {
   min-height: 44px;
   border-radius: 12px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -4112,9 +4112,9 @@ textarea {
     linear-gradient(180deg, rgba(15, 118, 110, 0.1), rgba(15, 118, 110, 0.05));
   color: color-mix(in srgb, var(--ink) 90%, #0f4f4a 10%);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.38;
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.045);
 }
 
 .notice::before {
@@ -4167,7 +4167,7 @@ textarea {
 .list-card {
   background: var(--panel);
   border: 1px solid var(--stroke);
-  border-radius: 14px;
+  border-radius: 13px;
   padding: 14px 16px;
   display: flex;
   justify-content: space-between;
@@ -4181,7 +4181,7 @@ textarea {
 
 .list-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
 }
 
 .pending-card {
@@ -5622,7 +5622,7 @@ a.pill:active::after {
 .dashboard-service-card {
   display: grid;
   gap: 8px;
-  border-radius: 16px;
+  border-radius: 14px;
   padding: 16px;
   min-height: 130px;
   animation: dashboard-service-rise 460ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
@@ -5632,7 +5632,7 @@ a.pill:active::after {
   align-content: start;
   gap: 10px;
   min-height: 182px;
-  border: 1px solid #dbe3ef;
+  border: 1px solid #d8e1ec;
   background: #ffffff;
 }
 
@@ -5646,9 +5646,9 @@ a.pill:active::after {
 .service-icon-wrap {
   width: 74px;
   height: 74px;
-  border-radius: 18px;
-  border: 1px solid #dbe7ff;
-  background: linear-gradient(180deg, #f8faff, #eef4ff);
+  border-radius: 16px;
+  border: 1px solid #d8e1ec;
+  background: linear-gradient(180deg, #fbfcfe, #f3f7fb);
   color: #2563eb;
   display: inline-flex;
   align-items: center;
@@ -5663,7 +5663,7 @@ a.pill:active::after {
 
 .service-title {
   font-size: 23px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.016em;
   line-height: 1.12;
 }
@@ -5681,9 +5681,9 @@ a.pill:active::after {
 
 .dashboard-tx-cta-card {
   padding: 16px;
-  border-radius: 16px;
-  border: 1px solid #dbe7ff;
-  background: linear-gradient(180deg, #f9fbff, #f4f8ff);
+  border-radius: 14px;
+  border: 1px solid #d8e1ec;
+  background: linear-gradient(180deg, #fbfcfe, #f6f9fc);
 }
 
 .dashboard-history-link {
