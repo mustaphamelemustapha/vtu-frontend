@@ -24,12 +24,14 @@ export default function Login({ onAuth, modeRoute = "login" }) {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSuccess, setForgotSuccess] = useState(false);
   const [resetMode, setResetMode] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
   const { showToast } = useToast();
   const isPlainLoginView = mode === "login" && !forgotMode && !resetMode;
   const isRegisterView = mode === "register" && !forgotMode && !resetMode;
   const isResetRequestView = forgotMode && !resetMode;
-  const isResetSuccessView = forgotSuccess && !resetMode;
+  const isResetPageView = resetMode;
+  const isResetSuccessView = forgotSuccess || resetSuccess;
 
   const isTransientConnectionError = (value) => {
     const msg = String(value || "").toLowerCase();
@@ -89,23 +91,22 @@ export default function Login({ onAuth, modeRoute = "login" }) {
     setError("");
     setNotice("");
     setFieldErrors({});
+    setForgotSuccess(false);
+    setResetSuccess(false);
     if (modeRoute === "register") {
       setMode("register");
       setForgotMode(false);
-      setForgotSuccess(false);
       setResetMode(false);
       return;
     }
     if (modeRoute === "reset") {
       setMode("login");
       setForgotMode(true);
-      setForgotSuccess(false);
       setResetMode(false);
       return;
     }
     setMode("login");
     setForgotMode(false);
-    setForgotSuccess(false);
     setResetMode(false);
   }, [modeRoute]);
 
@@ -120,6 +121,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
         setMode("login");
         setResetMode(true);
         setForgotSuccess(false);
+        setResetSuccess(false);
         setResetForm({ token, password: "", confirm: "" });
         setNotice("Set a new password to finish resetting your account.");
       }
@@ -173,6 +175,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
+  const hasResetToken = Boolean(String(resetForm.token || "").trim());
 
   const submitForgot = async (e) => {
     e.preventDefault();
@@ -194,6 +197,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
         // Dev/test convenience: backend may return a token outside production.
         setResetForm({ token: res.reset_token, password: "", confirm: "" });
         setForgotSuccess(false);
+        setResetSuccess(false);
         setNotice("Reset token generated. Set a new password.");
         showToast("Reset token generated. Set a new password.", "success");
         setForgotMode(false);
@@ -239,11 +243,11 @@ export default function Login({ onAuth, modeRoute = "login" }) {
         method: "POST",
         body: JSON.stringify({ token: resetForm.token, new_password: resetForm.password })
       });
-      setNotice("Password reset successful. Please log in.");
-      showToast("Password reset successful. Please log in.", "success");
       setResetMode(false);
-      setMode("login");
-      setResetForm({ token: "", password: "", confirm: "" });
+      setForgotMode(false);
+      setResetSuccess(true);
+      setNotice("");
+      showToast("Password reset successful.", "success");
     } catch (err) {
       const next = presentError(err, "Password reset failed.");
       if (isTransientConnectionError(next)) {
@@ -348,9 +352,11 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           "auth-shell",
           isPlainLoginView ? "auth-shell-simple" : "",
           isResetRequestView ? "auth-shell-reset" : "",
+          isResetPageView ? "auth-shell-reset" : "",
+          isResetSuccessView ? "auth-shell-reset" : "",
         ].filter(Boolean).join(" ")}
       >
-        {!isResetRequestView && (
+        {!isResetRequestView && !isResetPageView && !isResetSuccessView && (
           <div className={`auth-left ${isPlainLoginView ? "auth-left-simple" : ""}`}>
             <div className={`auth-left-inner ${isPlainLoginView ? "auth-left-inner-simple" : ""}`}>
             {isPlainLoginView ? (
@@ -393,6 +399,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             "auth-right",
             isPlainLoginView ? "auth-right-simple" : "",
             isResetRequestView ? "auth-right-reset" : "",
+            isResetPageView ? "auth-right-reset" : "",
             isResetSuccessView ? "auth-right-reset" : "",
           ].filter(Boolean).join(" ")}
         >
@@ -430,21 +437,31 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   </defs>
                 </svg>
               </div>
-              <h1>Request sent successfully</h1>
+              <h1>{resetSuccess ? "Password reset successfully" : "Request sent successfully"}</h1>
               <p className="muted auth-reset-success-copy">
-                We have sent a confirmation email to <strong>{forgotEmail || "your email address"}</strong> if not found kindly check spam folder
+                {resetSuccess ? (
+                  <>
+                    Your new password has been saved. You can now sign in with your updated credentials.
+                  </>
+                ) : (
+                  <>
+                    We have sent a confirmation email to <strong>{forgotEmail || "your email address"}</strong> if not found kindly check spam folder
+                  </>
+                )}
               </p>
-              <p className="auth-reset-success-note">Please check your email.</p>
+              <p className="auth-reset-success-note">
+                {resetSuccess ? "Please go back and sign in." : "Please check your email."}
+              </p>
               <button className="primary auth-reset-back" type="button" onClick={() => navigate("/login")}>
                 Back
               </button>
             </div>
           ) : (
           <div
-          className={[
+            className={[
               "auth-card",
               isPlainLoginView ? "auth-card-simple" : "",
-              isResetRequestView ? "auth-card-reset" : "auth-card-compact",
+              (isResetRequestView || isResetPageView) ? "auth-card-reset" : "auth-card-compact",
               isResetSuccessView ? "auth-card-success" : "",
             ].filter(Boolean).join(" ")}
           >
@@ -468,16 +485,18 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </p>
         {resetMode ? (
           <form onSubmit={submitReset} className="auth-wide auth-form-compact auth-form-reset">
-            <div className="field">
-              <label>Reset token</label>
-              <input
-                placeholder="Paste reset token"
-                value={resetForm.token}
-                onChange={(e) => setResetForm({ ...resetForm, token: e.target.value })}
-                autoComplete="one-time-code"
-                required
-              />
-            </div>
+            {!hasResetToken && (
+              <div className="field">
+                <label>Reset token</label>
+                <input
+                  placeholder="Paste reset token"
+                  value={resetForm.token}
+                  onChange={(e) => setResetForm({ ...resetForm, token: e.target.value })}
+                  autoComplete="one-time-code"
+                  required
+                />
+              </div>
+            )}
             <div className="field">
               <label>New password</label>
               <div className="input-group">

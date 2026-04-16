@@ -867,7 +867,7 @@ export default function App() {
       {!authenticated ? (
         <Suspense fallback={<AppPageFallback />}>
           <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to={`/login${location.search}`} replace />} />
             <Route
               path="/admin-login"
               element={
@@ -905,7 +905,7 @@ export default function App() {
             />
             <Route
               path="*"
-              element={<Navigate to="/login" replace />}
+              element={<Navigate to={`/login${location.search}`} replace />}
             />
           </Routes>
         </Suspense>
