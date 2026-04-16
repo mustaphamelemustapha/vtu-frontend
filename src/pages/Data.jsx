@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch, getProfile } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
-import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
+import { buildReceiptShareText, shareReceiptCapture, shareReceiptCaptureOnWhatsApp } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
 import { queryKeys } from "../query/client.js";
 import Button from "../components/ui/Button.jsx";
@@ -30,7 +30,6 @@ export default function Data() {
   const [sort, setSort] = useState("recommended");
   const [loadingPlans, setLoadingPlans] = useState(true);
   const [refreshingPlans, setRefreshingPlans] = useState(false);
-  const [compare, setCompare] = useState([]);
   const [purchaseResult, setPurchaseResult] = useState(null);
   const [downloadBusy, setDownloadBusy] = useState(false);
   const [beneficiaries, setBeneficiaries] = useState([]);
@@ -38,7 +37,7 @@ export default function Data() {
   const [wallet, setWallet] = useState(null);
   const [plansError, setPlansError] = useState("");
   const [walletError, setWalletError] = useState("");
-  const [resultPrefs, setResultPrefs] = useState({ save_beneficiary: true, amigo_bolt: false });
+  const [resultPrefs, setResultPrefs] = useState({ save_beneficiary: true });
   const receiptCaptureRef = useRef(null);
   const purchaseLockRef = useRef(false);
   const queryClient = useQueryClient();
@@ -173,10 +172,9 @@ export default function Data() {
       const prefs = JSON.parse(localStorage.getItem(RESULT_PREFS_KEY) || "{}");
       setResultPrefs({
         save_beneficiary: prefs?.save_beneficiary !== false,
-        amigo_bolt: !!prefs?.amigo_bolt,
       });
     } catch {
-      setResultPrefs({ save_beneficiary: true, amigo_bolt: false });
+      setResultPrefs({ save_beneficiary: true });
     }
   }, []);
 
@@ -593,26 +591,41 @@ export default function Data() {
     });
 
   const shareReceipt = async () => {
-    if (!purchaseResult) return;
-    const result = await shareReceiptText({
+    if (!purchaseResult || !receiptCaptureRef.current) return;
+    const safeReference = String(purchaseResult.reference || "data").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const result = await shareReceiptCapture({
+      sourceNode: receiptCaptureRef.current,
       title: "AxisVTU Data Receipt",
       text: shareText(),
+      fileName: `axisvtu-data-receipt-${safeReference}.png`,
     });
     if (!result.ok) {
       showToast("Unable to share receipt.", "error");
       return;
     }
-    showToast(result.mode === "native" ? "Receipt shared." : "Opened WhatsApp share.", "success");
+    showToast(
+      result.mode === "native_file" ? "Receipt image shared." : "Receipt image prepared.",
+      "success"
+    );
   };
 
-  const shareReceiptWhatsApp = () => {
-    if (!purchaseResult) return;
-    const ok = shareReceiptOnWhatsApp(shareText());
-    if (!ok) {
+  const shareReceiptWhatsApp = async () => {
+    if (!purchaseResult || !receiptCaptureRef.current) return;
+    const safeReference = String(purchaseResult.reference || "data").replace(/[^a-zA-Z0-9_-]/g, "_");
+    const result = await shareReceiptCaptureOnWhatsApp({
+      sourceNode: receiptCaptureRef.current,
+      title: "AxisVTU Data Receipt",
+      text: shareText(),
+      fileName: `axisvtu-data-receipt-${safeReference}.png`,
+    });
+    if (!result.ok) {
       showToast("Unable to open WhatsApp.", "error");
       return;
     }
-    showToast("Opened WhatsApp share.", "success");
+    showToast(
+      result.mode === "native_file" ? "Choose WhatsApp to send the receipt image." : "Receipt image downloaded and WhatsApp opened.",
+      "success"
+    );
   };
 
   const filtered = plans.filter((plan) => {
@@ -632,23 +645,6 @@ export default function Data() {
     }
     return 0;
   });
-
-  const bestValue = sorted.reduce((best, plan) => {
-    const size = parseSize(plan.data_size);
-    if (!size || !plan.price) return best;
-    const ratio = Number(plan.price) / size;
-    if (!best || ratio < best.ratio) return { ratio, plan_code: plan.plan_code };
-    return best;
-  }, null);
-
-  const toggleCompare = (plan) => {
-    setCompare((prev) => {
-      const exists = prev.find((p) => p.plan_code === plan.plan_code);
-      if (exists) return prev.filter((p) => p.plan_code !== plan.plan_code);
-      if (prev.length>= 2) return prev;
-      return [...prev, plan];
-    });
-  };
 
   const saveCurrentBeneficiary = () => {
     const value = String(phone || "").trim();
@@ -741,7 +737,7 @@ export default function Data() {
           <div className="label">Data Purchase</div>
           <div className="hero-value">Smart Plan Checkout</div>
           <div className="muted">
-            Select network, compare value per GB, and complete purchases with instant receipts.
+            Select network, choose a plan, and complete purchases with instant receipts.
           </div>
         </div>
         <div className="hero-actions">
@@ -903,62 +899,13 @@ export default function Data() {
                 <span className="price">₦ {plan.price}</span>
               </div>
               <div className="plan-foot">
-                <span className="muted">
-                  {(() => {
-                    const sizeGb = parseSize(plan.data_size);
-                    if (!sizeGb) return "—";
-                    const rate = Number(plan.price) / sizeGb;
-                    return `₦ ${rate.toFixed(0)} / GB`;
-                  })()}
-                </span>
                 <span className="pill">Tap to buy</span>
-              </div>
-              {bestValue && bestValue.plan_code === plan.plan_code && (
-                <div className="best-badge">Best Value</div>
-              )}
-              <div className="compare-row">
-                <span
-                  role="button"
-                  tabIndex={0}
-                  className={`pill ${compare.find((p) => p.plan_code === plan.plan_code) ? "active" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleCompare(plan);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      toggleCompare(plan);
-                    }
-                  }}>
-                  Compare
-                </span>
               </div>
             </button>
           ))}
         </div>
         {message && <div className="notice">{message}</div>}
       </section>
-
-      {compare.length === 2 && (
-        <Card className="compare-card data-compare-card">
-          <div className="section-head">
-            <h3>Plan Comparison</h3>
-            <Button variant="ghost" onClick={() => setCompare([])}>Clear</Button>
-          </div>
-          <div className="compare-grid">
-            {compare.map((plan) => (
-              <div key={plan.plan_code} className="compare-item">
-                <div className="plan-name">{plan.plan_name}</div>
-                <div className="muted">{plan.network?.toUpperCase()}</div>
-                <div className="value">₦ {plan.price}</div>
-                <div className="muted">{plan.data_size} • {plan.validity}</div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
 
       {selected && (
         <div className="modal-backdrop">
@@ -1143,20 +1090,6 @@ export default function Data() {
                   className={`toggle-switch ${resultPrefs.save_beneficiary ? "on" : ""}`}
                   onClick={() => updateResultPref("save_beneficiary", !resultPrefs.save_beneficiary)}
                   aria-label="Toggle beneficiaries auto save">
-                  <span />
-                </button>
-              </div>
-
-              <div className="data-result-switch-row">
-                <div>
-                  <div className="data-result-switch-title">Fast Route</div>
-                  <div className="muted">Fast route preference (coming soon)</div>
-                </div>
-                <button
-                  type="button"
-                  className={`toggle-switch ${resultPrefs.amigo_bolt ? "on" : ""}`}
-                  onClick={() => updateResultPref("amigo_bolt", !resultPrefs.amigo_bolt)}
-                  aria-label="Toggle fast route">
                   <span />
                 </button>
               </div>

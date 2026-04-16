@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { loadBeneficiaries, removeBeneficiary, saveBeneficiary } from "../services/beneficiaries";
-import { buildReceiptShareText, shareReceiptOnWhatsApp, shareReceiptText } from "../services/receiptShare";
+import { buildReceiptShareText, shareReceiptCapture, shareReceiptCaptureOnWhatsApp } from "../services/receiptShare";
 import { useToast } from "../context/toast.jsx";
 import Button from "../components/ui/Button.jsx";
 
@@ -247,25 +247,70 @@ export default function Electricity() {
 
   const shareReceipt = async () => {
     if (!purchaseResult) return;
-    const result = await shareReceiptText({
-      title: "AxisVTU Electricity Receipt",
-      text: shareText(),
-    });
-    if (!result.ok) {
+    setRenderReceiptSheet(true);
+    try {
+      await new Promise((resolve) => {
+        if (typeof window !== "undefined" && window.requestAnimationFrame) {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+        } else {
+          setTimeout(resolve, 16);
+        }
+      });
+      if (!receiptCaptureRef.current) throw new Error("receipt_capture_unavailable");
+      const safeReference = String(purchaseResult.reference || "electricity").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const result = await shareReceiptCapture({
+        sourceNode: receiptCaptureRef.current,
+        title: "AxisVTU Electricity Receipt",
+        text: shareText(),
+        fileName: `axisvtu-electricity-receipt-${safeReference}.png`,
+      });
+      if (!result.ok) {
+        showToast("Unable to share receipt.", "error");
+        return;
+      }
+      showToast(
+        result.mode === "native_file" ? "Receipt image shared." : "Receipt image prepared.",
+        "success"
+      );
+    } catch {
       showToast("Unable to share receipt.", "error");
-      return;
+    } finally {
+      setRenderReceiptSheet(false);
     }
-    showToast(result.mode === "native" ? "Receipt shared." : "Opened WhatsApp share.", "success");
   };
 
-  const shareReceiptWhatsApp = () => {
+  const shareReceiptWhatsApp = async () => {
     if (!purchaseResult) return;
-    const ok = shareReceiptOnWhatsApp(shareText());
-    if (!ok) {
+    setRenderReceiptSheet(true);
+    try {
+      await new Promise((resolve) => {
+        if (typeof window !== "undefined" && window.requestAnimationFrame) {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+        } else {
+          setTimeout(resolve, 16);
+        }
+      });
+      if (!receiptCaptureRef.current) throw new Error("receipt_capture_unavailable");
+      const safeReference = String(purchaseResult.reference || "electricity").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const result = await shareReceiptCaptureOnWhatsApp({
+        sourceNode: receiptCaptureRef.current,
+        title: "AxisVTU Electricity Receipt",
+        text: shareText(),
+        fileName: `axisvtu-electricity-receipt-${safeReference}.png`,
+      });
+      if (!result.ok) {
+        showToast("Unable to open WhatsApp.", "error");
+        return;
+      }
+      showToast(
+        result.mode === "native_file" ? "Choose WhatsApp to send the receipt image." : "Receipt image downloaded and WhatsApp opened.",
+        "success"
+      );
+    } catch {
       showToast("Unable to open WhatsApp.", "error");
-      return;
+    } finally {
+      setRenderReceiptSheet(false);
     }
-    showToast("Opened WhatsApp share.", "success");
   };
 
   const saveCurrentBeneficiary = () => {
