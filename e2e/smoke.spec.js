@@ -362,7 +362,7 @@ test("wallet funding smoke", async ({ page }) => {
 
   await page.getByTestId("wallet-generate-account").click();
   await expect(page.getByText("Add money via mobile or internet banking")).toBeVisible();
-  await expect(page.getByText("6666227606")).toBeVisible();
+  await expect(page.getByRole("dialog").getByText("6666227606").first()).toBeVisible();
 });
 
 test("data purchase smoke", async ({ page }) => {
@@ -379,7 +379,7 @@ test("data purchase smoke", async ({ page }) => {
   await page.getByTestId("data-result-history").click();
 
   await expect(page).toHaveURL(/\/app\/transactions$/);
-  await expect(page.getByText(/DATA_E2E_/)).toBeVisible();
+  await expect(page.getByText(/DATA_E2E_/).first()).toBeVisible();
 });
 
 test("airtime purchase smoke", async ({ page }) => {
