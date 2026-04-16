@@ -724,6 +724,8 @@ export default function Data() {
     return 0;
   });
 
+  const displayNetwork = network === "all" ? "All Networks" : String(network || "").toUpperCase();
+
   const formatAmount = (value) => {
     const num = Number(value ?? 0);
     if (Number.isNaN(num)) return String(value ?? "0.00");
@@ -773,8 +775,41 @@ export default function Data() {
   return (
     <div className="page data-page">
       <section className="section">
+        <Card className="service-hero service-hero-data data-hero-card">
+          <div className="data-hero-copy">
+            <div className="eyebrow">Data Purchase</div>
+            <h2>Buy Data</h2>
+            <p className="muted">
+              Choose a network, compare plans, and complete purchases with a clean receipt flow.
+            </p>
+          </div>
+          <div className="data-hero-metrics" aria-label="Data purchase summary">
+            <div className="data-hero-metric">
+              <span>Wallet Balance</span>
+              <strong>₦ {formatAmount(wallet?.balance || 0)}</strong>
+            </div>
+            <div className="data-hero-metric">
+              <span>Plans Available</span>
+              <strong>{sorted.length}</strong>
+            </div>
+            <div className="data-hero-metric">
+              <span>Selected Network</span>
+              <strong>{displayNetwork}</strong>
+            </div>
+          </div>
+        </Card>
+      </section>
+
+      <section className="section">
         <Card className="data-recipient-card">
-          <h3>Recipient</h3>
+          <div className="data-recipient-head">
+            <div>
+              <div className="label">Recipient</div>
+              <h3>Send to the right line</h3>
+              <div className="muted">Enter the number, choose the network, and continue.</div>
+            </div>
+            <span className="pill data-recipient-pill">Quick Buy</span>
+          </div>
           <div className="form-grid">
             <label>
               Phone Number
@@ -807,9 +842,9 @@ export default function Data() {
       <section className="section">
         <div className="section-head data-section-head">
           <h3>Data Plans</h3>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div className="muted">{sorted.length} plans</div>
-            <Button variant="ghost" type="button"
+          <div className="data-section-actions">
+            <span className="pill data-plan-count">{sorted.length} plans</span>
+            <Button variant="ghost" className="data-refresh-btn" type="button"
               onClick={() => loadPlans({ forceRefresh: true })}
               disabled={refreshingPlans}>
               {refreshingPlans ? "Refreshing..." : "Refresh"}
@@ -822,6 +857,16 @@ export default function Data() {
           </div>
         )}
         <Card className="data-catalog-toolbar">
+        <div className="data-catalog-toolbar-head">
+          <div>
+            <div className="label">Filters</div>
+            <div className="data-catalog-title">Narrow down to the bundle that fits.</div>
+          </div>
+          <div className="data-catalog-toolbar-meta">
+            <span className="pill">{displayNetwork}</span>
+            <span className="pill">{sort === "recommended" ? "Recommended" : "Sorted"}</span>
+          </div>
+        </div>
         <div className="tab-row">
           {[
             { id: "all", label: "All" },
@@ -880,6 +925,9 @@ export default function Data() {
               <div className="plan-name">{plan.plan_name}</div>
               <div className="plan-meta">
                 <span>Validity {plan.validity}</span>
+              </div>
+              <div className="plan-price-row">
+                <span className="label">Price</span>
                 <span className="price">₦ {plan.price}</span>
               </div>
               <div className="plan-foot">

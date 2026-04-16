@@ -1473,6 +1473,176 @@ a:focus-visible {
     var(--panel);
 }
 
+.data-page .data-hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(180px, 0.85fr);
+  gap: 16px;
+  padding: 16px;
+  border-radius: 20px;
+  align-items: stretch;
+}
+
+.data-page .data-hero-copy {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.data-page .data-hero-copy h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+  font-size: clamp(24px, 4vw, 34px);
+  line-height: 1.08;
+}
+
+.data-page .data-hero-copy .muted {
+  max-width: 34ch;
+}
+
+.data-page .data-hero-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.data-page .data-hero-metric {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(216, 225, 236, 0.92);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.data-page .data-hero-metric span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.data-page .data-hero-metric strong {
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+.data-page .data-recipient-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.data-page .data-recipient-head h3 {
+  margin: 4px 0 4px;
+  font-size: clamp(18px, 4vw, 22px);
+}
+
+.data-page .data-recipient-pill {
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.data-page .data-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.data-page .data-plan-count {
+  font-weight: 700;
+}
+
+.data-page .data-refresh-btn {
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.data-page .data-catalog-toolbar {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 18px;
+}
+
+.data-page .data-catalog-toolbar-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.data-page .data-catalog-title {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.data-page .data-catalog-toolbar-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.data-page .plan-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.data-page .plan-cap {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.data-page .plan-name {
+  font-size: 15px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+.data-page .plan-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.data-page .plan-price-row .label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.data-page .plan-price-row .price {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.data-page .plan-foot {
+  margin-top: 6px;
+}
+
+.data-page .plan-foot .pill {
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .data-page .data-recipient-card,
 .airtime-page .airtime-form-card,
 .transactions-page .tx-live-card {
@@ -1504,6 +1674,9 @@ a:focus-visible {
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.45), transparent 50%),
     var(--panel);
+  display: grid;
+  gap: 8px;
+  align-content: start;
 }
 
 .data-page .data-plan-card .plan-foot .pill {
@@ -2559,6 +2732,7 @@ a:focus-visible {
 }
 
 .dark .service-hero,
+.dark .data-page .data-hero-card,
 .dark .data-page .data-recipient-card,
 .dark .airtime-page .airtime-form-card,
 .dark .transactions-page .tx-live-card,
@@ -2568,6 +2742,30 @@ a:focus-visible {
 .dark .airtime-page .airtime-success-card,
 .dark .transactions-page .tx-list-item {
   border-color: #2a3547;
+}
+
+.dark .data-page .data-hero-card {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(56, 189, 248, 0.12), transparent 52%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(17, 24, 39, 0.94));
+}
+
+.dark .data-page .data-hero-metric {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: #2a3547;
+  box-shadow: none;
+}
+
+.dark .data-page .data-hero-metric span {
+  color: #c4cedd;
+}
+
+.dark .data-page .data-hero-metric strong {
+  color: #f5f7fb;
+}
+
+.dark .data-page .data-catalog-title {
+  color: #f5f7fb;
 }
 
 .dark .auth-right {
@@ -6075,7 +6273,7 @@ a.pill:active::after {
   }
 
   .data-page .plan-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
@@ -6230,7 +6428,7 @@ a.pill:active::after {
 
 @media (max-width: 420px) {
   .data-page .plan-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -6367,13 +6565,65 @@ a.pill:active::after {
     border-radius: 12px;
   }
 
+  .data-page .data-hero-card {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 10px;
+    border-radius: 16px;
+  }
+
+  .data-page .data-hero-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .data-page .data-hero-metric {
+    padding: 10px 10px;
+    border-radius: 12px;
+    gap: 2px;
+  }
+
+  .data-page .data-hero-metric strong {
+    font-size: 15px;
+  }
+
+  .data-page .data-recipient-head {
+    margin-bottom: 10px;
+  }
+
+  .data-page .data-recipient-head h3 {
+    font-size: 18px;
+  }
+
+  .data-page .data-catalog-toolbar-head {
+    gap: 10px;
+  }
+
+  .data-page .data-catalog-title {
+    font-size: 14px;
+  }
+
+  .data-page .data-catalog-toolbar-meta {
+    gap: 6px;
+  }
+
+  .data-page .data-section-actions {
+    gap: 6px;
+  }
+
+  .data-page .data-refresh-btn {
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
   .data-page .data-recipient-card .form-grid {
     gap: 8px;
   }
 
   .data-page .data-plan-card {
-    padding: 9px;
-    border-radius: 11px;
+    padding: 11px;
+    border-radius: 13px;
+    min-height: 166px;
   }
 
   .data-page .data-plan-card .plan-cap {
@@ -6381,7 +6631,7 @@ a.pill:active::after {
   }
 
   .data-page .data-plan-card .plan-name {
-    font-size: 12.5px;
+    font-size: 13px;
     line-height: 1.25;
     margin: 7px 0 3px;
     display: -webkit-box;
@@ -6394,6 +6644,14 @@ a.pill:active::after {
     font-size: 10.5px;
     gap: 5px;
     flex-wrap: wrap;
+  }
+
+  .data-page .data-plan-card .plan-price-row {
+    margin-top: 2px;
+  }
+
+  .data-page .data-plan-card .plan-price-row .price {
+    font-size: 16px;
   }
 
   .data-page .data-plan-card .plan-foot {
@@ -6464,6 +6722,11 @@ a.pill:active::after {
 }
 
 @media (max-width: 560px) {
+  .data-page .plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
   .dashboard-page .dashboard-services-grid {
     gap: 8px;
   }
@@ -6519,7 +6782,7 @@ a.pill:active::after {
 
 @media (max-width: 420px) {
   .data-page .plan-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 
