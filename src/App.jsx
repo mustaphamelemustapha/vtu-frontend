@@ -218,6 +218,14 @@ function _deriveDisplayName(profile) {
   return "User";
 }
 
+function _profileScope(profile) {
+  const email = String(profile?.email || "").trim().toLowerCase();
+  if (email) return email;
+  const fullName = String(profile?.full_name || "").trim().toLowerCase();
+  if (fullName) return `name:${fullName}`;
+  return "guest";
+}
+
 function AppPageFallback() {
   return (
     <section className="section">
@@ -246,6 +254,7 @@ export default function App() {
   const [notifItems, setNotifItems] = useState(() => _loadNotifItems());
   const [notifSyncAt, setNotifSyncAt] = useState(null);
   const [notifSyncing, setNotifSyncing] = useState(false);
+  const authScopeRef = useRef(null);
 
   useEffect(() => {
     if (authenticated) {
@@ -457,6 +466,14 @@ export default function App() {
   }, [authenticated]);
 
   useEffect(() => {
+    const nextScope = authenticated ? _profileScope(profileState) : null;
+    if (authScopeRef.current !== nextScope) {
+      queryClient.clear();
+      authScopeRef.current = nextScope;
+    }
+  }, [authenticated, profileState?.email, profileState?.full_name, queryClient]);
+
+  useEffect(() => {
     if (!authenticated) return undefined;
 
     const run = () => {
@@ -504,6 +521,7 @@ export default function App() {
     } catch (err) {
       if (err?.code === "AUTH_EXPIRED") {
         clearToken();
+        queryClient.clear();
         setAuthenticated(false);
         setProfileState({});
       }
@@ -705,6 +723,8 @@ export default function App() {
 
   const handleLogout = () => {
     clearToken();
+    queryClient.clear();
+    authScopeRef.current = null;
     localStorage.removeItem(NOTIF_ITEMS_KEY);
     localStorage.removeItem(NOTIF_SNAPSHOT_KEY);
     setNotifItems([]);
@@ -715,6 +735,16 @@ export default function App() {
     setNotificationsOpen(false);
     // Ensure we exit any deep route immediately (e.g. /profile) when logging out.
     navigate("/", { replace: true });
+  };
+
+  const handleAuthSuccess = (nextProfile) => {
+    queryClient.clear();
+    authScopeRef.current = _profileScope(nextProfile);
+    if (nextProfile) {
+      setProfile(nextProfile);
+      setProfileState(nextProfile);
+    }
+    setAuthenticated(true);
   };
 
   return (
@@ -728,13 +758,7 @@ export default function App() {
               path="/admin-login"
               element={
                 <AdminLogin
-                  onAuth={(nextProfile) => {
-                    if (nextProfile) {
-                      setProfile(nextProfile);
-                      setProfileState(nextProfile);
-                    }
-                    setAuthenticated(true);
-                  }}
+                  onAuth={handleAuthSuccess}
                 />
               }
             />
@@ -743,13 +767,7 @@ export default function App() {
               element={
                 <Login
                   modeRoute="login"
-                  onAuth={(nextProfile) => {
-                    if (nextProfile) {
-                      setProfile(nextProfile);
-                      setProfileState(nextProfile);
-                    }
-                    setAuthenticated(true);
-                  }}
+                  onAuth={handleAuthSuccess}
                 />
               }
             />
@@ -758,13 +776,7 @@ export default function App() {
               element={
                 <Login
                   modeRoute="register"
-                  onAuth={(nextProfile) => {
-                    if (nextProfile) {
-                      setProfile(nextProfile);
-                      setProfileState(nextProfile);
-                    }
-                    setAuthenticated(true);
-                  }}
+                  onAuth={handleAuthSuccess}
                 />
               }
             />
@@ -773,13 +785,7 @@ export default function App() {
               element={
                 <Login
                   modeRoute="reset"
-                  onAuth={(nextProfile) => {
-                    if (nextProfile) {
-                      setProfile(nextProfile);
-                      setProfileState(nextProfile);
-                    }
-                    setAuthenticated(true);
-                  }}
+                  onAuth={handleAuthSuccess}
                 />
               }
             />
