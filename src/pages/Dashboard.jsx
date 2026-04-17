@@ -13,6 +13,11 @@ const formatMoney = (value) => {
   return num.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+const parseMoney = (value) => {
+  const num = Number(String(value ?? 0).replace(/,/g, "").trim());
+  return Number.isFinite(num) ? num : 0;
+};
+
 function ServiceIcon({ type }) {
   if (type === "data") {
     return (
@@ -131,12 +136,16 @@ export default function Dashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [lastRecipient, setLastRecipient] = useState(null);
+  const [walletAnimSeq, setWalletAnimSeq] = useState(0);
+  const [animatedWalletBalance, setAnimatedWalletBalance] = useState(parseMoney(cached.wallet?.balance || 0));
+  const [balanceCounting, setBalanceCounting] = useState(false);
   const retryTimerRef = useRef(null);
   const mountedRef = useRef(true);
   const walletRef = useRef(cached.wallet);
   const txsRef = useRef(cached.txs);
   const announcementsRef = useRef(cached.announcements);
   const fundingAccountsRef = useRef(cached.fundingAccounts);
+  const balanceDisplayRef = useRef(parseMoney(cached.wallet?.balance || 0));
 
   useEffect(() => {
     walletRef.current = wallet;
@@ -295,8 +304,49 @@ export default function Dashboard() {
     if (mountedRef.current) {
       setLoadingWallet(false);
       setIsRefreshing(false);
+      setWalletAnimSeq((value) => value + 1);
     }
   }, [authScope, cacheKey, queryClient, showToast]);
+
+  useEffect(() => {
+    const target = parseMoney(wallet?.balance || 0);
+    let start = parseMoney(balanceDisplayRef.current);
+    if (start === target && target > 0) {
+      start = Math.max(0, target * 0.88);
+    }
+    if (!mountedRef.current) return undefined;
+    if (start === target) {
+      setAnimatedWalletBalance(target);
+      balanceDisplayRef.current = target;
+      setBalanceCounting(false);
+      return undefined;
+    }
+
+    setBalanceCounting(true);
+    const duration = 680;
+    const startedAt = performance.now();
+    let frame = 0;
+
+    const tick = (now) => {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const next = start + (target - start) * eased;
+      balanceDisplayRef.current = next;
+      setAnimatedWalletBalance(next);
+      if (progress < 1) {
+        frame = window.requestAnimationFrame(tick);
+      } else {
+        balanceDisplayRef.current = target;
+        setAnimatedWalletBalance(target);
+        setBalanceCounting(false);
+      }
+    };
+
+    frame = window.requestAnimationFrame(tick);
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [wallet?.balance, walletAnimSeq]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -401,7 +451,7 @@ export default function Dashboard() {
   }, [profile?.full_name]);
 
   const showFundingSkeleton = loadingWallet && !primaryFundingAccount;
-  const walletBalance = formatMoney(wallet?.balance || 0);
+  const walletBalance = formatMoney(animatedWalletBalance);
 
   return (
     <div className="page dashboard-page" data-testid="dashboard-page">
@@ -467,7 +517,7 @@ export default function Dashboard() {
                       <span className="label">Wallet Balance</span>
                       <span className="dashboard-wallet-mini-badge">Live</span>
                     </div>
-                    <div className="dashboard-wallet-mini-value">₦ {walletBalance}</div>
+                    <div className={`dashboard-wallet-mini-value ${balanceCounting ? "balance-counting" : ""}`}>₦ {walletBalance}</div>
                     <div className="dashboard-wallet-mini-note">Credited automatically after transfer confirmation.</div>
                   </div>
                 </div>
