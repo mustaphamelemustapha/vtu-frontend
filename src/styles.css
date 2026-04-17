@@ -428,6 +428,51 @@ a:focus-visible {
   position: relative;
 }
 
+.theme-toggle-btn {
+  width: auto;
+  min-width: 98px;
+  padding: 0 14px 0 11px;
+  gap: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.09), rgba(37, 99, 235, 0.05));
+  border-color: color-mix(in srgb, #a9bce0 72%, transparent);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    box-shadow 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.theme-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.theme-toggle-btn.active {
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.14), rgba(37, 99, 235, 0.08));
+  border-color: color-mix(in srgb, #7da8ff 74%, transparent);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.14);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.theme-toggle-btn.active svg {
+  transform: rotate(14deg) scale(1.04);
+}
+
+.theme-toggle-label {
+  display: inline-flex;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+}
+
 .mobile-menu-btn {
   display: none;
 }
