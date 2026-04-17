@@ -974,17 +974,6 @@ export default function App() {
           <main className="main">
             <header className={`topbar ${isDashboardRoute ? "topbar-dashboard" : ""}`}>
               <div className="top-left">
-                {isDashboardRoute ? (
-                  <div className="page-head dashboard-head">
-                    <div className="hello">Dashboard</div>
-                  </div>
-                ) : (
-                  <div className="page-head page-head-simple">
-                    <div className="hello">{pageTitle}</div>
-                  </div>
-                )}
-              </div>
-              <div className="top-actions">
                 <button
                   className="icon-btn mobile-menu-btn"
                   aria-label="Open menu"
@@ -997,6 +986,17 @@ export default function App() {
                     <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
                   </svg>
                 </button>
+                {isDashboardRoute ? (
+                  <div className="page-head dashboard-head">
+                    <div className="hello">Dashboard</div>
+                  </div>
+                ) : (
+                  <div className="page-head page-head-simple">
+                    <div className="hello">{pageTitle}</div>
+                  </div>
+                )}
+              </div>
+              <div className="top-actions">
                 <div className="notif-wrap">
                   <button
                     className="icon-btn"

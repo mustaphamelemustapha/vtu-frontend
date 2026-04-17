@@ -2715,8 +2715,8 @@ a:focus-visible {
 }
 
 .dark .top-actions {
-  border-color: #2a3547;
-  background: rgba(18, 24, 38, 0.92);
+  border-color: #2f3b51;
+  background: rgba(16, 22, 34, 0.96);
 }
 
 .dark .primary {
@@ -7228,14 +7228,31 @@ a.pill:active::after {
 
 /* Phase hardening: dark-mode contrast lock across dashboard/wallet/buy/profile. */
 .dark .icon-btn {
-  background: #1a2335;
-  border-color: #36445d;
+  background: #1b2436;
+  border-color: #3a4964;
   color: #edf3ff;
 }
 
 .dark .icon-btn:hover {
-  background: #212c42;
-  border-color: #496188;
+  background: #212b3f;
+  border-color: #516686;
+}
+
+.dark .theme-toggle-btn {
+  background: linear-gradient(180deg, rgba(73, 114, 255, 0.2), rgba(37, 99, 235, 0.1));
+  border-color: rgba(129, 163, 255, 0.42);
+  color: #f4f7ff;
+  box-shadow: 0 10px 22px rgba(12, 18, 30, 0.32);
+}
+
+.dark .theme-toggle-btn.active {
+  background: linear-gradient(180deg, rgba(73, 114, 255, 0.28), rgba(37, 99, 235, 0.16));
+  border-color: rgba(145, 176, 255, 0.55);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+}
+
+.dark .theme-toggle-label {
+  color: #f4f7ff;
 }
 
 .dark .muted,
