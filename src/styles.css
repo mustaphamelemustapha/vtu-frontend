@@ -5515,8 +5515,8 @@ a.pill:active::after {
 }
 
 .auth-shell-simple {
-  width: min(1220px, 100%);
-  grid-template-columns: 0.9fr 1.1fr;
+  width: min(1180px, 100%);
+  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
   border-radius: 18px;
   border: 1px solid color-mix(in srgb, var(--stroke) 88%, transparent);
   background: color-mix(in srgb, var(--panel) 96%, #f7f9fd 4%);
@@ -5529,7 +5529,7 @@ a.pill:active::after {
   background: linear-gradient(180deg, #f6f8fb 0%, #f2f5fa 100%);
   display: flex;
   align-items: stretch;
-  padding: 30px;
+  padding: 34px;
 }
 
 .auth-left-inner-simple {
@@ -5573,16 +5573,19 @@ a.pill:active::after {
 }
 
 .auth-right-simple {
-  padding: 34px 48px;
+  padding: 42px clamp(28px, 4vw, 60px);
   display: grid;
   align-content: center;
-  justify-items: end;
+  justify-items: center;
   background: #f8fafd;
 }
 
 .auth-quick-link {
-  margin-bottom: 24px;
-  text-align: right;
+  width: min(480px, 100%);
+  margin: 0 auto 22px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
   font-size: 13px;
   color: var(--muted);
 }
@@ -5595,7 +5598,7 @@ a.pill:active::after {
 }
 
 .auth-card-simple {
-  width: min(460px, 100%);
+  width: min(480px, 100%);
   border-radius: 12px;
   background: transparent;
   border: none;
@@ -5618,7 +5621,7 @@ a.pill:active::after {
 }
 
 .auth-card-compact {
-  width: min(460px, 100%);
+  width: min(480px, 100%);
   border-radius: 14px;
   border: 1px solid color-mix(in srgb, var(--stroke) 86%, transparent);
   background: color-mix(in srgb, var(--panel) 94%, #f8fbff 6%);
@@ -5652,14 +5655,14 @@ a.pill:active::after {
 }
 
 .auth-shell-reset {
-  width: min(920px, 100%);
+  width: min(980px, 100%);
   grid-template-columns: 1fr;
   background: color-mix(in srgb, var(--panel) 96%, #f7f9fd 4%);
 }
 
 .auth-right-reset {
   min-height: 620px;
-  padding: 42px 36px;
+  padding: 44px clamp(24px, 4vw, 56px);
   justify-items: center;
   align-content: center;
   background:
@@ -5668,7 +5671,7 @@ a.pill:active::after {
 }
 
 .auth-card-reset {
-  width: min(420px, 100%);
+  width: min(480px, 100%);
   border: none;
   box-shadow: none;
   background: transparent;
@@ -5676,7 +5679,7 @@ a.pill:active::after {
 }
 
 .auth-card-success {
-  width: min(500px, 100%);
+  width: min(520px, 100%);
   border: none;
   box-shadow: none;
   background: transparent;
