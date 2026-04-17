@@ -4032,6 +4032,7 @@ textarea {
   background:
     radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.06), transparent 44%),
     linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  overflow-x: clip;
 }
 
 .auth-shell {
@@ -6153,7 +6154,7 @@ a.pill:active::after {
 @media (max-width: 980px) {
   .auth-shell-simple {
     grid-template-columns: 1fr;
-    width: min(560px, 100%);
+    width: min(560px, calc(100vw - 16px));
   }
 
   .auth-left-simple {
@@ -6165,18 +6166,18 @@ a.pill:active::after {
   }
 
   .auth-right-simple {
-    padding: 22px 20px;
+    padding: 20px 16px;
     justify-items: stretch;
   }
 
   .auth-shell-reset {
-    width: min(560px, 100%);
+    width: min(560px, calc(100vw - 16px));
     grid-template-columns: 1fr;
   }
 
   .auth-right-reset {
     min-height: 0;
-    padding: 22px 20px;
+    padding: 20px 16px;
   }
 
   .auth-card-simple {
@@ -6203,8 +6204,43 @@ a.pill:active::after {
   }
 
   .auth-quick-link {
+    width: 100%;
     margin-bottom: 16px;
+    justify-content: flex-start;
+    flex-wrap: wrap;
     text-align: left;
+    line-height: 1.35;
+    padding-right: 2px;
+  }
+}
+
+@media (max-width: 560px) {
+  .auth {
+    padding: 12px;
+  }
+
+  .auth-shell-simple,
+  .auth-shell-reset {
+    width: calc(100vw - 12px);
+  }
+
+  .auth-card-simple,
+  .auth-card-reset,
+  .auth-card-compact {
+    width: 100%;
+  }
+
+  .auth-card-compact,
+  .auth-card-simple {
+    padding-inline: 0;
+  }
+
+  .auth-quick-link {
+    font-size: 12px;
+  }
+
+  .auth-quick-link-btn {
+    font-size: 12px;
   }
 }
 
