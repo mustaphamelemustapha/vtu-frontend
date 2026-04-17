@@ -3520,10 +3520,13 @@ body:has(.onboard-overlay) {
 .funding-account-card {
   border: 1px solid var(--stroke);
   border-radius: 14px;
-  padding: 14px;
-  background: var(--panel-light);
+  padding: 16px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.08), transparent 32%),
+    linear-gradient(180deg, #ffffff, #f7fbff);
   display: grid;
-  gap: 8px;
+  gap: 10px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
 
 .funding-account-top {
@@ -3535,9 +3538,64 @@ body:has(.onboard-overlay) {
 
 .funding-account-number {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: clamp(22px, 6vw, 30px);
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
+  line-height: 1.05;
+  word-break: break-all;
+}
+
+.funding-account-number-wrap {
+  display: grid;
+  gap: 4px;
+}
+
+.funding-account-number-note {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7b93;
+}
+
+.dashboard-wallet-mini {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.05), rgba(37, 99, 235, 0.02));
+}
+
+.dashboard-wallet-mini-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dashboard-wallet-mini-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+
+.dashboard-wallet-mini-value {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 7vw, 34px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-wallet-mini-note {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #6b7b93;
 }
 
 .dashboard-announcement {
@@ -6316,6 +6374,26 @@ a.pill:active::after {
   .dashboard-page .dashboard-service-card.service-primary-card .service-icon-wrap svg {
     width: 30px;
     height: 30px;
+  }
+
+  .dashboard-page .funding-account-card {
+    padding: 14px;
+    gap: 8px;
+    border-radius: 16px;
+  }
+
+  .dashboard-page .funding-account-number {
+    font-size: clamp(24px, 8vw, 34px);
+    letter-spacing: 0.1em;
+  }
+
+  .dashboard-page .dashboard-wallet-mini {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .dashboard-page .dashboard-wallet-mini-value {
+    font-size: clamp(26px, 8.5vw, 36px);
   }
 
   .dashboard-page .dashboard-service-card .label {

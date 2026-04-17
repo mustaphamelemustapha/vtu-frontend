@@ -8,6 +8,11 @@ import Button from "../components/ui/Button.jsx";
 
 const DASHBOARD_CACHE_KEY = "axisvtu_dashboard_cache_v1";
 
+const formatMoney = (value) => {
+  const num = Number(value || 0);
+  return num.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 function ServiceIcon({ type }) {
   if (type === "data") {
     return (
@@ -396,6 +401,7 @@ export default function Dashboard() {
   }, [profile?.full_name]);
 
   const showFundingSkeleton = loadingWallet && !primaryFundingAccount;
+  const walletBalance = formatMoney(wallet?.balance || 0);
 
   return (
     <div className="page dashboard-page" data-testid="dashboard-page">
@@ -451,8 +457,19 @@ export default function Dashboard() {
                       Copy
                     </Button>
                   </div>
-                  <div className="funding-account-number">{primaryFundingAccount.account_number}</div>
+                  <div className="funding-account-number-wrap">
+                    <div className="funding-account-number">{primaryFundingAccount.account_number}</div>
+                    <div className="funding-account-number-note">Tap copy to share your funding account</div>
+                  </div>
                   <div className="muted">{primaryFundingAccount.account_name || "AxisVTU Wallet"}</div>
+                  <div className="dashboard-wallet-mini">
+                    <div className="dashboard-wallet-mini-head">
+                      <span className="label">Wallet Balance</span>
+                      <span className="dashboard-wallet-mini-badge">Live</span>
+                    </div>
+                    <div className="dashboard-wallet-mini-value">₦ {walletBalance}</div>
+                    <div className="dashboard-wallet-mini-note">Credited automatically after transfer confirmation.</div>
+                  </div>
                 </div>
               )}
             </div>
