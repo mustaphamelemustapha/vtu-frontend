@@ -974,15 +974,25 @@ export default function App() {
           <main className="main">
             <header className={`topbar ${isDashboardRoute ? "topbar-dashboard" : ""}`}>
               <div className="top-left">
+                <button
+                  className={`icon-btn theme-toggle-btn ${darkMode ? "active" : ""}`}
+                  aria-label="Toggle theme"
+                  onClick={toggleTheme}
+                  type="button"
+                >
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M12 6.5v2.2M12 15.3v2.2M6.5 12h2.2M15.3 12h2.2M7.9 7.9l1.6 1.6M14.5 14.5l1.6 1.6M7.9 16.1l1.6-1.6M14.5 9.5l1.6-1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <span className="theme-toggle-label">{darkMode ? "Dark" : "Light"}</span>
+                </button>
                 {isDashboardRoute ? (
                   <div className="page-head dashboard-head">
-                    <div className="eyebrow">AxisVTU</div>
                     <div className="hello">Dashboard</div>
                   </div>
                 ) : (
-                  <div>
+                  <div className="page-head page-head-simple">
                     <div className="hello">{pageTitle}</div>
-                    <div className="subtle">AxisVTU</div>
                   </div>
                 )}
               </div>
@@ -997,12 +1007,6 @@ export default function App() {
                 >
                   <svg viewBox="0 0 24 24" fill="none">
                     <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                  </svg>
-                </button>
-                <button className="icon-btn" aria-label="Toggle theme" onClick={toggleTheme}>
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M12 6.5v2.2M12 15.3v2.2M6.5 12h2.2M15.3 12h2.2M7.9 7.9l1.6 1.6M14.5 14.5l1.6 1.6M7.9 16.1l1.6-1.6M14.5 9.5l1.6-1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </button>
                 <div className="notif-wrap">

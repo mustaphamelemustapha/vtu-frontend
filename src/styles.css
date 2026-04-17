@@ -4814,13 +4814,15 @@ a.pill:active::after {
   }
   .topbar.topbar-dashboard .top-left {
     min-width: 0;
-  }
-  .topbar.topbar-dashboard .dashboard-head .eyebrow {
-    font-size: 10px;
-    color: #7d8898;
+    align-items: center;
+    gap: 10px;
   }
   .topbar.topbar-dashboard .dashboard-head .hello {
     font-size: 20px;
+    line-height: 1.15;
+  }
+  .topbar.topbar-dashboard .page-head-simple .hello {
+    font-size: 18px;
     line-height: 1.15;
   }
   .top-actions {
@@ -4841,6 +4843,61 @@ a.pill:active::after {
     width: 38px;
     height: 38px;
     border-radius: 12px;
+  }
+  .topbar.topbar-dashboard .theme-toggle-btn {
+    width: auto;
+    min-width: 96px;
+    padding: 0 14px 0 11px;
+    gap: 7px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.09), rgba(37, 99, 235, 0.05));
+    border-color: color-mix(in srgb, #a9bce0 72%, transparent);
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+    transition: transform 180ms cubic-bezier(0.2, 0.9, 0.2, 1), box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+  }
+  .topbar.topbar-dashboard .theme-toggle-btn::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: inherit;
+    background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.18), transparent 62%);
+    opacity: 0;
+    transform: scale(0.76);
+    transition: opacity 180ms ease, transform 180ms ease;
+    pointer-events: none;
+  }
+  .topbar.topbar-dashboard .theme-toggle-btn.active {
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.14), rgba(37, 99, 235, 0.08));
+    border-color: color-mix(in srgb, #7da8ff 74%, transparent);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.14);
+    transform: translateY(-1px) scale(1.02);
+  }
+  .topbar.topbar-dashboard .theme-toggle-btn.active::before {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .topbar.topbar-dashboard .theme-toggle-btn svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1);
+  }
+  .topbar.topbar-dashboard .theme-toggle-btn.active svg {
+    transform: rotate(14deg) scale(1.04);
+  }
+  .topbar.topbar-dashboard .theme-toggle-label {
+    display: inline-flex;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: var(--ink);
+  }
+  .dark .topbar.topbar-dashboard .theme-toggle-btn {
+    border-color: rgba(126, 150, 190, 0.28);
+    background: linear-gradient(180deg, rgba(37, 99, 235, 0.16), rgba(37, 99, 235, 0.08));
+  }
+  .dark .topbar.topbar-dashboard .theme-toggle-label {
+    color: #eef3ff;
   }
   .top-actions .primary,
   .top-actions .ghost {
@@ -4884,6 +4941,13 @@ a.pill:active::after {
     transform: translateX(0);
     opacity: 1;
     animation: mobile-menu-slide 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .theme-toggle-btn:active {
+    transform: translateY(1px) scale(0.985);
+  }
+  .theme-toggle-btn:active::before {
+    opacity: 1;
+    transform: scale(1);
   }
   .mobile-side-menu-head {
     display: flex;
