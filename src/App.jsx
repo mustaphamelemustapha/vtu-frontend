@@ -980,11 +980,11 @@ export default function App() {
                   onClick={toggleTheme}
                   type="button"
                 >
-                  <span className="theme-toggle-label">{darkMode ? "Dark" : "Light"}</span>
                   <svg viewBox="0 0 24 24" fill="none">
                     <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" stroke="currentColor" strokeWidth="1.5"/>
                     <path d="M12 6.5v2.2M12 15.3v2.2M6.5 12h2.2M15.3 12h2.2M7.9 7.9l1.6 1.6M14.5 14.5l1.6 1.6M7.9 16.1l1.6-1.6M14.5 9.5l1.6-1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
+                  <span className="theme-toggle-label">{darkMode ? "Dark" : "Light"}</span>
                 </button>
                 {isDashboardRoute ? (
                   <div className="page-head dashboard-head">
