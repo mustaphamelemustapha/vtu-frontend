@@ -5820,7 +5820,13 @@ a.pill:active::after {
 }
 
 .auth-form-simple .input-group {
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.auth-form-simple .input-group input,
+.auth-form-reset .input-group input,
+.auth-form-compact .input-group input {
+  min-width: 0;
 }
 
 .auth-form-simple .input-btn {
@@ -6235,8 +6241,26 @@ a.pill:active::after {
     padding-inline: 0;
   }
 
+  .auth-right-simple,
+  .auth-right-reset {
+    padding-inline: 12px;
+  }
+
+  .auth-form-simple .input-group,
+  .auth-form-reset .input-group {
+    gap: 6px;
+  }
+
+  .auth-form-simple .input-btn,
+  .auth-form-reset .input-btn {
+    min-width: 58px;
+    padding-inline: 10px;
+  }
+
   .auth-quick-link {
     font-size: 12px;
+    justify-content: center;
+    text-align: center;
   }
 
   .auth-quick-link-btn {
