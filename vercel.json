@@ -21,6 +21,10 @@
       "source": "/api/v1/:path*",
       "destination": "https://vtu-backend-8gsi.onrender.com/api/v1/:path*"
     },
+    { "source": "/reset-pin", "destination": "/index.html" },
+    { "source": "/reset-pin/:path*", "destination": "/index.html" },
+    { "source": "/reset-password", "destination": "/index.html" },
+    { "source": "/reset-password/:path*", "destination": "/index.html" },
     { "source": "/app", "destination": "/index.html" },
     { "source": "/app/:path*", "destination": "/index.html" },
     { "source": "/", "destination": "/landing/index.html" }
