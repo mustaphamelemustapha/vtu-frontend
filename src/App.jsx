@@ -371,6 +371,15 @@ export default function App() {
       });
       return;
     }
+    if (path === "/reset-pin") {
+      applySeo({
+        title: "Reset Transaction PIN | AxisVTU",
+        description: "Securely reset your AxisVTU transaction PIN and continue approving wallet debits.",
+        path: "/app/reset-pin",
+        keywords: "axisvtu reset transaction pin, pin reset axisvtu",
+      });
+      return;
+    }
     if (path === "/admin-login") {
       applySeo({
         title: "Admin Login | AxisVTU",
@@ -428,6 +437,22 @@ export default function App() {
       return false;
     }
   }, [location.search]);
+  const hasPinResetQuery = useMemo(() => {
+    try {
+      const params = new URLSearchParams(location.search || "");
+      const flow = String(params.get("flow") || params.get("kind") || "").toLowerCase();
+      const reset = String(params.get("reset") || "").toLowerCase();
+      return (
+        flow === "pin" ||
+        reset === "pin" ||
+        location.pathname === "/reset-pin" ||
+        location.pathname.endsWith("/reset-pin") ||
+        (!!params.get("token") && (flow === "pin" || reset === "1"))
+      );
+    } catch {
+      return false;
+    }
+  }, [location.pathname, location.search]);
 
   const unreadCount = useMemo(
     () => notifItems.filter((item) => !item?.seen).length,
@@ -877,7 +902,7 @@ export default function App() {
           <Routes>
             <Route
               path="/"
-              element={<Navigate to={`${hasResetQuery ? "/reset-password" : "/login"}${location.search}`} replace />}
+              element={<Navigate to={`${hasPinResetQuery ? "/reset-pin" : hasResetQuery ? "/reset-password" : "/login"}${location.search}`} replace />}
             />
             <Route
               path="/admin-login"
@@ -915,8 +940,17 @@ export default function App() {
               }
             />
             <Route
+              path="/reset-pin"
+              element={
+                <Login
+                  modeRoute="reset-pin"
+                  onAuth={handleAuthSuccess}
+                />
+              }
+            />
+            <Route
               path="*"
-              element={<Navigate to={`${hasResetQuery ? "/reset-password" : "/login"}${location.search}`} replace />}
+              element={<Navigate to={`${hasPinResetQuery ? "/reset-pin" : hasResetQuery ? "/reset-password" : "/login"}${location.search}`} replace />}
             />
           </Routes>
         </Suspense>

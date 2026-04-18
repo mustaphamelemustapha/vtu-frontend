@@ -25,6 +25,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
   const [forgotSuccess, setForgotSuccess] = useState(false);
   const [resetMode, setResetMode] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [resetFlowType, setResetFlowType] = useState("password");
   const [resetForm, setResetForm] = useState({ token: "", password: "", confirm: "" });
   const { showToast } = useToast();
   const isPlainLoginView = mode === "login" && !forgotMode && !resetMode;
@@ -97,17 +98,27 @@ export default function Login({ onAuth, modeRoute = "login" }) {
       setMode("register");
       setForgotMode(false);
       setResetMode(false);
+      setResetFlowType("password");
       return;
     }
     if (modeRoute === "reset") {
       setMode("login");
       setForgotMode(true);
       setResetMode(false);
+      setResetFlowType("password");
+      return;
+    }
+    if (modeRoute === "reset-pin") {
+      setMode("login");
+      setForgotMode(false);
+      setResetMode(true);
+      setResetFlowType("pin");
       return;
     }
     setMode("login");
     setForgotMode(false);
     setResetMode(false);
+    setResetFlowType("password");
   }, [modeRoute]);
 
   useEffect(() => {
@@ -116,14 +127,23 @@ export default function Login({ onAuth, modeRoute = "login" }) {
       const params = new URLSearchParams(window.location.search || "");
       const token = params.get("token") || params.get("reset_token");
       const wantsReset = params.get("reset") === "1" || params.get("reset") === "true";
-      if (token && (wantsReset || token.length> 10)) {
+      const flow = String(params.get("flow") || params.get("kind") || "").toLowerCase();
+      const resetFlag = String(params.get("reset") || "").toLowerCase();
+      const path = String(window.location.pathname || "").toLowerCase();
+      const looksLikePinReset = flow === "pin" || resetFlag === "pin" || path.includes("reset-pin");
+      if (token && (wantsReset || token.length > 10 || looksLikePinReset)) {
         setForgotMode(false);
         setMode("login");
         setResetMode(true);
+        setResetFlowType(looksLikePinReset ? "pin" : "password");
         setForgotSuccess(false);
         setResetSuccess(false);
         setResetForm({ token, password: "", confirm: "" });
-        setNotice("Set a new password to finish resetting your account.");
+        setNotice(
+          looksLikePinReset
+            ? "Create a new 4-digit PIN to finish resetting your account."
+            : "Set a new password to finish resetting your account."
+        );
       }
     } catch {
       // ignore
@@ -238,17 +258,34 @@ export default function Login({ onAuth, modeRoute = "login" }) {
     }
     setLoading(true);
     try {
-      await apiFetch("/auth/reset-password", {
-        method: "POST",
-        body: JSON.stringify({ token: resetForm.token, new_password: resetForm.password })
-      });
+      if (resetFlowType === "pin") {
+        await apiFetch("/security/pin/reset-confirm", {
+          method: "POST",
+          body: JSON.stringify({
+            token: resetForm.token,
+            new_pin: resetForm.password,
+            confirm_pin: resetForm.confirm
+          })
+        });
+      } else {
+        await apiFetch("/auth/reset-password", {
+          method: "POST",
+          body: JSON.stringify({ token: resetForm.token, new_password: resetForm.password })
+        });
+      }
       setResetMode(false);
       setForgotMode(false);
       setResetSuccess(true);
       setNotice("");
-      showToast("Password reset successful.", "success");
+      showToast(
+        resetFlowType === "pin" ? "Transaction PIN reset successful." : "Password reset successful.",
+        "success"
+      );
     } catch (err) {
-      const next = presentError(err, "Password reset failed.");
+      const next = presentError(
+        err,
+        resetFlowType === "pin" ? "Transaction PIN reset failed." : "Password reset failed."
+      );
       if (isTransientConnectionError(next)) {
         setError("");
         setNotice(next);
@@ -427,11 +464,13 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   </defs>
                 </svg>
               </div>
-              <h1>{resetSuccess ? "Password reset successfully" : "Request sent successfully"}</h1>
+              <h1>{resetSuccess ? (resetFlowType === "pin" ? "PIN reset successfully" : "Password reset successfully") : "Request sent successfully"}</h1>
               <p className="muted auth-reset-success-copy">
                 {resetSuccess ? (
                   <>
-                    Your new password has been saved. You can now sign in with your updated credentials.
+                    {resetFlowType === "pin"
+                      ? "Your transaction PIN has been saved securely. You can now approve wallet debits."
+                      : "Your new password has been saved. You can now sign in with your updated credentials."}
                   </>
                 ) : (
                   <>
@@ -457,7 +496,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
           >
             <h1>
               {resetMode
-                ? "Reset Password"
+                ? (resetFlowType === "pin" ? "Reset Transaction PIN" : "Reset Password")
                 : forgotMode
                   ? "Reset password"
                   : mode === "login"
@@ -466,7 +505,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
             </h1>
             <p className="muted">
               {resetMode
-                ? "Please enter a strong password"
+                ? (resetFlowType === "pin" ? "Create a new PIN to continue." : "Please enter a strong password")
                 : forgotMode
                   ? "Enter your email to receive a reset link."
                   : mode === "login"
@@ -476,55 +515,81 @@ export default function Login({ onAuth, modeRoute = "login" }) {
         {resetMode ? (
           <form onSubmit={submitReset} className="auth-wide auth-form-compact auth-form-reset">
             <div className="field">
-              <label>New password</label>
+              <label>{resetFlowType === "pin" ? "New PIN" : "New password"}</label>
               <div className="input-group">
                 <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="New password"
+                  type={resetFlowType === "pin" ? "password" : (showPassword ? "text" : "password")}
+                  placeholder={resetFlowType === "pin" ? "New PIN" : "New password"}
                   value={resetForm.password}
-                  onChange={(e) => setResetForm({ ...resetForm, password: e.target.value })}
-                  autoComplete="new-password"
+                  onChange={(e) =>
+                    setResetForm({
+                      ...resetForm,
+                      password:
+                        resetFlowType === "pin"
+                          ? e.target.value.replace(/\D/g, "").slice(0, 4)
+                          : e.target.value,
+                    })
+                  }
+                  autoComplete={resetFlowType === "pin" ? "one-time-code" : "new-password"}
                   required
+                  inputMode={resetFlowType === "pin" ? "numeric" : "text"}
+                  maxLength={resetFlowType === "pin" ? 4 : undefined}
                 />
-                <button
-                  type="button"
-                  className="input-btn"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}>
-                  {showPassword ? "Hide" : "Show"}
-                </button>
+                {resetFlowType === "pin" ? null : (
+                  <button
+                    type="button"
+                    className="input-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}>
+                    {showPassword ? "Hide" : "Show"}
+                  </button>
+                )}
               </div>
               <div className="strength">
-                <div className={`bar s${passwordStrength(resetForm.password)}`} />
+                <div className={`bar s${resetFlowType === "pin" ? Math.min(4, resetForm.password.length) : passwordStrength(resetForm.password)}`} />
                 <span>
-                  {["Too weak", "Weak", "Okay", "Strong", "Excellent"][passwordStrength(resetForm.password)]}
+                  {resetFlowType === "pin"
+                    ? (resetForm.password.length < 4 ? "4 digits required" : "Looks good")
+                    : ["Too weak", "Weak", "Okay", "Strong", "Excellent"][passwordStrength(resetForm.password)]}
                 </span>
               </div>
             </div>
             <div className="field">
-              <label>Confirm password</label>
+              <label>{resetFlowType === "pin" ? "Confirm PIN" : "Confirm password"}</label>
               <div className="input-group">
                 <input
-                  type={showConfirm ? "text" : "password"}
-                  placeholder="Confirm password"
+                  type={resetFlowType === "pin" ? "password" : (showConfirm ? "text" : "password")}
+                  placeholder={resetFlowType === "pin" ? "Confirm PIN" : "Confirm password"}
                   value={resetForm.confirm}
-                  onChange={(e) => setResetForm({ ...resetForm, confirm: e.target.value })}
-                  autoComplete="new-password"
+                  onChange={(e) =>
+                    setResetForm({
+                      ...resetForm,
+                      confirm:
+                        resetFlowType === "pin"
+                          ? e.target.value.replace(/\D/g, "").slice(0, 4)
+                          : e.target.value,
+                    })
+                  }
+                  autoComplete={resetFlowType === "pin" ? "one-time-code" : "new-password"}
                   required
+                  inputMode={resetFlowType === "pin" ? "numeric" : "text"}
+                  maxLength={resetFlowType === "pin" ? 4 : undefined}
                 />
-                <button
-                  type="button"
-                  className="input-btn"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  aria-label={showConfirm ? "Hide password" : "Show password"}>
-                  {showConfirm ? "Hide" : "Show"}
-                </button>
+                {resetFlowType === "pin" ? null : (
+                  <button
+                    type="button"
+                    className="input-btn"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    aria-label={showConfirm ? "Hide password" : "Show password"}>
+                    {showConfirm ? "Hide" : "Show"}
+                  </button>
+                )}
               </div>
             </div>
             {error && <div className="auth-feedback auth-feedback-error">{error}</div>}
             {notice && <div className="auth-feedback auth-feedback-note">{notice}</div>}
             <Button type="submit">
-              {loading ? "Please wait..." : "Reset password"}
+              {loading ? "Please wait..." : (resetFlowType === "pin" ? "Reset PIN" : "Reset password")}
             </Button>
             <button className="link" type="button" onClick={() => navigate("/login")}>
               Back to login
