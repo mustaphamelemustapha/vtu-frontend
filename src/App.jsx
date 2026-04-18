@@ -453,6 +453,7 @@ export default function App() {
       return false;
     }
   }, [location.pathname, location.search]);
+  const forceAuthResetRoute = hasResetQuery || hasPinResetQuery;
 
   const unreadCount = useMemo(
     () => notifItems.filter((item) => !item?.seen).length,
@@ -897,7 +898,7 @@ export default function App() {
   return (
     <ToastProvider>
       <ToastHost />
-      {!authenticated ? (
+      {!authenticated || forceAuthResetRoute ? (
         <Suspense fallback={<AppPageFallback />}>
           <Routes>
             <Route
