@@ -464,13 +464,13 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   </defs>
                 </svg>
               </div>
-              <h1>{resetSuccess ? (resetFlowType === "pin" ? "PIN reset successfully" : "Password reset successfully") : "Request sent successfully"}</h1>
+              <h1>{resetSuccess ? (resetFlowType === "pin" ? "Transaction PIN updated" : "Password updated") : "Request sent successfully"}</h1>
               <p className="muted auth-reset-success-copy">
                 {resetSuccess ? (
                   <>
                     {resetFlowType === "pin"
-                      ? "Your transaction PIN has been saved securely. You can now approve wallet debits."
-                      : "Your new password has been saved. You can now sign in with your updated credentials."}
+                      ? "Your new PIN is active and securely stored. You can now approve wallet debits with confidence."
+                      : "Your new password has been saved securely. You can now sign in with your updated credentials."}
                   </>
                 ) : (
                   <>
@@ -479,10 +479,10 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                 )}
               </p>
               <p className="auth-reset-success-note">
-                {resetSuccess ? "Please go back and sign in." : "Please check your email."}
+                {resetSuccess ? "Return to login when you’re ready." : "Please check your email."}
               </p>
               <button className="primary auth-reset-back" type="button" onClick={() => navigate("/login")}>
-                Back
+                Back to Login
               </button>
             </div>
           ) : (
