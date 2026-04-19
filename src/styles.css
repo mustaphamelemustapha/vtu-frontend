@@ -1831,18 +1831,6 @@ a:focus-visible {
   border-color: color-mix(in srgb, var(--accent) 30%, var(--stroke));
 }
 
-.best-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(15, 118, 110, 0.12);
-  color: var(--accent);
-  padding: 4px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
 .skeleton {
   position: relative;
   overflow: hidden;
@@ -7162,13 +7150,6 @@ a.pill:active::after {
     font-size: 10px;
   }
 
-  .data-page .data-plan-card .best-badge {
-    top: 8px;
-    right: 8px;
-    font-size: 9px;
-    padding: 3px 6px;
-  }
-
   .data-result-shell {
     width: min(100%, 560px);
     padding: calc(10px + env(safe-area-inset-top, 0px)) 12px calc(12px + env(safe-area-inset-bottom, 0px));
@@ -7271,10 +7252,6 @@ a.pill:active::after {
     min-height: 32px;
     padding: 6px 8px;
     font-size: 11px;
-  }
-
-  .data-page .data-plan-card .best-badge {
-    display: none;
   }
 }
 

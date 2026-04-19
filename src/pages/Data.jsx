@@ -11,7 +11,7 @@ import Card from "../components/ui/Card.jsx";
 
 const RESULT_PREFS_KEY = "vtu_data_result_prefs";
 const DELIVERED_HINTS = ["success", "successful", "delivered", "gifted", "completed"];
-const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v3";
+const DATA_PLANS_CACHE_KEY = "axisvtu_data_plans_cache_v6";
 const DATA_PLANS_CACHE_TTL_MS = 10 * 60 * 1000;
 const DATA_WALLET_CACHE_KEY = "axisvtu_data_wallet_cache_v1";
 const PLAN_KEYWORD_BLOCKLIST = [
@@ -27,6 +27,16 @@ const PLAN_KEYWORD_BLOCKLIST = [
   "unlimited",
 ];
 const CURATED_MAX_PER_NETWORK = 8;
+const AIRTEL_BUNDLE_ORDER = {
+  "2GB": 0,
+  "3GB": 1,
+  "4GB": 2,
+  "8GB": 3,
+  "10GB": 4,
+  "13GB": 5,
+  "18GB": 6,
+  "25GB": 7,
+};
 
 export default function Data() {
   const MIN_PURCHASE_LOADING_MS = 1200;
@@ -89,20 +99,32 @@ export default function Data() {
     return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
   };
 
-  const planLabel = (plan) =>
-    `${String(plan?.plan_name || "")} ${String(plan?.data_size || "")} ${String(plan?.validity || "")}`.toLowerCase();
+  const planCapacityKey = (plan) => {
+    const text = String(plan?.data_size || plan?.plan_name || "").toUpperCase();
+    const match = text.match(/(\d+(?:\.\d+)?)(GB|MB)/);
+    if (match) return `${match[1]}${match[2]}`;
+    return text.replace(/\s+/g, "");
+  };
 
-  const validityDays = (plan) => {
-    const raw = String(plan?.validity || plan?.plan_name || "").toLowerCase();
-    const match = raw.match(/(\d+)\s*(day|days|month|months|week|weeks|d)/i);
+  const planValidityDays = (plan) => {
+    const text = String(plan?.validity || plan?.plan_name || "").toLowerCase();
+    const match = text.match(/(\d+)\s*(d|day|days|month|months|week|weeks)/);
     if (!match) return null;
     const amount = Number(match[1]);
     if (!Number.isFinite(amount)) return null;
-    const unit = String(match[2] || "").toLowerCase();
-    if (unit.startsWith("month")) return amount * 30;
-    if (unit.startsWith("week")) return amount * 7;
+    if (match[2].startsWith("month")) return amount * 30;
+    if (match[2].startsWith("week")) return amount * 7;
     return amount;
   };
+
+  const isAirtelVisiblePlan = (plan) => {
+    if (String(plan?.network || "").toLowerCase() !== "airtel") return true;
+    const visible = new Set(["2GB", "3GB", "4GB", "8GB", "10GB", "13GB", "18GB", "25GB"]);
+    return visible.has(planCapacityKey(plan)) && planValidityDays(plan) === 30;
+  };
+
+  const planLabel = (plan) =>
+    `${String(plan?.plan_name || "")} ${String(plan?.data_size || "")} ${String(plan?.validity || "")}`.toLowerCase();
 
   const curatePlans = (rows) => {
     const input = (Array.isArray(rows) ? rows : []).map(normalizePlanItem);
@@ -116,16 +138,21 @@ export default function Data() {
     }
 
     const curated = [];
-    for (const [, networkPlans] of grouped) {
+    for (const [networkKey, networkPlans] of grouped) {
       const clean = networkPlans.filter((plan) => {
         const label = planLabel(plan);
         const noisy = PLAN_KEYWORD_BLOCKLIST.some((keyword) => label.includes(keyword));
-        const validDays = validityDays(plan);
-        const tooShort = Number.isFinite(validDays) && validDays < 7;
-        return !noisy && !tooShort;
+        return !noisy;
       });
 
-      const source = clean.length >= 4 ? clean : networkPlans;
+      let source;
+      if (networkKey === "airtel") {
+        source = (clean.length ? clean : networkPlans).filter(isAirtelVisiblePlan);
+        if (!source.length) continue;
+      } else {
+        source = clean.length >= 4 ? clean : networkPlans;
+        if (!source.length) continue;
+      }
       source.sort((a, b) => planPrice(a) - planPrice(b));
       curated.push(...source.slice(0, CURATED_MAX_PER_NETWORK));
     }
@@ -714,6 +741,11 @@ export default function Data() {
   });
 
   const sorted = [...filtered].sort((a, b) => {
+    if (network === "airtel" && sort === "recommended") {
+      const aOrder = AIRTEL_BUNDLE_ORDER[planCapacityKey(a)] ?? 999;
+      const bOrder = AIRTEL_BUNDLE_ORDER[planCapacityKey(b)] ?? 999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+    }
     if (sort === "price_low") return Number(a.price) - Number(b.price);
     if (sort === "price_high") return Number(b.price) - Number(a.price);
     if (sort === "data_high") {
@@ -895,7 +927,7 @@ export default function Data() {
               </div>
               <div className="plan-name">{plan.plan_name}</div>
               <div className="plan-meta">
-                <span>Validity {plan.validity}</span>
+                <span>Validity {plan.validity || '—'}</span>
               </div>
               <div className="plan-price-row">
                 <span className="label">Price</span>
@@ -928,7 +960,7 @@ export default function Data() {
                 </div>
                 <div className="list-meta">
                   <div className="value">₦ {selected.price}</div>
-                  <span className="pill">{selected.validity}</span>
+                  <span className="pill">{selected.validity || '—'}</span>
                 </div>
               </div>
               <div className="receipt-grid">
