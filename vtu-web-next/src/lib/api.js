@@ -1,0 +1,187 @@
+const DEFAULT_API_BASE = 'https://vtu-backend-8gsi.onrender.com/api/v1';
+const TOKEN_KEY = 'axisvtu_access_token';
+const REFRESH_KEY = 'axisvtu_refresh_token';
+const PROFILE_KEY = 'axisvtu_profile';
+const ACTIVE_SCOPE_KEY = 'axisvtu_active_scope';
+
+let refreshPromise = null;
+
+function normalizeBase(raw) {
+  return String(raw || '').trim().replace(/\/+$/, '');
+}
+
+function getApiBase() {
+  const env = typeof window !== 'undefined' ? window.__AXISVTU_API_BASE__ : undefined;
+  const candidate = normalizeBase(env || process.env.NEXT_PUBLIC_API_BASE || DEFAULT_API_BASE);
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && candidate.startsWith('http://')) {
+    return `https://${candidate.slice('http://'.length)}`;
+  }
+  return candidate || DEFAULT_API_BASE;
+}
+
+function safeJson(raw, fallback) {
+  try {
+    const parsed = JSON.parse(raw || '');
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function canUseStorage() {
+  return typeof window !== 'undefined';
+}
+
+export function getToken() {
+  if (!canUseStorage()) return '';
+  return window.localStorage.getItem(TOKEN_KEY) || window.sessionStorage.getItem(TOKEN_KEY) || '';
+}
+
+export function getRefreshToken() {
+  if (!canUseStorage()) return '';
+  return window.localStorage.getItem(REFRESH_KEY) || window.sessionStorage.getItem(REFRESH_KEY) || '';
+}
+
+export function setAuthTokens(accessToken, refreshToken, persist = true) {
+  if (!canUseStorage()) return;
+  if (persist) {
+    window.localStorage.setItem(TOKEN_KEY, accessToken);
+    window.localStorage.setItem(REFRESH_KEY, refreshToken || '');
+    window.sessionStorage.removeItem(TOKEN_KEY);
+    window.sessionStorage.removeItem(REFRESH_KEY);
+  } else {
+    window.sessionStorage.setItem(TOKEN_KEY, accessToken);
+    window.sessionStorage.setItem(REFRESH_KEY, refreshToken || '');
+    window.localStorage.removeItem(TOKEN_KEY);
+    window.localStorage.removeItem(REFRESH_KEY);
+  }
+}
+
+export function clearAuth() {
+  if (!canUseStorage()) return;
+  window.localStorage.removeItem(TOKEN_KEY);
+  window.localStorage.removeItem(REFRESH_KEY);
+  window.sessionStorage.removeItem(TOKEN_KEY);
+  window.sessionStorage.removeItem(REFRESH_KEY);
+  window.localStorage.removeItem(PROFILE_KEY);
+  window.localStorage.removeItem(ACTIVE_SCOPE_KEY);
+}
+
+export function setProfile(profile) {
+  if (!canUseStorage()) return;
+  window.localStorage.setItem(PROFILE_KEY, JSON.stringify(profile || {}));
+  const scope = String(profile?.email || profile?.full_name || '').trim().toLowerCase();
+  window.localStorage.setItem(ACTIVE_SCOPE_KEY, scope);
+}
+
+export function getProfile() {
+  if (!canUseStorage()) return {};
+  return safeJson(window.localStorage.getItem(PROFILE_KEY), {});
+}
+
+export function getActiveAuthScope() {
+  if (!canUseStorage()) return 'guest';
+  const email = String(getProfile()?.email || '').trim().toLowerCase();
+  if (email) return email;
+  const scope = String(window.localStorage.getItem(ACTIVE_SCOPE_KEY) || '').trim().toLowerCase();
+  return scope || 'guest';
+}
+
+function parseError(data) {
+  if (Array.isArray(data?.detail)) {
+    return data.detail
+      .map((item) => {
+        if (item && typeof item === 'object') {
+          const loc = Array.isArray(item.loc) ? item.loc[item.loc.length - 1] : '';
+          return [loc, item.msg].filter(Boolean).join(': ');
+        }
+        return String(item || '');
+      })
+      .filter(Boolean)
+      .join(', ');
+  }
+  if (typeof data?.detail === 'string') return data.detail;
+  if (typeof data?.message === 'string') return data.message;
+  return 'Request failed';
+}
+
+function makeError(message, code) {
+  const err = new Error(message);
+  if (code) err.code = code;
+  return err;
+}
+
+async function refreshAccessToken() {
+  if (refreshPromise) return refreshPromise;
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) throw makeError('Session expired. Please log in again.', 'AUTH_EXPIRED');
+  refreshPromise = (async () => {
+    const res = await fetch(`${getApiBase()}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+      cache: 'no-store',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data?.access_token) {
+      throw makeError('Session expired. Please log in again.', 'AUTH_EXPIRED');
+    }
+    setAuthTokens(data.access_token, data.refresh_token, !!window.localStorage.getItem(TOKEN_KEY));
+    return data.access_token;
+  })().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
+}
+
+export async function apiFetch(path, options = {}) {
+  const base = getApiBase();
+  const headers = { ...(options.headers || {}) };
+  const token = getToken();
+  if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
+  if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+  const res = await fetch(`${base}${path}`, {
+    method: options.method || 'GET',
+    headers,
+    body: options.body,
+    cache: 'no-store',
+  });
+  if (res.status === 401 && path !== '/auth/login' && path !== '/auth/refresh') {
+    try {
+      await refreshAccessToken();
+      return apiFetch(path, { ...options, headers: { ...headers, Authorization: `Bearer ${getToken()}` } });
+    } catch (err) {
+      clearAuth();
+      throw err;
+    }
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw makeError(parseError(data));
+  }
+  return data;
+}
+
+export async function warmBackend() {
+  try {
+    const base = getApiBase().replace(/\/api\/v1\/?$/, '');
+    const res = await fetch(`${base}/healthz`, { cache: 'no-store' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function loginRequest(email, password) {
+  return apiFetch('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function registerRequest(payload) {
+  return apiFetch('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
