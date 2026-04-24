@@ -2,13 +2,13 @@ import { LandingPage } from '@/components/landing-page';
 
 export const metadata = {
   title: 'AxisVTU',
-  description: 'Buy airtime, data, and bills in one premium fintech workspace.',
+  description: 'Fast, reliable VTU payments for data, airtime, wallet funding, and everyday utility services.',
   alternates: {
     canonical: 'https://axisvtu.com',
   },
   openGraph: {
     title: 'AxisVTU',
-    description: 'Premium VTU platform for airtime, data, bills, wallet actions, and referrals.',
+    description: 'AxisVTU helps users buy data, buy airtime, fund wallets, and track transactions from one secure workspace.',
     url: 'https://axisvtu.com',
     siteName: 'AxisVTU',
     type: 'website',

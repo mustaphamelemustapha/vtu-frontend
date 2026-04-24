@@ -42,6 +42,37 @@ a {
   background: rgba(36, 87, 245, 0.35);
 }
 
+@keyframes axis-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes axis-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes axis-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @layer components {
   .axis-shell {
     @apply min-h-screen text-text;
@@ -70,5 +101,41 @@ a {
 
   .axis-muted {
     @apply text-sm leading-6 text-slate-400;
+  }
+
+  .animate-fade-up {
+    animation: axis-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-rise {
+    animation: axis-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-fade-in {
+    animation: axis-fade-in 0.7s ease both;
+  }
+
+  .animate-card-up {
+    animation: axis-fade-up 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .delay-1 {
+    animation-delay: 90ms;
+  }
+
+  .delay-2 {
+    animation-delay: 180ms;
+  }
+
+  .delay-3 {
+    animation-delay: 270ms;
+  }
+
+  .delay-4 {
+    animation-delay: 360ms;
+  }
+
+  .delay-5 {
+    animation-delay: 450ms;
   }
 }
