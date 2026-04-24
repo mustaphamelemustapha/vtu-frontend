@@ -1,50 +1,82 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowRight,
   BadgeCheck,
-  CheckCircle2,
-  ChevronRight,
+  Banknote,
+  ChevronDown,
   CreditCard,
-  History,
-  LockKeyhole,
-  ReceiptText,
+  FileText,
+  Headphones,
+  Menu,
+  MessageCircle,
   ShieldCheck,
   Smartphone,
   Sparkles,
-  Wallet,
+  Tv2,
+  X,
   Wifi,
+  Wallet,
+  History,
+  BookOpen,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
-const heroPoints = [
-  'Instant data and airtime purchase',
-  'Dedicated wallet funding account',
-  'Clear receipts and transaction history',
-  'Secure transaction PIN protection',
+const navLinks = [
+  { label: 'What you can do', href: '#services' },
+  { label: 'Why choose us', href: '#trust' },
+  { label: 'About', href: '#about' },
+  { label: 'FAQ', href: '#faq' },
 ];
 
-const features = [
+const heroPoints = ['Instant purchases', 'Wallet funding', 'Clear receipts'];
+
+const services = [
   {
     icon: Wifi,
     title: 'Buy Data',
-    text: 'Purchase affordable data plans for major Nigerian networks through a simple guided flow.',
+    text: 'Purchase mobile data through a guided flow that keeps the steps simple and clear.',
   },
   {
     icon: Smartphone,
     title: 'Buy Airtime',
-    text: 'Top up your own line or send airtime to someone else without a complicated process.',
+    text: 'Top up your own line or send airtime to another number with a few taps.',
   },
   {
     icon: Wallet,
     title: 'Fund Wallet',
-    text: 'Transfer money to your dedicated account and see your wallet balance update after confirmation.',
+    text: 'Transfer money to your dedicated account and use the balance for everyday services.',
   },
   {
-    icon: History,
-    title: 'Track Transactions',
-    text: 'Review purchases, receipts, and wallet movements from one organised history view.',
+    icon: CreditCard,
+    title: 'Transaction History',
+    text: 'Review purchases, receipts, and wallet activity from one organised view.',
+  },
+  {
+    icon: Zap,
+    title: 'Electricity',
+    text: 'Pay electricity bills in a calm, structured flow when the service is available.',
+  },
+  {
+    icon: Tv2,
+    title: 'Cable TV',
+    text: 'Renew cable subscriptions in one place without switching between screens.',
+  },
+  {
+    icon: BookOpen,
+    title: 'Education PINs',
+    text: 'Handle exam and education PIN purchases where that service is enabled.',
+  },
+  {
+    icon: Banknote,
+    title: 'Account Funding',
+    text: 'Use your dedicated virtual account to fund your wallet and keep the record clear.',
   },
 ];
 
@@ -52,244 +84,384 @@ const trustPoints = [
   {
     icon: ShieldCheck,
     title: 'Secure wallet system',
-    text: 'Built to keep wallet activity structured, traceable, and easy to review.',
+    text: 'Wallet activity stays structured and easy to review.',
   },
   {
-    icon: LockKeyhole,
-    title: 'Transaction PIN protection',
-    text: 'Sensitive actions stay protected with a PIN step before final confirmation.',
+    icon: BadgeCheck,
+    title: 'Transaction PIN',
+    text: 'Sensitive actions can be protected with a PIN before confirmation.',
   },
   {
-    icon: ReceiptText,
+    icon: FileText,
     title: 'Clean receipts',
-    text: 'Users can keep clear records of what was purchased, when it happened, and what was charged.',
+    text: 'Each payment keeps a record that is easy to revisit later.',
   },
   {
-    icon: CheckCircle2,
-    title: 'Reliable transaction records',
-    text: 'Every action is logged so users can follow what changed without guesswork.',
+    icon: History,
+    title: 'Reliable records',
+    text: 'Users can follow what happened without digging through noise.',
   },
 ];
 
-const walletSteps = [
-  'Transfer funds to your dedicated AxisVTU account.',
-  'Wait for confirmation and watch the wallet update.',
-  'Use the balance to buy data, airtime, or utility services.',
+const aboutBullets = [
+  'A simple VTU and payments experience for everyday use',
+  'Designed for individuals, small businesses, and resellers',
+  'Built around clarity, reliability, and clean account management',
 ];
 
 const faqs = [
   {
-    q: 'How do I get started?',
-    a: 'Create an account, sign in, and fund your wallet before making your first purchase.',
+    q: 'How do I fund my wallet?',
+    a: 'Transfer money to your dedicated account, then wait for confirmation before making purchases.',
   },
   {
-    q: 'What can I do on AxisVTU?',
-    a: 'You can buy data, buy airtime, fund your wallet, and track your transaction history in one place.',
+    q: 'How fast are data purchases?',
+    a: 'Data purchases are designed to complete quickly once the transaction is approved.',
   },
   {
-    q: 'How does wallet funding work?',
-    a: 'You transfer money to your dedicated account and your wallet updates after the payment is confirmed.',
+    q: 'What happens if a transaction fails?',
+    a: 'Failed transactions are kept in the history so you can review the status and follow up if needed.',
   },
   {
-    q: 'Will I receive receipts?',
-    a: 'Yes. AxisVTU keeps clear transaction receipts and records so you can review activity later.',
+    q: 'How secure is my account?',
+    a: 'AxisVTU uses a transaction PIN flow for sensitive actions and keeps records organized for review.',
+  },
+  {
+    q: 'Can I view receipts?',
+    a: 'Yes. Receipts and transaction history are kept together so they are easy to find later.',
   },
 ];
 
-function BrandLogo({ inverted = false, className = '' }) {
+const motionFadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  show: (delay = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, delay, ease: [0.16, 1, 0.3, 1] },
+  }),
+};
+
+function BrandLogo({ className = '' }) {
+  return <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" className={`h-10 w-auto ${className}`.trim()} />;
+}
+
+function PageSection({ eyebrow, title, description, align = 'left' }) {
   return (
-    <img
-      src="/brand/axisvtu-logo.svg"
-      alt="AxisVTU"
-      className={`h-10 w-auto ${inverted ? 'brightness-0 invert' : ''} ${className}`.trim()}
-    />
+    <div className={align === 'center' ? 'mx-auto max-w-3xl text-center' : 'max-w-3xl'}>
+      <div className="axis-label text-orange-600">{eyebrow}</div>
+      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{title}</h2>
+      {description ? <p className="mt-4 text-lg leading-8 text-slate-600">{description}</p> : null}
+    </div>
+  );
+}
+
+function MobileMenu({ open, onClose }) {
+  return (
+    <AnimatePresence>
+      {open ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-slate-950/30 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.22 }}
+            className="absolute inset-x-4 top-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <BrandLogo className="h-8" />
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-2">
+              {navLinks.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={onClose}
+                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-slate-950"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <Button asChild variant="secondary" className="h-11 rounded-full border-slate-200 bg-white text-slate-700">
+                <Link href="/login" onClick={onClose}>
+                  Sign In
+                </Link>
+              </Button>
+              <Button asChild className="h-11 rounded-full bg-orange-500 text-slate-950 hover:bg-orange-600">
+                <Link href="/register" onClick={onClose}>
+                  Get Started
+                </Link>
+              </Button>
+            </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 
 function Header() {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-white/[0.08] bg-slate-950/[0.85] backdrop-blur-xl">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <BrandLogo />
-        </Link>
-
-        <nav className="hidden items-center gap-8 text-sm font-medium text-slate-300 lg:flex">
-          <a href="#features" className="transition hover:text-white">What you can do</a>
-          <a href="#trust" className="transition hover:text-white">Why trust us</a>
-          <a href="#wallet" className="transition hover:text-white">Wallet funding</a>
-          <a href="#faq" className="transition hover:text-white">FAQ</a>
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="hidden text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex">
-            Sign In
+    <>
+      <header
+        className={`sticky top-0 z-40 border-b bg-white/85 backdrop-blur-xl transition-shadow ${
+          scrolled ? 'border-slate-200 shadow-[0_8px_30px_rgba(15,23,42,0.05)]' : 'border-transparent'
+        }`}
+      >
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-3">
+            <BrandLogo className="h-9 sm:h-10" />
           </Link>
-          <Button asChild className="rounded-full px-5 shadow-sm shadow-orange-500/10">
-            <Link href="/register">
-              Get Started
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+
+          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-600 lg:flex">
+            {navLinks.map((item) => (
+              <a key={item.label} href={item.href} className="transition hover:text-slate-950">
+                {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="hidden items-center gap-3 sm:flex">
+            <Button asChild variant="secondary" className="h-11 rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-50">
+              <Link href="/login">Sign In</Link>
+            </Button>
+            <Button asChild className="h-11 rounded-full bg-orange-500 px-5 text-slate-950 shadow-sm shadow-orange-200 hover:bg-orange-600">
+              <Link href="/register">Get Started</Link>
+            </Button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-700 lg:hidden"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
         </div>
-      </div>
-    </header>
+      </header>
+      <MobileMenu open={open} onClose={() => setOpen(false)} />
+    </>
   );
 }
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#08111b_0%,#070d15_100%)]">
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_30%,rgba(255,255,255,0.01)_100%)]" />
-      <div className="absolute inset-0 axis-grid-bg opacity-[0.06]" />
-      <div className="relative mx-auto grid max-w-7xl gap-14 px-4 pb-24 pt-16 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-32 lg:pt-20">
+    <section className="bg-[#fbfaf7]">
+      <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-28 lg:pt-16">
         <div className="flex flex-col justify-center">
-          <div className="animate-fade-up inline-flex w-fit items-center gap-3 rounded-full border border-orange-400/[0.15] bg-white/[0.04] px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-100/[0.85]">
-            <BrandLogo className="h-4 w-auto brightness-0 invert" />
-            Official AxisVTU platform
-          </div>
+          <motion.div
+            variants={motionFadeUp}
+            initial="hidden"
+            animate="show"
+            custom={0}
+            className="inline-flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-700 shadow-sm"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            AxisVTU for everyday payments
+          </motion.div>
 
-          <h1 className="animate-fade-up delay-1 mt-6 max-w-2xl text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Buy Data, Airtime, and Pay Bills with Ease
-          </h1>
+          <motion.h1
+            variants={motionFadeUp}
+            initial="hidden"
+            animate="show"
+            custom={0.08}
+            className="mt-6 max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl"
+          >
+            Buy Airtime, Data & Pay Bills in Seconds
+          </motion.h1>
 
-          <p className="animate-fade-up delay-2 mt-6 max-w-2xl text-lg leading-8 text-slate-300 sm:text-xl">
-            AxisVTU helps you purchase data, airtime, and utility services quickly, while keeping your wallet, receipts, and transaction history organised in one secure place.
-          </p>
+          <motion.p
+            variants={motionFadeUp}
+            initial="hidden"
+            animate="show"
+            custom={0.16}
+            className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl"
+          >
+            Top up any network, fund your wallet, and manage everyday payments with a simple, reliable AxisVTU account.
+          </motion.p>
 
-          <div className="animate-fade-up delay-3 mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button asChild className="h-12 rounded-full px-6 text-base shadow-sm shadow-orange-500/10 transition duration-200 hover:-translate-y-0.5">
+          <motion.div
+            variants={motionFadeUp}
+            initial="hidden"
+            animate="show"
+            custom={0.24}
+            className="mt-8 flex flex-col gap-3 sm:flex-row"
+          >
+            <Button asChild className="h-12 rounded-full bg-orange-500 px-6 text-base text-slate-950 shadow-sm shadow-orange-200 hover:bg-orange-600">
               <Link href="/register">
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="secondary" className="h-12 rounded-full border-white/10 bg-white/[0.04] px-6 text-base text-white transition duration-200 hover:-translate-y-0.5 hover:bg-white/[0.06]">
-              <Link href="/login">Sign In</Link>
+            <Button asChild variant="secondary" className="h-12 rounded-full border-slate-200 bg-white px-6 text-base text-slate-700 hover:bg-slate-50">
+              <Link href="/login">Log in</Link>
             </Button>
-          </div>
+          </motion.div>
 
-          <div className="animate-fade-up delay-4 mt-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <motion.div
+            variants={motionFadeUp}
+            initial="hidden"
+            animate="show"
+            custom={0.32}
+            className="mt-9 flex flex-wrap gap-3"
+          >
             {heroPoints.map((point) => (
-              <div key={point} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-slate-200">
+              <div key={point} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600">
                 {point}
               </div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
-        <div className="relative flex items-center justify-center">
-          <div className="absolute inset-x-12 top-20 h-56 rounded-full bg-slate-400/10 blur-3xl" />
-          <Card className="animate-rise relative w-full max-w-xl border-white/10 bg-slate-900/[0.78] shadow-[0_20px_60px_rgba(3,7,18,0.38)] backdrop-blur-xl">
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+          className="relative flex items-center justify-center"
+        >
+          <div className="absolute inset-x-16 top-20 h-44 rounded-full bg-orange-100/40 blur-3xl" />
+          <Card className="relative w-full max-w-xl overflow-hidden border-slate-200 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.06)]">
             <CardContent className="p-5 sm:p-7">
-              <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
+              <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-5">
                 <div>
                   <div className="flex items-center gap-3">
-                    <BrandLogo className="h-7 w-auto brightness-0 invert" />
-                    <span className="axis-label text-slate-400">Product preview</span>
+                    <BrandLogo className="h-7" />
+                    <span className="axis-label text-orange-600">Product preview</span>
                   </div>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white">Desktop dashboard view</h2>
-                  <p className="mt-2 max-w-sm text-sm leading-6 text-slate-300">
-                    The web experience is structured for people who want quick actions, clear receipts, and an account view they can trust.
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">Clean dashboard preview</h2>
+                  <p className="mt-2 max-w-sm text-sm leading-6 text-slate-600">
+                    The interface is designed for quick top-ups, wallet funding, and clear transaction records on desktop.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-orange-400/[0.15] bg-orange-500/[0.08] p-3 text-orange-100">
+                  <div className="rounded-2xl bg-orange-50 p-3 text-orange-600">
                   <ShieldCheck className="h-6 w-6" />
                 </div>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-3xl border border-white/10 bg-slate-950/[0.5] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Wallet balance</div>
-                  <div className="mt-2 text-2xl font-semibold tracking-tight text-white">₦ 248,500.00</div>
-                  <div className="mt-2 text-sm text-slate-400">Ready for service purchases and daily usage.</div>
+                <div className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Wallet balance</div>
+                  <div className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Available for purchases</div>
+                  <div className="mt-2 text-sm text-slate-600">Funded through the dedicated account route.</div>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-slate-950/[0.5] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Receipts</div>
-                  <div className="mt-2 text-2xl font-semibold tracking-tight text-white">Clear records</div>
-                  <div className="mt-2 text-sm text-slate-400">Track every transaction from a clean history view.</div>
+                <div className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Receipts</div>
+                  <div className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Easy to review</div>
+                  <div className="mt-2 text-sm text-slate-600">Each purchase keeps a clear record for later.</div>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-3xl border border-white/10 bg-slate-950/[0.5] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Recent activity</div>
+                <div className="rounded-3xl border border-slate-200 bg-white p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Recent activity</div>
                   <div className="mt-4 space-y-3">
                     {[
                       ['Data purchase', 'MTN 2GB - ₦1,500', 'Completed'],
                       ['Wallet funding', 'Virtual account transfer', 'Confirmed'],
                       ['Airtime top-up', 'Glo - ₦2,000', 'Completed'],
                     ].map(([title, detail, status]) => (
-                      <div key={title} className="flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-3">
+                      <div key={title} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-[#fcfbf8] px-3 py-3">
                         <div>
-                          <div className="text-sm font-medium text-white">{title}</div>
-                          <div className="text-xs text-slate-400">{detail}</div>
+                          <div className="text-sm font-medium text-slate-950">{title}</div>
+                          <div className="text-xs text-slate-500">{detail}</div>
                         </div>
-                        <div className="text-xs font-semibold text-orange-200">{status}</div>
+                        <div className="text-xs font-semibold text-orange-600">{status}</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="rounded-3xl border border-white/10 bg-slate-950/[0.5] p-4">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Quick actions</div>
+                  <div className="rounded-3xl border border-slate-200 bg-white p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">Quick actions</div>
                     <div className="mt-4 grid gap-2">
                       {['Buy Data', 'Buy Airtime', 'Fund Wallet', 'View History'].map((item) => (
-                        <div key={item} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-slate-200">
+                        <div key={item} className="rounded-2xl border border-slate-200 bg-[#fcfbf8] px-3 py-2 text-sm text-slate-700">
                           {item}
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-3xl border border-orange-400/[0.15] bg-orange-500/[0.08] p-4">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-100/[0.8]">Protection</div>
-                    <div className="mt-2 flex items-center gap-3 text-sm text-orange-50">
-                      <BadgeCheck className="h-5 w-5 shrink-0" />
-                      Transaction PIN protection enabled on sensitive actions.
+                  <div className="rounded-3xl border border-orange-200 bg-orange-50 p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-700">Protection</div>
+                    <div className="mt-2 flex items-center gap-3 text-sm text-slate-700">
+                      <BadgeCheck className="h-5 w-5 shrink-0 text-orange-600" />
+                      Sensitive actions stay protected with a transaction PIN.
                     </div>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
 }
 
-function FeaturesSection() {
+function ServicesSection() {
   return (
-    <section id="features" className="bg-[#08111a] px-4 py-24 sm:px-6 lg:px-8">
+    <section id="services" className="bg-white px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="max-w-3xl">
-          <div className="axis-label">What you can do with AxisVTU</div>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            The core actions are clear and easy to follow
-          </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-300">
-            The page introduces the platform plainly, then leads users into the exact actions they need most often.
-          </p>
-        </div>
+        <PageSection
+          eyebrow="What you can do with AxisVTU"
+          title="The actions are clear, familiar, and easy to scan"
+          description="A visitor should understand the product in a few seconds and know exactly where to begin."
+        />
 
         <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {features.map((item, index) => {
+          {services.map((item, index) => {
             const Icon = item.icon;
             return (
-              <Card
+              <motion.div
                 key={item.title}
-                className="animate-card-up border-white/10 bg-slate-900/[0.7] shadow-panel backdrop-blur-xl"
-                style={{ animationDelay: `${index * 90}ms` }}
+                variants={motionFadeUp}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.2 }}
+                custom={index * 0.05}
+                whileHover={{ y: -2 }}
+                transition={{ duration: 0.2 }}
               >
-                <CardContent className="p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/[0.12] bg-orange-500/[0.08] text-orange-100">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold text-white">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-300">{item.text}</p>
-                </CardContent>
-              </Card>
+                <Card className="h-full border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+                  <CardContent className="p-6">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="mt-5 text-lg font-semibold text-slate-950">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             );
           })}
         </div>
@@ -300,39 +472,48 @@ function FeaturesSection() {
 
 function TrustSection() {
   return (
-    <section id="trust" className="bg-[#070d15] px-4 py-24 sm:px-6 lg:px-8">
+    <section id="trust" className="bg-[#fbfaf7] px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="animate-fade-in">
-            <div className="mb-4 flex items-center gap-3">
-              <BrandLogo inverted className="h-7 w-auto" />
-              <div className="axis-label">Why users can trust AxisVTU</div>
+          <motion.div variants={motionFadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} custom={0}>
+            <PageSection
+              eyebrow="Why choose us"
+              title="A calmer VTU experience for everyday use"
+              description="AxisVTU is built for people who want speed without confusion, and structure without a crowded interface."
+            />
+            <div className="mt-6 grid gap-3">
+              {aboutBullets.map((bullet) => (
+                <div key={bullet} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+                  <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-orange-600" />
+                  <span>{bullet}</span>
+                </div>
+              ))}
             </div>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Built for clarity, not noise
-            </h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
-              AxisVTU is shaped around the everyday things people need from a VTU platform: a safe wallet, a clean trail of transactions, and a product that stays understandable.
-            </p>
-          </div>
+          </motion.div>
 
           <div className="grid gap-5 sm:grid-cols-2">
             {trustPoints.map((item, index) => {
               const Icon = item.icon;
               return (
-                <Card
+                <motion.div
                   key={item.title}
-                    className="animate-card-up border-white/10 bg-slate-900/[0.7] shadow-panel backdrop-blur-xl"
-                  style={{ animationDelay: `${index * 95}ms` }}
+                  variants={motionFadeUp}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.2 }}
+                  custom={index * 0.06}
+                  whileHover={{ y: -2 }}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/[0.12] bg-orange-500/[0.08] text-orange-100">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="mt-5 text-lg font-semibold text-white">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-300">{item.text}</p>
-                  </CardContent>
-                </Card>
+                  <Card className="h-full border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+                    <CardContent className="p-6">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <h3 className="mt-5 text-lg font-semibold text-slate-950">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{item.text}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               );
             })}
           </div>
@@ -342,92 +523,130 @@ function TrustSection() {
   );
 }
 
-function WalletSection() {
+function AboutSection() {
   return (
-    <section id="wallet" className="bg-[#08111a] px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <Card className="border-white/10 bg-slate-900/[0.75] shadow-panel">
-          <CardContent className="grid gap-8 p-8 lg:grid-cols-[0.95fr_1.05fr] lg:p-10">
-            <div>
-              <div className="mb-3 flex items-center gap-3">
-                <BrandLogo inverted className="h-7 w-auto" />
-                <div className="axis-label">Wallet funding</div>
-              </div>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                Fund your wallet through your dedicated account
-              </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
-                Fund your wallet by transferring money to your dedicated account. Once confirmed, your balance updates and you can start purchasing services.
-              </p>
-              <div className="mt-8 space-y-4">
-                {walletSteps.map((step, index) => (
-                  <div key={step} className="flex gap-4 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/[0.12] text-sm font-semibold text-orange-100">
-                      {index + 1}
-                    </div>
-                    <p className="text-sm leading-6 text-slate-300">{step}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+    <section id="about" className="bg-white px-4 py-24 sm:px-6 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
+        <motion.div variants={motionFadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} custom={0}>
+          <div className="axis-label text-orange-600">About AxisVTU</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+            A simple platform for airtime, data, wallet funding, and utility payments
+          </h2>
+          <p className="mt-5 text-lg leading-8 text-slate-600">
+            AxisVTU is a Nigerian VTU and payments platform designed to help people handle ordinary account tasks without friction. It brings top-ups, wallet funding, receipts, and transaction history into one clear web experience.
+          </p>
+          <p className="mt-5 text-lg leading-8 text-slate-600">
+            The goal is straightforward: keep the interface human, the flow reliable, and the account details easy to understand.
+          </p>
+        </motion.div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl border border-orange-400/[0.12] bg-orange-500/[0.08] p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-100/[0.8]">Dedicated account</div>
-                <div className="mt-3 text-2xl font-semibold tracking-tight text-white">Transfer to a unique wallet account</div>
-                <p className="mt-3 text-sm leading-6 text-orange-50/[0.8]">
-                  Every user gets a structured funding route that keeps wallet top-ups clear and easy to review.
-                </p>
+        <motion.div
+          variants={motionFadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          custom={0.08}
+          className="grid gap-5 sm:grid-cols-2"
+        >
+          <Card className="border-slate-200 bg-[#fcfbf8] shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+            <CardContent className="p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                <MessageCircle className="h-5 w-5" />
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Confirmation</div>
-                <div className="mt-3 text-2xl font-semibold tracking-tight text-white">Balance updates after payment clears</div>
-                <p className="mt-3 text-sm leading-6 text-slate-300">
-                  Users can see when funds arrive, what they were used for, and how their wallet changed over time.
-                </p>
+              <h3 className="mt-5 text-lg font-semibold text-slate-950">Human support flow</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">The product keeps support and contact points easy to find when users need help.</p>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-200 bg-[#fcfbf8] shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+            <CardContent className="p-6">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                <Headphones className="h-5 w-5" />
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:col-span-2">
-                <div className="flex items-center gap-3 text-sm font-semibold text-white">
-                  <CreditCard className="h-5 w-5 text-orange-200" />
-                  Clean receipt trail
-                </div>
-                <p className="mt-3 text-sm leading-6 text-slate-300">
-                  Each purchase and wallet movement is stored in a format that makes support, reconciliation, and personal record keeping easier.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              <h3 className="mt-5 text-lg font-semibold text-slate-950">Built for trust</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Clear records, predictable actions, and a calm layout help the product feel official.</p>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </section>
   );
 }
 
-function FinalCta() {
+function FaqSection() {
+  const [activeIndex, setActiveIndex] = useState(0);
+
   return (
-    <section className="bg-[#08111a] px-4 pb-24 pt-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <Card className="border-orange-400/[0.12] bg-slate-900/[0.8] shadow-[0_18px_50px_rgba(3,7,18,0.24)]">
-          <CardContent className="flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <div className="mb-4 flex items-center gap-3">
-                <BrandLogo inverted className="h-7 w-auto" />
-                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-100/[0.7]">Ready when you are</div>
+    <section id="faq" className="bg-[#fbfaf7] px-4 py-24 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <PageSection
+          eyebrow="FAQ / Support"
+          title="Helpful answers before you get started"
+          description="A few common questions users usually ask before opening an account or funding their wallet."
+          align="center"
+        />
+
+        <div className="mt-12 space-y-4">
+          {faqs.map((item, index) => {
+            const open = activeIndex === index;
+            return (
+              <Card key={item.q} className="overflow-hidden border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+                <button
+                  type="button"
+                  onClick={() => setActiveIndex(open ? -1 : index)}
+                  className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left sm:px-6"
+                >
+                  <span className="text-base font-semibold text-slate-950 sm:text-lg">{item.q}</span>
+                  <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-orange-500">
+                    <ChevronDown className="h-5 w-5" />
+                  </motion.span>
+                </button>
+                <AnimatePresence initial={false}>
+                  {open ? (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-5 pb-5 pt-0 text-sm leading-7 text-slate-600 sm:px-6">{item.a}</div>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </Card>
+            );
+          })}
+        </div>
+
+        <motion.div
+          variants={motionFadeUp}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.2 }}
+          className="mt-10"
+        >
+          <Card className="border-orange-200 bg-white shadow-[0_12px_35px_rgba(234,115,69,0.05)]">
+            <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+              <div>
+                <div className="flex items-center gap-3">
+                  <BrandLogo className="h-7" />
+                  <div className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-700">Support</div>
+                </div>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700">
+                  If you need help, reach out through email and the team can guide you from there. The goal is to keep the process simple and direct.
+                </p>
               </div>
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                Start using AxisVTU today and manage your everyday VTU payments with more clarity and control.
-              </h2>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild className="h-12 rounded-full px-6 text-base shadow-sm shadow-orange-500/10">
-                <Link href="/register">Create Account</Link>
-              </Button>
-              <Button asChild variant="secondary" className="h-12 rounded-full border-white/10 bg-white/[0.03] px-6 text-base text-white hover:bg-white/[0.08]">
-                <Link href="/login">Sign In</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex flex-wrap gap-3">
+                <Button asChild className="h-11 rounded-full bg-orange-500 px-5 text-slate-950 hover:bg-orange-600">
+                  <a href="mailto:support@axisvtu.com">Email Support</a>
+                </Button>
+                <Button asChild variant="secondary" className="h-11 rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-50">
+                  <Link href="/login">Log in</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </section>
   );
@@ -435,48 +654,45 @@ function FinalCta() {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-[#070d15] px-4 py-16 text-slate-400 sm:px-6 lg:px-8">
+    <footer className="border-t border-slate-200 bg-white px-4 py-16 text-slate-500 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <BrandLogo inverted />
-            <p className="mt-5 max-w-xl text-sm leading-7 text-slate-400">
-              AxisVTU is a Nigerian VTU and fintech-style platform for data, airtime, wallet funding, receipts, and everyday utility payments.
+            <BrandLogo />
+            <p className="mt-5 max-w-xl text-sm leading-7 text-slate-600">
+              AxisVTU helps users buy airtime, data, and everyday utility services while keeping wallet funding and transaction records clear.
             </p>
+            <div className="mt-5 flex items-center gap-3 text-sm text-slate-500">
+              <span className="h-2 w-2 rounded-full bg-orange-500" />
+              <span>support@axisvtu.com</span>
+            </div>
           </div>
-          <div className="grid gap-8 sm:grid-cols-3">
+
+          <div className="grid gap-8 sm:grid-cols-2">
             <div>
-              <div className="text-sm font-semibold text-white">AxisVTU</div>
-              <div className="mt-4 space-y-3 text-sm text-slate-400">
-                <div><a href="#features" className="hover:text-white">What you can do</a></div>
-                <div><a href="#trust" className="hover:text-white">Why trust us</a></div>
-                <div><a href="#wallet" className="hover:text-white">Wallet funding</a></div>
-                <div><a href="#faq" className="hover:text-white">FAQ</a></div>
+              <div className="text-sm font-semibold text-slate-950">AxisVTU</div>
+              <div className="mt-4 space-y-3 text-sm">
+                <div><a href="#services" className="hover:text-slate-950">What you can do</a></div>
+                <div><a href="#trust" className="hover:text-slate-950">Why choose us</a></div>
+                <div><a href="#about" className="hover:text-slate-950">About</a></div>
+                <div><a href="#faq" className="hover:text-slate-950">FAQ</a></div>
               </div>
             </div>
             <div>
-              <div className="text-sm font-semibold text-white">Support</div>
-              <div className="mt-4 space-y-3 text-sm text-slate-400">
-                <div><Link href="/login" className="hover:text-white">Sign In</Link></div>
-                <div><Link href="/register" className="hover:text-white">Create Account</Link></div>
-                <div><Link href="/dashboard" className="hover:text-white">Dashboard</Link></div>
-              </div>
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-white">Contact</div>
-              <div className="mt-4 space-y-3 text-sm text-slate-400">
-                <div><a href="mailto:support@axisvtu.com" className="hover:text-white">support@axisvtu.com</a></div>
-                <div>Lagos, Nigeria</div>
+              <div className="text-sm font-semibold text-slate-950">Policies</div>
+              <div className="mt-4 space-y-3 text-sm">
+                <div><a href="#" className="hover:text-slate-950">Terms &amp; Conditions</a></div>
+                <div><a href="#" className="hover:text-slate-950">Privacy Policy</a></div>
               </div>
             </div>
           </div>
         </div>
-        <Separator className="my-10 bg-white/[0.08]" />
+        <Separator className="my-10 bg-slate-200" />
         <div className="flex flex-col gap-4 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
           <div>© 2026 AxisVTU. All rights reserved.</div>
           <div className="flex gap-4">
-            <span>Privacy Policy</span>
-            <span>Terms &amp; Conditions</span>
+            <span>Official web platform</span>
+            <span>Nigerian VTU services</span>
           </div>
         </div>
       </div>
@@ -486,42 +702,14 @@ function Footer() {
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#070d15] text-white">
+    <div className="min-h-screen bg-[#fbfaf7] text-slate-950">
       <Header />
       <Hero />
-      <FeaturesSection />
+      <ServicesSection />
       <TrustSection />
-      <WalletSection />
-      <FinalCta />
+      <AboutSection />
       <FaqSection />
       <Footer />
     </div>
-  );
-}
-
-function FaqSection() {
-  return (
-    <section id="faq" className="bg-[#070d15] px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="text-center">
-          <div className="axis-label">FAQ</div>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-            A few common questions before getting started
-          </h2>
-        </div>
-
-        <div className="mt-12 space-y-4">
-          {faqs.map((item) => (
-            <details key={item.q} className="group rounded-3xl border border-white/10 bg-slate-900/[0.7] p-5 shadow-panel backdrop-blur-xl">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold text-white">
-                {item.q}
-                <ChevronRight className="h-5 w-5 shrink-0 text-orange-200 transition group-open:rotate-90" />
-              </summary>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300">{item.a}</p>
-            </details>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }
