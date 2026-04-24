@@ -74,7 +74,7 @@ a {
 
 @layer components {
   .axis-shell {
-    @apply min-h-screen text-text;
+    @apply min-h-screen text-slate-900;
   }
 
   .axis-grid-bg {
@@ -91,7 +91,7 @@ a {
   }
 
   .axis-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400;
+    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500;
   }
 
   .axis-metric {
@@ -99,7 +99,7 @@ a {
   }
 
   .axis-muted {
-    @apply text-sm leading-6 text-slate-400;
+    @apply text-sm leading-6 text-slate-600;
   }
 
   .animate-fade-up {
