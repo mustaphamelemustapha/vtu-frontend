@@ -109,7 +109,7 @@ export function AppShell({ children }) {
         </div>
       </aside>
 
-      <main className="min-w-0">
+      <main className="min-w-0 bg-[#f8f5ef]">
         <header className="sticky top-0 z-30 border-b border-white/8 bg-[#050a12]/85 backdrop-blur-xl">
           <div className="flex items-center gap-3 px-4 py-3 md:px-6 lg:px-8">
             <div className="hidden h-11 flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 md:flex">
