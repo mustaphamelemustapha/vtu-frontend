@@ -13,7 +13,7 @@ function Field({ label, helper, children }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-end justify-between gap-3">
-        <label className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">{label}</label>
+        <label className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">{label}</label>
         {helper ? <span className="text-[11px] text-slate-500">{helper}</span> : null}
       </div>
       {children}
@@ -30,6 +30,7 @@ export function AuthPage({ initialMode = 'login' }) {
   const [error, setError] = useState('');
   const [persist, setPersist] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [form, setForm] = useState({
     full_name: '',
     first_name: '',
@@ -43,6 +44,11 @@ export function AuthPage({ initialMode = 'login' }) {
   useEffect(() => {
     if (getToken()) router.replace('/dashboard');
   }, [router]);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setMounted(true), 20);
+    return () => window.clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     if (ref) setForm((prev) => ({ ...prev, referral_code: ref }));
@@ -108,58 +114,31 @@ export function AuthPage({ initialMode = 'login' }) {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#0B0F14_0%,#0E141B_100%)] text-slate-100">
       <div
-        className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.035),transparent_30%),radial-gradient(circle_at_bottom,rgba(234,115,69,0.05),transparent_32%)]"
-        aria-hidden="true"
-      />
-      <div className="relative mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-[432px] border-white/6 bg-slate-950/72 shadow-[0_18px_48px_rgba(2,6,23,0.42)] backdrop-blur-2xl">
-          <CardHeader className="space-y-2.5 pb-5 pt-8 text-center">
-            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-[1.05rem] bg-orange-500 text-[11px] font-semibold text-slate-950 shadow-[0_10px_20px_rgba(234,115,69,0.16)]">
-              AX
+        className={`relative mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8 transition-all duration-300 ease-out ${
+          mounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1.5 scale-[0.995]'
+        }`}
+      >
+        <Card className="w-full max-w-[420px] border border-white/6 bg-[rgba(255,255,255,0.02)] shadow-[0_12px_28px_rgba(0,0,0,0.20)] backdrop-blur-sm">
+          <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
+            <div className="text-[0.72rem] font-semibold uppercase tracking-[0.34em] text-slate-200">
+              AxisVTU
             </div>
-            <CardTitle className="text-[1.7rem] font-semibold tracking-[-0.03em] text-slate-50">
+            <CardTitle className="text-[1.6rem] font-semibold tracking-[-0.025em] text-[#EAEAEA]">
               {heading}
             </CardTitle>
-            <CardDescription className="mx-auto max-w-[300px] text-[0.95rem] leading-6 text-slate-400">
+            <CardDescription className="mx-auto max-w-[300px] text-sm leading-6 text-[#9CA3AF]">
               {subtitle}
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="pb-8">
-            <div className="mb-7 flex justify-center">
-              <div className="inline-flex rounded-full border border-white/8 bg-white/4 p-1 shadow-inner shadow-black/10">
-                <button
-                  type="button"
-                  onClick={() => setMode('login')}
-                  className={`rounded-full px-4.5 py-2 text-sm font-medium transition-all duration-200 ${
-                    !isRegister
-                      ? 'bg-white text-slate-950 shadow-[0_6px_16px_rgba(15,23,42,0.16)]'
-                      : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
-                  }`}
-                >
-                  Sign in
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode('register')}
-                  className={`rounded-full px-4.5 py-2 text-sm font-medium transition-all duration-200 ${
-                    isRegister
-                      ? 'bg-white text-slate-950 shadow-[0_6px_16px_rgba(15,23,42,0.16)]'
-                      : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'
-                  }`}
-                >
-                  Register
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={submit} className="space-y-4.5">
+          <CardContent className="space-y-5 px-6 pb-8 sm:px-7">
+            <form onSubmit={submit} className="space-y-5">
               {isRegister ? (
                 <>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="First name">
                       <Input
-                        className="h-12 rounded-[1rem] border-white/8 bg-slate-900/85 px-4 text-[0.98rem] text-slate-50 placeholder:text-slate-500 caret-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition-all duration-200 hover:border-white/12 focus:border-orange-400/40 focus:ring-4 focus:ring-orange-500/12"
+                        className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
                         value={form.first_name}
                         onChange={(e) => setForm((prev) => ({ ...prev, first_name: e.target.value }))}
                         placeholder="First name"
@@ -168,7 +147,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     </Field>
                     <Field label="Last name">
                       <Input
-                        className="h-12 rounded-[1rem] border-white/8 bg-slate-900/85 px-4 text-[0.98rem] text-slate-50 placeholder:text-slate-500 caret-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition-all duration-200 hover:border-white/12 focus:border-orange-400/40 focus:ring-4 focus:ring-orange-500/12"
+                        className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
                         value={form.last_name}
                         onChange={(e) => setForm((prev) => ({ ...prev, last_name: e.target.value }))}
                         placeholder="Last name"
@@ -179,7 +158,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Email">
                     <Input
-                      className="h-12 rounded-[1rem] border-white/8 bg-slate-900/85 px-4 text-[0.98rem] text-slate-50 placeholder:text-slate-500 caret-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition-all duration-200 hover:border-white/12 focus:border-orange-400/40 focus:ring-4 focus:ring-orange-500/12"
+                      className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
                       value={form.email}
                       onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="you@example.com"
@@ -189,7 +168,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Phone">
                     <Input
-                      className="h-12 rounded-[1rem] border-white/8 bg-slate-900/85 px-4 text-[0.98rem] text-slate-50 placeholder:text-slate-500 caret-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition-all duration-200 hover:border-white/12 focus:border-orange-400/40 focus:ring-4 focus:ring-orange-500/12"
+                      className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
                       value={form.phone_number}
                       onChange={(e) => setForm((prev) => ({ ...prev, phone_number: e.target.value }))}
                       placeholder="08012345678"
@@ -200,7 +179,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <Field label="Password">
                     <div className="relative">
                       <Input
-                        className="h-12 rounded-[1rem] pr-14 border-white/8 bg-slate-900/85 px-4 text-[0.98rem] text-slate-50 placeholder:text-slate-500 caret-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition-all duration-200 hover:border-white/12 focus:border-orange-400/40 focus:ring-4 focus:ring-orange-500/12"
+                        className="h-[50px] rounded-[8px] pr-14 border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Create a secure password"
@@ -210,7 +189,7 @@ export function AuthPage({ initialMode = 'login' }) {
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-2 my-auto rounded-[0.85rem] border border-white/8 bg-white/4 px-3 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-white/12 hover:bg-white/8 hover:text-slate-50"
+                        className="absolute inset-y-0 right-2 my-auto rounded-[8px] border border-white/5 bg-[#11161C] px-3 text-xs font-medium text-slate-400 transition-all duration-200 hover:border-white/8 hover:bg-[#161C24] hover:text-slate-200"
                       >
                         {showPassword ? (
                           <span className="inline-flex items-center gap-1">
@@ -229,7 +208,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Referral code" helper="Optional">
                     <Input
-                      className="h-12 rounded-[1rem] border-white/8 bg-slate-900/85 px-4 text-[0.98rem] text-slate-50 placeholder:text-slate-500 caret-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition-all duration-200 hover:border-white/12 focus:border-orange-400/40 focus:ring-4 focus:ring-orange-500/12"
+                      className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
                       value={form.referral_code}
                       onChange={(e) => setForm((prev) => ({ ...prev, referral_code: e.target.value }))}
                       placeholder="Enter a friend's code"
@@ -240,7 +219,7 @@ export function AuthPage({ initialMode = 'login' }) {
                 <>
                   <Field label="Email or phone">
                     <Input
-                      className="h-12 rounded-[1rem] border-white/8 bg-slate-900/85 px-4 text-[0.98rem] text-slate-50 placeholder:text-slate-500 caret-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition-all duration-200 hover:border-white/12 focus:border-orange-400/40 focus:ring-4 focus:ring-orange-500/12"
+                      className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
                       value={form.email}
                       onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="you@example.com or 08012345678"
@@ -251,7 +230,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <Field label="Password">
                     <div className="relative">
                       <Input
-                        className="h-12 rounded-[1rem] pr-14 border-white/8 bg-slate-900/85 px-4 text-[0.98rem] text-slate-50 placeholder:text-slate-500 caret-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)] transition-all duration-200 hover:border-white/12 focus:border-orange-400/40 focus:ring-4 focus:ring-orange-500/12"
+                        className="h-[50px] rounded-[8px] pr-14 border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Your password"
@@ -261,7 +240,7 @@ export function AuthPage({ initialMode = 'login' }) {
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-2 my-auto rounded-[0.85rem] border border-white/8 bg-white/4 px-3 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-white/12 hover:bg-white/8 hover:text-slate-50"
+                        className="absolute inset-y-0 right-2 my-auto rounded-[8px] border border-white/5 bg-[#11161C] px-3 text-xs font-medium text-slate-400 transition-all duration-200 hover:border-white/8 hover:bg-[#161C24] hover:text-slate-200"
                       >
                         {showPassword ? (
                           <span className="inline-flex items-center gap-1">
@@ -280,7 +259,7 @@ export function AuthPage({ initialMode = 'login' }) {
                 </>
               )}
 
-              {error ? <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
+              {error ? <div className="rounded-[10px] border border-rose-400/15 bg-rose-500/8 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
               <div className={`flex items-center ${isRegister ? 'justify-end' : 'justify-between'} gap-3 pt-1 text-sm`}>
                 {!isRegister ? (
@@ -289,7 +268,7 @@ export function AuthPage({ initialMode = 'login' }) {
                       type="checkbox"
                       checked={persist}
                       onChange={(e) => setPersist(e.target.checked)}
-                      className="rounded border-slate-500 bg-transparent text-orange-500 accent-orange-500 focus:ring-orange-500/20"
+                      className="rounded border-slate-500 bg-transparent text-[#f97316] accent-[#f97316] focus:ring-white/10"
                     />
                     Remember me
                   </label>
@@ -299,14 +278,14 @@ export function AuthPage({ initialMode = 'login' }) {
 
                 <Link
                   href={isRegister ? '/login' : '/register'}
-                  className="text-sm font-medium text-orange-300 transition-colors hover:text-orange-200"
+                  className="text-sm font-medium text-slate-400 transition-colors hover:text-slate-200 hover:underline hover:decoration-current hover:underline-offset-4"
                 >
                   {isRegister ? 'Already have an account? Sign in' : 'Need an account? Register'}
                 </Link>
               </div>
 
               <Button
-                className="h-12.5 w-full rounded-[1rem] border border-orange-400/10 bg-gradient-to-b from-[#ea7a4f] to-[#dc6638] shadow-[0_14px_26px_rgba(220,102,56,0.18)] transition-all duration-200 hover:translate-y-[-1px] hover:from-[#ee845d] hover:to-[#d95f31] active:translate-y-[0px] active:shadow-[0_8px_16px_rgba(220,102,56,0.16)]"
+                className="h-[50px] w-full rounded-[8px] border border-orange-500/10 bg-gradient-to-b from-[#f97316] to-[#ea6f22] text-white shadow-[0_8px_18px_rgba(249,115,22,0.12)] transition-all duration-200 hover:brightness-[0.97] hover:shadow-[0_10px_20px_rgba(249,115,22,0.14)] active:scale-[0.98] active:shadow-[0_6px_14px_rgba(249,115,22,0.10)]"
                 type="submit"
                 disabled={loading}
               >
