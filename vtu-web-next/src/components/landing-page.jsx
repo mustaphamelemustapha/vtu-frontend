@@ -108,7 +108,7 @@ function BrandLogo({ inverted = false, className = '' }) {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/[0.78] backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-white/[0.08] bg-slate-950/[0.85] backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
           <BrandLogo />
@@ -125,7 +125,7 @@ function Header() {
           <Link href="/login" className="hidden text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex">
             Sign In
           </Link>
-          <Button asChild className="rounded-full px-5 shadow-lg shadow-orange-500/20">
+          <Button asChild className="rounded-full px-5 shadow-sm shadow-orange-500/10">
             <Link href="/register">
               Get Started
               <ArrowRight className="h-4 w-4" />
@@ -139,12 +139,12 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden bg-slate-950">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(234,115,69,0.18),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(36,87,245,0.16),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_100%)]" />
-      <div className="absolute inset-0 axis-grid-bg opacity-[0.18]" />
+    <section className="relative overflow-hidden bg-[linear-gradient(180deg,#08111b_0%,#070d15_100%)]">
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,rgba(255,255,255,0)_30%,rgba(255,255,255,0.01)_100%)]" />
+      <div className="absolute inset-0 axis-grid-bg opacity-[0.06]" />
       <div className="relative mx-auto grid max-w-7xl gap-14 px-4 pb-24 pt-16 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-32 lg:pt-20">
         <div className="flex flex-col justify-center">
-          <div className="animate-fade-up inline-flex w-fit items-center gap-3 rounded-full border border-orange-400/20 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-200/90">
+          <div className="animate-fade-up inline-flex w-fit items-center gap-3 rounded-full border border-orange-400/[0.15] bg-white/[0.04] px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-100/[0.85]">
             <BrandLogo className="h-4 w-auto brightness-0 invert" />
             Official AxisVTU platform
           </div>
@@ -158,20 +158,20 @@ function Hero() {
           </p>
 
           <div className="animate-fade-up delay-3 mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button asChild className="h-12 rounded-full px-6 text-base shadow-lg shadow-orange-500/20 transition duration-200 hover:-translate-y-0.5">
+            <Button asChild className="h-12 rounded-full px-6 text-base shadow-sm shadow-orange-500/10 transition duration-200 hover:-translate-y-0.5">
               <Link href="/register">
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="secondary" className="h-12 rounded-full border-white/10 bg-white/5 px-6 text-base text-white transition duration-200 hover:-translate-y-0.5 hover:bg-white/10">
+            <Button asChild variant="secondary" className="h-12 rounded-full border-white/10 bg-white/[0.04] px-6 text-base text-white transition duration-200 hover:-translate-y-0.5 hover:bg-white/[0.06]">
               <Link href="/login">Sign In</Link>
             </Button>
           </div>
 
           <div className="animate-fade-up delay-4 mt-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {heroPoints.map((point) => (
-              <div key={point} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-200">
+              <div key={point} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm leading-6 text-slate-200">
                 {point}
               </div>
             ))}
@@ -179,8 +179,8 @@ function Hero() {
         </div>
 
         <div className="relative flex items-center justify-center">
-          <div className="absolute inset-x-8 top-12 h-72 rounded-full bg-orange-500/20 blur-3xl" />
-          <Card className="animate-rise relative w-full max-w-xl border-white/10 bg-white/[0.06] shadow-[0_30px_80px_rgba(3,7,18,0.48)] backdrop-blur-xl">
+          <div className="absolute inset-x-12 top-20 h-56 rounded-full bg-slate-400/10 blur-3xl" />
+          <Card className="animate-rise relative w-full max-w-xl border-white/10 bg-slate-900/[0.78] shadow-[0_20px_60px_rgba(3,7,18,0.38)] backdrop-blur-xl">
             <CardContent className="p-5 sm:p-7">
               <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
                 <div>
@@ -193,18 +193,18 @@ function Hero() {
                     The web experience is structured for people who want quick actions, clear receipts, and an account view they can trust.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-orange-400/20 bg-orange-500/10 p-3 text-orange-200">
+                <div className="rounded-2xl border border-orange-400/[0.15] bg-orange-500/[0.08] p-3 text-orange-100">
                   <ShieldCheck className="h-6 w-6" />
                 </div>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
+                <div className="rounded-3xl border border-white/10 bg-slate-950/[0.5] p-4">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Wallet balance</div>
                   <div className="mt-2 text-2xl font-semibold tracking-tight text-white">₦ 248,500.00</div>
                   <div className="mt-2 text-sm text-slate-400">Ready for service purchases and daily usage.</div>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
+                <div className="rounded-3xl border border-white/10 bg-slate-950/[0.5] p-4">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Receipts</div>
                   <div className="mt-2 text-2xl font-semibold tracking-tight text-white">Clear records</div>
                   <div className="mt-2 text-sm text-slate-400">Track every transaction from a clean history view.</div>
@@ -212,7 +212,7 @@ function Hero() {
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
+                <div className="rounded-3xl border border-white/10 bg-slate-950/[0.5] p-4">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Recent activity</div>
                   <div className="mt-4 space-y-3">
                     {[
@@ -220,7 +220,7 @@ function Hero() {
                       ['Wallet funding', 'Virtual account transfer', 'Confirmed'],
                       ['Airtime top-up', 'Glo - ₦2,000', 'Completed'],
                     ].map(([title, detail, status]) => (
-                      <div key={title} className="flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/5 px-3 py-3">
+                      <div key={title} className="flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-3">
                         <div>
                           <div className="text-sm font-medium text-white">{title}</div>
                           <div className="text-xs text-slate-400">{detail}</div>
@@ -232,18 +232,18 @@ function Hero() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-4">
+                  <div className="rounded-3xl border border-white/10 bg-slate-950/[0.5] p-4">
                     <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Quick actions</div>
                     <div className="mt-4 grid gap-2">
                       {['Buy Data', 'Buy Airtime', 'Fund Wallet', 'View History'].map((item) => (
-                        <div key={item} className="rounded-2xl border border-white/[0.08] bg-white/5 px-3 py-2 text-sm text-slate-200">
+                        <div key={item} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-slate-200">
                           {item}
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-3xl border border-orange-400/20 bg-orange-500/10 p-4">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-100/80">Protection</div>
+                  <div className="rounded-3xl border border-orange-400/[0.15] bg-orange-500/[0.08] p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-100/[0.8]">Protection</div>
                     <div className="mt-2 flex items-center gap-3 text-sm text-orange-50">
                       <BadgeCheck className="h-5 w-5 shrink-0" />
                       Transaction PIN protection enabled on sensitive actions.
@@ -261,7 +261,7 @@ function Hero() {
 
 function FeaturesSection() {
   return (
-    <section id="features" className="bg-[#070b12] px-4 py-24 sm:px-6 lg:px-8">
+    <section id="features" className="bg-[#08111a] px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="max-w-3xl">
           <div className="axis-label">What you can do with AxisVTU</div>
@@ -279,11 +279,11 @@ function FeaturesSection() {
             return (
               <Card
                 key={item.title}
-                className="animate-card-up border-white/10 bg-white/5 shadow-panel backdrop-blur-xl"
+                className="animate-card-up border-white/10 bg-slate-900/[0.7] shadow-panel backdrop-blur-xl"
                 style={{ animationDelay: `${index * 90}ms` }}
               >
                 <CardContent className="p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/[0.15] bg-orange-500/10 text-orange-200">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/[0.12] bg-orange-500/[0.08] text-orange-100">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h3 className="mt-5 text-lg font-semibold text-white">{item.title}</h3>
@@ -300,7 +300,7 @@ function FeaturesSection() {
 
 function TrustSection() {
   return (
-    <section id="trust" className="bg-slate-950 px-4 py-24 sm:px-6 lg:px-8">
+    <section id="trust" className="bg-[#070d15] px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div className="animate-fade-in">
@@ -322,11 +322,11 @@ function TrustSection() {
               return (
                 <Card
                   key={item.title}
-                  className="animate-card-up border-white/10 bg-white/5 shadow-panel backdrop-blur-xl"
+                    className="animate-card-up border-white/10 bg-slate-900/[0.7] shadow-panel backdrop-blur-xl"
                   style={{ animationDelay: `${index * 95}ms` }}
                 >
                   <CardContent className="p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/[0.15] bg-orange-500/10 text-orange-200">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-400/[0.12] bg-orange-500/[0.08] text-orange-100">
                       <Icon className="h-5 w-5" />
                     </div>
                     <h3 className="mt-5 text-lg font-semibold text-white">{item.title}</h3>
@@ -344,9 +344,9 @@ function TrustSection() {
 
 function WalletSection() {
   return (
-    <section id="wallet" className="bg-[#070b12] px-4 py-24 sm:px-6 lg:px-8">
+    <section id="wallet" className="bg-[#08111a] px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <Card className="border-white/10 bg-slate-900/80 shadow-panel">
+        <Card className="border-white/10 bg-slate-900/[0.75] shadow-panel">
           <CardContent className="grid gap-8 p-8 lg:grid-cols-[0.95fr_1.05fr] lg:p-10">
             <div>
               <div className="mb-3 flex items-center gap-3">
@@ -361,8 +361,8 @@ function WalletSection() {
               </p>
               <div className="mt-8 space-y-4">
                 {walletSteps.map((step, index) => (
-                  <div key={step} className="flex gap-4 rounded-3xl border border-white/10 bg-white/5 p-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/[0.15] text-sm font-semibold text-orange-200">
+                  <div key={step} className="flex gap-4 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-500/[0.12] text-sm font-semibold text-orange-100">
                       {index + 1}
                     </div>
                     <p className="text-sm leading-6 text-slate-300">{step}</p>
@@ -372,21 +372,21 @@ function WalletSection() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl border border-orange-400/[0.15] bg-orange-500/10 p-5">
-                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-100/80">Dedicated account</div>
+              <div className="rounded-3xl border border-orange-400/[0.12] bg-orange-500/[0.08] p-5">
+                <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-100/[0.8]">Dedicated account</div>
                 <div className="mt-3 text-2xl font-semibold tracking-tight text-white">Transfer to a unique wallet account</div>
-                <p className="mt-3 text-sm leading-6 text-orange-50/80">
+                <p className="mt-3 text-sm leading-6 text-orange-50/[0.8]">
                   Every user gets a structured funding route that keeps wallet top-ups clear and easy to review.
                 </p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
+              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5">
                 <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Confirmation</div>
                 <div className="mt-3 text-2xl font-semibold tracking-tight text-white">Balance updates after payment clears</div>
                 <p className="mt-3 text-sm leading-6 text-slate-300">
                   Users can see when funds arrive, what they were used for, and how their wallet changed over time.
                 </p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-5 sm:col-span-2">
+              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-5 sm:col-span-2">
                 <div className="flex items-center gap-3 text-sm font-semibold text-white">
                   <CreditCard className="h-5 w-5 text-orange-200" />
                   Clean receipt trail
@@ -405,24 +405,24 @@ function WalletSection() {
 
 function FinalCta() {
   return (
-    <section className="bg-[#070b12] px-4 pb-24 pt-4 sm:px-6 lg:px-8">
+    <section className="bg-[#08111a] px-4 pb-24 pt-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <Card className="border-orange-400/[0.15] bg-gradient-to-br from-orange-500/20 via-orange-500/10 to-white/5 shadow-[0_30px_90px_rgba(234,115,69,0.16)]">
+        <Card className="border-orange-400/[0.12] bg-slate-900/[0.8] shadow-[0_18px_50px_rgba(3,7,18,0.24)]">
           <CardContent className="flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="mb-4 flex items-center gap-3">
                 <BrandLogo inverted className="h-7 w-auto" />
-                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-100/80">Ready when you are</div>
+                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-100/[0.7]">Ready when you are</div>
               </div>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 Start using AxisVTU today and manage your everyday VTU payments with more clarity and control.
               </h2>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button asChild className="h-12 rounded-full px-6 text-base shadow-lg shadow-orange-500/20">
+              <Button asChild className="h-12 rounded-full px-6 text-base shadow-sm shadow-orange-500/10">
                 <Link href="/register">Create Account</Link>
               </Button>
-              <Button asChild variant="secondary" className="h-12 rounded-full border-white/10 bg-white/5 px-6 text-base text-white hover:bg-white/10">
+              <Button asChild variant="secondary" className="h-12 rounded-full border-white/10 bg-white/[0.03] px-6 text-base text-white hover:bg-white/[0.08]">
                 <Link href="/login">Sign In</Link>
               </Button>
             </div>
@@ -435,7 +435,7 @@ function FinalCta() {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-slate-950 px-4 py-16 text-slate-400 sm:px-6 lg:px-8">
+    <footer className="border-t border-white/10 bg-[#070d15] px-4 py-16 text-slate-400 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
@@ -471,7 +471,7 @@ function Footer() {
             </div>
           </div>
         </div>
-        <Separator className="my-10 bg-white/10" />
+        <Separator className="my-10 bg-white/[0.08]" />
         <div className="flex flex-col gap-4 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
           <div>© 2026 AxisVTU. All rights reserved.</div>
           <div className="flex gap-4">
@@ -486,7 +486,7 @@ function Footer() {
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-[#070d15] text-white">
       <Header />
       <Hero />
       <FeaturesSection />
@@ -501,7 +501,7 @@ export function LandingPage() {
 
 function FaqSection() {
   return (
-    <section id="faq" className="bg-[#070b12] px-4 py-24 sm:px-6 lg:px-8">
+    <section id="faq" className="bg-[#070d15] px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="text-center">
           <div className="axis-label">FAQ</div>
@@ -512,7 +512,7 @@ function FaqSection() {
 
         <div className="mt-12 space-y-4">
           {faqs.map((item) => (
-            <details key={item.q} className="group rounded-3xl border border-white/10 bg-white/5 p-5 shadow-panel backdrop-blur-xl">
+            <details key={item.q} className="group rounded-3xl border border-white/10 bg-slate-900/[0.7] p-5 shadow-panel backdrop-blur-xl">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold text-white">
                 {item.q}
                 <ChevronRight className="h-5 w-5 shrink-0 text-orange-200 transition group-open:rotate-90" />
