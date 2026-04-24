@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
+import { buildReferralUrl } from '@/lib/site';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -62,8 +63,10 @@ export default function ProfilePage() {
   };
 
   const copyReferral = async () => {
-    await navigator.clipboard.writeText(String(referrals?.referral_code || profile?.referral_code || ''));
+    await navigator.clipboard.writeText(String(buildReferralUrl(referrals?.referral_code || profile?.referral_code || '')));
   };
+
+  const referralUrl = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
 
   return (
     <div className="space-y-6 pb-8">
@@ -116,8 +119,9 @@ export default function ProfilePage() {
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <Button variant="secondary" onClick={copyReferral}><Copy className="h-4 w-4" />Copy code</Button>
-              <Button variant="secondary" onClick={() => window.open(referrals?.referral_link || '#', '_blank')} disabled={!referrals?.referral_link}>Open link</Button>
+              <Button variant="secondary" onClick={() => referralUrl && window.open(referralUrl, '_blank', 'noopener,noreferrer')} disabled={!referralUrl}>Open link</Button>
             </div>
+            {referralUrl ? <div className="rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-600 break-all">{referralUrl}</div> : null}
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="axis-label">Total referrals</div>

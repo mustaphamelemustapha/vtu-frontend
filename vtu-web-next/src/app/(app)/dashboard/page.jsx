@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { MetricCard } from '@/components/metric-card';
 import { PageHeader } from '@/components/page-header';
+import { buildReferralUrl } from '@/lib/site';
 
 function emptyOrRows(value) {
   return Array.isArray(value) ? value : [];
@@ -48,7 +49,7 @@ export default function DashboardPage() {
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
   const bankTransfer = summary?.bank_transfer_accounts || {};
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
-  const referralLink = referrals?.referral_link || '';
+  const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
     { label: 'Wallet balance', value: `₦${formatMoney(wallet.balance || 0)}`, detail: 'Live available balance', icon: CircleDollarSign, tone: 'brand' },
     { label: 'Total referrals', value: String(referrals?.total_referrals ?? 0), detail: 'Friends brought in', icon: Users, tone: 'emerald' },
