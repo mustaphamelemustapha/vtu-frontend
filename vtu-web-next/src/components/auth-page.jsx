@@ -118,7 +118,7 @@ export function AuthPage({ initialMode = 'login' }) {
           mounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1.5 scale-[0.995]'
         }`}
       >
-        <Card className="w-full max-w-[420px] border border-white/6 bg-[rgba(255,255,255,0.02)] shadow-[0_12px_28px_rgba(0,0,0,0.20)] backdrop-blur-sm">
+        <Card className="w-full max-w-[420px] border border-white/[0.04] bg-[rgba(255,255,255,0.018)] shadow-[0_8px_20px_rgba(0,0,0,0.14)] backdrop-blur-sm">
           <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
             <div className="text-[0.72rem] font-semibold uppercase tracking-[0.34em] text-slate-200">
               AxisVTU
