@@ -1,4 +1,5 @@
 import './globals.css';
+import { LegacyCacheCleanup } from '@/components/legacy-cache-cleanup';
 
 export const metadata = {
   title: {
@@ -13,7 +14,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <LegacyCacheCleanup />
+        {children}
+      </body>
     </html>
   );
 }
