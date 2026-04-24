@@ -96,12 +96,22 @@ const faqs = [
   },
 ];
 
+function BrandLogo({ inverted = false, className = '' }) {
+  return (
+    <img
+      src="/brand/axisvtu-logo.svg"
+      alt="AxisVTU"
+      className={`h-10 w-auto ${inverted ? 'brightness-0 invert' : ''} ${className}`.trim()}
+    />
+  );
+}
+
 function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/[0.78] backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
-          <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" className="h-10 w-auto" />
+          <BrandLogo />
         </Link>
 
         <nav className="hidden items-center gap-8 text-sm font-medium text-slate-300 lg:flex">
@@ -134,9 +144,9 @@ function Hero() {
       <div className="absolute inset-0 axis-grid-bg opacity-[0.18]" />
       <div className="relative mx-auto grid max-w-7xl gap-14 px-4 pb-24 pt-16 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-32 lg:pt-20">
         <div className="flex flex-col justify-center">
-          <div className="animate-fade-up inline-flex w-fit items-center gap-2 rounded-full border border-orange-400/20 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-200/90">
-            <Sparkles className="h-3.5 w-3.5" />
-            AxisVTU for everyday payments
+          <div className="animate-fade-up inline-flex w-fit items-center gap-3 rounded-full border border-orange-400/20 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-200/90">
+            <BrandLogo className="h-4 w-auto brightness-0 invert" />
+            Official AxisVTU platform
           </div>
 
           <h1 className="animate-fade-up delay-1 mt-6 max-w-2xl text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -148,20 +158,20 @@ function Hero() {
           </p>
 
           <div className="animate-fade-up delay-3 mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button asChild className="h-12 rounded-full px-6 text-base shadow-lg shadow-orange-500/20">
+            <Button asChild className="h-12 rounded-full px-6 text-base shadow-lg shadow-orange-500/20 transition duration-200 hover:-translate-y-0.5">
               <Link href="/register">
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="secondary" className="h-12 rounded-full border-white/10 bg-white/5 px-6 text-base text-white hover:bg-white/10">
+            <Button asChild variant="secondary" className="h-12 rounded-full border-white/10 bg-white/5 px-6 text-base text-white transition duration-200 hover:-translate-y-0.5 hover:bg-white/10">
               <Link href="/login">Sign In</Link>
             </Button>
           </div>
 
-          <div className="animate-fade-up delay-4 mt-9 flex flex-wrap gap-3">
+          <div className="animate-fade-up delay-4 mt-9 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {heroPoints.map((point) => (
-              <div key={point} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200">
+              <div key={point} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 text-slate-200">
                 {point}
               </div>
             ))}
@@ -174,8 +184,11 @@ function Hero() {
             <CardContent className="p-5 sm:p-7">
               <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
                 <div>
-                  <div className="axis-label text-slate-400">Product preview</div>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">Desktop dashboard view</h2>
+                  <div className="flex items-center gap-3">
+                    <BrandLogo className="h-7 w-auto brightness-0 invert" />
+                    <span className="axis-label text-slate-400">Product preview</span>
+                  </div>
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white">Desktop dashboard view</h2>
                   <p className="mt-2 max-w-sm text-sm leading-6 text-slate-300">
                     The web experience is structured for people who want quick actions, clear receipts, and an account view they can trust.
                   </p>
@@ -291,7 +304,10 @@ function TrustSection() {
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div className="animate-fade-in">
-            <div className="axis-label">Why users can trust AxisVTU</div>
+            <div className="mb-4 flex items-center gap-3">
+              <BrandLogo inverted className="h-7 w-auto" />
+              <div className="axis-label">Why users can trust AxisVTU</div>
+            </div>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
               Built for clarity, not noise
             </h2>
@@ -333,7 +349,10 @@ function WalletSection() {
         <Card className="border-white/10 bg-slate-900/80 shadow-panel">
           <CardContent className="grid gap-8 p-8 lg:grid-cols-[0.95fr_1.05fr] lg:p-10">
             <div>
-              <div className="axis-label">Wallet funding</div>
+              <div className="mb-3 flex items-center gap-3">
+                <BrandLogo inverted className="h-7 w-auto" />
+                <div className="axis-label">Wallet funding</div>
+              </div>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 Fund your wallet through your dedicated account
               </h2>
@@ -391,7 +410,10 @@ function FinalCta() {
         <Card className="border-orange-400/[0.15] bg-gradient-to-br from-orange-500/20 via-orange-500/10 to-white/5 shadow-[0_30px_90px_rgba(234,115,69,0.16)]">
           <CardContent className="flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-100/80">Ready when you are</div>
+              <div className="mb-4 flex items-center gap-3">
+                <BrandLogo inverted className="h-7 w-auto" />
+                <div className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-100/80">Ready when you are</div>
+              </div>
               <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 Start using AxisVTU today and manage your everyday VTU payments with more clarity and control.
               </h2>
@@ -417,7 +439,7 @@ function Footer() {
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" className="h-10 w-auto brightness-0 invert" />
+            <BrandLogo inverted />
             <p className="mt-5 max-w-xl text-sm leading-7 text-slate-400">
               AxisVTU is a Nigerian VTU and fintech-style platform for data, airtime, wallet funding, receipts, and everyday utility payments.
             </p>
