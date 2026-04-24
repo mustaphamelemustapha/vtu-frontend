@@ -168,6 +168,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     <div className="space-y-2 md:col-span-2">
                       <label className="axis-label">Full name</label>
                       <Input
+                        className="border-slate-700 bg-slate-900/80 text-white caret-orange-400 placeholder:text-slate-400 focus:border-orange-400/60 focus:ring-orange-500/20"
                         value={form.full_name}
                         onChange={(e) => setForm((prev) => ({ ...prev, full_name: e.target.value }))}
                         placeholder="Mustapha Mele"
@@ -177,6 +178,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     <div className="space-y-2">
                       <label className="axis-label">Email or phone</label>
                       <Input
+                        className="border-slate-700 bg-slate-900/80 text-white caret-orange-400 placeholder:text-slate-400 focus:border-orange-400/60 focus:ring-orange-500/20"
                         value={form.email}
                         onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                         placeholder="you@example.com or 08012345678"
@@ -186,6 +188,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     <div className="space-y-2">
                       <label className="axis-label">Phone</label>
                       <Input
+                        className="border-slate-700 bg-slate-900/80 text-white caret-orange-400 placeholder:text-slate-400 focus:border-orange-400/60 focus:ring-orange-500/20"
                         value={form.phone_number}
                         onChange={(e) => setForm((prev) => ({ ...prev, phone_number: e.target.value }))}
                         placeholder="08012345678"
@@ -195,6 +198,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     <div className="space-y-2 md:col-span-2">
                       <label className="axis-label">Referral code</label>
                       <Input
+                        className="border-slate-700 bg-slate-900/80 text-white caret-orange-400 placeholder:text-slate-400 focus:border-orange-400/60 focus:ring-orange-500/20"
                         value={form.referral_code}
                         onChange={(e) => setForm((prev) => ({ ...prev, referral_code: e.target.value }))}
                         placeholder="Optional"
@@ -203,6 +207,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     <div className="space-y-2 md:col-span-2">
                       <label className="axis-label">Password</label>
                       <Input
+                        className="border-slate-700 bg-slate-900/80 text-white caret-orange-400 placeholder:text-slate-400 focus:border-orange-400/60 focus:ring-orange-500/20"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Create a secure password"
@@ -216,6 +221,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     <div className="space-y-2">
                       <label className="axis-label">Email</label>
                       <Input
+                        className="border-slate-700 bg-slate-900/80 text-white caret-orange-400 placeholder:text-slate-400 focus:border-orange-400/60 focus:ring-orange-500/20"
                         value={form.email}
                         onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                         placeholder="you@example.com"
@@ -225,6 +231,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     <div className="space-y-2">
                       <label className="axis-label">Password</label>
                       <Input
+                        className="border-white/10 bg-white/6 text-white placeholder:text-slate-500 focus:border-orange-400/60 focus:ring-orange-500/20"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Your password"
@@ -243,11 +250,11 @@ export function AuthPage({ initialMode = 'login' }) {
                       type="checkbox"
                       checked={persist}
                       onChange={(e) => setPersist(e.target.checked)}
-                      className="rounded border-white/20 bg-white/10 text-brand-500"
+                      className="rounded border-slate-300 bg-white text-orange-500"
                     />
                     Remember me
                   </label>
-                  <Link href="/register" className="text-brand-200 hover:text-white">
+                  <Link href="/register" className="text-orange-600 hover:text-orange-700">
                     Need an account?
                   </Link>
                 </div>

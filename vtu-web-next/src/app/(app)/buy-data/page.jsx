@@ -91,21 +91,21 @@ export default function BuyDataPage() {
           </CardHeader>
           <CardContent>
             <div className="grid gap-3 md:grid-cols-4">
-              {serviceTabs.map((tab) => {
-                const Icon = tab.icon;
-                const activeTab = active === tab.key;
-                return (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActive(tab.key)}
-                    className={`rounded-3xl border p-4 text-left transition ${activeTab ? 'border-brand-400/30 bg-brand-500/10' : 'border-white/10 bg-white/5 hover:bg-white/8'}`}
-                  >
-                    <Icon className="h-5 w-5 text-brand-200" />
-                    <div className="mt-4 text-sm font-medium text-white">{tab.label}</div>
-                    <div className="mt-1 text-xs text-slate-400">Open purchase flow</div>
-                  </button>
-                );
-              })}
+          {serviceTabs.map((tab) => {
+            const Icon = tab.icon;
+            const activeTab = active === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActive(tab.key)}
+                className={`rounded-3xl border p-4 text-left transition ${activeTab ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-[#fcfbf8] hover:border-orange-200 hover:bg-orange-50'}`}
+              >
+                <Icon className="h-5 w-5 text-orange-600" />
+                <div className="mt-4 text-sm font-medium text-slate-950">{tab.label}</div>
+                <div className="mt-1 text-xs text-slate-600">Open purchase flow</div>
+              </button>
+            );
+          })}
             </div>
           </CardContent>
         </Card>
@@ -118,7 +118,7 @@ export default function BuyDataPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="axis-label">Wallet balance</div>
-              <div className="text-2xl font-semibold text-white">₦{formatMoney(wallet?.balance || 0)}</div>
+              <div className="text-2xl font-semibold text-slate-950">₦{formatMoney(wallet?.balance || 0)}</div>
             </div>
             <div className="space-y-2">
               <div className="axis-label">Phone number</div>
@@ -126,7 +126,7 @@ export default function BuyDataPage() {
             </div>
             <div className="space-y-2">
               <div className="axis-label">Selected plan</div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-slate-300">
+              <div className="rounded-2xl border border-slate-200 bg-[#fcfbf8] p-3 text-sm text-slate-700">
                 {selected ? `${selected.plan_name || selected.plan_code} • ₦${formatMoney(selected.price || 0)}` : 'Pick a plan from the list'}
               </div>
             </div>
@@ -134,7 +134,7 @@ export default function BuyDataPage() {
               {busy ? 'Processing...' : 'Submit purchase'}
               <ArrowRight className="h-4 w-4" />
             </Button>
-            {message ? <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-sm text-slate-300">{message}</div> : null}
+            {message ? <div className="rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-600">{message}</div> : null}
           </CardContent>
         </Card>
       </div>
@@ -144,8 +144,8 @@ export default function BuyDataPage() {
           <CardTitle>Available plans</CardTitle>
           <CardDescription>Pulling directly from the existing backend catalog.</CardDescription>
         </CardHeader>
-        <CardContent>
-          {loading ? <div className="text-sm text-slate-400">Loading plans...</div> : null}
+          <CardContent>
+          {loading ? <div className="text-sm text-slate-600">Loading plans...</div> : null}
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {curatedPlans.map((plan) => {
               const activeCard = selected?.plan_code === plan.plan_code;
@@ -153,17 +153,17 @@ export default function BuyDataPage() {
                 <button
                   key={plan.plan_code}
                   onClick={() => setSelected(plan)}
-                  className={`rounded-3xl border p-4 text-left transition ${activeCard ? 'border-brand-400/30 bg-brand-500/10' : 'border-white/10 bg-white/5 hover:bg-white/8'}`}
+                  className={`rounded-3xl border p-4 text-left transition ${activeCard ? 'border-orange-200 bg-orange-50' : 'border-slate-200 bg-[#fcfbf8] hover:border-orange-200 hover:bg-orange-50'}`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <div className="text-sm font-medium text-white">{plan.plan_name || plan.plan_code}</div>
-                      <div className="mt-1 text-xs text-slate-400">{plan.network || 'Network'}</div>
+                      <div className="text-sm font-medium text-slate-950">{plan.plan_name || plan.plan_code}</div>
+                      <div className="mt-1 text-xs text-slate-600">{plan.network || 'Network'}</div>
                     </div>
                     <Badge tone="neutral">{plan.validity || 'Plan'}</Badge>
                   </div>
-                  <div className="mt-4 text-xl font-semibold text-white">₦{formatMoney(plan.price || 0)}</div>
-                  <div className="mt-1 text-sm text-slate-400">{plan.data_size || ''}</div>
+                  <div className="mt-4 text-xl font-semibold text-slate-950">₦{formatMoney(plan.price || 0)}</div>
+                  <div className="mt-1 text-sm text-slate-600">{plan.data_size || ''}</div>
                 </button>
               );
             })}

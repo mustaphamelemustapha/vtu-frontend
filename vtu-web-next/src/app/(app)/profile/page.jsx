@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Copy, LogOut, ShieldCheck, Users } from 'lucide-react';
 import { apiFetch, clearAuth, getProfile, setProfile } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
@@ -11,6 +12,7 @@ import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [profile, setProfileState] = useState(getProfile());
   const [referrals, setReferrals] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -107,23 +109,23 @@ export default function ProfilePage() {
               <CardDescription>Invite-first flow with first-deposit rewards already wired on the backend.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
               <div className="axis-label">Referral code</div>
-              <div className="mt-2 text-3xl font-semibold tracking-tight text-white">{referrals?.referral_code || profile?.referral_code || '—'}</div>
-              <div className="mt-2 text-sm text-slate-400">Share this code from the dashboard or registration link.</div>
+              <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{referrals?.referral_code || profile?.referral_code || '—'}</div>
+              <div className="mt-2 text-sm text-slate-600">Share this code from the dashboard or registration link.</div>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <Button variant="secondary" onClick={copyReferral}><Copy className="h-4 w-4" />Copy code</Button>
               <Button variant="secondary" onClick={() => window.open(referrals?.referral_link || '#', '_blank')} disabled={!referrals?.referral_link}>Open link</Button>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl border border-white/8 bg-white/4 p-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="axis-label">Total referrals</div>
-                <div className="mt-2 text-2xl font-semibold text-white">{referrals?.total_referrals ?? 0}</div>
+                <div className="mt-2 text-2xl font-semibold text-slate-950">{referrals?.total_referrals ?? 0}</div>
               </div>
-              <div className="rounded-2xl border border-white/8 bg-white/4 p-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="axis-label">Total earned</div>
-                <div className="mt-2 text-2xl font-semibold text-white">₦{formatMoney(referrals?.total_earned || 0)}</div>
+                <div className="mt-2 text-2xl font-semibold text-slate-950">₦{formatMoney(referrals?.total_earned || 0)}</div>
               </div>
             </div>
           </CardContent>
@@ -155,11 +157,18 @@ export default function ProfilePage() {
             <CardDescription>Session and workspace-level controls.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button variant="secondary" className="w-full" onClick={() => clearAuth()}>
+            <Button
+              variant="secondary"
+              className="w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+              onClick={() => {
+                clearAuth();
+                router.replace('/');
+              }}
+            >
               <LogOut className="h-4 w-4" />
               Sign out
             </Button>
-            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-slate-400">
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-[#fcfbf8] p-4 text-sm text-slate-600">
               Desktop profile surface is intentionally calm so support, security, and referral workflows stay obvious.
             </div>
           </CardContent>

@@ -61,13 +61,13 @@ export default function WalletPage() {
             <CardDescription>Live balance and operational state.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between rounded-3xl border border-white/10 bg-white/5 p-5">
+            <div className="flex items-center justify-between rounded-3xl border border-slate-200 bg-[#fcfbf8] p-5">
               <div>
                 <div className="axis-label">Available balance</div>
-                <div className="mt-2 text-3xl font-semibold tracking-tight text-white">₦{formatMoney(wallet?.balance || 0)}</div>
-                <div className="mt-2 text-sm text-slate-400">{loading ? 'Syncing wallet data...' : 'Wallet loaded from the existing API.'}</div>
+                <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">₦{formatMoney(wallet?.balance || 0)}</div>
+                <div className="mt-2 text-sm text-slate-600">{loading ? 'Syncing wallet data...' : 'Wallet loaded from the existing API.'}</div>
               </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-brand-500/15 text-brand-200">
+              <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-orange-50 text-orange-600">
                 <Wallet2 className="h-6 w-6" />
               </div>
             </div>
@@ -78,9 +78,9 @@ export default function WalletPage() {
                 { label: 'Transfer accounts', value: String(accounts.length) },
                 { label: 'Status', value: wallet?.status || 'active' },
               ].map((item) => (
-                <div key={item.label} className="rounded-3xl border border-white/10 bg-white/5 p-4">
+                <div key={item.label} className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
                   <div className="axis-label">{item.label}</div>
-                  <div className="mt-2 text-xl font-semibold text-white">{item.value}</div>
+                  <div className="mt-2 text-xl font-semibold text-slate-950">{item.value}</div>
                 </div>
               ))}
             </div>
@@ -94,17 +94,17 @@ export default function WalletPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {primary ? (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
-                <div className="text-sm font-medium text-white">{primary.bank_name}</div>
-                <div className="mt-3 text-2xl font-semibold tracking-[0.18em] text-white">{primary.account_number}</div>
-                <div className="mt-2 text-sm text-slate-400">{primary.account_name || 'AxisVTU Wallet'}</div>
+              <div className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
+                <div className="text-sm font-medium text-slate-950">{primary.bank_name}</div>
+                <div className="mt-3 text-2xl font-semibold tracking-[0.18em] text-slate-950">{primary.account_number}</div>
+                <div className="mt-2 text-sm text-slate-600">{primary.account_name || 'AxisVTU Wallet'}</div>
                 <Button variant="secondary" className="mt-4 w-full" onClick={() => copy(primary.account_number)}>
                   <Copy className="h-4 w-4" />
                   Copy account number
                 </Button>
               </div>
             ) : (
-              <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-slate-400">Dedicated accounts will appear here once generated.</div>
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-sm text-slate-600">Dedicated accounts will appear here once generated.</div>
             )}
           </CardContent>
         </Card>
@@ -116,14 +116,14 @@ export default function WalletPage() {
           <CardDescription>Wallet movements in clean chronological order.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {ledger.length === 0 ? <div className="text-sm text-slate-400">No ledger records yet.</div> : null}
+          {ledger.length === 0 ? <div className="text-sm text-slate-600">No ledger records yet.</div> : null}
           {ledger.map((item) => (
-            <div key={item.id || item.reference} className="flex items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/4 p-4">
+            <div key={item.id || item.reference} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-[#fcfbf8] p-4">
               <div>
-                <div className="text-sm font-medium text-white">{item.description || item.reference || 'Wallet entry'}</div>
+                <div className="text-sm font-medium text-slate-950">{item.description || item.reference || 'Wallet entry'}</div>
                 <div className="text-xs text-slate-500">{formatDateTime(item.created_at)}</div>
               </div>
-              <div className={`text-sm font-semibold ${String(item.entry_type || '').toLowerCase() === 'credit' ? 'text-emerald-300' : 'text-rose-300'}`}>
+              <div className={`text-sm font-semibold ${String(item.entry_type || '').toLowerCase() === 'credit' ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {String(item.entry_type || '').toLowerCase() === 'credit' ? '+' : '-'}₦{formatMoney(item.amount || 0)}
               </div>
             </div>
