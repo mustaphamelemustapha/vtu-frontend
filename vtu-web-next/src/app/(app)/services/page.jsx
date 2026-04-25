@@ -141,32 +141,32 @@ function ServiceCard({ item }) {
   const hasLink = Boolean(item.href);
 
   return (
-    <Card className="h-full border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+    <Card className="h-full border-slate-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
       <CardContent className="flex h-full flex-col p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
             <Icon className="h-5 w-5" />
           </div>
-          <Badge tone="neutral" className="border-slate-200 bg-slate-50 text-slate-600">
+          <Badge tone="neutral" className="border-slate-300 bg-slate-50 text-slate-700">
             {item.note}
           </Badge>
         </div>
 
         <div className="mt-5 space-y-2">
           <h3 className="text-base font-semibold tracking-tight text-slate-950">{item.title}</h3>
-          <p className="text-sm leading-6 text-slate-600">{item.description}</p>
+          <p className="text-sm leading-6 text-slate-700">{item.description}</p>
         </div>
 
         <div className="mt-6 pt-1">
           {hasLink ? (
-            <Button asChild variant="secondary" className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+            <Button asChild variant="secondary" className="w-full border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
               <Link href={item.href}>
                 {item.cta}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-700">
               Available in the app
             </div>
           )}
@@ -180,11 +180,11 @@ function CatalogCard({ title, description, items, emptyLabel, accent = false }) 
   const list = stringifyList(items);
 
   return (
-    <Card className={cn('border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]', accent && 'border-orange-200 bg-orange-50/50')}>
+    <Card className={cn('border-slate-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]', accent && 'border-orange-200 bg-orange-50/50')}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle>{title}</CardTitle>
-          <Badge tone="neutral" className="border-slate-200 bg-white text-slate-600">
+          <Badge tone="neutral" className="border-slate-300 bg-white text-slate-700">
             {list.length ? `${list.length} option${list.length === 1 ? '' : 's'}` : 'Available in app'}
           </Badge>
         </div>
@@ -194,13 +194,13 @@ function CatalogCard({ title, description, items, emptyLabel, accent = false }) 
         {list.length ? (
           <div className="flex flex-wrap gap-2">
             {list.map((item) => (
-              <Badge key={item} tone="neutral" className="border-slate-200 bg-slate-50 text-slate-700">
+              <Badge key={item} tone="neutral" className="border-slate-300 bg-slate-50 text-slate-700">
                 {item}
               </Badge>
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-500">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-700">
             {emptyLabel || 'This option is available in the app, but provider data is not exposed here yet.'}
           </div>
         )}
@@ -217,35 +217,35 @@ function PlanCard({ plan }) {
   const price = Number(plan?.price || 0);
 
   return (
-    <Card className="h-full border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(15,23,42,0.06)]">
+    <Card className="h-full border-slate-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)] transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(15,23,42,0.06)]">
       <CardContent className="flex h-full flex-col p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1">
             <div className="text-sm font-semibold text-slate-950">{planName}</div>
-            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">{plan?.plan_code || '—'}</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-slate-700">{plan?.plan_code || '—'}</div>
           </div>
-          <Badge tone="neutral" className="border-slate-200 bg-slate-50 text-slate-600">
+          <Badge tone="neutral" className="border-slate-300 bg-slate-50 text-slate-700">
             {networkLabel(network)}
           </Badge>
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-2xl border border-slate-200 bg-[#fcfbf8] p-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Size</div>
+          <div className="rounded-2xl border border-slate-300 bg-[#fcfbf8] p-3">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-slate-700">Size</div>
             <div className="mt-1 font-medium text-slate-950">{size || '—'}</div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-[#fcfbf8] p-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Validity</div>
+          <div className="rounded-2xl border border-slate-300 bg-[#fcfbf8] p-3">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-slate-700">Validity</div>
             <div className="mt-1 font-medium text-slate-950">{validity || '—'}</div>
           </div>
         </div>
 
         <div className="mt-4 flex items-end justify-between gap-3">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.2em] text-slate-500">Price</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-slate-700">Price</div>
             <div className="text-xl font-semibold tracking-tight text-slate-950">₦{formatMoney(price)}</div>
           </div>
-          <Button asChild variant="secondary" size="sm" className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+          <Button asChild variant="secondary" size="sm" className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
             <Link href="/buy-data">
               Buy
               <ArrowRight className="h-4 w-4" />
@@ -346,7 +346,7 @@ export default function ServicesPage() {
         description="Everything you need for data, airtime, bills, wallet funding, and transaction tracking in one simple platform."
         actions={(
           <>
-            <Button variant="secondary" onClick={reload} className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+            <Button variant="secondary" onClick={reload} className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
               <RefreshCw className={cn('h-4 w-4', (catalogLoading || plansLoading) && 'animate-spin')} />
               Refresh
             </Button>
@@ -361,20 +361,20 @@ export default function ServicesPage() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <Card className="border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+        <Card className="border-slate-300 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
           <CardContent className="space-y-6 p-6">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
                 <Layers3 className="h-5 w-5" />
               </div>
               <div className="space-y-2">
-                <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+                <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-700">
                   Live catalog
                 </div>
                 <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
                   A clearer view of the AxisVTU service stack
                 </h2>
-                <p className="max-w-2xl text-sm leading-6 text-slate-600">
+                <p className="max-w-2xl text-sm leading-6 text-slate-700">
                   The web app now reflects the same product surface used in Flutter:
                   data, airtime, electricity, cable TV, exam PINs, wallet funding,
                   receipts, and referrals.
@@ -384,19 +384,19 @@ export default function ServicesPage() {
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {heroStats.map((item) => (
-                <div key={item.label} className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-slate-500">{item.label}</div>
+                <div key={item.label} className="rounded-3xl border border-slate-300 bg-[#fcfbf8] p-4">
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-slate-700">{item.label}</div>
                   <div className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
                     {statValue(item.value, catalogLoading || plansLoading)}
                   </div>
-                  <div className="mt-1 text-sm leading-6 text-slate-600">{item.muted}</div>
+                  <div className="mt-1 text-sm leading-6 text-slate-700">{item.muted}</div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+        <Card className="border-slate-300 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
           <CardHeader>
             <CardTitle>What is live here</CardTitle>
             <CardDescription>Only services that exist in the app and backend catalog are shown.</CardDescription>
@@ -408,7 +408,7 @@ export default function ServicesPage() {
               'Dedicated wallet funding, transaction history, and receipts',
               'Referral tracking inside the user profile',
             ].map((line) => (
-              <div key={line} className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-[#fcfbf8] p-3 text-sm text-slate-600">
+              <div key={line} className="flex items-start gap-3 rounded-2xl border border-slate-300 bg-[#fcfbf8] p-3 text-sm text-slate-700">
                 <div className="mt-0.5 h-2 w-2 rounded-full bg-orange-500" />
                 <span>{line}</span>
               </div>
@@ -422,9 +422,9 @@ export default function ServicesPage() {
           <div>
             <div className="axis-label">Service overview</div>
             <h2 className="text-xl font-semibold tracking-tight text-slate-950">Real AxisVTU services</h2>
-            <p className="text-sm leading-6 text-slate-600">A clean catalog of the modules available in the Flutter app.</p>
+            <p className="text-sm leading-6 text-slate-700">A clean catalog of the modules available in the Flutter app.</p>
           </div>
-          <Badge tone="neutral" className="w-fit border-slate-200 bg-white text-slate-600">
+          <Badge tone="neutral" className="w-fit border-slate-300 bg-white text-slate-700">
             {serviceCards.length} services
           </Badge>
         </div>
@@ -441,12 +441,12 @@ export default function ServicesPage() {
           <div>
             <div className="axis-label">Data plans</div>
             <h2 className="text-xl font-semibold tracking-tight text-slate-950">Live network bundles</h2>
-            <p className="text-sm leading-6 text-slate-600">
+            <p className="text-sm leading-6 text-slate-700">
               Plans are fetched from the backend and grouped by network. Validity and price are shown exactly as returned.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="secondary" onClick={reload} className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+            <Button variant="secondary" onClick={reload} className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
               <RefreshCw className={cn('h-4 w-4', plansLoading && 'animate-spin')} />
               Reload plans
             </Button>
@@ -464,7 +464,7 @@ export default function ServicesPage() {
           </Card>
         ) : null}
 
-        <Card className="border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+        <Card className="border-slate-300 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
           <CardHeader className="pb-4">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
@@ -479,11 +479,11 @@ export default function ServicesPage() {
                     'rounded-full border px-4 py-2 text-sm font-medium transition',
                     activeNetwork === 'all'
                       ? 'border-orange-200 bg-orange-50 text-slate-950'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
                   )}
                 >
                   All
-                  <span className="ml-2 text-xs text-slate-500">{plans.length}</span>
+                  <span className="ml-2 text-xs text-slate-700">{plans.length}</span>
                 </button>
                 {availableNetworks.map((network) => {
                   const count = plansByNetwork.get(network)?.length || 0;
@@ -497,11 +497,11 @@ export default function ServicesPage() {
                         'rounded-full border px-4 py-2 text-sm font-medium transition',
                         active
                           ? 'border-orange-200 bg-orange-50 text-slate-950'
-                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                          : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
                       )}
                     >
                       {networkLabel(network)}
-                      <span className="ml-2 text-xs text-slate-500">{count}</span>
+                      <span className="ml-2 text-xs text-slate-700">{count}</span>
                     </button>
                   );
                 })}
@@ -512,7 +512,7 @@ export default function ServicesPage() {
             {plansLoading && !plans.length ? (
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, idx) => (
-                  <div key={idx} className="h-44 animate-pulse rounded-3xl border border-slate-200 bg-[#fcfbf8]" />
+                  <div key={idx} className="h-44 animate-pulse rounded-3xl border border-slate-300 bg-[#fcfbf8]" />
                 ))}
               </div>
             ) : activePlans.length ? (
@@ -522,7 +522,7 @@ export default function ServicesPage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-3xl border border-dashed border-slate-200 bg-[#fcfbf8] px-5 py-6 text-sm text-slate-500">
+              <div className="rounded-3xl border border-dashed border-slate-300 bg-[#fcfbf8] px-5 py-6 text-sm text-slate-700">
                 {plansError ? 'No live plans could be loaded.' : 'No plans available right now.'}
               </div>
             )}
@@ -534,13 +534,13 @@ export default function ServicesPage() {
         <div>
           <div className="axis-label">Coverage</div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-950">Other real services in the app</h2>
-          <p className="text-sm leading-6 text-slate-600">
+          <p className="text-sm leading-6 text-slate-700">
             These cards stay honest. When the backend exposes options, they appear here. When it does not, we keep the page simple.
           </p>
         </div>
 
         {catalogError ? (
-          <div className="rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <div className="rounded-3xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
             {catalogError}
           </div>
         ) : null}
@@ -577,17 +577,17 @@ export default function ServicesPage() {
         <div>
           <div className="axis-label">Account features</div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-950">Wallet, history, and referrals</h2>
-          <p className="text-sm leading-6 text-slate-600">The rest of the product surface stays available as clean navigation paths.</p>
+          <p className="text-sm leading-6 text-slate-700">The rest of the product surface stays available as clean navigation paths.</p>
         </div>
 
         <div className="grid gap-4 xl:grid-cols-3">
-          <Card className="border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+          <Card className="border-slate-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
                   <CircleDollarSign className="h-5 w-5" />
                 </div>
-                <Badge tone="neutral" className="border-slate-200 bg-slate-50 text-slate-600">Live</Badge>
+                <Badge tone="neutral" className="border-slate-300 bg-slate-50 text-slate-700">Live</Badge>
               </div>
               <CardTitle>Wallet funding</CardTitle>
               <CardDescription>
@@ -604,13 +604,13 @@ export default function ServicesPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+          <Card className="border-slate-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
                   <ReceiptText className="h-5 w-5" />
                 </div>
-                <Badge tone="neutral" className="border-slate-200 bg-slate-50 text-slate-600">Live</Badge>
+                <Badge tone="neutral" className="border-slate-300 bg-slate-50 text-slate-700">Live</Badge>
               </div>
               <CardTitle>History & receipts</CardTitle>
               <CardDescription>
@@ -618,7 +618,7 @@ export default function ServicesPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="secondary" className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+              <Button asChild variant="secondary" className="w-full border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
                 <Link href="/history">
                   Open history
                   <ArrowRight className="h-4 w-4" />
@@ -627,13 +627,13 @@ export default function ServicesPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
+          <Card className="border-slate-300 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
                   <Gift className="h-5 w-5" />
                 </div>
-                <Badge tone="neutral" className="border-slate-200 bg-slate-50 text-slate-600">Live</Badge>
+                <Badge tone="neutral" className="border-slate-300 bg-slate-50 text-slate-700">Live</Badge>
               </div>
               <CardTitle>Referrals</CardTitle>
               <CardDescription>
@@ -641,7 +641,7 @@ export default function ServicesPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild variant="secondary" className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+              <Button asChild variant="secondary" className="w-full border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
                 <Link href="/profile#referrals">
                   Open referrals
                   <ArrowRight className="h-4 w-4" />

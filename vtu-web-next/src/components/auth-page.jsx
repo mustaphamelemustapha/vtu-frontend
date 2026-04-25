@@ -13,8 +13,8 @@ function Field({ label, helper, children }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-end justify-between gap-3">
-        <label className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-400">{label}</label>
-        {helper ? <span className="text-[11px] text-slate-500">{helper}</span> : null}
+        <label className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-300">{label}</label>
+        {helper ? <span className="text-[11px] text-slate-300">{helper}</span> : null}
       </div>
       {children}
     </div>
@@ -118,7 +118,7 @@ export function AuthPage({ initialMode = 'login' }) {
           mounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1.5 scale-[0.995]'
         }`}
       >
-        <Card className="w-full max-w-[420px] border border-white/[0.04] bg-[rgba(255,255,255,0.018)] shadow-[0_8px_20px_rgba(0,0,0,0.14)] backdrop-blur-sm">
+        <Card className="w-full max-w-[420px] border border-white/12 bg-white/[0.045] shadow-[0_8px_20px_rgba(0,0,0,0.14)] backdrop-blur-sm">
           <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
             <div className="text-[0.72rem] font-semibold uppercase tracking-[0.34em] text-slate-200">
               AxisVTU
@@ -126,7 +126,7 @@ export function AuthPage({ initialMode = 'login' }) {
             <CardTitle className="text-[1.6rem] font-semibold tracking-[-0.025em] text-[#EAEAEA]">
               {heading}
             </CardTitle>
-            <CardDescription className="mx-auto max-w-[300px] text-sm leading-6 text-[#9CA3AF]">
+            <CardDescription className="mx-auto max-w-[300px] text-sm leading-6 text-slate-300">
               {subtitle}
             </CardDescription>
           </CardHeader>
@@ -138,7 +138,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="First name">
                       <Input
-                        className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
+                        className="h-[50px] rounded-[8px] border border-white/12 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-400 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/16 focus:border-white/20 focus:ring-2 focus:ring-white/15"
                         value={form.first_name}
                         onChange={(e) => setForm((prev) => ({ ...prev, first_name: e.target.value }))}
                         placeholder="First name"
@@ -147,7 +147,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     </Field>
                     <Field label="Last name">
                       <Input
-                        className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
+                        className="h-[50px] rounded-[8px] border border-white/12 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-400 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/16 focus:border-white/20 focus:ring-2 focus:ring-white/15"
                         value={form.last_name}
                         onChange={(e) => setForm((prev) => ({ ...prev, last_name: e.target.value }))}
                         placeholder="Last name"
@@ -158,7 +158,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Email">
                     <Input
-                      className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
+                      className="h-[50px] rounded-[8px] border border-white/12 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-400 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/16 focus:border-white/20 focus:ring-2 focus:ring-white/15"
                       value={form.email}
                       onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="you@example.com"
@@ -168,7 +168,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Phone">
                     <Input
-                      className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
+                      className="h-[50px] rounded-[8px] border border-white/12 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-400 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/16 focus:border-white/20 focus:ring-2 focus:ring-white/15"
                       value={form.phone_number}
                       onChange={(e) => setForm((prev) => ({ ...prev, phone_number: e.target.value }))}
                       placeholder="08012345678"
@@ -179,7 +179,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <Field label="Password">
                     <div className="relative">
                       <Input
-                        className="h-[50px] rounded-[8px] pr-14 border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
+                        className="h-[50px] rounded-[8px] pr-14 border border-white/12 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-400 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/16 focus:border-white/20 focus:ring-2 focus:ring-white/15"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Create a secure password"
@@ -189,7 +189,7 @@ export function AuthPage({ initialMode = 'login' }) {
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-2 my-auto rounded-[8px] border border-white/5 bg-[#11161C] px-3 text-xs font-medium text-slate-400 transition-all duration-200 hover:border-white/8 hover:bg-[#161C24] hover:text-slate-200"
+                        className="absolute inset-y-0 right-2 my-auto rounded-[8px] border border-white/12 bg-[#11161C] px-3 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-white/16 hover:bg-[#161C24] hover:text-slate-200"
                       >
                         {showPassword ? (
                           <span className="inline-flex items-center gap-1">
@@ -208,7 +208,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Referral code" helper="Optional">
                     <Input
-                      className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
+                      className="h-[50px] rounded-[8px] border border-white/12 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-400 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/16 focus:border-white/20 focus:ring-2 focus:ring-white/15"
                       value={form.referral_code}
                       onChange={(e) => setForm((prev) => ({ ...prev, referral_code: e.target.value }))}
                       placeholder="Enter a friend's code"
@@ -219,7 +219,7 @@ export function AuthPage({ initialMode = 'login' }) {
                 <>
                   <Field label="Email or phone">
                     <Input
-                      className="h-[50px] rounded-[8px] border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
+                      className="h-[50px] rounded-[8px] border border-white/12 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-400 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/16 focus:border-white/20 focus:ring-2 focus:ring-white/15"
                       value={form.email}
                       onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="you@example.com or 08012345678"
@@ -230,7 +230,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <Field label="Password">
                     <div className="relative">
                       <Input
-                        className="h-[50px] rounded-[8px] pr-14 border border-white/5 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-500/60 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/8 focus:border-white/12 focus:ring-2 focus:ring-white/10"
+                        className="h-[50px] rounded-[8px] pr-14 border border-white/12 bg-[#11161C] px-4 text-[0.98rem] text-[#EAEAEA] placeholder:text-slate-400 caret-slate-100 shadow-none transition-all duration-200 hover:border-white/16 focus:border-white/20 focus:ring-2 focus:ring-white/15"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Your password"
@@ -240,7 +240,7 @@ export function AuthPage({ initialMode = 'login' }) {
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-2 my-auto rounded-[8px] border border-white/5 bg-[#11161C] px-3 text-xs font-medium text-slate-400 transition-all duration-200 hover:border-white/8 hover:bg-[#161C24] hover:text-slate-200"
+                        className="absolute inset-y-0 right-2 my-auto rounded-[8px] border border-white/12 bg-[#11161C] px-3 text-xs font-medium text-slate-300 transition-all duration-200 hover:border-white/16 hover:bg-[#161C24] hover:text-slate-200"
                       >
                         {showPassword ? (
                           <span className="inline-flex items-center gap-1">
@@ -263,12 +263,12 @@ export function AuthPage({ initialMode = 'login' }) {
 
               <div className={`flex items-center ${isRegister ? 'justify-end' : 'justify-between'} gap-3 pt-1 text-sm`}>
                 {!isRegister ? (
-                  <label className="flex items-center gap-2 text-slate-400 transition-colors hover:text-slate-300">
+                  <label className="flex items-center gap-2 text-slate-300 transition-colors hover:text-slate-300">
                     <input
                       type="checkbox"
                       checked={persist}
                       onChange={(e) => setPersist(e.target.checked)}
-                      className="rounded border-slate-500 bg-transparent text-[#f97316] accent-[#f97316] focus:ring-white/10"
+                      className="rounded border-slate-500 bg-transparent text-[#f97316] accent-[#f97316] focus:ring-white/15"
                     />
                     Remember me
                   </label>
@@ -278,7 +278,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                 <Link
                   href={isRegister ? '/login' : '/register'}
-                  className="text-sm font-medium text-slate-400 transition-colors hover:text-slate-200 hover:underline hover:decoration-current hover:underline-offset-4"
+                  className="text-sm font-medium text-slate-300 transition-colors hover:text-slate-200 hover:underline hover:decoration-current hover:underline-offset-4"
                 >
                   {isRegister ? 'Already have an account? Sign in' : 'Need an account? Register'}
                 </Link>

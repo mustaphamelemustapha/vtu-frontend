@@ -112,22 +112,22 @@ export default function ProfilePage() {
               <CardDescription>Invite-first flow with first-deposit rewards already wired on the backend.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
+            <div className="rounded-3xl border border-slate-300 bg-[#fcfbf8] p-4">
               <div className="axis-label">Referral code</div>
               <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{referrals?.referral_code || profile?.referral_code || '—'}</div>
-              <div className="mt-2 text-sm text-slate-600">Share this code from the dashboard or registration link.</div>
+              <div className="mt-2 text-sm text-slate-700">Share this code from the dashboard or registration link.</div>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <Button variant="secondary" onClick={copyReferral}><Copy className="h-4 w-4" />Copy code</Button>
               <Button variant="secondary" onClick={() => referralUrl && window.open(referralUrl, '_blank', 'noopener,noreferrer')} disabled={!referralUrl}>Open link</Button>
             </div>
-            {referralUrl ? <div className="rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-600 break-all">{referralUrl}</div> : null}
+            {referralUrl ? <div className="rounded-2xl border border-slate-300 bg-white p-3 text-xs text-slate-700 break-all">{referralUrl}</div> : null}
             <div className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="rounded-2xl border border-slate-300 bg-white p-4">
                 <div className="axis-label">Total referrals</div>
                 <div className="mt-2 text-2xl font-semibold text-slate-950">{referrals?.total_referrals ?? 0}</div>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="rounded-2xl border border-slate-300 bg-white p-4">
                 <div className="axis-label">Total earned</div>
                 <div className="mt-2 text-2xl font-semibold text-slate-950">₦{formatMoney(referrals?.total_earned || 0)}</div>
               </div>
@@ -172,7 +172,7 @@ export default function ProfilePage() {
               <LogOut className="h-4 w-4" />
               Sign out
             </Button>
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-[#fcfbf8] p-4 text-sm text-slate-600">
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-[#fcfbf8] p-4 text-sm text-slate-700">
               Desktop profile surface is intentionally calm so support, security, and referral workflows stay obvious.
             </div>
           </CardContent>

@@ -251,18 +251,18 @@ export default function BuyDataPage() {
     <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-[#0b0f14] px-4 py-5 text-slate-100 md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
       <div className="space-y-6 pb-28 md:pb-8">
         <div className="space-y-2">
-        <div className="axis-label text-white/40">Services</div>
+        <div className="axis-label text-white/80">Services</div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">Buy Data</h1>
-            <p className="max-w-2xl text-sm leading-6 text-white/55">
+            <p className="max-w-2xl text-sm leading-6 text-white/75">
               Affordable data bundles for MTN, Airtel, Glo, and 9mobile from one sharp purchase workspace.
             </p>
           </div>
           <Button
             variant="secondary"
             onClick={() => load()}
-            className="border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:text-white"
+            className="border-white/15 bg-white/[0.09] text-white/80 hover:bg-white/[0.09] hover:text-white"
           >
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh plans
@@ -271,15 +271,15 @@ export default function BuyDataPage() {
       </div>
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="overflow-hidden border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+        <Card className="overflow-hidden border-white/15 bg-white/[0.07] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
           <CardContent className="space-y-6 p-4 md:space-y-8 md:p-7">
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Select network</div>
-                  <div className="mt-2 text-sm text-white/55">Choose the bundle family you want to view.</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/62">Select network</div>
+                  <div className="mt-2 text-sm text-white/75">Choose the bundle family you want to view.</div>
                 </div>
-                <Badge className="border-white/10 bg-white/[0.03] text-white/65">Live catalog</Badge>
+                <Badge className="border-white/15 bg-white/[0.09] text-white/80">Live catalog</Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -305,7 +305,7 @@ export default function BuyDataPage() {
                         'group rounded-[20px] border px-3 py-4 text-left transition md:rounded-[22px] md:px-4 md:py-5',
                         isActive
                           ? 'border-amber-400/40 bg-[#2b2318] shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
-                          : 'border-white/8 bg-black/20 hover:border-white/12 hover:bg-white/[0.05]'
+                          : 'border-white/16 bg-black/20 hover:border-white/20 hover:bg-white/[0.09]'
                       )}
                       >
                       <div className="flex items-start justify-between gap-3">
@@ -319,14 +319,14 @@ export default function BuyDataPage() {
                             unoptimized
                           />
                         </div>
-                        <Badge className="border-white/10 bg-white/[0.03] text-white/55">
+                        <Badge className="border-white/15 bg-white/[0.09] text-white/75">
                           {count}
                         </Badge>
                       </div>
                       <div className="mt-4 text-sm font-semibold tracking-wide text-white">
                         {tab.label}
                       </div>
-                      <div className="mt-1 text-xs text-white/45">
+                      <div className="mt-1 text-xs text-white/68">
                         {count ? 'Available now' : 'No bundles visible'}
                       </div>
                     </button>
@@ -337,8 +337,8 @@ export default function BuyDataPage() {
 
             <section className="space-y-4">
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Phone number</div>
-                <div className="mt-2 text-sm text-white/55">Enter the recipient line before choosing a bundle.</div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/62">Phone number</div>
+                <div className="mt-2 text-sm text-white/75">Enter the recipient line before choosing a bundle.</div>
               </div>
               <Input
                 value={phone}
@@ -346,12 +346,12 @@ export default function BuyDataPage() {
                 inputMode="tel"
                 autoComplete="tel"
                 placeholder="08012345678 or 2348012345678"
-                className="h-[52px] rounded-2xl border-white/8 bg-[#11161c] text-base text-white placeholder:text-white/28 focus:border-amber-400/40 focus:ring-amber-500/10 md:h-12"
+                className="h-[52px] rounded-2xl border-white/16 bg-[#11161c] text-base text-white placeholder:text-white/50 focus:border-amber-400/40 focus:ring-amber-500/10 md:h-12"
               />
               {phoneError ? (
                 <p className="text-xs font-medium text-rose-300">{phoneError}</p>
               ) : (
-                <p className="text-xs text-white/42">Use 08012345678 or 2348012345678.</p>
+                <p className="text-xs text-white/80">Use 08012345678 or 2348012345678.</p>
               )}
               <Button
                 className="hidden h-12 w-full rounded-2xl bg-[#f97316] text-slate-950 shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-[#ea6a11] active:scale-[0.98] md:inline-flex"
@@ -362,7 +362,7 @@ export default function BuyDataPage() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
               {message ? (
-                <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/65">
+                <div className="rounded-[18px] border border-white/16 bg-white/[0.09] px-4 py-3 text-sm text-white/80">
                   {message}
                 </div>
               ) : null}
@@ -371,12 +371,12 @@ export default function BuyDataPage() {
             <section className="space-y-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Select plan</div>
-                  <div className="mt-2 text-sm text-white/55">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/62">Select plan</div>
+                  <div className="mt-2 text-sm text-white/75">
                     {activeNetwork === 'all' ? 'All live bundles in one place.' : `${networkLabel(activeNetwork)} plans from the backend catalog.`}
                   </div>
                 </div>
-                <Badge className="border-white/10 bg-white/[0.03] text-white/65">
+                <Badge className="border-white/15 bg-white/[0.09] text-white/80">
                   {activeNetwork === 'all' ? totalCuratedPlans : activeGroup?.plans.length || 0} plan{activeNetwork === 'all' ? (totalCuratedPlans === 1 ? '' : 's') : (activeGroup?.plans.length === 1 ? '' : 's')}
                 </Badge>
               </div>
@@ -384,13 +384,13 @@ export default function BuyDataPage() {
               {loading ? (
                 <div className="grid gap-3 md:grid-cols-2">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <div key={idx} className="h-32 animate-pulse rounded-[22px] border border-white/8 bg-white/[0.03]" />
+                    <div key={idx} className="h-32 animate-pulse rounded-[22px] border border-white/16 bg-white/[0.09]" />
                   ))}
                 </div>
               ) : null}
 
               {!loading && !visiblePlans.length ? (
-                <div className="rounded-[22px] border border-dashed border-white/10 bg-white/[0.03] px-4 py-5 text-sm text-white/50">
+                <div className="rounded-[22px] border border-dashed border-white/15 bg-white/[0.09] px-4 py-5 text-sm text-white/72">
                   No bundles are available for this network right now.
                 </div>
               ) : null}
@@ -408,7 +408,7 @@ export default function BuyDataPage() {
                           'rounded-[22px] border px-4 py-4 text-left transition',
                           isActive
                             ? 'border-amber-400/40 bg-[#2b2318] shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
-                            : 'border-white/8 bg-black/20 hover:border-white/12 hover:bg-white/[0.05]'
+                            : 'border-white/16 bg-black/20 hover:border-white/20 hover:bg-white/[0.09]'
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -425,21 +425,21 @@ export default function BuyDataPage() {
                             </div>
                             <div>
                             <div className="text-sm font-medium text-white">{plan.plan_name || plan.plan_code}</div>
-                            <div className="mt-1 text-xs text-white/45">{plan.plan_code || 'Plan code unavailable'}</div>
+                            <div className="mt-1 text-xs text-white/68">{plan.plan_code || 'Plan code unavailable'}</div>
                             </div>
                           </div>
-                          <Badge className="border-white/10 bg-white/[0.03] text-white/60">
+                          <Badge className="border-white/15 bg-white/[0.09] text-white/78">
                             {plan.validity || 'Plan'}
                           </Badge>
                         </div>
                         <div className="mt-4 flex items-end justify-between gap-3">
                           <div>
-                            <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">Price</div>
+                            <div className="text-[11px] uppercase tracking-[0.24em] text-white/62">Price</div>
                             <div className="mt-1 text-lg font-semibold tracking-tight text-white">
                               ₦{formatMoney(plan.price || 0)}
                             </div>
                           </div>
-                          <div className="text-sm text-white/50">{plan.data_size || '—'}</div>
+                          <div className="text-sm text-white/72">{plan.data_size || '—'}</div>
                         </div>
                       </button>
                     );
@@ -450,13 +450,13 @@ export default function BuyDataPage() {
           </CardContent>
         </Card>
 
-        <Card className="h-fit border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+        <Card className="h-fit border-white/15 bg-white/[0.07] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
           <CardHeader>
             <CardTitle className="text-white">Order Summary</CardTitle>
-            <CardDescription className="text-white/45">Bundle delivery</CardDescription>
+            <CardDescription className="text-white/68">Bundle delivery</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="rounded-[22px] border border-white/8 bg-black/25 p-4">
+            <div className="rounded-[22px] border border-white/16 bg-black/25 p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-white/10">
                   <Image
@@ -470,38 +470,38 @@ export default function BuyDataPage() {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-white">{networkLabel(summaryNetwork)} Data</div>
-                  <div className="text-xs text-white/45">Bundle delivery</div>
+                  <div className="text-xs text-white/68">Bundle delivery</div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
+            <div className="space-y-4 rounded-[22px] border border-white/16 bg-black/20 p-4">
               {[
                 { label: 'Network', value: networkLabel(summaryNetwork) },
                 { label: 'Bundle type', value: 'Single' },
                 { label: 'Plan', value: summaryPlanName },
                 { label: 'Phone', value: phone.trim() || '—' },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-white/8 pb-3 last:border-0 last:pb-0">
-                  <span className="text-sm text-white/45">{item.label}</span>
+                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-white/16 pb-3 last:border-0 last:pb-0">
+                  <span className="text-sm text-white/68">{item.label}</span>
                   <span className="text-sm font-medium text-white">{item.value}</span>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-end justify-between gap-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
+            <div className="flex items-end justify-between gap-4 rounded-[22px] border border-white/16 bg-black/20 p-4">
               <div>
-                <div className="text-sm text-white/45">Total</div>
+                <div className="text-sm text-white/68">Total</div>
                 <div className="mt-1 text-2xl font-semibold tracking-tight text-[#f97316]">
                   ₦{formatMoney(summaryPrice || 0)}
                 </div>
               </div>
-              <div className="text-right text-xs text-white/45">
+              <div className="text-right text-xs text-white/68">
                 {summaryPlanCode !== '—' ? summaryPlanCode : 'Select a bundle to continue'}
               </div>
             </div>
 
-            <div className="text-xs leading-6 text-white/40">
+            <div className="text-xs leading-6 text-white/80">
               Live bundles are loaded from the backend catalog. MTN and Glo plans are surfaced first when available.
             </div>
           </CardContent>
@@ -510,12 +510,12 @@ export default function BuyDataPage() {
       </div>
 
       <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0b0f14]/95 px-4 pt-3 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-[#0b0f14]/95 px-4 pt-3 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}
       >
         <div className="mx-auto flex max-w-md items-center gap-3">
           <div className="min-w-0 flex-1">
-            <div className="truncate text-xs text-white/45">
+            <div className="truncate text-xs text-white/68">
               {selected ? summaryPlanName : 'Select a plan to continue'}
             </div>
             <div className="mt-1 text-lg font-semibold tracking-tight text-white">

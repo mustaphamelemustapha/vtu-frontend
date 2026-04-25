@@ -6,14 +6,14 @@ import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70',
   {
     variants: {
       variant: {
-        default: 'bg-orange-500 text-slate-950 shadow-sm shadow-orange-500/20 hover:bg-orange-600',
-        secondary: 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
-        ghost: 'bg-transparent text-slate-700 hover:bg-slate-100',
-        outline: 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+        default: 'bg-orange-500 text-white shadow-sm shadow-orange-500/20 hover:bg-orange-600 disabled:bg-orange-300 disabled:text-white',
+        secondary: 'border border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 disabled:text-slate-500',
+        ghost: 'bg-transparent text-slate-800 hover:bg-slate-100 disabled:text-slate-500',
+        outline: 'border border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 disabled:text-slate-500',
       },
       size: {
         default: 'h-11 px-4 py-2',

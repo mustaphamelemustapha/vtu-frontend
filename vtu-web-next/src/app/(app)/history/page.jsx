@@ -74,13 +74,13 @@ export default function HistoryPage() {
           <CardDescription>Latest movements from the backend timeline.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {loading ? <div className="text-sm text-slate-600">Loading history...</div> : null}
-          {transactions.length === 0 && !loading ? <div className="text-sm text-slate-600">No transactions yet.</div> : null}
+          {loading ? <div className="text-sm text-slate-700">Loading history...</div> : null}
+          {transactions.length === 0 && !loading ? <div className="text-sm text-slate-700">No transactions yet.</div> : null}
           {transactions.map((tx) => (
-            <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-[#fcfbf8] p-4">
+            <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-300 bg-[#fcfbf8] p-4">
               <div>
                 <div className="text-sm font-medium text-slate-950">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
-                <div className="mt-1 text-xs text-slate-500">{tx.reference || '—'} • {formatDateTime(tx.created_at)}</div>
+                <div className="mt-1 text-xs text-slate-700">{tx.reference || '—'} • {formatDateTime(tx.created_at)}</div>
               </div>
               <div className="flex items-center gap-3">
                 <Badge tone={String(tx.status || '').toLowerCase() === 'success' ? 'success' : String(tx.status || '').toLowerCase() === 'failed' ? 'danger' : 'warning'}>{tx.status || 'pending'}</Badge>
@@ -97,14 +97,14 @@ export default function HistoryPage() {
           <CardDescription>Service-level issue tracking and support history.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {reports.length === 0 ? <div className="text-sm text-slate-600">No support reports yet.</div> : null}
+          {reports.length === 0 ? <div className="text-sm text-slate-700">No support reports yet.</div> : null}
           {reports.map((report) => (
-            <div key={report.id} className="rounded-2xl border border-slate-200 bg-[#fcfbf8] p-4">
+            <div key={report.id} className="rounded-2xl border border-slate-300 bg-[#fcfbf8] p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm font-medium text-slate-950">Report #{report.id}</div>
                 <Badge tone={String(report.status || '').toLowerCase() === 'resolved' ? 'success' : 'warning'}>{report.status || 'open'}</Badge>
               </div>
-              <div className="mt-2 text-sm text-slate-600">{report.message || report.summary || 'Support report details available in backend.'}</div>
+              <div className="mt-2 text-sm text-slate-700">{report.message || report.summary || 'Support report details available in backend.'}</div>
             </div>
           ))}
         </CardContent>

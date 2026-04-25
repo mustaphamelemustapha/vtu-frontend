@@ -65,7 +65,7 @@ export default function DashboardPage() {
         description="A calm, desktop-native command center for AxisVTU operations, balances, and referral activity."
         actions={(
           <>
-            <Button variant="secondary" onClick={() => load(true)} className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+            <Button variant="secondary" onClick={() => load(true)} className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
               <RefreshCw className={refreshing ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
               Refresh
             </Button>
@@ -100,13 +100,13 @@ export default function DashboardPage() {
                   <button
                     key={item.href}
                     onClick={() => router.push(item.href)}
-                    className="group rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4 text-left transition hover:border-orange-200 hover:bg-orange-50"
+                    className="group rounded-3xl border border-slate-300 bg-[#fcfbf8] p-4 text-left transition hover:border-orange-200 hover:bg-orange-50"
                   >
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="mt-4 text-sm font-semibold text-slate-950">{item.label}</div>
-                    <div className="mt-1 text-sm text-slate-600">Open workspace</div>
+                    <div className="mt-1 text-sm text-slate-700">Open workspace</div>
                   </button>
                 );
               })}
@@ -120,18 +120,18 @@ export default function DashboardPage() {
             <CardDescription>Invite-first deposit rewards, surfaced directly on the dashboard.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
+            <div className="rounded-3xl border border-slate-300 bg-[#fcfbf8] p-4">
               <div className="axis-label">Your code</div>
               <div className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{referralCode}</div>
-              <div className="mt-2 text-sm text-slate-600">Share this code with new users to earn rewards after their first deposit.</div>
+              <div className="mt-2 text-sm text-slate-700">Share this code with new users to earn rewards after their first deposit.</div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Button variant="secondary" onClick={() => router.push('/profile')} className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+              <Button variant="secondary" onClick={() => router.push('/profile')} className="border-slate-300 bg-white text-slate-700 hover:bg-slate-50">
                 View profile
               </Button>
               <Button onClick={() => router.push('/profile')}>Open referrals</Button>
             </div>
-            {referralLink ? <div className="rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-600 break-all">{referralLink}</div> : null}
+            {referralLink ? <div className="rounded-2xl border border-slate-300 bg-white p-3 text-xs text-slate-700 break-all">{referralLink}</div> : null}
           </CardContent>
         </Card>
       </div>
@@ -143,18 +143,18 @@ export default function DashboardPage() {
             <CardDescription>Latest wallet and service movements.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {loading ? <div className="text-sm text-slate-600">Loading transactions...</div> : null}
-            {txs.length === 0 && !loading ? <div className="text-sm text-slate-600">No recent activity yet.</div> : null}
+            {loading ? <div className="text-sm text-slate-700">Loading transactions...</div> : null}
+            {txs.length === 0 && !loading ? <div className="text-sm text-slate-700">No recent activity yet.</div> : null}
             {txs.map((tx) => (
-              <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-[#fcfbf8] p-4">
+              <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-300 bg-[#fcfbf8] p-4">
                 <div>
                   <div className="text-sm font-medium text-slate-950">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
-                  <div className="text-xs text-slate-600">{String(tx.reference || '—')}</div>
-                  <div className="text-xs text-slate-500">{formatDateTime(tx.created_at)}</div>
+                  <div className="text-xs text-slate-700">{String(tx.reference || '—')}</div>
+                  <div className="text-xs text-slate-700">{formatDateTime(tx.created_at)}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-semibold text-slate-950">₦{formatMoney(tx.amount || 0)}</div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-slate-500">{String(tx.status || 'pending')}</div>
+                  <div className="text-xs uppercase tracking-[0.18em] text-slate-700">{String(tx.status || 'pending')}</div>
                 </div>
               </div>
             ))}
@@ -170,19 +170,19 @@ export default function DashboardPage() {
             <CardContent className="space-y-4">
               {bankTransfer?.accounts?.[0] ? (
                 <>
-                  <div className="rounded-3xl border border-slate-200 bg-[#fcfbf8] p-4">
+                  <div className="rounded-3xl border border-slate-300 bg-[#fcfbf8] p-4">
                     <div className="axis-label">Bank</div>
                     <div className="mt-2 text-lg font-semibold text-slate-950">{bankTransfer.accounts[0].bank_name}</div>
                     <div className="mt-2 text-2xl font-semibold tracking-[0.24em] text-slate-950">{bankTransfer.accounts[0].account_number}</div>
-                    <div className="mt-2 text-sm text-slate-600">{bankTransfer.accounts[0].account_name || 'AxisVTU Wallet'}</div>
+                    <div className="mt-2 text-sm text-slate-700">{bankTransfer.accounts[0].account_name || 'AxisVTU Wallet'}</div>
                   </div>
                 </>
               ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-4 text-sm text-slate-600">
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-700">
                   {bankTransfer?.message || 'Wallet transfer accounts will appear here.'}
                 </div>
               )}
-              <Button className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-50" variant="secondary" onClick={() => router.push('/wallet')}>
+              <Button className="w-full border-slate-300 bg-white text-slate-700 hover:bg-slate-50" variant="secondary" onClick={() => router.push('/wallet')}>
                 Open wallet
               </Button>
             </CardContent>
@@ -194,11 +194,11 @@ export default function DashboardPage() {
               <CardDescription>Operational updates from the platform.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {announcements.length === 0 ? <div className="text-sm text-slate-600">No active announcements.</div> : null}
+              {announcements.length === 0 ? <div className="text-sm text-slate-700">No active announcements.</div> : null}
               {announcements.map((item) => (
-                <div key={item.id} className="rounded-2xl border border-slate-200 bg-[#fcfbf8] p-4">
+                <div key={item.id} className="rounded-2xl border border-slate-300 bg-[#fcfbf8] p-4">
                   <div className="text-sm font-medium text-slate-950">{item.title || 'Update'}</div>
-                  <div className="mt-1 text-sm text-slate-600">{item.message || item.text || ''}</div>
+                  <div className="mt-1 text-sm text-slate-700">{item.message || item.text || ''}</div>
                 </div>
               ))}
             </CardContent>

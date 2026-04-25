@@ -11,6 +11,18 @@
   --muted: 215 16% 63%;
   --accent: 221 92% 56%;
   --accent-foreground: 0 0% 100%;
+  --axis-light-primary: #0f172a;
+  --axis-light-secondary: #334155;
+  --axis-light-muted: #475569;
+  --axis-light-disabled: #64748b;
+  --axis-dark-primary: #f8fafc;
+  --axis-dark-secondary: #cbd5e1;
+  --axis-dark-muted: #94a3b8;
+  --axis-dark-disabled: #64748b;
+  --axis-border-light: #cbd5e1;
+  --axis-border-soft: #e2e8f0;
+  --axis-border-dark: rgba(255, 255, 255, 0.16);
+  --axis-border-dark-soft: rgba(255, 255, 255, 0.12);
 }
 
 html {
@@ -83,15 +95,15 @@ a {
   }
 
   .axis-panel {
-    @apply rounded-3xl border border-white/10 bg-slate-950/[0.55] shadow-soft backdrop-blur-xl;
+    @apply rounded-3xl border border-white/15 bg-slate-950/[0.72] shadow-soft backdrop-blur-xl;
   }
 
   .axis-panel-soft {
-    @apply rounded-3xl border border-white/[0.08] bg-white/[0.04] shadow-soft backdrop-blur-xl;
+    @apply rounded-3xl border border-white/15 bg-white/[0.07] shadow-soft backdrop-blur-xl;
   }
 
   .axis-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500;
+    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-600;
   }
 
   .axis-metric {
@@ -99,7 +111,15 @@ a {
   }
 
   .axis-muted {
-    @apply text-sm leading-6 text-slate-600;
+    @apply text-sm leading-6 text-slate-700;
+  }
+
+  .axis-dark-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-300;
+  }
+
+  .axis-dark-muted {
+    @apply text-sm leading-6 text-slate-300;
   }
 
   .animate-fade-up {
