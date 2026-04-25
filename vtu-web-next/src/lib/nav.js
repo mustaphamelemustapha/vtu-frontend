@@ -1,7 +1,8 @@
-import { BarChart3, CircleDollarSign, Clock3, Gauge, Gift, Package2, UserCircle2 } from 'lucide-react';
+import { BarChart3, CircleDollarSign, Clock3, Gauge, Gift, Layers3, Package2, UserCircle2 } from 'lucide-react';
 
 export const appNav = [
   { label: 'Dashboard', href: '/dashboard', icon: Gauge },
+  { label: 'Services', href: '/services', icon: Layers3 },
   { label: 'Buy Data', href: '/buy-data', icon: Package2 },
   { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'History', href: '/history', icon: Clock3 },
@@ -10,6 +11,7 @@ export const appNav = [
 
 export const quickActions = [
   { label: 'Buy Data', href: '/buy-data', icon: Package2 },
+  { label: 'Services', href: '/services', icon: Layers3 },
   { label: 'Fund Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'View History', href: '/history', icon: BarChart3 },
   { label: 'Referrals', href: '/profile#referrals', icon: Gift },
