@@ -232,8 +232,9 @@ export default function BuyDataPage() {
   };
 
   return (
-    <div className="space-y-6 pb-8 text-slate-100">
-      <div className="space-y-2">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-[#0b0f14] px-4 py-5 text-slate-100 md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-8">
+        <div className="space-y-2">
         <div className="axis-label text-white/40">Services</div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
@@ -253,7 +254,7 @@ export default function BuyDataPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Card className="overflow-hidden border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
           <CardContent className="space-y-8 p-6 md:p-7">
             <section className="space-y-4">
@@ -465,6 +466,7 @@ export default function BuyDataPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
