@@ -266,8 +266,8 @@ export default function BuyDataPage() {
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Card className="overflow-hidden border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-          <CardContent className="space-y-8 p-6 md:p-7">
-            <section className="space-y-4">
+          <CardContent className="space-y-6 p-5 md:space-y-8 md:p-7">
+            <section className="order-1 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Select network</div>
@@ -329,7 +329,7 @@ export default function BuyDataPage() {
               </div>
             </section>
 
-            <section className="space-y-4">
+            <section className="order-3 space-y-4 md:order-2">
               <div className="flex items-end justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Available bundles</div>
@@ -409,7 +409,7 @@ export default function BuyDataPage() {
               ) : null}
             </section>
 
-            <section className="space-y-4">
+            <section className="order-2 space-y-4 md:order-3">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Phone number</div>
                 <div className="mt-2 text-sm text-white/55">Enter the recipient line before placing the order.</div>
