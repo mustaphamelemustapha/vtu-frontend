@@ -7,7 +7,6 @@ import { formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -151,7 +150,7 @@ export default function BuyDataPage() {
   const [plans, setPlans] = useState([]);
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeNetwork, setActiveNetwork] = useState('all');
+  const [activeNetwork, setActiveNetwork] = useState('mtn');
   const [phone, setPhone] = useState('');
   const [selected, setSelected] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -192,6 +191,24 @@ export default function BuyDataPage() {
     }
   }, [activeNetwork, planGroups]);
 
+  const activeGroup = useMemo(() => {
+    if (activeNetwork === 'all') return null;
+    return planGroups.find((group) => group.network === activeNetwork) || null;
+  }, [activeNetwork, planGroups]);
+
+  const visiblePlans = useMemo(() => {
+    if (activeNetwork === 'all') {
+      return planGroups.flatMap((group) => group.plans.map((plan) => ({ ...plan, __group: group.network })));
+    }
+    return activeGroup?.plans || [];
+  }, [activeGroup, activeNetwork, planGroups]);
+
+  const summaryNetwork = selected?.network || activeNetwork;
+  const summaryPlanName = selected?.plan_name || selected?.plan_code || '—';
+  const summaryPlanCode = selected?.plan_code || '—';
+  const summaryPrice = selected?.price || 0;
+  const canSubmit = Boolean(selected && phone.trim() && !busy);
+
   const purchase = async () => {
     if (!selected || !phone.trim()) return;
     setBusy(true);
@@ -215,148 +232,240 @@ export default function BuyDataPage() {
   };
 
   return (
-    <div className="space-y-6 pb-8">
-      <PageHeader
-        eyebrow="Buy Data"
-        title="Live data bundles"
-        description="Choose a network, review the available bundles, and complete your purchase in a simple flow."
-        actions={(
-          <Button variant="secondary" onClick={() => load()}>
-            <RefreshCw className="h-4 w-4" />
+    <div className="space-y-6 pb-8 text-slate-100">
+      <div className="space-y-2">
+        <div className="axis-label text-white/40">Services</div>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-semibold tracking-tight text-white">Buy Data</h1>
+            <p className="max-w-2xl text-sm leading-6 text-white/55">
+              Affordable data bundles for MTN, Airtel, Glo, and 9mobile from one sharp purchase workspace.
+            </p>
+          </div>
+          <Button
+            variant="secondary"
+            onClick={() => load()}
+            className="border-white/10 bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:text-white"
+          >
+            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh plans
           </Button>
-        )}
-      />
-
-      <div className="grid gap-4 xl:grid-cols-[1fr_350px]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Choose network</CardTitle>
-            <CardDescription>MTN and Glo bundles remain visible alongside the other live networks.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {NETWORK_TABS.map((tab) => {
-                const count = tab.key === 'all'
-                  ? totalCuratedPlans
-                  : planGroups.find((group) => group.network === tab.key)?.plans.length || 0;
-                const isActive = activeNetwork === tab.key;
-
-                return (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setActiveNetwork(tab.key)}
-                    className={cn(
-                      'rounded-full border px-4 py-2 text-sm font-medium transition',
-                      isActive
-                        ? 'border-orange-200 bg-orange-50 text-slate-950'
-                        : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                    )}
-                  >
-                    {tab.label}
-                    <span className="ml-2 text-xs text-slate-500">{count}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Purchase panel</CardTitle>
-            <CardDescription>Enter the recipient and select a plan to continue.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="axis-label">Wallet balance</div>
-              <div className="text-2xl font-semibold text-slate-950">₦{formatMoney(wallet?.balance || 0)}</div>
-            </div>
-            <div className="space-y-2">
-              <div className="axis-label">Phone number</div>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08012345678" />
-            </div>
-            <div className="space-y-2">
-              <div className="axis-label">Selected plan</div>
-              <div className="rounded-2xl border border-slate-200 bg-[#fcfbf8] p-3 text-sm text-slate-700">
-                {selected ? `${selected.plan_name || selected.plan_code} • ₦${formatMoney(selected.price || 0)}` : 'Pick a plan from the list'}
-              </div>
-            </div>
-            <Button className="w-full" onClick={purchase} disabled={busy || !selected || !phone.trim()}>
-              {busy ? 'Processing...' : 'Submit purchase'}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            {message ? <div className="rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-600">{message}</div> : null}
-          </CardContent>
-        </Card>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Available plans</CardTitle>
-          <CardDescription>Live bundles are grouped by network so the catalog stays easy to scan.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          {loading ? <div className="text-sm text-slate-600">Loading plans...</div> : null}
-          {!loading && !planGroups.length ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-[#fcfbf8] p-5 text-sm text-slate-600">
-              No data bundles are available right now.
-            </div>
-          ) : null}
-
-          {visibleGroups.map((group) => (
-            <section key={group.network} className="space-y-3">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <Card className="overflow-hidden border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+          <CardContent className="space-y-8 p-6 md:p-7">
+            <section className="space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-medium text-slate-950">{networkLabel(group.network)} bundles</div>
-                  <div className="text-xs text-slate-600">Live plans from the backend catalog.</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Select network</div>
+                  <div className="mt-2 text-sm text-white/55">Choose the bundle family you want to view.</div>
                 </div>
-                <Badge tone="neutral" className="border-slate-200 bg-white text-slate-600">
-                  {group.plans.length} plan{group.plans.length === 1 ? '' : 's'}
-                </Badge>
+                <Badge className="border-white/10 bg-white/[0.03] text-white/65">Live catalog</Badge>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {group.plans.map((plan) => {
-                  const activeCard = selected?.plan_code === plan.plan_code;
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {NETWORK_TABS.filter((tab) => tab.key !== 'all').map((tab) => {
+                  const group = planGroups.find((item) => item.network === tab.key);
+                  const count = group?.plans.length || 0;
+                  const isActive = activeNetwork === tab.key;
+                  const networkTone =
+                    tab.key === 'mtn'
+                      ? 'bg-amber-400 text-slate-950'
+                      : tab.key === 'glo'
+                        ? 'bg-emerald-500 text-white'
+                        : tab.key === 'airtel'
+                          ? 'bg-rose-500 text-white'
+                          : 'bg-orange-500 text-white';
+
                   return (
                     <button
-                      key={plan.plan_code}
+                      key={tab.key}
                       type="button"
-                      onClick={() => setSelected(plan)}
+                      onClick={() => setActiveNetwork(tab.key)}
                       className={cn(
-                        'rounded-2xl border p-4 text-left transition',
-                        activeCard
-                          ? 'border-orange-200 bg-orange-50'
-                          : 'border-slate-200 bg-[#fcfbf8] hover:border-orange-200 hover:bg-orange-50'
+                        'group rounded-[22px] border px-4 py-5 text-left transition',
+                        isActive
+                          ? 'border-amber-400/40 bg-[#2b2318] shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                          : 'border-white/8 bg-black/20 hover:border-white/12 hover:bg-white/[0.05]'
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-medium text-slate-950">{plan.plan_name || plan.plan_code}</div>
-                          <div className="mt-1 text-xs text-slate-600">{plan.plan_code || 'Plan code unavailable'}</div>
+                        <div className={cn('flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold', networkTone)}>
+                          {tab.key === '9mobile' ? '9' : tab.label.slice(0, 2).toUpperCase()}
                         </div>
-                        <Badge tone="neutral" className="border-slate-200 bg-white text-slate-600">
-                          {plan.validity || 'Plan'}
+                        <Badge className="border-white/10 bg-white/[0.03] text-white/55">
+                          {count}
                         </Badge>
                       </div>
-                      <div className="mt-4 text-xl font-semibold text-slate-950">₦{formatMoney(plan.price || 0)}</div>
-                      <div className="mt-1 text-sm text-slate-600">{plan.data_size || '—'}</div>
+                      <div className="mt-4 text-sm font-semibold tracking-wide text-white">
+                        {tab.label}
+                      </div>
+                      <div className="mt-1 text-xs text-white/45">
+                        {count ? 'Available now' : 'No bundles visible'}
+                      </div>
                     </button>
                   );
                 })}
               </div>
             </section>
-          ))}
 
-          {!loading && planGroups.length && !visibleGroups.length ? (
-            <div className="rounded-2xl border border-dashed border-slate-200 bg-[#fcfbf8] p-5 text-sm text-slate-600">
-              No plans available for this network yet.
+            <section className="space-y-4">
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Available bundles</div>
+                  <div className="mt-2 text-sm text-white/55">
+                    {activeNetwork === 'all' ? 'All live bundles in one place.' : `${networkLabel(activeNetwork)} plans from the backend catalog.`}
+                  </div>
+                </div>
+                <Badge className="border-white/10 bg-white/[0.03] text-white/65">
+                  {activeNetwork === 'all' ? totalCuratedPlans : activeGroup?.plans.length || 0} plan{activeNetwork === 'all' ? (totalCuratedPlans === 1 ? '' : 's') : (activeGroup?.plans.length === 1 ? '' : 's')}
+                </Badge>
+              </div>
+
+              {loading ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, idx) => (
+                    <div key={idx} className="h-32 animate-pulse rounded-[22px] border border-white/8 bg-white/[0.03]" />
+                  ))}
+                </div>
+              ) : null}
+
+              {!loading && !visiblePlans.length ? (
+                <div className="rounded-[22px] border border-dashed border-white/10 bg-white/[0.03] px-4 py-5 text-sm text-white/50">
+                  No bundles are available for this network right now.
+                </div>
+              ) : null}
+
+              {!loading && visiblePlans.length ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {visiblePlans.map((plan) => {
+                    const isActive = selected?.plan_code === plan.plan_code;
+                    return (
+                      <button
+                        key={plan.plan_code}
+                        type="button"
+                        onClick={() => setSelected(plan)}
+                        className={cn(
+                          'rounded-[22px] border px-4 py-4 text-left transition',
+                          isActive
+                            ? 'border-amber-400/40 bg-[#2b2318] shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                            : 'border-white/8 bg-black/20 hover:border-white/12 hover:bg-white/[0.05]'
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-medium text-white">{plan.plan_name || plan.plan_code}</div>
+                            <div className="mt-1 text-xs text-white/45">{plan.plan_code || 'Plan code unavailable'}</div>
+                          </div>
+                          <Badge className="border-white/10 bg-white/[0.03] text-white/60">
+                            {plan.validity || 'Plan'}
+                          </Badge>
+                        </div>
+                        <div className="mt-4 flex items-end justify-between gap-3">
+                          <div>
+                            <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">Price</div>
+                            <div className="mt-1 text-lg font-semibold tracking-tight text-white">
+                              ₦{formatMoney(plan.price || 0)}
+                            </div>
+                          </div>
+                          <div className="text-sm text-white/50">{plan.data_size || '—'}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </section>
+
+            <section className="space-y-4">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Phone number</div>
+                <div className="mt-2 text-sm text-white/55">Enter the recipient line before placing the order.</div>
+              </div>
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="08012345678 or 2348012345678"
+                className="h-12 rounded-2xl border-white/8 bg-[#11161c] text-white placeholder:text-white/28 focus:border-amber-400/40 focus:ring-amber-500/10"
+              />
+              <Button
+                className="h-12 w-full rounded-2xl bg-[#f97316] text-slate-950 shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-[#ea6a11] active:scale-[0.98]"
+                onClick={purchase}
+                disabled={!canSubmit}
+              >
+                {busy ? 'Processing...' : selected ? `Buy Data — ₦${formatMoney(summaryPrice || 0)}` : 'Buy Data'}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              {message ? (
+                <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/65">
+                  {message}
+                </div>
+              ) : null}
+            </section>
+          </CardContent>
+        </Card>
+
+        <Card className="h-fit border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+          <CardHeader>
+            <CardTitle className="text-white">Order Summary</CardTitle>
+            <CardDescription className="text-white/45">Bundle delivery</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="rounded-[22px] border border-white/8 bg-black/25 p-4">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  'flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold',
+                  summaryNetwork === 'mtn'
+                    ? 'bg-amber-400 text-slate-950'
+                    : summaryNetwork === 'glo'
+                      ? 'bg-emerald-500 text-white'
+                      : summaryNetwork === 'airtel'
+                        ? 'bg-rose-500 text-white'
+                        : 'bg-orange-500 text-white'
+                )}>
+                  {networkLabel(summaryNetwork).slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-white">{networkLabel(summaryNetwork)} Data</div>
+                  <div className="text-xs text-white/45">Bundle delivery</div>
+                </div>
+              </div>
             </div>
-          ) : null}
-        </CardContent>
-      </Card>
+
+            <div className="space-y-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
+              {[
+                { label: 'Network', value: networkLabel(summaryNetwork) },
+                { label: 'Bundle type', value: 'Single' },
+                { label: 'Plan', value: summaryPlanName },
+                { label: 'Phone', value: phone.trim() || '—' },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-white/8 pb-3 last:border-0 last:pb-0">
+                  <span className="text-sm text-white/45">{item.label}</span>
+                  <span className="text-sm font-medium text-white">{item.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-end justify-between gap-4 rounded-[22px] border border-white/8 bg-black/20 p-4">
+              <div>
+                <div className="text-sm text-white/45">Total</div>
+                <div className="mt-1 text-2xl font-semibold tracking-tight text-[#f97316]">
+                  ₦{formatMoney(summaryPrice || 0)}
+                </div>
+              </div>
+              <div className="text-right text-xs text-white/45">
+                {summaryPlanCode !== '—' ? summaryPlanCode : 'Select a bundle to continue'}
+              </div>
+            </div>
+
+            <div className="text-xs leading-6 text-white/40">
+              Live bundles are loaded from the backend catalog. MTN and Glo plans are surfaced first when available.
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
