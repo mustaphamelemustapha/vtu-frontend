@@ -248,21 +248,21 @@ export default function BuyDataPage() {
   };
 
   return (
-    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-[#0b0f14] px-4 py-5 text-slate-100 md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
       <div className="space-y-6 pb-28 md:pb-8">
         <div className="space-y-2">
-        <div className="axis-label text-white/80">Services</div>
+        <div className="axis-label text-muted-foreground">Services</div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
-            <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">Buy Data</h1>
-            <p className="max-w-2xl text-sm leading-6 text-white/75">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Buy Data</h1>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
               Affordable data bundles for MTN, Airtel, Glo, and 9mobile from one sharp purchase workspace.
             </p>
           </div>
           <Button
             variant="secondary"
             onClick={() => load()}
-            className="border-white/15 bg-white/[0.09] text-white/80 hover:bg-white/[0.09] hover:text-white"
+            className="border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh plans
@@ -271,15 +271,15 @@ export default function BuyDataPage() {
       </div>
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="overflow-hidden border-white/15 bg-white/[0.07] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+        <Card className="overflow-hidden border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
           <CardContent className="space-y-6 p-4 md:space-y-8 md:p-7">
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/62">Select network</div>
-                  <div className="mt-2 text-sm text-white/75">Choose the bundle family you want to view.</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Choose the bundle family you want to view.</div>
                 </div>
-                <Badge className="border-white/15 bg-white/[0.09] text-white/80">Live catalog</Badge>
+                <Badge className="border-border bg-secondary text-muted-foreground">Live catalog</Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -291,10 +291,10 @@ export default function BuyDataPage() {
                     tab.key === 'mtn'
                       ? 'bg-amber-400 text-slate-950'
                       : tab.key === 'glo'
-                        ? 'bg-emerald-500 text-white'
+                        ? 'bg-emerald-500 text-foreground'
                         : tab.key === 'airtel'
-                          ? 'bg-rose-500 text-white'
-                          : 'bg-orange-500 text-white';
+                          ? 'bg-rose-500 text-foreground'
+                          : 'bg-orange-500 text-foreground';
 
                   return (
                     <button
@@ -304,12 +304,12 @@ export default function BuyDataPage() {
                       className={cn(
                         'group rounded-[20px] border px-3 py-4 text-left transition md:rounded-[22px] md:px-4 md:py-5',
                         isActive
-                          ? 'border-amber-400/40 bg-[#2b2318] shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
-                          : 'border-white/16 bg-black/20 hover:border-white/20 hover:bg-white/[0.09]'
+                          ? 'border-primary/45 bg-primary/12 shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                          : 'border-border bg-secondary hover:border-border hover:bg-secondary'
                       )}
                       >
                       <div className="flex items-start justify-between gap-3">
-                        <div className={cn('flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-black/20 p-1 ring-1 ring-white/10 md:h-12 md:w-12', networkTone)}>
+                        <div className={cn('flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-secondary p-1 ring-1 ring-border md:h-12 md:w-12', networkTone)}>
                           <Image
                             src={networkLogoSrc(tab.key)}
                             alt={`${tab.label} logo`}
@@ -319,14 +319,14 @@ export default function BuyDataPage() {
                             unoptimized
                           />
                         </div>
-                        <Badge className="border-white/15 bg-white/[0.09] text-white/75">
+                        <Badge className="border-border bg-secondary text-muted-foreground">
                           {count}
                         </Badge>
                       </div>
-                      <div className="mt-4 text-sm font-semibold tracking-wide text-white">
+                      <div className="mt-4 text-sm font-semibold tracking-wide text-foreground">
                         {tab.label}
                       </div>
-                      <div className="mt-1 text-xs text-white/68">
+                      <div className="mt-1 text-xs text-muted-foreground">
                         {count ? 'Available now' : 'No bundles visible'}
                       </div>
                     </button>
@@ -337,8 +337,8 @@ export default function BuyDataPage() {
 
             <section className="space-y-4">
               <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/62">Phone number</div>
-                <div className="mt-2 text-sm text-white/75">Enter the recipient line before choosing a bundle.</div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
+                <div className="mt-2 text-sm text-muted-foreground">Enter the recipient line before choosing a bundle.</div>
               </div>
               <Input
                 value={phone}
@@ -346,15 +346,15 @@ export default function BuyDataPage() {
                 inputMode="tel"
                 autoComplete="tel"
                 placeholder="08012345678 or 2348012345678"
-                className="h-[52px] rounded-2xl border-white/16 bg-[#11161c] text-base text-white placeholder:text-white/50 focus:border-amber-400/40 focus:ring-amber-500/10 md:h-12"
+                className="h-[52px] rounded-2xl border-border bg-input text-base text-foreground placeholder:text-muted-foreground focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
               />
               {phoneError ? (
                 <p className="text-xs font-medium text-rose-300">{phoneError}</p>
               ) : (
-                <p className="text-xs text-white/80">Use 08012345678 or 2348012345678.</p>
+                <p className="text-xs text-muted-foreground">Use 08012345678 or 2348012345678.</p>
               )}
               <Button
-                className="hidden h-12 w-full rounded-2xl bg-[#f97316] text-slate-950 shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-[#ea6a11] active:scale-[0.98] md:inline-flex"
+                className="hidden h-12 w-full rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98] md:inline-flex"
                 onClick={purchase}
                 disabled={!canSubmit}
               >
@@ -362,7 +362,7 @@ export default function BuyDataPage() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
               {message ? (
-                <div className="rounded-[18px] border border-white/16 bg-white/[0.09] px-4 py-3 text-sm text-white/80">
+                <div className="rounded-[18px] border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
                   {message}
                 </div>
               ) : null}
@@ -371,12 +371,12 @@ export default function BuyDataPage() {
             <section className="space-y-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/62">Select plan</div>
-                  <div className="mt-2 text-sm text-white/75">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select plan</div>
+                  <div className="mt-2 text-sm text-muted-foreground">
                     {activeNetwork === 'all' ? 'All live bundles in one place.' : `${networkLabel(activeNetwork)} plans from the backend catalog.`}
                   </div>
                 </div>
-                <Badge className="border-white/15 bg-white/[0.09] text-white/80">
+                <Badge className="border-border bg-secondary text-muted-foreground">
                   {activeNetwork === 'all' ? totalCuratedPlans : activeGroup?.plans.length || 0} plan{activeNetwork === 'all' ? (totalCuratedPlans === 1 ? '' : 's') : (activeGroup?.plans.length === 1 ? '' : 's')}
                 </Badge>
               </div>
@@ -384,13 +384,13 @@ export default function BuyDataPage() {
               {loading ? (
                 <div className="grid gap-3 md:grid-cols-2">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <div key={idx} className="h-32 animate-pulse rounded-[22px] border border-white/16 bg-white/[0.09]" />
+                    <div key={idx} className="h-32 animate-pulse rounded-[22px] border border-border bg-secondary" />
                   ))}
                 </div>
               ) : null}
 
               {!loading && !visiblePlans.length ? (
-                <div className="rounded-[22px] border border-dashed border-white/15 bg-white/[0.09] px-4 py-5 text-sm text-white/72">
+                <div className="rounded-[22px] border border-dashed border-border bg-secondary px-4 py-5 text-sm text-muted-foreground">
                   No bundles are available for this network right now.
                 </div>
               ) : null}
@@ -407,13 +407,13 @@ export default function BuyDataPage() {
                         className={cn(
                           'rounded-[22px] border px-4 py-4 text-left transition',
                           isActive
-                            ? 'border-amber-400/40 bg-[#2b2318] shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
-                            : 'border-white/16 bg-black/20 hover:border-white/20 hover:bg-white/[0.09]'
+                            ? 'border-primary/45 bg-primary/12 shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                            : 'border-border bg-secondary hover:border-border hover:bg-secondary'
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 ring-1 ring-white/10">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 ring-1 ring-border">
                               <Image
                                 src={networkLogoSrc(plan.network)}
                                 alt={`${networkLabel(plan.network)} logo`}
@@ -424,22 +424,22 @@ export default function BuyDataPage() {
                               />
                             </div>
                             <div>
-                            <div className="text-sm font-medium text-white">{plan.plan_name || plan.plan_code}</div>
-                            <div className="mt-1 text-xs text-white/68">{plan.plan_code || 'Plan code unavailable'}</div>
+                            <div className="text-sm font-medium text-foreground">{plan.plan_name || plan.plan_code}</div>
+                            <div className="mt-1 text-xs text-muted-foreground">{plan.plan_code || 'Plan code unavailable'}</div>
                             </div>
                           </div>
-                          <Badge className="border-white/15 bg-white/[0.09] text-white/78">
+                          <Badge className="border-border bg-secondary text-muted-foreground">
                             {plan.validity || 'Plan'}
                           </Badge>
                         </div>
                         <div className="mt-4 flex items-end justify-between gap-3">
                           <div>
-                            <div className="text-[11px] uppercase tracking-[0.24em] text-white/62">Price</div>
-                            <div className="mt-1 text-lg font-semibold tracking-tight text-white">
+                            <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Price</div>
+                            <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">
                               ₦{formatMoney(plan.price || 0)}
                             </div>
                           </div>
-                          <div className="text-sm text-white/72">{plan.data_size || '—'}</div>
+                          <div className="text-sm text-muted-foreground">{plan.data_size || '—'}</div>
                         </div>
                       </button>
                     );
@@ -450,15 +450,15 @@ export default function BuyDataPage() {
           </CardContent>
         </Card>
 
-        <Card className="h-fit border-white/15 bg-white/[0.07] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+        <Card className="h-fit border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
           <CardHeader>
-            <CardTitle className="text-white">Order Summary</CardTitle>
-            <CardDescription className="text-white/68">Bundle delivery</CardDescription>
+            <CardTitle className="text-foreground">Order Summary</CardTitle>
+            <CardDescription className="text-muted-foreground">Bundle delivery</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="rounded-[22px] border border-white/16 bg-black/25 p-4">
+            <div className="rounded-[22px] border border-border bg-secondary p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-white/10">
+                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
                   <Image
                     src={networkLogoSrc(summaryNetwork)}
                     alt={`${networkLabel(summaryNetwork)} logo`}
@@ -469,39 +469,39 @@ export default function BuyDataPage() {
                   />
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-white">{networkLabel(summaryNetwork)} Data</div>
-                  <div className="text-xs text-white/68">Bundle delivery</div>
+                  <div className="text-sm font-medium text-foreground">{networkLabel(summaryNetwork)} Data</div>
+                  <div className="text-xs text-muted-foreground">Bundle delivery</div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[22px] border border-white/16 bg-black/20 p-4">
+            <div className="space-y-4 rounded-[22px] border border-border bg-secondary p-4">
               {[
                 { label: 'Network', value: networkLabel(summaryNetwork) },
                 { label: 'Bundle type', value: 'Single' },
                 { label: 'Plan', value: summaryPlanName },
                 { label: 'Phone', value: phone.trim() || '—' },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-white/16 pb-3 last:border-0 last:pb-0">
-                  <span className="text-sm text-white/68">{item.label}</span>
-                  <span className="text-sm font-medium text-white">{item.value}</span>
+                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0">
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <span className="text-sm font-medium text-foreground">{item.value}</span>
                 </div>
               ))}
             </div>
 
-            <div className="flex items-end justify-between gap-4 rounded-[22px] border border-white/16 bg-black/20 p-4">
+            <div className="flex items-end justify-between gap-4 rounded-[22px] border border-border bg-secondary p-4">
               <div>
-                <div className="text-sm text-white/68">Total</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight text-[#f97316]">
+                <div className="text-sm text-muted-foreground">Total</div>
+                <div className="mt-1 text-2xl font-semibold tracking-tight text-primary">
                   ₦{formatMoney(summaryPrice || 0)}
                 </div>
               </div>
-              <div className="text-right text-xs text-white/68">
+              <div className="text-right text-xs text-muted-foreground">
                 {summaryPlanCode !== '—' ? summaryPlanCode : 'Select a bundle to continue'}
               </div>
             </div>
 
-            <div className="text-xs leading-6 text-white/80">
+            <div className="text-xs leading-6 text-muted-foreground">
               Live bundles are loaded from the backend catalog. MTN and Glo plans are surfaced first when available.
             </div>
           </CardContent>
@@ -510,20 +510,20 @@ export default function BuyDataPage() {
       </div>
 
       <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/15 bg-[#0b0f14]/95 px-4 pt-3 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pt-3 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}
       >
         <div className="mx-auto flex max-w-md items-center gap-3">
           <div className="min-w-0 flex-1">
-            <div className="truncate text-xs text-white/68">
+            <div className="truncate text-xs text-muted-foreground">
               {selected ? summaryPlanName : 'Select a plan to continue'}
             </div>
-            <div className="mt-1 text-lg font-semibold tracking-tight text-white">
+            <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">
               ₦{formatMoney(summaryPrice || 0)}
             </div>
           </div>
           <Button
-            className="h-12 shrink-0 rounded-xl bg-[#f97316] px-5 text-slate-950 shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-[#ea6a11] active:scale-[0.98]"
+            className="h-12 shrink-0 rounded-xl bg-primary px-5 text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98]"
             onClick={purchase}
             disabled={!canSubmit}
           >

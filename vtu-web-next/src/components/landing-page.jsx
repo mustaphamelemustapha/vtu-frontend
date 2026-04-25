@@ -148,9 +148,9 @@ function BrandLogo({ className = '' }) {
 function PageSection({ eyebrow, title, description, align = 'left' }) {
   return (
     <div className={align === 'center' ? 'mx-auto max-w-3xl text-center' : 'max-w-3xl'}>
-      <div className="axis-label text-orange-600">{eyebrow}</div>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{title}</h2>
-      {description ? <p className="mt-4 text-lg leading-8 text-slate-700">{description}</p> : null}
+      <div className="axis-label text-primary">{eyebrow}</div>
+      <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{title}</h2>
+      {description ? <p className="mt-4 text-lg leading-8 text-muted-foreground">{description}</p> : null}
     </div>
   );
 }
@@ -171,7 +171,7 @@ function MobileMenu({ open, onClose }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.22 }}
-            className="absolute inset-x-4 top-4 rounded-3xl border border-slate-300 bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
+            className="absolute inset-x-4 top-4 rounded-3xl border border-border bg-card p-4 shadow-[0_20px_60px_rgba(15,23,42,0.12)]"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between">
@@ -179,7 +179,7 @@ function MobileMenu({ open, onClose }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-700"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground"
                 aria-label="Close menu"
               >
                 <X className="h-5 w-5" />
@@ -192,7 +192,7 @@ function MobileMenu({ open, onClose }) {
                   key={item.label}
                   href={item.href}
                   onClick={onClose}
-                  className="rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-orange-200 hover:bg-orange-50 hover:text-slate-950"
+                  className="rounded-2xl border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-orange-200 hover:bg-orange-50 hover:text-foreground"
                 >
                   {item.label}
                 </a>
@@ -200,12 +200,12 @@ function MobileMenu({ open, onClose }) {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Button asChild variant="secondary" className="h-11 rounded-full border-slate-300 bg-white text-slate-700">
+              <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card text-muted-foreground">
                 <Link href="/login" onClick={onClose}>
                   Sign In
                 </Link>
               </Button>
-              <Button asChild className="h-11 rounded-full bg-orange-500 text-slate-950 hover:bg-orange-600">
+              <Button asChild className="h-11 rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link href="/register" onClick={onClose}>
                   Get Started
                 </Link>
@@ -232,8 +232,8 @@ function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 border-b bg-white/85 backdrop-blur-xl transition-shadow ${
-          scrolled ? 'border-slate-300 shadow-[0_8px_30px_rgba(15,23,42,0.05)]' : 'border-transparent'
+        className={`sticky top-0 z-40 border-b bg-card/85 backdrop-blur-xl transition-shadow ${
+          scrolled ? 'border-border shadow-[0_8px_30px_rgba(15,23,42,0.05)]' : 'border-transparent'
         }`}
       >
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -241,19 +241,19 @@ function Header() {
             <BrandLogo className="h-9 sm:h-10" />
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-slate-700 lg:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground lg:flex">
             {navLinks.map((item) => (
-              <a key={item.label} href={item.href} className="transition hover:text-slate-950">
+              <a key={item.label} href={item.href} className="transition hover:text-foreground">
                 {item.label}
               </a>
             ))}
           </nav>
 
           <div className="hidden items-center gap-3 sm:flex">
-            <Button asChild variant="secondary" className="h-11 rounded-full border-slate-300 bg-white px-5 text-slate-700 hover:bg-slate-50">
+            <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card px-5 text-muted-foreground hover:bg-secondary">
               <Link href="/login">Sign In</Link>
             </Button>
-            <Button asChild className="h-11 rounded-full bg-orange-500 px-5 text-slate-950 shadow-sm shadow-orange-200 hover:bg-orange-600">
+            <Button asChild className="h-11 rounded-full bg-primary px-5 text-primary-foreground shadow-sm shadow-orange-200 hover:bg-primary/90">
               <Link href="/register">Get Started</Link>
             </Button>
           </div>
@@ -261,7 +261,7 @@ function Header() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 text-slate-700 lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground lg:hidden"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
@@ -275,7 +275,7 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="bg-[#fbfaf7]">
+    <section className="bg-background">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-28 lg:pt-16">
         <div className="flex flex-col justify-center">
           <motion.div
@@ -283,7 +283,7 @@ function Hero() {
             initial="hidden"
             animate="show"
             custom={0}
-            className="inline-flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-orange-700 shadow-sm"
+            className="inline-flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-card px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary shadow-sm"
           >
             <Sparkles className="h-3.5 w-3.5" />
             AxisVTU for everyday payments
@@ -294,7 +294,7 @@ function Hero() {
             initial="hidden"
             animate="show"
             custom={0.08}
-            className="mt-6 max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl"
+            className="mt-6 max-w-2xl text-4xl font-semibold tracking-tight text-foreground sm:text-5xl lg:text-6xl"
           >
             Buy Airtime, Data & Pay Bills in Seconds
           </motion.h1>
@@ -304,7 +304,7 @@ function Hero() {
             initial="hidden"
             animate="show"
             custom={0.16}
-            className="mt-6 max-w-2xl text-lg leading-8 text-slate-700 sm:text-xl"
+            className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl"
           >
             Top up any network, fund your wallet, and manage everyday payments with a simple, reliable AxisVTU account.
           </motion.p>
@@ -316,13 +316,13 @@ function Hero() {
             custom={0.24}
             className="mt-8 flex flex-col gap-3 sm:flex-row"
           >
-            <Button asChild className="h-12 rounded-full bg-orange-500 px-6 text-base text-slate-950 shadow-sm shadow-orange-200 hover:bg-orange-600">
+            <Button asChild className="h-12 rounded-full bg-primary px-6 text-base text-primary-foreground shadow-sm shadow-orange-200 hover:bg-primary/90">
               <Link href="/register">
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="secondary" className="h-12 rounded-full border-slate-300 bg-white px-6 text-base text-slate-700 hover:bg-slate-50">
+            <Button asChild variant="secondary" className="h-12 rounded-full border-border bg-card px-6 text-base text-muted-foreground hover:bg-secondary">
               <Link href="/login">Log in</Link>
             </Button>
           </motion.div>
@@ -335,7 +335,7 @@ function Hero() {
             className="mt-9 flex flex-wrap gap-3"
           >
             {heroPoints.map((point) => (
-              <div key={point} className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700">
+              <div key={point} className="rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground">
                 {point}
               </div>
             ))}
@@ -349,72 +349,72 @@ function Hero() {
           className="relative flex items-center justify-center"
         >
           <div className="absolute inset-x-16 top-20 h-44 rounded-full bg-orange-100/40 blur-3xl" />
-          <Card className="relative w-full max-w-xl overflow-hidden border-slate-300 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.06)]">
+          <Card className="relative w-full max-w-xl overflow-hidden border-border bg-card shadow-[0_22px_60px_rgba(15,23,42,0.06)]">
             <CardContent className="p-5 sm:p-7">
-              <div className="flex items-start justify-between gap-4 border-b border-slate-300 pb-5">
+              <div className="flex items-start justify-between gap-4 border-b border-border pb-5">
                 <div>
                   <div className="flex items-center gap-3">
                     <BrandLogo className="h-7" />
-                    <span className="axis-label text-orange-600">Product preview</span>
+                    <span className="axis-label text-primary">Product preview</span>
                   </div>
-                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">Clean dashboard preview</h2>
-                  <p className="mt-2 max-w-sm text-sm leading-6 text-slate-700">
+                  <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">Clean dashboard preview</h2>
+                  <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
                     The interface is designed for quick top-ups, wallet funding, and clear transaction records on desktop.
                   </p>
                 </div>
-                  <div className="rounded-2xl bg-orange-50 p-3 text-orange-600">
+                  <div className="rounded-2xl bg-orange-50 p-3 text-primary">
                   <ShieldCheck className="h-6 w-6" />
                 </div>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-3xl border border-slate-300 bg-[#fcfbf8] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">Wallet balance</div>
-                  <div className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Available for purchases</div>
-                  <div className="mt-2 text-sm text-slate-700">Funded through the dedicated account route.</div>
+                <div className="rounded-3xl border border-border bg-secondary p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Wallet balance</div>
+                  <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Available for purchases</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Funded through the dedicated account route.</div>
                 </div>
-                <div className="rounded-3xl border border-slate-300 bg-[#fcfbf8] p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">Receipts</div>
-                  <div className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Easy to review</div>
-                  <div className="mt-2 text-sm text-slate-700">Each purchase keeps a clear record for later.</div>
+                <div className="rounded-3xl border border-border bg-secondary p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Receipts</div>
+                  <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Easy to review</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Each purchase keeps a clear record for later.</div>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
-                <div className="rounded-3xl border border-slate-300 bg-white p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">Recent activity</div>
+                <div className="rounded-3xl border border-border bg-card p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Recent activity</div>
                   <div className="mt-4 space-y-3">
                     {[
                       ['Data purchase', 'MTN 2GB - ₦1,500', 'Completed'],
                       ['Wallet funding', 'Virtual account transfer', 'Confirmed'],
                       ['Airtime top-up', 'Glo - ₦2,000', 'Completed'],
                     ].map(([title, detail, status]) => (
-                      <div key={title} className="flex items-center justify-between rounded-2xl border border-slate-300 bg-[#fcfbf8] px-3 py-3">
+                      <div key={title} className="flex items-center justify-between rounded-2xl border border-border bg-secondary px-3 py-3">
                         <div>
-                          <div className="text-sm font-medium text-slate-950">{title}</div>
-                          <div className="text-xs text-slate-700">{detail}</div>
+                          <div className="text-sm font-medium text-foreground">{title}</div>
+                          <div className="text-xs text-muted-foreground">{detail}</div>
                         </div>
-                        <div className="text-xs font-semibold text-orange-600">{status}</div>
+                        <div className="text-xs font-semibold text-primary">{status}</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="rounded-3xl border border-slate-300 bg-white p-4">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-700">Quick actions</div>
+                  <div className="rounded-3xl border border-border bg-card p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Quick actions</div>
                     <div className="mt-4 grid gap-2">
                       {['Buy Data', 'Buy Airtime', 'Fund Wallet', 'View History'].map((item) => (
-                        <div key={item} className="rounded-2xl border border-slate-300 bg-[#fcfbf8] px-3 py-2 text-sm text-slate-700">
+                        <div key={item} className="rounded-2xl border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground">
                           {item}
                         </div>
                       ))}
                     </div>
                   </div>
                   <div className="rounded-3xl border border-orange-200 bg-orange-50 p-4">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-700">Protection</div>
-                    <div className="mt-2 flex items-center gap-3 text-sm text-slate-700">
-                      <BadgeCheck className="h-5 w-5 shrink-0 text-orange-600" />
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Protection</div>
+                    <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
+                      <BadgeCheck className="h-5 w-5 shrink-0 text-primary" />
                       Sensitive actions stay protected with a transaction PIN.
                     </div>
                   </div>
@@ -430,7 +430,7 @@ function Hero() {
 
 function ServicesSection() {
   return (
-    <section id="services" className="bg-white px-4 py-24 sm:px-6 lg:px-8">
+    <section id="services" className="bg-card px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <PageSection
           eyebrow="What you can do with AxisVTU"
@@ -452,13 +452,13 @@ function ServicesSection() {
                 whileHover={{ y: -2 }}
                 transition={{ duration: 0.2 }}
               >
-                <Card className="h-full border-slate-300 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+                <Card className="h-full border-border bg-card shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                   <CardContent className="p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
                       <Icon className="h-5 w-5" />
                     </div>
-                    <h3 className="mt-5 text-lg font-semibold text-slate-950">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-700">{item.text}</p>
+                    <h3 className="mt-5 text-lg font-semibold text-foreground">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -472,7 +472,7 @@ function ServicesSection() {
 
 function TrustSection() {
   return (
-    <section id="trust" className="bg-[#fbfaf7] px-4 py-24 sm:px-6 lg:px-8">
+    <section id="trust" className="bg-background px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <motion.div variants={motionFadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} custom={0}>
@@ -483,8 +483,8 @@ function TrustSection() {
             />
             <div className="mt-6 grid gap-3">
               {aboutBullets.map((bullet) => (
-                <div key={bullet} className="flex items-start gap-3 rounded-2xl border border-slate-300 bg-white p-4 text-sm text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
-                  <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-orange-600" />
+                <div key={bullet} className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground shadow-[0_8px_24px_rgba(15,23,42,0.03)]">
+                  <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <span>{bullet}</span>
                 </div>
               ))}
@@ -504,13 +504,13 @@ function TrustSection() {
                   custom={index * 0.06}
                   whileHover={{ y: -2 }}
                 >
-                  <Card className="h-full border-slate-300 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+                  <Card className="h-full border-border bg-card shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                     <CardContent className="p-6">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
                         <Icon className="h-5 w-5" />
                       </div>
-                      <h3 className="mt-5 text-lg font-semibold text-slate-950">{item.title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-slate-700">{item.text}</p>
+                      <h3 className="mt-5 text-lg font-semibold text-foreground">{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -525,17 +525,17 @@ function TrustSection() {
 
 function AboutSection() {
   return (
-    <section id="about" className="bg-white px-4 py-24 sm:px-6 lg:px-8">
+    <section id="about" className="bg-card px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
         <motion.div variants={motionFadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} custom={0}>
-          <div className="axis-label text-orange-600">About AxisVTU</div>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+          <div className="axis-label text-primary">About AxisVTU</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             A simple platform for airtime, data, wallet funding, and utility payments
           </h2>
-          <p className="mt-5 text-lg leading-8 text-slate-700">
+          <p className="mt-5 text-lg leading-8 text-muted-foreground">
             AxisVTU is a Nigerian VTU and payments platform designed to help people handle ordinary account tasks without friction. It brings top-ups, wallet funding, receipts, and transaction history into one clear web experience.
           </p>
-          <p className="mt-5 text-lg leading-8 text-slate-700">
+          <p className="mt-5 text-lg leading-8 text-muted-foreground">
             The goal is straightforward: keep the interface human, the flow reliable, and the account details easy to understand.
           </p>
         </motion.div>
@@ -548,22 +548,22 @@ function AboutSection() {
           custom={0.08}
           className="grid gap-5 sm:grid-cols-2"
         >
-          <Card className="border-slate-300 bg-[#fcfbf8] shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <Card className="border-border bg-secondary shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
             <CardContent className="p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
                 <MessageCircle className="h-5 w-5" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold text-slate-950">Human support flow</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-700">The product keeps support and contact points easy to find when users need help.</p>
+              <h3 className="mt-5 text-lg font-semibold text-foreground">Human support flow</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">The product keeps support and contact points easy to find when users need help.</p>
             </CardContent>
           </Card>
-          <Card className="border-slate-300 bg-[#fcfbf8] shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          <Card className="border-border bg-secondary shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
             <CardContent className="p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
                 <Headphones className="h-5 w-5" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold text-slate-950">Built for trust</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-700">Clear records, predictable actions, and a calm layout help the product feel official.</p>
+              <h3 className="mt-5 text-lg font-semibold text-foreground">Built for trust</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">Clear records, predictable actions, and a calm layout help the product feel official.</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -576,7 +576,7 @@ function FaqSection() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section id="faq" className="bg-[#fbfaf7] px-4 py-24 sm:px-6 lg:px-8">
+    <section id="faq" className="bg-background px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <PageSection
           eyebrow="FAQ / Support"
@@ -589,13 +589,13 @@ function FaqSection() {
           {faqs.map((item, index) => {
             const open = activeIndex === index;
             return (
-              <Card key={item.q} className="overflow-hidden border-slate-300 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+              <Card key={item.q} className="overflow-hidden border-border bg-card shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                 <button
                   type="button"
                   onClick={() => setActiveIndex(open ? -1 : index)}
                   className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left sm:px-6"
                 >
-                  <span className="text-base font-semibold text-slate-950 sm:text-lg">{item.q}</span>
+                  <span className="text-base font-semibold text-foreground sm:text-lg">{item.q}</span>
                   <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-orange-500">
                     <ChevronDown className="h-5 w-5" />
                   </motion.span>
@@ -609,7 +609,7 @@ function FaqSection() {
                       transition={{ duration: 0.22, ease: 'easeOut' }}
                       className="overflow-hidden"
                     >
-                      <div className="px-5 pb-5 pt-0 text-sm leading-7 text-slate-700 sm:px-6">{item.a}</div>
+                      <div className="px-5 pb-5 pt-0 text-sm leading-7 text-muted-foreground sm:px-6">{item.a}</div>
                     </motion.div>
                   ) : null}
                 </AnimatePresence>
@@ -625,22 +625,22 @@ function FaqSection() {
           viewport={{ once: true, amount: 0.2 }}
           className="mt-10"
         >
-          <Card className="border-orange-200 bg-white shadow-[0_12px_35px_rgba(234,115,69,0.05)]">
+          <Card className="border-orange-200 bg-card shadow-[0_12px_35px_rgba(234,115,69,0.05)]">
             <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
               <div>
                 <div className="flex items-center gap-3">
                   <BrandLogo className="h-7" />
-                  <div className="text-sm font-semibold uppercase tracking-[0.24em] text-orange-700">Support</div>
+                  <div className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Support</div>
                 </div>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-700">
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
                   If you need help, reach out through email and the team can guide you from there. The goal is to keep the process simple and direct.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Button asChild className="h-11 rounded-full bg-orange-500 px-5 text-slate-950 hover:bg-orange-600">
+                <Button asChild className="h-11 rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90">
                   <a href="mailto:support@axisvtu.com">Email Support</a>
                 </Button>
-                <Button asChild variant="secondary" className="h-11 rounded-full border-slate-300 bg-white px-5 text-slate-700 hover:bg-slate-50">
+                <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card px-5 text-muted-foreground hover:bg-secondary">
                   <Link href="/login">Log in</Link>
                 </Button>
               </div>
@@ -654,41 +654,41 @@ function FaqSection() {
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-300 bg-white px-4 py-16 text-slate-700 sm:px-6 lg:px-8">
+    <footer className="border-t border-border bg-card px-4 py-16 text-muted-foreground sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <BrandLogo />
-            <p className="mt-5 max-w-xl text-sm leading-7 text-slate-700">
+            <p className="mt-5 max-w-xl text-sm leading-7 text-muted-foreground">
               AxisVTU helps users buy airtime, data, and everyday utility services while keeping wallet funding and transaction records clear.
             </p>
-            <div className="mt-5 flex items-center gap-3 text-sm text-slate-700">
-              <span className="h-2 w-2 rounded-full bg-orange-500" />
+            <div className="mt-5 flex items-center gap-3 text-sm text-muted-foreground">
+              <span className="h-2 w-2 rounded-full bg-primary" />
               <span>support@axisvtu.com</span>
             </div>
           </div>
 
           <div className="grid gap-8 sm:grid-cols-2">
             <div>
-              <div className="text-sm font-semibold text-slate-950">AxisVTU</div>
+              <div className="text-sm font-semibold text-foreground">AxisVTU</div>
               <div className="mt-4 space-y-3 text-sm">
-                <div><a href="#services" className="hover:text-slate-950">What you can do</a></div>
-                <div><a href="#trust" className="hover:text-slate-950">Why choose us</a></div>
-                <div><a href="#about" className="hover:text-slate-950">About</a></div>
-                <div><a href="#faq" className="hover:text-slate-950">FAQ</a></div>
+                <div><a href="#services" className="hover:text-foreground">What you can do</a></div>
+                <div><a href="#trust" className="hover:text-foreground">Why choose us</a></div>
+                <div><a href="#about" className="hover:text-foreground">About</a></div>
+                <div><a href="#faq" className="hover:text-foreground">FAQ</a></div>
               </div>
             </div>
             <div>
-              <div className="text-sm font-semibold text-slate-950">Policies</div>
+              <div className="text-sm font-semibold text-foreground">Policies</div>
               <div className="mt-4 space-y-3 text-sm">
-                <div><a href="#" className="hover:text-slate-950">Terms &amp; Conditions</a></div>
-                <div><a href="#" className="hover:text-slate-950">Privacy Policy</a></div>
+                <div><a href="#" className="hover:text-foreground">Terms &amp; Conditions</a></div>
+                <div><a href="#" className="hover:text-foreground">Privacy Policy</a></div>
               </div>
             </div>
           </div>
         </div>
-        <Separator className="my-10 bg-slate-200" />
-        <div className="flex flex-col gap-4 text-sm text-slate-700 md:flex-row md:items-center md:justify-between">
+        <Separator className="my-10 bg-border" />
+        <div className="flex flex-col gap-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
           <div>© 2026 AxisVTU. All rights reserved.</div>
           <div className="flex gap-4">
             <span>Official web platform</span>
@@ -702,7 +702,7 @@ function Footer() {
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#fbfaf7] text-slate-950">
+    <div className="min-h-screen bg-background text-foreground">
       <Header />
       <Hero />
       <ServicesSection />

@@ -9,15 +9,15 @@ export function MetricCard({ label, value, detail, icon: Icon, tone = 'brand', c
       ? 'bg-amber-50 text-amber-800 border-amber-300'
       : tone === 'violet'
       ? 'bg-violet-50 text-violet-800 border-violet-300'
-      : 'bg-orange-50 text-orange-700 border-orange-300';
+      : 'bg-orange-50 text-primary border-orange-300';
 
   return (
-    <Card className={cn('border-slate-300 bg-white', className)}>
+    <Card className={cn('border-border bg-card', className)}>
       <CardContent className="flex items-start justify-between gap-4 p-5">
         <div className="space-y-2">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-600">{label}</div>
-          <div className="text-2xl font-semibold tracking-tight text-slate-950 md:text-[1.65rem]">{value}</div>
-          {detail ? <div className="text-sm leading-6 text-slate-700">{detail}</div> : null}
+          <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">{label}</div>
+          <div className="text-2xl font-semibold tracking-tight text-foreground md:text-[1.65rem]">{value}</div>
+          {detail ? <div className="text-sm leading-6 text-muted-foreground">{detail}</div> : null}
         </div>
         {Icon ? (
           <div className={cn('flex h-11 w-11 items-center justify-center rounded-2xl border', toneClass)}>

@@ -6,14 +6,14 @@ import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-70',
   {
     variants: {
       variant: {
-        default: 'bg-orange-500 text-white shadow-sm shadow-orange-500/20 hover:bg-orange-600 disabled:bg-orange-300 disabled:text-white',
-        secondary: 'border border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 disabled:text-slate-500',
-        ghost: 'bg-transparent text-slate-800 hover:bg-slate-100 disabled:text-slate-500',
-        outline: 'border border-slate-300 bg-white text-slate-800 hover:border-slate-400 hover:bg-slate-50 disabled:text-slate-500',
+        default: 'bg-primary text-primary-foreground shadow-sm shadow-orange-500/20 hover:bg-primary/90 disabled:bg-primary/55 disabled:text-primary-foreground',
+        secondary: 'border border-border bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:text-muted-foreground',
+        ghost: 'bg-transparent text-foreground hover:bg-secondary disabled:text-muted-foreground',
+        outline: 'border border-border bg-card text-card-foreground hover:bg-secondary disabled:text-muted-foreground',
       },
       size: {
         default: 'h-11 px-4 py-2',

@@ -5,7 +5,7 @@ function Separator({ className, orientation = 'horizontal', ...props }) {
     <div
       className={cn(
         orientation === 'vertical' ? 'h-full w-px' : 'h-px w-full',
-        'bg-white/10',
+        'bg-border',
         className
       )}
       {...props}
