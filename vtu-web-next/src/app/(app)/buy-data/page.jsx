@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, RefreshCw } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
@@ -44,6 +45,15 @@ function networkLabel(value) {
   if (!normalized) return 'Other';
   if (normalized === '9mobile') return '9mobile';
   return normalized.toUpperCase();
+}
+
+function networkLogoSrc(value) {
+  const normalized = normalizeNetwork(value);
+  if (normalized === 'mtn') return '/brand/networks/mtn.png';
+  if (normalized === 'airtel') return '/brand/networks/airtel.png';
+  if (normalized === 'glo') return '/brand/networks/glo.png';
+  if (normalized === '9mobile') return '/brand/networks/9mobile.png';
+  return '/brand/networks/mtn.png';
 }
 
 function sanitizePlanText(value) {
@@ -291,10 +301,17 @@ export default function BuyDataPage() {
                           ? 'border-amber-400/40 bg-[#2b2318] shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
                           : 'border-white/8 bg-black/20 hover:border-white/12 hover:bg-white/[0.05]'
                       )}
-                    >
+                      >
                       <div className="flex items-start justify-between gap-3">
-                        <div className={cn('flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold', networkTone)}>
-                          {tab.key === '9mobile' ? '9' : tab.label.slice(0, 2).toUpperCase()}
+                        <div className={cn('flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-black/20 p-1 ring-1 ring-white/10', networkTone)}>
+                          <Image
+                            src={networkLogoSrc(tab.key)}
+                            alt={`${tab.label} logo`}
+                            width={44}
+                            height={44}
+                            className="h-full w-full object-contain"
+                            unoptimized
+                          />
                         </div>
                         <Badge className="border-white/10 bg-white/[0.03] text-white/55">
                           {count}
@@ -356,9 +373,21 @@ export default function BuyDataPage() {
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <div>
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 ring-1 ring-white/10">
+                              <Image
+                                src={networkLogoSrc(plan.network)}
+                                alt={`${networkLabel(plan.network)} logo`}
+                                width={36}
+                                height={36}
+                                className="h-full w-full object-contain"
+                                unoptimized
+                              />
+                            </div>
+                            <div>
                             <div className="text-sm font-medium text-white">{plan.plan_name || plan.plan_code}</div>
                             <div className="mt-1 text-xs text-white/45">{plan.plan_code || 'Plan code unavailable'}</div>
+                            </div>
                           </div>
                           <Badge className="border-white/10 bg-white/[0.03] text-white/60">
                             {plan.validity || 'Plan'}
@@ -416,17 +445,15 @@ export default function BuyDataPage() {
           <CardContent className="space-y-5">
             <div className="rounded-[22px] border border-white/8 bg-black/25 p-4">
               <div className="flex items-center gap-3">
-                <div className={cn(
-                  'flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold',
-                  summaryNetwork === 'mtn'
-                    ? 'bg-amber-400 text-slate-950'
-                    : summaryNetwork === 'glo'
-                      ? 'bg-emerald-500 text-white'
-                      : summaryNetwork === 'airtel'
-                        ? 'bg-rose-500 text-white'
-                        : 'bg-orange-500 text-white'
-                )}>
-                  {networkLabel(summaryNetwork).slice(0, 2).toUpperCase()}
+                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-white/10">
+                  <Image
+                    src={networkLogoSrc(summaryNetwork)}
+                    alt={`${networkLabel(summaryNetwork)} logo`}
+                    width={44}
+                    height={44}
+                    className="h-full w-full object-contain"
+                    unoptimized
+                  />
                 </div>
                 <div>
                   <div className="text-sm font-medium text-white">{networkLabel(summaryNetwork)} Data</div>
