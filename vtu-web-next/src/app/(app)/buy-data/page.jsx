@@ -56,6 +56,15 @@ function networkLogoSrc(value) {
   return '/brand/networks/mtn.png';
 }
 
+function phoneDigits(value) {
+  return String(value || '').replace(/\D/g, '');
+}
+
+function isValidNigerianPhone(value) {
+  const digits = phoneDigits(value);
+  return /^0[789][01]\d{8}$/.test(digits) || /^234[789][01]\d{8}$/.test(digits);
+}
+
 function sanitizePlanText(value) {
   const text = String(value ?? '');
   if (!text.trim()) return '';
@@ -190,11 +199,6 @@ export default function BuyDataPage() {
     [planGroups]
   );
 
-  const visibleGroups = useMemo(() => {
-    if (activeNetwork === 'all') return planGroups;
-    return planGroups.filter((group) => group.network === activeNetwork);
-  }, [activeNetwork, planGroups]);
-
   useEffect(() => {
     if (activeNetwork !== 'all' && !planGroups.some((group) => group.network === activeNetwork)) {
       setActiveNetwork('all');
@@ -217,16 +221,18 @@ export default function BuyDataPage() {
   const summaryPlanName = selected?.plan_name || selected?.plan_code || '—';
   const summaryPlanCode = selected?.plan_code || '—';
   const summaryPrice = selected?.price || 0;
-  const canSubmit = Boolean(selected && phone.trim() && !busy);
+  const normalizedPhone = phoneDigits(phone);
+  const phoneError = normalizedPhone && !isValidNigerianPhone(phone) ? 'Enter a valid Nigerian phone number.' : '';
+  const canSubmit = Boolean(selected && normalizedPhone && !phoneError && !busy);
 
   const purchase = async () => {
-    if (!selected || !phone.trim()) return;
+    if (!selected || !normalizedPhone || phoneError) return;
     setBusy(true);
     setMessage('');
     try {
       const payload = {
         plan_code: selected.plan_code,
-        phone_number: phone.trim(),
+        phone_number: normalizedPhone,
         network: selected.network,
       };
       const res = await apiFetch('/data/purchase', {
@@ -243,12 +249,12 @@ export default function BuyDataPage() {
 
   return (
     <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-[#0b0f14] px-4 py-5 text-slate-100 md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
-      <div className="space-y-6 pb-8">
+      <div className="space-y-6 pb-28 md:pb-8">
         <div className="space-y-2">
         <div className="axis-label text-white/40">Services</div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight text-white">Buy Data</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-white md:text-3xl">Buy Data</h1>
             <p className="max-w-2xl text-sm leading-6 text-white/55">
               Affordable data bundles for MTN, Airtel, Glo, and 9mobile from one sharp purchase workspace.
             </p>
@@ -266,8 +272,8 @@ export default function BuyDataPage() {
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Card className="overflow-hidden border-white/10 bg-white/[0.04] shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-          <CardContent className="space-y-6 p-5 md:space-y-8 md:p-7">
-            <section className="order-1 space-y-4">
+          <CardContent className="space-y-6 p-4 md:space-y-8 md:p-7">
+            <section className="space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Select network</div>
@@ -276,7 +282,7 @@ export default function BuyDataPage() {
                 <Badge className="border-white/10 bg-white/[0.03] text-white/65">Live catalog</Badge>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
                 {NETWORK_TABS.filter((tab) => tab.key !== 'all').map((tab) => {
                   const group = planGroups.find((item) => item.network === tab.key);
                   const count = group?.plans.length || 0;
@@ -296,14 +302,14 @@ export default function BuyDataPage() {
                       type="button"
                       onClick={() => setActiveNetwork(tab.key)}
                       className={cn(
-                        'group rounded-[22px] border px-4 py-5 text-left transition',
+                        'group rounded-[20px] border px-3 py-4 text-left transition md:rounded-[22px] md:px-4 md:py-5',
                         isActive
                           ? 'border-amber-400/40 bg-[#2b2318] shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
                           : 'border-white/8 bg-black/20 hover:border-white/12 hover:bg-white/[0.05]'
                       )}
                       >
                       <div className="flex items-start justify-between gap-3">
-                        <div className={cn('flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-black/20 p-1 ring-1 ring-white/10', networkTone)}>
+                        <div className={cn('flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-black/20 p-1 ring-1 ring-white/10 md:h-12 md:w-12', networkTone)}>
                           <Image
                             src={networkLogoSrc(tab.key)}
                             alt={`${tab.label} logo`}
@@ -329,10 +335,43 @@ export default function BuyDataPage() {
               </div>
             </section>
 
-            <section className="order-3 space-y-4 md:order-2">
+            <section className="space-y-4">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Phone number</div>
+                <div className="mt-2 text-sm text-white/55">Enter the recipient line before choosing a bundle.</div>
+              </div>
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="08012345678 or 2348012345678"
+                className="h-[52px] rounded-2xl border-white/8 bg-[#11161c] text-base text-white placeholder:text-white/28 focus:border-amber-400/40 focus:ring-amber-500/10 md:h-12"
+              />
+              {phoneError ? (
+                <p className="text-xs font-medium text-rose-300">{phoneError}</p>
+              ) : (
+                <p className="text-xs text-white/42">Use 08012345678 or 2348012345678.</p>
+              )}
+              <Button
+                className="hidden h-12 w-full rounded-2xl bg-[#f97316] text-slate-950 shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-[#ea6a11] active:scale-[0.98] md:inline-flex"
+                onClick={purchase}
+                disabled={!canSubmit}
+              >
+                {busy ? 'Processing...' : selected ? `Buy Data — ₦${formatMoney(summaryPrice || 0)}` : 'Buy Data'}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              {message ? (
+                <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/65">
+                  {message}
+                </div>
+              ) : null}
+            </section>
+
+            <section className="space-y-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Available bundles</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Select plan</div>
                   <div className="mt-2 text-sm text-white/55">
                     {activeNetwork === 'all' ? 'All live bundles in one place.' : `${networkLabel(activeNetwork)} plans from the backend catalog.`}
                   </div>
@@ -408,32 +447,6 @@ export default function BuyDataPage() {
                 </div>
               ) : null}
             </section>
-
-            <section className="order-2 space-y-4 md:order-3">
-              <div>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/35">Phone number</div>
-                <div className="mt-2 text-sm text-white/55">Enter the recipient line before placing the order.</div>
-              </div>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="08012345678 or 2348012345678"
-                className="h-12 rounded-2xl border-white/8 bg-[#11161c] text-white placeholder:text-white/28 focus:border-amber-400/40 focus:ring-amber-500/10"
-              />
-              <Button
-                className="h-12 w-full rounded-2xl bg-[#f97316] text-slate-950 shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-[#ea6a11] active:scale-[0.98]"
-                onClick={purchase}
-                disabled={!canSubmit}
-              >
-                {busy ? 'Processing...' : selected ? `Buy Data — ₦${formatMoney(summaryPrice || 0)}` : 'Buy Data'}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-              {message ? (
-                <div className="rounded-[18px] border border-white/8 bg-white/[0.03] px-4 py-3 text-sm text-white/65">
-                  {message}
-                </div>
-              ) : null}
-            </section>
           </CardContent>
         </Card>
 
@@ -493,6 +506,30 @@ export default function BuyDataPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
+      </div>
+
+      <div
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0b0f14]/95 px-4 pt-3 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}
+      >
+        <div className="mx-auto flex max-w-md items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-xs text-white/45">
+              {selected ? summaryPlanName : 'Select a plan to continue'}
+            </div>
+            <div className="mt-1 text-lg font-semibold tracking-tight text-white">
+              ₦{formatMoney(summaryPrice || 0)}
+            </div>
+          </div>
+          <Button
+            className="h-12 shrink-0 rounded-xl bg-[#f97316] px-5 text-slate-950 shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-[#ea6a11] active:scale-[0.98]"
+            onClick={purchase}
+            disabled={!canSubmit}
+          >
+            {busy ? 'Processing...' : 'Buy Data'}
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>
