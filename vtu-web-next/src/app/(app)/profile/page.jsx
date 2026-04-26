@@ -122,6 +122,9 @@ export default function ProfilePage() {
               <Button variant="secondary" onClick={() => referralUrl && window.open(referralUrl, '_blank', 'noopener,noreferrer')} disabled={!referralUrl}>Open link</Button>
             </div>
             {referralUrl ? <div className="rounded-2xl border border-border bg-card p-3 text-xs text-muted-foreground break-all">{referralUrl}</div> : null}
+            <Button variant="secondary" className="w-full border-border bg-card text-muted-foreground hover:bg-secondary" onClick={() => router.push('/referrals')}>
+              Open referral workspace
+            </Button>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-2xl border border-border bg-card p-4">
                 <div className="axis-label">Total referrals</div>

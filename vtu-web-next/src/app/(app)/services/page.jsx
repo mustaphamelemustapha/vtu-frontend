@@ -39,31 +39,33 @@ const serviceCards = [
     title: 'Airtime',
     description: 'Top up supported Nigerian networks from the same wallet.',
     icon: Smartphone,
-    href: '/buy-data',
-    cta: 'Open purchase workspace',
-    note: 'In app',
+    href: '/airtime',
+    cta: 'Open airtime workspace',
+    note: 'Live',
   },
   {
     title: 'Electricity',
     description: 'Pay supported discos and keep the token receipt.',
     icon: Zap,
-    href: '/buy-data',
-    cta: 'Open purchase workspace',
-    note: 'In app',
+    href: '/electricity',
+    cta: 'Open electricity workspace',
+    note: 'Live',
   },
   {
     title: 'Cable TV',
     description: 'Renew supported subscription packages from the catalog.',
     icon: Tv2,
-    href: '/buy-data',
-    cta: 'Open purchase workspace',
-    note: 'In app',
+    href: '/cable-tv',
+    cta: 'Open cable workspace',
+    note: 'Live',
   },
   {
     title: 'Exam PINs',
     description: 'Buy supported exam bodies when provider options are available.',
     icon: GraduationCap,
-    note: 'Available in app',
+    href: '/exam-pins',
+    cta: 'Open exam PIN workspace',
+    note: 'Live',
   },
   {
     title: 'Wallet Funding',
@@ -85,7 +87,7 @@ const serviceCards = [
     title: 'Referrals',
     description: 'Share your referral code and monitor reward progress.',
     icon: Gift,
-    href: '/profile#referrals',
+    href: '/referrals',
     cta: 'Open referrals',
     note: 'Live',
   },
@@ -406,7 +408,7 @@ export default function ServicesPage() {
               'Live data plans from /data/plans',
               'Airtime, cable TV, electricity, and exam purchase flows',
               'Dedicated wallet funding, transaction history, and receipts',
-              'Referral tracking inside the user profile',
+              'Referral tracking from a dedicated referral workspace',
             ].map((line) => (
               <div key={line} className="flex items-start gap-3 rounded-2xl border border-border bg-secondary p-3 text-sm text-muted-foreground">
                 <div className="mt-0.5 h-2 w-2 rounded-full bg-primary" />
@@ -637,12 +639,12 @@ export default function ServicesPage() {
               </div>
               <CardTitle>Referrals</CardTitle>
               <CardDescription>
-                Share your code from the profile page and track referral progress without leaving the app.
+                Share your code and track referral progress without leaving the app.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button asChild variant="secondary" className="w-full border-border bg-card text-muted-foreground hover:bg-secondary">
-                <Link href="/profile#referrals">
+                <Link href="/referrals">
                   Open referrals
                   <ArrowRight className="h-4 w-4" />
                 </Link>

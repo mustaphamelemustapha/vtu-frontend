@@ -21,6 +21,7 @@ import {
   Sparkles,
   Tv2,
   UserCircle2,
+  Users,
   X,
   Zap,
 } from 'lucide-react';
@@ -40,11 +41,12 @@ function brandInitials(profile) {
 const mobilePrimaryMenu = [
   { label: 'Dashboard', href: '/dashboard', icon: Gauge },
   { label: 'Data', href: '/buy-data', icon: Package2 },
-  { label: 'Airtime', href: '/services', icon: Smartphone },
-  { label: 'Cable TV', href: '/services', icon: Tv2 },
-  { label: 'Electricity', href: '/services', icon: Zap },
-  { label: 'Education', href: '/services', icon: GraduationCap },
+  { label: 'Airtime', href: '/airtime', icon: Smartphone },
+  { label: 'Cable TV', href: '/cable-tv', icon: Tv2 },
+  { label: 'Electricity', href: '/electricity', icon: Zap },
+  { label: 'Education', href: '/exam-pins', icon: GraduationCap },
   { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
+  { label: 'Referrals', href: '/referrals', icon: Users },
   { label: 'Transaction history', href: '/history', icon: Clock3 },
 ];
 

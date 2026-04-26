@@ -47,7 +47,7 @@ const actionDetails = {
     tone: 'from-amber-500/14 via-amber-500/7 to-transparent border-amber-300/70',
     iconTone: 'bg-amber-500 text-white shadow-amber-500/20',
   },
-  '/profile#referrals': {
+  '/referrals': {
     kicker: 'Growth',
     description: 'Share your referral code and track invite activity.',
     cta: 'Open referrals',
@@ -268,7 +268,7 @@ export default function DashboardPage() {
               <Button variant="secondary" onClick={() => router.push('/profile')} className="border-border bg-card text-muted-foreground hover:bg-secondary">
                 View profile
               </Button>
-              <Button onClick={() => router.push('/profile')}>Open referrals</Button>
+              <Button onClick={() => router.push('/referrals')}>Open referrals</Button>
             </div>
             {referralLink ? <div className="rounded-2xl border border-border bg-card p-3 text-xs text-muted-foreground break-all">{referralLink}</div> : null}
           </CardContent>
