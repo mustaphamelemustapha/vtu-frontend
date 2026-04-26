@@ -58,7 +58,7 @@ function MobileMenuLink({ item, activePath }) {
   const Icon = item.icon;
   const active = !item.external && (activePath === item.href || activePath.startsWith(`${item.href}/`));
   const className = cn(
-    'group flex items-center gap-3 rounded-2xl border px-3.5 py-3 text-sm font-medium transition',
+    'group flex items-center gap-2.5 rounded-xl border px-2.5 py-2.5 font-medium transition',
     active
       ? 'border-primary/30 bg-primary/10 text-foreground shadow-sm'
       : 'border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground'
@@ -67,15 +67,15 @@ function MobileMenuLink({ item, activePath }) {
     <>
       <span
         className={cn(
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition',
+          'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition',
           active
             ? 'border-primary/25 bg-primary text-primary-foreground'
             : 'border-border bg-card text-muted-foreground group-hover:text-primary'
         )}
       >
-        <Icon className="h-4 w-4" />
+        <Icon className="h-3.5 w-3.5" />
       </span>
-      <span className="min-w-0 truncate">{item.label}</span>
+      <span className="min-w-0 truncate text-[13px]">{item.label}</span>
     </>
   );
 
@@ -344,59 +344,56 @@ export function AppShell({ children }) {
               exit={{ opacity: 0 }}
             />
             <motion.aside
-              className="relative flex h-dvh w-[86vw] max-w-[360px] flex-col overflow-hidden border-r border-border bg-card text-card-foreground shadow-2xl"
+              className="relative flex h-dvh w-[68vw] min-w-[256px] max-w-[300px] flex-col overflow-hidden border-r border-border bg-card text-card-foreground shadow-2xl"
               initial={{ x: '-104%' }}
               animate={{ x: 0 }}
               exit={{ x: '-104%' }}
               transition={{ type: 'spring', stiffness: 320, damping: 34 }}
             >
-              <div className="shrink-0 border-b border-border p-4">
-                <div className="rounded-[1.75rem] border border-border bg-gradient-to-br from-secondary via-card to-primary/10 p-4">
-                  <div className="flex items-start justify-between gap-3">
+              <div className="shrink-0 border-b border-border p-3">
+                <div className="rounded-2xl border border-border bg-gradient-to-br from-secondary via-card to-primary/5 p-3">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-card ring-1 ring-border">
                         <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate text-base font-semibold tracking-tight text-foreground">AxisVTU</div>
-                        <div className="mt-1 truncate text-xs text-muted-foreground">{profile.full_name || profile.email || 'Wallet workspace'}</div>
+                        <div className="truncate text-sm font-semibold tracking-tight text-foreground">AxisVTU</div>
+                        <div className="truncate text-[11px] text-muted-foreground">{profile.full_name || profile.email || 'Wallet workspace'}</div>
                       </div>
                     </div>
                     <Button
                       variant="secondary"
                       size="icon"
-                      className="h-9 w-9 shrink-0 rounded-xl"
+                      className="h-8 w-8 shrink-0 rounded-xl"
                       onClick={() => setMobileMenuOpen(false)}
                       aria-label="Close menu"
                     >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
-                  <p className="mt-4 text-sm leading-6 text-muted-foreground">
-                    Manage payments, wallet funding, and account controls from one locked menu.
-                  </p>
                   <button
                     type="button"
                     onClick={toggleTheme}
-                    className="mt-4 inline-flex h-10 items-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 px-3 text-sm font-semibold text-primary transition hover:bg-primary/15"
+                    className="mt-3 inline-flex h-8 items-center gap-2 rounded-xl border border-primary/20 bg-primary/10 px-2.5 text-xs font-semibold text-primary transition hover:bg-primary/15"
                   >
-                    <Sparkles className="h-4 w-4" />
-                    Signature theme
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Theme
                   </button>
                 </div>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <div className="axis-label mb-3">Menu</div>
-                <nav className="space-y-1.5">
+              <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="axis-label mb-2">Menu</div>
+                <nav className="space-y-1">
                   {mobilePrimaryMenu.map((item) => (
                     <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                   ))}
                 </nav>
 
-                <div className="mt-7 border-t border-border pt-5">
-                  <div className="axis-label mb-3">Personal settings</div>
-                  <nav className="space-y-1.5">
+                <div className="mt-5 border-t border-border pt-4">
+                  <div className="axis-label mb-2">Personal settings</div>
+                  <nav className="space-y-1">
                     {mobileSettingsMenu.map((item) => (
                       <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                     ))}
@@ -404,10 +401,10 @@ export function AppShell({ children }) {
                 </div>
               </div>
 
-              <div className="shrink-0 border-t border-border bg-card p-4">
+              <div className="shrink-0 border-t border-border bg-card p-3">
                 <Button
                   variant="secondary"
-                  className="h-12 w-full justify-center border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18"
+                  className="h-11 w-full justify-center border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18"
                   onClick={handleSignOut}
                 >
                   <LogOut className="h-4 w-4" />
