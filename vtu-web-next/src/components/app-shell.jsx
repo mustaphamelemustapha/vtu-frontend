@@ -98,8 +98,8 @@ export function AppShell({ children }) {
     <div className="axis-shell grid min-h-screen lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="hidden border-r border-border bg-card p-5 text-card-foreground lg:flex lg:flex-col">
         <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl border border-border bg-secondary px-4 py-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-orange-500/20">
-            <span className="text-sm font-semibold">AX</span>
+          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
+            <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
           </div>
           <div>
             <div className="text-sm font-semibold text-foreground">AxisVTU</div>
@@ -250,8 +250,8 @@ export function AppShell({ children }) {
           <aside className="relative flex h-full w-[82vw] max-w-[340px] flex-col border-r border-border bg-card p-4 text-card-foreground shadow-2xl">
             <div className="flex items-center justify-between gap-3">
               <Link href="/dashboard" className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-secondary px-3 py-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-sm font-semibold text-primary-foreground">
-                  AX
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
+                  <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold">AxisVTU</div>

@@ -1,16 +1,10 @@
-Brand assets (SVG)
+Brand assets
 
 Files:
-- mmtechglobe-mark.svg: square logo mark (best for Monnify "business logo")
-- mmtechglobe-logo.svg: mark + wordmark
-- axisvtu-logo.svg: product wordmark
+- axisvtu-icon.png: current AxisVTU app/logo mark from VTU2.
+- axisvtu-logo.png: current AxisVTU logo mark used on the website.
+- axisvtu-icon.svg / axisvtu-logo.svg: compatibility wrappers for old SVG paths.
+- mmtechglobe-mark.svg and mmtechglobe-logo.svg: MMTechGlobe company assets.
 
-Export suggestions:
-- Monnify upload: 512x512 PNG (use mmtechglobe-mark.svg)
-- Website: SVG is fine for web (keeps it sharp)
-
-Quick PNG export (no extra tools):
-1) Open the SVG in Chrome/Safari.
-2) Print -> Save as PDF.
-3) Use Preview to export a PNG from the PDF, or take a clean screenshot at 100% zoom.
-
+Support email:
+- mmtechglobe@gmail.com

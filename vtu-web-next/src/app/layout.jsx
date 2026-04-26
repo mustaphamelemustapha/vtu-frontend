@@ -9,6 +9,11 @@ export const metadata = {
   description: 'Premium fintech dashboard for AxisVTU',
   applicationName: 'AxisVTU',
   metadataBase: new URL('https://axisvtu.com'),
+  icons: {
+    icon: '/brand/axisvtu-icon.png',
+    shortcut: '/brand/axisvtu-icon.png',
+    apple: '/brand/axisvtu-icon.png',
+  },
 };
 
 export default function RootLayout({ children }) {

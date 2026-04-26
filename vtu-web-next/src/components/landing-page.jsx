@@ -142,7 +142,12 @@ const motionFadeUp = {
 };
 
 function BrandLogo({ className = '' }) {
-  return <img src="/brand/axisvtu-logo.svg" alt="AxisVTU" className={`h-10 w-auto ${className}`.trim()} />;
+  return (
+    <span className={`inline-flex items-center gap-2.5 ${className}`.trim()}>
+      <img src="/brand/axisvtu-logo.png" alt="AxisVTU logo" className="h-10 w-10 rounded-2xl object-contain" />
+      <span className="text-lg font-semibold tracking-tight text-foreground">AxisVTU</span>
+    </span>
+  );
 }
 
 function PageSection({ eyebrow, title, description, align = 'left' }) {
@@ -175,7 +180,7 @@ function MobileMenu({ open, onClose }) {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <BrandLogo className="h-8" />
+              <BrandLogo className="[&_img]:h-8 [&_img]:w-8 [&_span]:text-base" />
               <button
                 type="button"
                 onClick={onClose}
@@ -238,7 +243,7 @@ function Header() {
       >
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <BrandLogo className="h-9 sm:h-10" />
+            <BrandLogo className="[&_img]:h-9 [&_img]:w-9 sm:[&_img]:h-10 sm:[&_img]:w-10" />
           </Link>
 
           <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground lg:flex">
@@ -354,7 +359,7 @@ function Hero() {
               <div className="flex items-start justify-between gap-4 border-b border-border pb-5">
                 <div>
                   <div className="flex items-center gap-3">
-                    <BrandLogo className="h-7" />
+                    <BrandLogo className="[&_img]:h-7 [&_img]:w-7 [&_span]:text-sm" />
                     <span className="axis-label text-primary">Product preview</span>
                   </div>
                   <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">Clean dashboard preview</h2>
@@ -629,7 +634,7 @@ function FaqSection() {
             <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
               <div>
                 <div className="flex items-center gap-3">
-                  <BrandLogo className="h-7" />
+                  <BrandLogo className="[&_img]:h-7 [&_img]:w-7 [&_span]:text-sm" />
                   <div className="text-sm font-semibold uppercase tracking-[0.24em] text-primary">Support</div>
                 </div>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
@@ -638,7 +643,7 @@ function FaqSection() {
               </div>
               <div className="flex flex-wrap gap-3">
                 <Button asChild className="h-11 rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90">
-                  <a href="mailto:support@axisvtu.com">Email Support</a>
+                  <a href="mailto:mmtechglobe@gmail.com">Email Support</a>
                 </Button>
                 <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card px-5 text-muted-foreground hover:bg-secondary">
                   <Link href="/login">Log in</Link>
@@ -654,41 +659,41 @@ function FaqSection() {
 
 function Footer() {
   return (
-    <footer className="border-t border-border bg-card px-4 py-16 text-muted-foreground sm:px-6 lg:px-8">
+    <footer className="border-t border-white/10 bg-black px-4 py-16 text-slate-300 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
-            <BrandLogo />
-            <p className="mt-5 max-w-xl text-sm leading-7 text-muted-foreground">
+            <BrandLogo className="[&_span]:text-white" />
+            <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300">
               AxisVTU helps users buy airtime, data, and everyday utility services while keeping wallet funding and transaction records clear.
             </p>
-            <div className="mt-5 flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="mt-5 flex items-center gap-3 text-sm text-slate-200">
               <span className="h-2 w-2 rounded-full bg-primary" />
-              <span>support@axisvtu.com</span>
+              <a href="mailto:mmtechglobe@gmail.com" className="hover:text-white">mmtechglobe@gmail.com</a>
             </div>
           </div>
 
           <div className="grid gap-8 sm:grid-cols-2">
             <div>
-              <div className="text-sm font-semibold text-foreground">AxisVTU</div>
+              <div className="text-sm font-semibold text-white">AxisVTU</div>
               <div className="mt-4 space-y-3 text-sm">
-                <div><a href="#services" className="hover:text-foreground">What you can do</a></div>
-                <div><a href="#trust" className="hover:text-foreground">Why choose us</a></div>
-                <div><a href="#about" className="hover:text-foreground">About</a></div>
-                <div><a href="#faq" className="hover:text-foreground">FAQ</a></div>
+                <div><a href="#services" className="hover:text-white">What you can do</a></div>
+                <div><a href="#trust" className="hover:text-white">Why choose us</a></div>
+                <div><a href="#about" className="hover:text-white">About</a></div>
+                <div><a href="#faq" className="hover:text-white">FAQ</a></div>
               </div>
             </div>
             <div>
-              <div className="text-sm font-semibold text-foreground">Policies</div>
+              <div className="text-sm font-semibold text-white">Policies</div>
               <div className="mt-4 space-y-3 text-sm">
-                <div><a href="#" className="hover:text-foreground">Terms &amp; Conditions</a></div>
-                <div><a href="#" className="hover:text-foreground">Privacy Policy</a></div>
+                <div><a href="#" className="hover:text-white">Terms &amp; Conditions</a></div>
+                <div><a href="#" className="hover:text-white">Privacy Policy</a></div>
               </div>
             </div>
           </div>
         </div>
-        <Separator className="my-10 bg-border" />
-        <div className="flex flex-col gap-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <Separator className="my-10 bg-white/10" />
+        <div className="flex flex-col gap-4 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
           <div>© 2026 AxisVTU. All rights reserved.</div>
           <div className="flex gap-4">
             <span>Official web platform</span>
