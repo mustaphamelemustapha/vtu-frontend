@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, CircleDollarSign, Gift, Package2, RefreshCw, Sparkles, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight, Check, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles, TrendingUp, Users } from 'lucide-react';
 import { apiFetch, getProfile } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { quickActions } from '@/lib/nav';
@@ -70,6 +70,7 @@ export default function DashboardPage() {
   const [referrals, setReferrals] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [copiedAccount, setCopiedAccount] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
@@ -94,6 +95,7 @@ export default function DashboardPage() {
   const txs = emptyOrRows(summary?.transactions).slice(0, 6);
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
   const bankTransfer = summary?.bank_transfer_accounts || {};
+  const primaryFundingAccount = bankTransfer?.accounts?.[0] || null;
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
   const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
@@ -102,6 +104,18 @@ export default function DashboardPage() {
     { label: 'Rewards earned', value: `₦${formatMoney(referrals?.total_earned ?? 0)}`, detail: 'Referral revenue', icon: Gift, tone: 'violet' },
     { label: 'Recent tx', value: String(txs.length), detail: 'Latest transactions in view', icon: TrendingUp, tone: 'amber' },
   ], [wallet.balance, referrals?.total_referrals, referrals?.total_earned, txs.length]);
+
+  const copyFundingAccount = useCallback(async () => {
+    const accountNumber = primaryFundingAccount?.account_number;
+    if (!accountNumber) return;
+    try {
+      await navigator.clipboard.writeText(String(accountNumber));
+      setCopiedAccount(true);
+      window.setTimeout(() => setCopiedAccount(false), 1800);
+    } catch {
+      setCopiedAccount(false);
+    }
+  }, [primaryFundingAccount?.account_number]);
 
   return (
     <div className="space-y-6 pb-8">
@@ -128,6 +142,66 @@ export default function DashboardPage() {
           <MetricCard key={item.label} {...item} />
         ))}
       </div>
+
+      <Card className="overflow-hidden border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card shadow-[0_24px_70px_rgba(234,115,69,0.10)]">
+        <CardContent className="grid gap-5 p-5 md:grid-cols-[1fr_auto] md:items-center sm:p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg shadow-orange-500/20">
+              <Landmark className="h-6 w-6" />
+            </div>
+            <div className="min-w-0">
+              <div className="axis-label text-primary">Fund your wallet</div>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:text-2xl">Dedicated funding account</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Transfer to this account to fund your AxisVTU wallet. Copy the account number and send money from your bank app.
+              </p>
+            </div>
+          </div>
+
+          {primaryFundingAccount ? (
+            <div className="rounded-3xl border border-border bg-card/85 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:min-w-[390px]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account number</div>
+                  <div className="mt-2 break-all font-mono text-3xl font-semibold tracking-[0.16em] text-foreground sm:text-4xl">
+                    {primaryFundingAccount.account_number}
+                  </div>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-11 w-11 shrink-0 border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
+                  onClick={copyFundingAccount}
+                  aria-label="Copy funding account number"
+                  title="Copy account number"
+                >
+                  {copiedAccount ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                </Button>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-border bg-secondary p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Bank</div>
+                  <div className="mt-1 text-sm font-semibold text-foreground">{primaryFundingAccount.bank_name || 'Bank account'}</div>
+                </div>
+                <div className="rounded-2xl border border-border bg-secondary p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Account name</div>
+                  <div className="mt-1 truncate text-sm font-semibold text-foreground">{primaryFundingAccount.account_name || 'AxisVTU Wallet'}</div>
+                </div>
+              </div>
+              <div className="mt-3 text-xs font-medium text-primary">
+                {copiedAccount ? 'Account number copied.' : 'Tap copy, then transfer from your bank app.'}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border bg-card/85 p-5 text-sm leading-6 text-muted-foreground md:min-w-[360px]">
+              {bankTransfer?.message || 'Wallet transfer account will appear here once it is available.'}
+              <Button className="mt-4 w-full" onClick={() => router.push('/wallet')}>
+                Open wallet
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
         <Card className="overflow-hidden">
@@ -227,32 +301,6 @@ export default function DashboardPage() {
         </Card>
 
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Funding account</CardTitle>
-              <CardDescription>Dedicated transfer details for wallet top-ups.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {bankTransfer?.accounts?.[0] ? (
-                <>
-                  <div className="rounded-3xl border border-border bg-secondary p-4">
-                    <div className="axis-label">Bank</div>
-                    <div className="mt-2 text-lg font-semibold text-foreground">{bankTransfer.accounts[0].bank_name}</div>
-                    <div className="mt-2 text-2xl font-semibold tracking-[0.24em] text-foreground">{bankTransfer.accounts[0].account_number}</div>
-                    <div className="mt-2 text-sm text-muted-foreground">{bankTransfer.accounts[0].account_name || 'AxisVTU Wallet'}</div>
-                  </div>
-                </>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground">
-                  {bankTransfer?.message || 'Wallet transfer accounts will appear here.'}
-                </div>
-              )}
-              <Button className="w-full border-border bg-card text-muted-foreground hover:bg-secondary" variant="secondary" onClick={() => router.push('/wallet')}>
-                Open wallet
-              </Button>
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Announcements</CardTitle>
