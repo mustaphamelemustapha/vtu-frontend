@@ -185,3 +185,88 @@ export async function registerRequest(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+function toQuery(params = {}) {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return;
+    search.set(key, String(value));
+  });
+  const query = search.toString();
+  return query ? `?${query}` : '';
+}
+
+export async function adminGetAnalytics() {
+  return apiFetch('/admin/analytics');
+}
+
+export async function adminGetUsers(params = {}) {
+  return apiFetch(`/admin/users${toQuery(params)}`);
+}
+
+export async function adminGetUserDetails(userId) {
+  return apiFetch(`/admin/users/${userId}/details`);
+}
+
+export async function adminSuspendUser(userId) {
+  return apiFetch(`/admin/users/${userId}/suspend`, { method: 'POST' });
+}
+
+export async function adminActivateUser(userId) {
+  return apiFetch(`/admin/users/${userId}/activate`, { method: 'POST' });
+}
+
+export async function adminGetTransactions(params = {}) {
+  return apiFetch(`/admin/transactions${toQuery(params)}`);
+}
+
+export async function adminGetReports(params = {}) {
+  return apiFetch(`/admin/reports${toQuery(params)}`);
+}
+
+export async function adminUpdateReport(reportId, payload) {
+  return apiFetch(`/admin/reports/${reportId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function adminGetPricingRules() {
+  return apiFetch('/admin/pricing');
+}
+
+export async function adminUpdatePricingRule(payload) {
+  return apiFetch('/admin/pricing', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function adminFundWallet(payload) {
+  return apiFetch('/admin/fund-wallet', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function adminGetBroadcasts() {
+  return apiFetch('/notifications/broadcast/admin');
+}
+
+export async function adminCreateBroadcast(payload) {
+  return apiFetch('/notifications/broadcast/admin', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function adminUpdateBroadcast(id, payload) {
+  return apiFetch(`/notifications/broadcast/admin/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function adminSyncDataPlans() {
+  return apiFetch('/data/sync', { method: 'POST' });
+}

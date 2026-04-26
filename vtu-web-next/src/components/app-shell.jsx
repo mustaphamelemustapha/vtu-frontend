@@ -96,11 +96,17 @@ function MobileMenuLink({ item, activePath }) {
   );
 }
 
+function hasAdminRole(profile) {
+  const role = String(profile?.role || '').trim().toLowerCase();
+  return role === 'admin' || role.endsWith('.admin') || role.includes('admin');
+}
+
 export function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
   const [profile, setProfileState] = useState(getProfile());
+  const [adminShortcutAllowed, setAdminShortcutAllowed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState('light');
 
@@ -123,6 +129,17 @@ export function AppShell({ children }) {
         if (!mounted) return;
         setProfile(me);
         setProfileState(me);
+        const roleAdmin = hasAdminRole(me);
+        if (roleAdmin) {
+          setAdminShortcutAllowed(true);
+        } else {
+          try {
+            await apiFetch('/admin/analytics');
+            if (mounted) setAdminShortcutAllowed(true);
+          } catch {
+            if (mounted) setAdminShortcutAllowed(false);
+          }
+        }
       } catch {
         clearAuth();
         router.replace('/');
@@ -159,6 +176,26 @@ export function AppShell({ children }) {
     () => appNav.find((item) => activePath === item.href || activePath.startsWith(`${item.href}/`)),
     [activePath]
   );
+  const isAdmin = hasAdminRole(profile) || adminShortcutAllowed;
+  const desktopNavItems = useMemo(() => {
+    if (!isAdmin) return appNav;
+    const hasAdminItem = appNav.some((item) => item.href === '/admin');
+    if (hasAdminItem) return appNav;
+    return [{ label: 'Admin Panel', href: '/admin', icon: ShieldCheck }, ...appNav];
+  }, [isAdmin]);
+  const mobilePrimaryItems = useMemo(() => {
+    if (!isAdmin) return mobilePrimaryMenu;
+    const hasAdminItem = mobilePrimaryMenu.some((item) => item.href === '/admin');
+    if (hasAdminItem) return mobilePrimaryMenu;
+    return [{ label: 'Admin Panel', href: '/admin', icon: ShieldCheck }, ...mobilePrimaryMenu];
+  }, [isAdmin]);
+  const mobileSettingsItems = useMemo(() => {
+    if (!isAdmin) return mobileSettingsMenu;
+    return [
+      ...mobileSettingsMenu,
+      { label: 'Admin Panel', href: '/admin', icon: ShieldCheck },
+    ];
+  }, [isAdmin]);
 
   const toggleTheme = useCallback(() => {
     setTheme((current) => {
@@ -196,7 +233,7 @@ export function AppShell({ children }) {
         </Link>
 
         <nav className="mt-8 space-y-2">
-          {appNav.map((item) => {
+          {desktopNavItems.map((item) => {
             const Icon = item.icon;
             const active = activePath === item.href || activePath.startsWith(`${item.href}/`);
             return (
@@ -230,6 +267,12 @@ export function AppShell({ children }) {
             <Button variant="secondary" className="w-full" onClick={() => router.push('/profile')}>
               Profile
             </Button>
+            {isAdmin ? (
+              <Button variant="secondary" className="w-full" onClick={() => router.push('/admin')}>
+                <ShieldCheck className="h-4 w-4" />
+                Admin Panel
+              </Button>
+            ) : null}
             <Button variant="secondary" className="w-full border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
               Sign out
@@ -388,7 +431,7 @@ export function AppShell({ children }) {
               <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="axis-label mb-2">Menu</div>
                 <nav className="space-y-1">
-                  {mobilePrimaryMenu.map((item) => (
+                  {mobilePrimaryItems.map((item) => (
                     <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                   ))}
                 </nav>
@@ -396,7 +439,7 @@ export function AppShell({ children }) {
                 <div className="mt-5 border-t border-border pt-4">
                   <div className="axis-label mb-2">Personal settings</div>
                   <nav className="space-y-1">
-                    {mobileSettingsMenu.map((item) => (
+                    {mobileSettingsItems.map((item) => (
                       <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                     ))}
                   </nav>
