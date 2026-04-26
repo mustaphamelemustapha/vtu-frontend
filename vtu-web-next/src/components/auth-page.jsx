@@ -179,7 +179,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <Field label="Password">
                     <div className="relative">
                       <Input
-                        className="h-[50px] rounded-[8px] pr-14 border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 pr-12 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Create a secure password"
@@ -189,19 +189,10 @@ export function AuthPage({ initialMode = 'login' }) {
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-2 my-auto rounded-[8px] border border-border bg-input px-3 text-xs font-medium text-muted-foreground transition-all duration-200 hover:border-primary/45 hover:bg-secondary hover:text-foreground"
+                        className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
-                        {showPassword ? (
-                          <span className="inline-flex items-center gap-1">
-                            <EyeOff className="h-3.5 w-3.5" />
-                            Hide
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1">
-                            <Eye className="h-3.5 w-3.5" />
-                            Show
-                          </span>
-                        )}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </Field>
@@ -217,12 +208,12 @@ export function AuthPage({ initialMode = 'login' }) {
                 </>
               ) : (
                 <>
-                  <Field label="Email or phone">
+                  <Field label="Email">
                     <Input
                       className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                       value={form.email}
                       onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-                      placeholder="you@example.com or 08012345678"
+                      placeholder="you@example.com"
                       autoComplete="username"
                     />
                   </Field>
@@ -230,7 +221,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <Field label="Password">
                     <div className="relative">
                       <Input
-                        className="h-[50px] rounded-[8px] pr-14 border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 pr-12 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Your password"
@@ -240,19 +231,10 @@ export function AuthPage({ initialMode = 'login' }) {
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-2 my-auto rounded-[8px] border border-border bg-input px-3 text-xs font-medium text-muted-foreground transition-all duration-200 hover:border-primary/45 hover:bg-secondary hover:text-foreground"
+                        className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
-                        {showPassword ? (
-                          <span className="inline-flex items-center gap-1">
-                            <EyeOff className="h-3.5 w-3.5" />
-                            Hide
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1">
-                            <Eye className="h-3.5 w-3.5" />
-                            Show
-                          </span>
-                        )}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </Field>
