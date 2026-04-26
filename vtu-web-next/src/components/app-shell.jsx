@@ -17,11 +17,6 @@ function brandInitials(profile) {
   return (letters || 'AX').toUpperCase();
 }
 
-const mobileNavLabels = {
-  Dashboard: 'Home',
-  'Buy Data': 'Data',
-};
-
 export function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -240,33 +235,6 @@ export function AppShell({ children }) {
               Sign out
             </Button>
           </div>
-          <nav
-            className={cn(
-              'flex gap-2 overflow-x-auto border-t px-3 py-2 md:hidden [&::-webkit-scrollbar]:hidden',
-              'border-border'
-            )}
-          >
-            {appNav.map((item) => {
-              const Icon = item.icon;
-              const active = activePath === item.href || activePath.startsWith(`${item.href}/`);
-              const label = mobileNavLabels[item.label] || item.label;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[11px] font-medium whitespace-nowrap transition',
-                    active
-                      ? 'border-primary/35 bg-primary/12 text-foreground'
-                      : 'border-border bg-card text-muted-foreground'
-                  )}
-                >
-                  <Icon className={cn('h-3 w-3', active ? 'text-primary' : 'text-muted-foreground')} />
-                  <span>{label}</span>
-                </Link>
-              );
-            })}
-          </nav>
         </header>
         <div className="px-4 py-5 md:px-6 lg:px-8 xl:px-10">{children}</div>
       </main>
