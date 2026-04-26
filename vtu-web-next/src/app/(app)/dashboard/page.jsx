@@ -1,8 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BellRing, CircleDollarSign, Gift, Package2, RefreshCw, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight, CircleDollarSign, Gift, Package2, RefreshCw, Sparkles, TrendingUp, Users } from 'lucide-react';
 import { apiFetch, getProfile } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { quickActions } from '@/lib/nav';
@@ -16,6 +17,51 @@ import { buildReferralUrl } from '@/lib/site';
 function emptyOrRows(value) {
   return Array.isArray(value) ? value : [];
 }
+
+const actionDetails = {
+  '/buy-data': {
+    kicker: 'Most used',
+    description: 'Purchase mobile data with a guided flow and clean confirmation.',
+    cta: 'Buy data',
+    tone: 'from-orange-500/16 via-orange-500/8 to-transparent border-orange-300/70',
+    iconTone: 'bg-orange-500 text-white shadow-orange-500/20',
+  },
+  '/services': {
+    kicker: 'Catalog',
+    description: 'Browse available AxisVTU services from one organized page.',
+    cta: 'Open services',
+    tone: 'from-sky-500/14 via-sky-500/7 to-transparent border-sky-300/70',
+    iconTone: 'bg-sky-500 text-white shadow-sky-500/20',
+  },
+  '/wallet': {
+    kicker: 'Funding',
+    description: 'Check balance, view account details, and fund your wallet.',
+    cta: 'Open wallet',
+    tone: 'from-emerald-500/14 via-emerald-500/7 to-transparent border-emerald-300/70',
+    iconTone: 'bg-emerald-500 text-white shadow-emerald-500/20',
+  },
+  '/history': {
+    kicker: 'Records',
+    description: 'Review recent purchases, payments, and transaction status.',
+    cta: 'View history',
+    tone: 'from-amber-500/14 via-amber-500/7 to-transparent border-amber-300/70',
+    iconTone: 'bg-amber-500 text-white shadow-amber-500/20',
+  },
+  '/profile#referrals': {
+    kicker: 'Growth',
+    description: 'Share your referral code and track invite activity.',
+    cta: 'Open referrals',
+    tone: 'from-violet-500/14 via-violet-500/7 to-transparent border-violet-300/70',
+    iconTone: 'bg-violet-500 text-white shadow-violet-500/20',
+  },
+  '/profile': {
+    kicker: 'Account',
+    description: 'Manage your profile, account details, and security settings.',
+    cta: 'View profile',
+    tone: 'from-slate-500/12 via-slate-500/6 to-transparent border-border',
+    iconTone: 'bg-slate-800 text-white shadow-slate-900/10 dark:bg-slate-200 dark:text-slate-950',
+  },
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -62,7 +108,7 @@ export default function DashboardPage() {
       <PageHeader
         eyebrow="Dashboard"
         title={`Good to see you, ${String(profile?.full_name || profile?.email || 'User').split(' ')[0]}`}
-        description="A calm, desktop-native command center for AxisVTU operations, balances, and referral activity."
+        description="A calm command center for AxisVTU operations, balances, and referral activity."
         actions={(
           <>
             <Button variant="secondary" onClick={() => load(true)} className="border-border bg-card text-muted-foreground hover:bg-secondary">
@@ -77,37 +123,56 @@ export default function DashboardPage() {
         )}
       />
 
-      <div className="grid gap-4 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {quickStats.map((item) => (
           <MetricCard key={item.label} {...item} />
         ))}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-        <Card>
-          <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <Card className="overflow-hidden">
+          <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-border bg-gradient-to-r from-secondary to-card">
             <div>
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                <Sparkles className="h-3.5 w-3.5" />
+                Action board
+              </div>
               <CardTitle>Quick actions</CardTitle>
-              <CardDescription>Core operations surfaced at the top of the workspace.</CardDescription>
+              <CardDescription>Start the common tasks without searching around the dashboard.</CardDescription>
             </div>
-            <Badge tone="neutral">Desktop-first</Badge>
+            <Badge tone="neutral" className="hidden sm:inline-flex">Responsive</Badge>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {quickActions.map((item) => {
+          <CardContent className="p-4 sm:p-5">
+            <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+              {quickActions.map((item, index) => {
                 const Icon = item.icon;
+                const detail = actionDetails[item.href] || actionDetails['/profile'];
                 return (
-                  <button
+                  <Link
                     key={item.href}
-                    onClick={() => router.push(item.href)}
-                    className="group rounded-3xl border border-border bg-secondary p-4 text-left transition hover:border-orange-200 hover:bg-orange-50"
+                    href={item.href}
+                    className={`group relative overflow-hidden rounded-3xl border bg-gradient-to-br ${detail.tone} p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] focus:outline-none focus:ring-2 focus:ring-primary/25 dark:hover:shadow-[0_18px_45px_rgba(0,0,0,0.22)] ${
+                      index === 0 ? 'sm:col-span-2 2xl:col-span-1' : ''
+                    }`}
                   >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-primary">
-                      <Icon className="h-4 w-4" />
+                    <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-white/35 blur-2xl dark:bg-white/5" />
+                    <div className="relative flex items-start justify-between gap-4">
+                      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-lg ${detail.iconTone}`}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <span className="rounded-full border border-border bg-card/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        {detail.kicker}
+                      </span>
                     </div>
-                    <div className="mt-4 text-sm font-semibold text-foreground">{item.label}</div>
-                    <div className="mt-1 text-sm text-muted-foreground">Open workspace</div>
-                  </button>
+                    <div className="relative mt-5">
+                      <div className="text-base font-semibold tracking-tight text-foreground">{item.label}</div>
+                      <p className="mt-2 min-h-[44px] text-sm leading-6 text-muted-foreground">{detail.description}</p>
+                      <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                        {detail.cta}
+                        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                      </div>
+                    </div>
+                  </Link>
                 );
               })}
             </div>
