@@ -184,9 +184,9 @@ export function AppShell({ children }) {
               variant="secondary"
               size="icon"
               className="hidden md:inline-flex"
-              onClick={() => router.push('/history')}
-              aria-label="Open history"
-              title="History"
+              onClick={() => router.push('/notifications')}
+              aria-label="Open notifications"
+              title="Notifications"
             >
               <Bell className="h-4 w-4" />
             </Button>
@@ -207,7 +207,7 @@ export function AppShell({ children }) {
                 'h-9 w-9 shrink-0 rounded-xl md:hidden',
                 'border-border bg-card text-foreground hover:bg-secondary'
               )}
-              onClick={() => router.push('/history')}
+              onClick={() => router.push('/notifications')}
               aria-label="Notifications"
               title="Notifications"
             >
