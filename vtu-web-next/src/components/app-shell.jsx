@@ -1,9 +1,29 @@
 'use client';
 
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, LogOut, Menu, Moon, Search, Settings2, Sun, X } from 'lucide-react';
+import {
+  Bell,
+  CircleDollarSign,
+  Clock3,
+  GraduationCap,
+  Gauge,
+  Headphones,
+  LogOut,
+  Menu,
+  Package2,
+  Search,
+  Settings2,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Tv2,
+  UserCircle2,
+  X,
+  Zap,
+} from 'lucide-react';
 import { appNav } from '@/lib/nav';
 import { clearAuth, apiFetch, getProfile, getToken, setProfile } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +35,63 @@ function brandInitials(profile) {
   const parts = name.split(/\s+/).filter(Boolean);
   const letters = parts.slice(0, 2).map((part) => part[0]).join('');
   return (letters || 'AX').toUpperCase();
+}
+
+const mobilePrimaryMenu = [
+  { label: 'Dashboard', href: '/dashboard', icon: Gauge },
+  { label: 'Data', href: '/buy-data', icon: Package2 },
+  { label: 'Airtime', href: '/services', icon: Smartphone },
+  { label: 'Cable TV', href: '/services', icon: Tv2 },
+  { label: 'Electricity', href: '/services', icon: Zap },
+  { label: 'Education', href: '/services', icon: GraduationCap },
+  { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
+  { label: 'Transaction history', href: '/history', icon: Clock3 },
+];
+
+const mobileSettingsMenu = [
+  { label: 'Profile', href: '/profile', icon: UserCircle2 },
+  { label: 'Security', href: '/profile#security', icon: ShieldCheck },
+  { label: 'Support', href: 'mailto:mmtechglobe@gmail.com', icon: Headphones, external: true },
+];
+
+function MobileMenuLink({ item, activePath }) {
+  const Icon = item.icon;
+  const active = !item.external && (activePath === item.href || activePath.startsWith(`${item.href}/`));
+  const className = cn(
+    'group flex items-center gap-3 rounded-2xl border px-3.5 py-3 text-sm font-medium transition',
+    active
+      ? 'border-primary/30 bg-primary/10 text-foreground shadow-sm'
+      : 'border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground'
+  );
+  const content = (
+    <>
+      <span
+        className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition',
+          active
+            ? 'border-primary/25 bg-primary text-primary-foreground'
+            : 'border-border bg-card text-muted-foreground group-hover:text-primary'
+        )}
+      >
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="min-w-0 truncate">{item.label}</span>
+    </>
+  );
+
+  if (item.external) {
+    return (
+      <a href={item.href} className={className}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={item.href} className={className}>
+      {content}
+    </Link>
+  );
 }
 
 export function AppShell({ children }) {
@@ -65,6 +142,15 @@ export function AppShell({ children }) {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileMenuOpen]);
 
   const activePath = useMemo(() => pathname || '/dashboard', [pathname]);
   const activePage = useMemo(
@@ -218,13 +304,13 @@ export function AppShell({ children }) {
               size="icon"
               className={cn(
                 'h-9 w-9 shrink-0 rounded-xl md:hidden',
-                'border-border bg-card text-foreground hover:bg-secondary'
+                'border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-card text-primary shadow-[0_8px_24px_rgba(234,115,69,0.14)] hover:border-primary/40 hover:bg-primary/10 dark:border-orange-400/20 dark:from-orange-500/15 dark:via-amber-500/10 dark:to-card'
               )}
               onClick={toggleTheme}
               aria-label="Toggle theme"
               title="Theme"
             >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              <Sparkles className="h-4 w-4" />
             </Button>
             <Button
               variant="secondary"
@@ -239,80 +325,99 @@ export function AppShell({ children }) {
         <div className="px-4 py-5 md:px-6 lg:px-8 xl:px-10">{children}</div>
       </main>
 
-      {mobileMenuOpen ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-label="Close menu overlay"
-          />
-          <aside className="relative flex h-full w-[82vw] max-w-[340px] flex-col border-r border-border bg-card p-4 text-card-foreground shadow-2xl">
-            <div className="flex items-center justify-between gap-3">
-              <Link href="/dashboard" className="flex min-w-0 items-center gap-3 rounded-2xl border border-border bg-secondary px-3 py-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-                  <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">AxisVTU</div>
-                  <div className="truncate text-xs text-muted-foreground">Mobile workspace</div>
-                </div>
-              </Link>
-              <Button
-                variant="secondary"
-                size="icon"
-                className="h-9 w-9 shrink-0 rounded-xl"
-                onClick={() => setMobileMenuOpen(false)}
-                aria-label="Close menu"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <nav className="mt-6 space-y-1.5">
-              {appNav.map((item) => {
-                const Icon = item.icon;
-                const active = activePath === item.href || activePath.startsWith(`${item.href}/`);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm transition',
-                      active
-                        ? 'border-primary/35 bg-primary/12 text-foreground'
-                        : 'border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground'
-                    )}
+      <AnimatePresence>
+        {mobileMenuOpen ? (
+          <motion.div
+            className="fixed inset-0 z-50 overflow-hidden lg:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+            <motion.button
+              type="button"
+              className="absolute inset-0 bg-slate-950/55 backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close menu overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <motion.aside
+              className="relative flex h-dvh w-[86vw] max-w-[360px] flex-col overflow-hidden border-r border-border bg-card text-card-foreground shadow-2xl"
+              initial={{ x: '-104%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-104%' }}
+              transition={{ type: 'spring', stiffness: 320, damping: 34 }}
+            >
+              <div className="shrink-0 border-b border-border p-4">
+                <div className="rounded-[1.75rem] border border-border bg-gradient-to-br from-secondary via-card to-primary/10 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
+                        <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate text-base font-semibold tracking-tight text-foreground">AxisVTU</div>
+                        <div className="mt-1 truncate text-xs text-muted-foreground">{profile.full_name || profile.email || 'Wallet workspace'}</div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-9 w-9 shrink-0 rounded-xl"
+                      onClick={() => setMobileMenuOpen(false)}
+                      aria-label="Close menu"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                    Manage payments, wallet funding, and account controls from one locked menu.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="mt-4 inline-flex h-10 items-center gap-2 rounded-2xl border border-primary/20 bg-primary/10 px-3 text-sm font-semibold text-primary transition hover:bg-primary/15"
                   >
-                    <Icon className={cn('h-4 w-4', active ? 'text-primary' : 'text-muted-foreground')} />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="mt-auto space-y-4 rounded-3xl border border-border bg-secondary p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-card text-sm font-semibold">
-                  {initials}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">{profile.full_name || profile.email || 'AxisVTU User'}</div>
-                  <div className="truncate text-xs text-muted-foreground">{profile.email || 'No email attached'}</div>
+                    <Sparkles className="h-4 w-4" />
+                    Signature theme
+                  </button>
                 </div>
               </div>
-              <Button
-                variant="secondary"
-                className="h-11 w-full border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18"
-                onClick={handleSignOut}
-              >
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </Button>
-            </div>
-          </aside>
-        </div>
-      ) : null}
+
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="axis-label mb-3">Menu</div>
+                <nav className="space-y-1.5">
+                  {mobilePrimaryMenu.map((item) => (
+                    <MobileMenuLink key={item.label} item={item} activePath={activePath} />
+                  ))}
+                </nav>
+
+                <div className="mt-7 border-t border-border pt-5">
+                  <div className="axis-label mb-3">Personal settings</div>
+                  <nav className="space-y-1.5">
+                    {mobileSettingsMenu.map((item) => (
+                      <MobileMenuLink key={item.label} item={item} activePath={activePath} />
+                    ))}
+                  </nav>
+                </div>
+              </div>
+
+              <div className="shrink-0 border-t border-border bg-card p-4">
+                <Button
+                  variant="secondary"
+                  className="h-12 w-full justify-center border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
+            </motion.aside>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

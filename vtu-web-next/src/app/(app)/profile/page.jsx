@@ -82,7 +82,7 @@ export default function ProfilePage() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_0.95fr]">
-        <Card>
+        <Card id="profile">
           <CardHeader>
             <CardTitle>Account details</CardTitle>
             <CardDescription>Update identity information from the existing backend profile endpoint.</CardDescription>
@@ -137,7 +137,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
-        <Card>
+        <Card id="security">
           <CardHeader>
             <CardTitle>Security</CardTitle>
             <CardDescription>Password update and account protection.</CardDescription>
@@ -155,7 +155,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card id="support">
           <CardHeader>
             <CardTitle>Account actions</CardTitle>
             <CardDescription>Session and workspace-level controls.</CardDescription>
