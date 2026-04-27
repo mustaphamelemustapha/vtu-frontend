@@ -45,6 +45,35 @@ function parseAmountFromPlanText(value) {
   return Number.parseFloat(match[1].replace(/,/g, ''));
 }
 
+const FALLBACK_CABLE_PACKAGES = {
+  dstv: [
+    { code: 'dstv-padi', name: 'DStv Padi', amount: 4400 },
+    { code: 'dstv-yanga', name: 'DStv Yanga', amount: 6000 },
+    { code: 'dstv-confam', name: 'DStv Confam', amount: 11000 },
+    { code: 'dstv79', name: 'DStv Compact', amount: 19000 },
+    { code: 'dstv7', name: 'DStv Compact Plus', amount: 30000 },
+    { code: 'dstv3', name: 'DStv Premium', amount: 44500 },
+    { code: 'dstv9', name: 'DStv Premium French', amount: 69000 },
+    { code: 'dstv10', name: 'DStv Premium Asia', amount: 50500 },
+    { code: 'dstv-greatwall', name: 'DStv Great Wall', amount: 3800 },
+    { code: 'frenchplus-addon', name: 'DStv French Plus Add-on', amount: 24500 },
+    { code: 'frenchtouch-addon', name: 'DStv French Touch Add-on', amount: 7000 },
+    { code: 'dstv-padi-showmax', name: 'DStv Padi + Showmax', amount: 8900 },
+    { code: 'dstv-yanga-showmax', name: 'DStv Yanga + Showmax', amount: 8250 },
+    { code: 'dstv-confam-showmax', name: 'DStv Confam + Showmax', amount: 13250 },
+    { code: 'dstv-compact-showmax', name: 'DStv Compact + Showmax', amount: 21250 },
+    { code: 'dstv-compact-plus-showmax', name: 'DStv Compact Plus + Showmax', amount: 32250 },
+    { code: 'dstv-premium-showmax', name: 'DStv Premium + Showmax', amount: 44500 },
+    { code: 'dstv-showmax-premier-league', name: 'DStv Showmax Premier League Add-on', amount: 3600 },
+  ],
+};
+
+function fallbackPackagesForProvider(providerId) {
+  const key = String(providerId || '').trim().toLowerCase();
+  const rows = FALLBACK_CABLE_PACKAGES[key] || [];
+  return rows.map((item) => ({ ...item, provider: key }));
+}
+
 export default function CableTvPage() {
   const [catalog, setCatalog] = useState(null);
   const [wallet, setWallet] = useState(null);
@@ -100,7 +129,8 @@ export default function CableTvPage() {
     setVerifyResult({ ok: false, customerName: '', message: '' });
     try {
       const data = await apiFetch(`/services/cable/packages?provider=${encodeURIComponent(providerId)}`);
-      const rows = Array.isArray(data?.packages) ? data.packages : [];
+      const fetchedRows = Array.isArray(data?.packages) ? data.packages : [];
+      const rows = fetchedRows.length ? fetchedRows : fallbackPackagesForProvider(providerId);
       setCatalog((prev) => {
         const current = Array.isArray(prev?.cable_providers) ? prev.cable_providers : [];
         const nextProviders = current.map((item) => {
@@ -111,7 +141,16 @@ export default function CableTvPage() {
         return { ...(prev || {}), cable_providers: nextProviders };
       });
     } catch {
-      setPackageLoadError('Unable to load package list right now. You can still enter package code manually.');
+      setCatalog((prev) => {
+        const current = Array.isArray(prev?.cable_providers) ? prev.cable_providers : [];
+        const nextProviders = current.map((item) => {
+          const id = String(item?.id || '').trim().toLowerCase();
+          if (id !== providerId) return item;
+          return { ...item, packages: fallbackPackagesForProvider(providerId) };
+        });
+        return { ...(prev || {}), cable_providers: nextProviders };
+      });
+      setPackageLoadError('Unable to load package list from provider. Showing available fallback plans where possible.');
     } finally {
       setPackageLoading(false);
     }
@@ -377,7 +416,7 @@ export default function CableTvPage() {
                       Number.isFinite(planAmount) && planAmount > 0 ? ` — ₦${formatMoney(planAmount)}` : '';
                     return (
                       <option key={code} value={code}>
-                        {`${label}${amountLabel}`}
+                        {`${label} (${code})${amountLabel}`}
                       </option>
                     );
                   })}
@@ -392,10 +431,10 @@ export default function CableTvPage() {
               <div className="space-y-2">
                 <div className="axis-label">Plan amount</div>
                 <div className="flex h-11 w-full items-center rounded-2xl border border-border bg-secondary px-4 text-sm font-medium text-foreground">
-                  {Number.isFinite(parsedAmount) && parsedAmount > 0 ? `₦${formatMoney(parsedAmount)}` : '—'}
+                  {Number.isFinite(parsedAmount) && parsedAmount > 0 ? `₦${formatMoney(parsedAmount)}` : 'Select a cable plan'}
                 </div>
                 <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {amountError || 'Amount comes directly from the selected cable plan.'}
+                  {amountError || 'No manual amount entry needed. Price is attached to your selected package.'}
                 </p>
               </div>
             </div>
