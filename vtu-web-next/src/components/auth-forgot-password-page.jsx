@@ -92,43 +92,48 @@ export function AuthForgotPasswordPage() {
       </div>
 
       {showSuccess ? (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/55 px-4 backdrop-blur-[2px]">
-          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
-            <div className="mb-4 flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-foreground">Reset link sent</h3>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+        <div className="fixed inset-0 z-[120] bg-background">
+          <div className="mx-auto flex min-h-screen w-full max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
+            <Card className="w-full max-w-[460px] border border-border bg-card/95 shadow-[0_14px_30px_rgba(0,0,0,0.22)] backdrop-blur-sm">
+              <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-8">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/12 text-emerald-400 ring-1 ring-emerald-500/30">
+                  <CheckCircle2 className="h-7 w-7" />
+                </div>
+                <CardTitle className="text-[1.7rem] font-semibold tracking-[-0.025em] text-foreground">
+                  Reset link sent
+                </CardTitle>
+                <CardDescription className="mx-auto max-w-[340px] text-sm leading-6 text-muted-foreground">
                   {successMessage || 'If the email exists, a reset link has been sent.'}
-                </p>
-              </div>
-            </div>
+                </CardDescription>
+              </CardHeader>
 
-            <div className="rounded-xl border border-border bg-secondary/70 px-3 py-2 text-xs text-muted-foreground">
-              Check your inbox and spam folder for the reset email.
-            </div>
+              <CardContent className="space-y-5 px-6 pb-8 sm:px-8">
+                <div className="rounded-xl border border-border bg-secondary/70 px-4 py-3 text-sm text-muted-foreground">
+                  Check your inbox and spam folder, then open the reset link to continue.
+                </div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              <Button
-                variant="secondary"
-                className="border-border"
-                onClick={() => {
-                  setShowSuccess(false);
-                }}
-              >
-                Stay here
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowSuccess(false);
-                  window.location.href = '/login';
-                }}
-              >
-                Back to sign in
-              </Button>
-            </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button
+                    variant="secondary"
+                    className="h-[48px] border-border"
+                    onClick={() => {
+                      setShowSuccess(false);
+                    }}
+                  >
+                    Send again
+                  </Button>
+                  <Button
+                    className="h-[48px]"
+                    onClick={() => {
+                      setShowSuccess(false);
+                      window.location.href = '/login';
+                    }}
+                  >
+                    Back to sign in
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       ) : null}
