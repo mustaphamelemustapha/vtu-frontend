@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowRight, Loader2, Mail } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Loader2, Mail } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,12 +12,13 @@ export function AuthForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     setError('');
-    setMessage('');
+    setSuccessMessage('');
     setLoading(true);
     try {
       const res = await apiFetch('/auth/forgot-password', {
@@ -25,7 +26,8 @@ export function AuthForgotPasswordPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      setMessage(res?.message || 'If the email exists, a reset link has been sent.');
+      setSuccessMessage(res?.message || 'If the email exists, a reset link has been sent.');
+      setShowSuccess(true);
     } catch (err) {
       setError(err?.message || 'Unable to send reset request right now.');
     } finally {
@@ -34,12 +36,15 @@ export function AuthForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen bg-background text-foreground">
       <div className="relative mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-[420px] border border-border bg-card shadow-[0_8px_20px_rgba(0,0,0,0.14)] backdrop-blur-sm">
+        <Card className="w-full max-w-[420px] border border-border bg-card/95 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm">
           <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
             <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
               <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
+            </div>
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+              Password recovery
             </div>
             <CardTitle className="text-[1.6rem] font-semibold tracking-[-0.025em] text-foreground">Forgot password</CardTitle>
             <CardDescription className="mx-auto max-w-[300px] text-sm leading-6 text-muted-foreground">
@@ -62,7 +67,6 @@ export function AuthForgotPasswordPage() {
               </div>
 
               {error ? <div className="rounded-[10px] border border-rose-400/15 bg-rose-500/8 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
-              {message ? <div className="rounded-[10px] border border-emerald-400/15 bg-emerald-500/8 px-4 py-3 text-sm text-emerald-200">{message}</div> : null}
 
               <Button
                 className="h-[50px] w-full rounded-[8px] border border-primary/20 bg-primary text-primary-foreground shadow-[0_8px_18px_rgba(249,115,22,0.12)] transition-all duration-200 hover:bg-primary/90 hover:shadow-[0_10px_20px_rgba(249,115,22,0.14)] active:scale-[0.98] active:shadow-[0_6px_14px_rgba(249,115,22,0.10)]"
@@ -86,6 +90,48 @@ export function AuthForgotPasswordPage() {
           </CardContent>
         </Card>
       </div>
+
+      {showSuccess ? (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/55 px-4 backdrop-blur-[2px]">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-[0_18px_40px_rgba(0,0,0,0.28)]">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-400">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-foreground">Reset link sent</h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {successMessage || 'If the email exists, a reset link has been sent.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-secondary/70 px-3 py-2 text-xs text-muted-foreground">
+              Check your inbox and spam folder for the reset email.
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <Button
+                variant="secondary"
+                className="border-border"
+                onClick={() => {
+                  setShowSuccess(false);
+                }}
+              >
+                Stay here
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowSuccess(false);
+                  window.location.href = '/login';
+                }}
+              >
+                Back to sign in
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
