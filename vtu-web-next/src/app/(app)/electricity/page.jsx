@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Lightbulb, RefreshCw } from 'lucide-react';
+import { CheckCircle2, Lightbulb, Loader2, RefreshCw, XCircle } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
@@ -332,8 +332,20 @@ export default function ElectricityPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="secondary" disabled={!lookupReady} onClick={verifyMeter} className="border-border bg-card text-muted-foreground">
-                {verifying ? 'Verifying meter...' : 'Verify meter'}
+              <Button
+                variant="secondary"
+                disabled={!lookupReady || verifying}
+                onClick={verifyMeter}
+                className="min-w-[140px] border-border bg-card font-medium text-foreground hover:bg-secondary disabled:opacity-50"
+              >
+                {verifying ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying…
+                  </>
+                ) : (
+                  'Verify Meter'
+                )}
               </Button>
               <Button onClick={submit} disabled={!canSubmit}>
                 <Lightbulb className="h-4 w-4" />
@@ -342,22 +354,36 @@ export default function ElectricityPage() {
             </div>
 
             {verification.checked ? (
-              <div
-                className={cn(
-                  'rounded-2xl border px-4 py-3 text-sm',
-                  verification.ok
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-400/35 dark:bg-emerald-500/12 dark:text-emerald-100'
-                    : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100'
-                )}
-              >
-                {verification.ok ? (
-                  <span>
-                    Customer: <span className="font-semibold">{verification.customerName || 'Verified customer'}</span>
-                  </span>
-                ) : (
-                  verification.message
-                )}
-              </div>
+              verification.ok ? (
+                /* ── SUCCESS CARD ─────────────────────────────────────────── */
+                <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/8 p-4 dark:bg-emerald-950/40">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold uppercase tracking-widest text-emerald-500">Verified</span>
+                      </div>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Customer Name</p>
+                      <p className="break-words text-lg font-bold tracking-wide text-zinc-900 dark:text-white">
+                        {verification.customerName || 'Verified Customer'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* ── ERROR CARD ───────────────────────────────────────────── */
+                <div className="rounded-2xl border border-rose-500/25 bg-rose-500/8 p-4 dark:bg-rose-950/40">
+                  <div className="flex items-start gap-3">
+                    <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-rose-500 dark:text-rose-400">Verification Failed</p>
+                      <p className="mt-0.5 break-words text-sm text-rose-700 dark:text-rose-300">
+                        {verification.message || 'Unable to verify meter number.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
             ) : null}
 
           </CardContent>
