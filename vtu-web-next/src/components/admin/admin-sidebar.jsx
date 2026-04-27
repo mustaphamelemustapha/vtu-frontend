@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogOut, ShieldCheck, X } from 'lucide-react';
+import { ArrowLeftRight, LogOut, ShieldCheck, X } from 'lucide-react';
 import { adminNav } from '@/lib/admin-nav';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -63,8 +63,18 @@ export function AdminSidebar({ profile, onSignOut, mobile = false, onClose }) {
 
       <div className="border-t border-border p-3">
         <Button
+          asChild
           variant="secondary"
-          className="w-full justify-center border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18"
+          className="mb-2 w-full justify-center border-border bg-card text-foreground hover:bg-secondary"
+        >
+          <Link href="/dashboard">
+            <ArrowLeftRight className="h-4 w-4" />
+            User account
+          </Link>
+        </Button>
+        <Button
+          variant="danger"
+          className="w-full justify-center"
           onClick={onSignOut}
         >
           <LogOut className="h-4 w-4" />

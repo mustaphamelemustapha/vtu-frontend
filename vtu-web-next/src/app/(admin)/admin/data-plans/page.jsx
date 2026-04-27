@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Database, RefreshCw } from 'lucide-react';
-import { adminGetPricingRules, adminSyncDataPlans, apiFetch } from '@/lib/api';
+import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -27,6 +27,7 @@ export default function AdminDataPlansPage() {
   const [pricing, setPricing] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [toggling, setToggling] = useState(null);
   const [activeNetwork, setActiveNetwork] = useState('');
   const [query, setQuery] = useState('');
 
@@ -34,7 +35,7 @@ export default function AdminDataPlansPage() {
     setLoading(true);
     try {
       const [plansRes, pricingRes] = await Promise.allSettled([
-        apiFetch('/data/plans'),
+        adminGetDataPlans(),
         adminGetPricingRules(),
       ]);
       if (plansRes.status === 'fulfilled') setPlans(asList(plansRes.value));
@@ -131,8 +132,25 @@ export default function AdminDataPlansPage() {
             label: 'Actions',
             render: (row) => (
               <div className="flex flex-wrap gap-1.5">
-                <Button variant="secondary" size="sm" disabled>Enable/Disable</Button>
-                <Button variant="secondary" size="sm" disabled>Edit display price</Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  disabled={toggling === row.id}
+                  onClick={async () => {
+                    setToggling(row.id);
+                    try {
+                      await adminUpdateDataPlan(row.id, { is_active: row.is_active === false ? true : false });
+                      await load();
+                    } catch (err) {
+                      alert(err.message || 'Failed to toggle data plan');
+                    } finally {
+                      setToggling(null);
+                    }
+                  }}
+                >
+                  {row.is_active === false ? 'Enable' : 'Disable'}
+                </Button>
+                <Button variant="secondary" size="sm" disabled>Edit price</Button>
                 <Button variant="secondary" size="sm" title={JSON.stringify(row)}>
                   <Database className="h-3.5 w-3.5" />
                   Metadata

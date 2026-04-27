@@ -11,9 +11,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground shadow-sm shadow-orange-500/20 hover:bg-primary/90 disabled:bg-primary/55 disabled:text-primary-foreground',
-        secondary: 'border border-border bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:text-muted-foreground',
+        secondary: 'border border-border bg-secondary text-foreground hover:bg-secondary/85 disabled:text-muted-foreground dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/16',
+        danger: 'border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-500/90 dark:bg-rose-600 dark:text-white dark:hover:bg-rose-500',
         ghost: 'bg-transparent text-foreground hover:bg-secondary disabled:text-muted-foreground',
-        outline: 'border border-border bg-card text-card-foreground hover:bg-secondary disabled:text-muted-foreground',
+        outline: 'border border-border bg-card text-foreground hover:bg-secondary disabled:text-muted-foreground dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:bg-white/12',
       },
       size: {
         default: 'h-11 px-4 py-2',

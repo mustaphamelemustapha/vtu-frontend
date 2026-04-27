@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet } from 'lucide-react';
+import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X } from 'lucide-react';
 import {
   adminActivateUser,
   adminGetUserDetails,
@@ -135,52 +135,79 @@ export default function AdminUsersPage() {
 
       <AdminTable columns={columns} rows={users} empty={loading ? 'Loading users...' : 'No users found.'} />
 
-      {selectedUser ? (
-        <Card>
-          <CardContent className="space-y-3 p-5">
-            <div className="flex items-center justify-between gap-3">
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-card border shadow-xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-card px-5 py-4">
               <div>
-                <h3 className="text-base font-semibold text-foreground">{selectedUser.full_name}</h3>
-                <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                <h2 className="text-lg font-semibold">User Details</h2>
+                <p className="text-sm text-muted-foreground">Detailed view for {selectedUser.full_name}</p>
               </div>
-              <StatusBadge status={selectedUser.is_active ? 'active' : 'suspended'} />
+              <Button variant="ghost" size="icon" onClick={() => setSelectedUser(null)}>
+                <X className="h-5 w-5" />
+              </Button>
             </div>
-
-            {!selectedDetails ? (
-              <div className="text-sm text-muted-foreground">Loading user details...</div>
-            ) : (
-              <div className="grid gap-3 lg:grid-cols-2">
-                <div className="rounded-2xl border border-border bg-secondary p-3">
-                  <div className="axis-label">Wallet balance</div>
-                  <div className="mt-2 text-xl font-semibold text-foreground">₦{formatMoney(selectedDetails?.wallet?.balance || 0)}</div>
+            
+            <div className="space-y-6 p-5">
+              <div className="flex items-center justify-between gap-3 rounded-xl border bg-secondary/50 p-4">
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">{selectedUser.full_name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  <p className="text-sm text-muted-foreground">{selectedUser.phone_number}</p>
                 </div>
-                <div className="rounded-2xl border border-border bg-secondary p-3">
-                  <div className="axis-label">Recent transactions</div>
-                  <div className="mt-2 text-xl font-semibold text-foreground">{(selectedDetails?.recent_transactions || []).length}</div>
+                <div className="text-right space-y-2">
+                  <div><StatusBadge status={selectedUser.is_active ? 'active' : 'suspended'} /></div>
+                  <div><StatusBadge status={selectedUser.is_verified ? 'verified' : 'pending'} /></div>
                 </div>
               </div>
-            )}
 
-            {selectedDetails?.recent_transactions?.length ? (
-              <div className="space-y-2 rounded-2xl border border-border bg-secondary p-3">
-                {selectedDetails.recent_transactions.slice(0, 5).map((tx) => (
-                  <div key={`${tx.reference}-${tx.id}`} className="flex items-center justify-between gap-3 border-b border-border/70 pb-2 last:border-0 last:pb-0">
-                    <div className="text-sm">
-                      <div className="font-medium text-foreground">{tx.reference}</div>
-                      <div className="text-xs text-muted-foreground">{formatDateTime(tx.created_at)}</div>
+              {!selectedDetails ? (
+                <div className="flex justify-center p-8 text-sm text-muted-foreground">
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Loading user details...
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="rounded-xl border bg-card p-4 shadow-sm">
+                      <div className="text-xs font-medium text-muted-foreground">Wallet Balance</div>
+                      <div className="mt-1 text-2xl font-semibold text-foreground">₦{formatMoney(selectedDetails?.wallet?.balance || 0)}</div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
-                      <StatusBadge status={tx.status} />
+                    <div className="rounded-xl border bg-card p-4 shadow-sm">
+                      <div className="text-xs font-medium text-muted-foreground">Referral Code</div>
+                      <div className="mt-1 text-xl font-semibold text-foreground font-mono">{selectedDetails?.user?.referral_code || 'N/A'}</div>
+                    </div>
+                    <div className="rounded-xl border bg-card p-4 shadow-sm">
+                      <div className="text-xs font-medium text-muted-foreground">Recent Transactions</div>
+                      <div className="mt-1 text-2xl font-semibold text-foreground">{(selectedDetails?.recent_transactions || []).length}</div>
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
-      ) : (
-        <EmptyState title="Select a user" description="Use View action to inspect wallet and recent transactions." />
+
+                  {selectedDetails?.recent_transactions?.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm">Recent Transactions (Max 20)</h4>
+                      <div className="space-y-2 rounded-xl border bg-secondary/20 p-3">
+                        {selectedDetails.recent_transactions.map((tx) => (
+                          <div key={`${tx.reference}-${tx.id}`} className="flex items-center justify-between gap-3 border-b border-border/70 pb-3 last:border-0 last:pb-0 pt-2 first:pt-0">
+                            <div className="text-sm">
+                              <div className="font-medium text-foreground">{tx.reference}</div>
+                              <div className="text-xs text-muted-foreground capitalize">{tx.tx_type} • {tx.network || 'Wallet'}</div>
+                              <div className="text-[10px] text-muted-foreground mt-0.5">{formatDateTime(tx.created_at)}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
+                              <div className="mt-1"><StatusBadge status={tx.status} /></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       <ConfirmDialog

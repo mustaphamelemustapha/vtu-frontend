@@ -47,9 +47,9 @@ export default function ReferralsPage() {
       { label: 'Total referrals', value: data?.total_referrals ?? 0 },
       { label: 'Rewarded referrals', value: data?.rewarded_referrals ?? 0 },
       { label: 'Total earned', value: `₦${formatMoney(data?.total_earned || 0)}` },
-      { label: 'Reward per referral', value: `₦${formatMoney(data?.reward_amount || 0)}` },
+      { label: 'Reward rule', value: '2% of first deposit' },
     ],
-    [data?.reward_amount, data?.rewarded_referrals, data?.total_earned, data?.total_referrals]
+    [data?.rewarded_referrals, data?.total_earned, data?.total_referrals]
   );
 
   const copy = async (value) => {

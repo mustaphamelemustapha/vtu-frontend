@@ -107,29 +107,33 @@ export function AppShell({ children }) {
       return;
     }
 
+    const cachedProfile = getProfile();
+    const hasCachedProfile = !!(cachedProfile && Object.keys(cachedProfile).length);
+    if (hasCachedProfile) {
+      setProfileState(cachedProfile);
+      setAdminShortcutAllowed(hasAdminRole(cachedProfile));
+    }
+    setReady(true);
+
+    // Start backend wake + data-plan cache warm-up immediately after token check.
+    warmBackend().catch(() => {});
+    prefetchDataPlans(apiFetch).catch(() => {});
+
     let mounted = true;
     (async () => {
       try {
-        const me = await apiFetch('/auth/me');
+        const me = await apiFetch('/auth/me', { timeoutMs: 10000 });
         if (!mounted) return;
         setProfile(me);
         setProfileState(me);
-        const roleAdmin = hasAdminRole(me);
-        if (roleAdmin) {
-          setAdminShortcutAllowed(true);
-        } else {
-          try {
-            await apiFetch('/admin/analytics');
-            if (mounted) setAdminShortcutAllowed(true);
-          } catch {
-            if (mounted) setAdminShortcutAllowed(false);
-          }
+        setAdminShortcutAllowed(hasAdminRole(me));
+      } catch (error) {
+        if (!mounted) return;
+        // Keep cached profile usable on transient network slowness; only force logout when no cache exists.
+        if (!hasCachedProfile || error?.code === 'AUTH_EXPIRED') {
+          clearAuth();
+          router.replace('/');
         }
-      } catch {
-        clearAuth();
-        router.replace('/');
-      } finally {
-        if (mounted) setReady(true);
       }
     })();
 
@@ -137,13 +141,6 @@ export function AppShell({ children }) {
       mounted = false;
     };
   }, [router]);
-
-  useEffect(() => {
-    if (!ready) return;
-    // Warm backend + cache plans right after auth so /buy-data opens faster.
-    warmBackend().catch(() => {});
-    prefetchDataPlans(apiFetch).catch(() => {});
-  }, [ready]);
 
   useEffect(() => {
     const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
@@ -347,7 +344,15 @@ export function AppShell({ children }) {
             </Button>
           </div>
         </header>
-        <div className="px-4 py-5 md:px-6 lg:px-8 xl:px-10">{children}</div>
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+          className="px-4 py-5 md:px-6 lg:px-8 xl:px-10"
+        >
+          {children}
+        </motion.div>
       </main>
 
       <AnimatePresence>

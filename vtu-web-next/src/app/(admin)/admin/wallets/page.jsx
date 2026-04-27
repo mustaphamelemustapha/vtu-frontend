@@ -6,6 +6,8 @@ import { adminGetTransactions, adminGetUserDetails, adminGetUsers } from '@/lib/
 import { ADMIN_NOTES } from '@/lib/admin-placeholders';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { adminAdjustWallet } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { AdminTable } from '@/components/admin/admin-table';
@@ -15,6 +17,15 @@ export default function AdminWalletsPage() {
   const [walletRows, setWalletRows] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [adjustForm, setAdjustForm] = useState({
+    userId: '',
+    amount: '',
+    action: 'credit',
+    reason: '',
+    loading: false,
+    error: '',
+    success: '',
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -122,18 +133,90 @@ export default function AdminWalletsPage() {
 
       <Card className="border-amber-300/80 bg-amber-50/60 dark:border-amber-400/30 dark:bg-amber-500/10">
         <CardContent className="p-5">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300 bg-card text-amber-700 dark:border-amber-400/30 dark:text-amber-200">
-              <AlertTriangle className="h-4.5 w-4.5" />
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl border border-amber-300 bg-card text-amber-700 dark:border-amber-400/30 dark:text-amber-200">
+                <AlertTriangle className="h-4.5 w-4.5" />
+              </div>
+              <div className="space-y-2">
+                <div className="text-sm font-semibold text-foreground">Manual wallet adjustment (protected)</div>
+                <p className="text-sm text-muted-foreground">{ADMIN_NOTES.walletAdjustments}</p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <div className="text-sm font-semibold text-foreground">Manual wallet adjustment (protected)</div>
-              <p className="text-sm text-muted-foreground">{ADMIN_NOTES.walletAdjustments}</p>
-              <Button variant="secondary" disabled>
-                <Wallet2 className="h-4 w-4" />
-                Adjustment locked
+
+            <form 
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setAdjustForm(s => ({ ...s, loading: true, error: '', success: '' }));
+                try {
+                  await adminAdjustWallet({
+                    user_id: parseInt(adjustForm.userId, 10),
+                    amount: parseFloat(adjustForm.amount),
+                    action: adjustForm.action,
+                    reason: adjustForm.reason,
+                  });
+                  setAdjustForm(s => ({ ...s, loading: false, success: 'Wallet adjusted successfully', userId: '', amount: '', reason: '' }));
+                  load();
+                } catch (err) {
+                  setAdjustForm(s => ({ ...s, loading: false, error: err.message || 'Failed to adjust wallet' }));
+                }
+              }}
+              className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-5 items-end"
+            >
+              <div className="space-y-2">
+                <label className="text-xs font-medium">User ID</label>
+                <Input 
+                  required 
+                  type="number" 
+                  placeholder="e.g. 1" 
+                  value={adjustForm.userId}
+                  onChange={e => setAdjustForm(s => ({ ...s, userId: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium">Action</label>
+                <select 
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={adjustForm.action}
+                  onChange={e => setAdjustForm(s => ({ ...s, action: e.target.value }))}
+                >
+                  <option value="credit">Credit</option>
+                  <option value="debit">Debit</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium">Amount (₦)</label>
+                <Input 
+                  required 
+                  type="number" 
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00" 
+                  value={adjustForm.amount}
+                  onChange={e => setAdjustForm(s => ({ ...s, amount: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium">Reason</label>
+                <Input 
+                  required 
+                  placeholder="e.g. Refund" 
+                  value={adjustForm.reason}
+                  onChange={e => setAdjustForm(s => ({ ...s, reason: e.target.value }))}
+                />
+              </div>
+              <Button type="submit" disabled={adjustForm.loading} className="w-full">
+                {adjustForm.loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Wallet2 className="mr-2 h-4 w-4" />}
+                Submit
               </Button>
-            </div>
+            </form>
+
+            {adjustForm.error && (
+              <div className="text-sm font-medium text-destructive mt-2">{adjustForm.error}</div>
+            )}
+            {adjustForm.success && (
+              <div className="text-sm font-medium text-green-600 dark:text-green-400 mt-2">{adjustForm.success}</div>
+            )}
           </div>
         </CardContent>
       </Card>

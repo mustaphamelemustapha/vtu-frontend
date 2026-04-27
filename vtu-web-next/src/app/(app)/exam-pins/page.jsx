@@ -287,7 +287,7 @@ export default function ExamPinsPage() {
         receipt={receipt}
         onClose={() => setReceipt(null)}
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
-        onShare={() => (receipt ? shareReceipt(receipt) : Promise.resolve({ mode: 'none' }))}
+        onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
     </div>
   );

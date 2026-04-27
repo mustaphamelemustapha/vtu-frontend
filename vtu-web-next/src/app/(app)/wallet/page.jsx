@@ -2,21 +2,21 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Copy, RefreshCw, Wallet2 } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/page-header';
 
 export default function WalletPage() {
-  const [wallet, setWallet] = useState(null);
-  const [ledger, setLedger] = useState([]);
-  const [accounts, setAccounts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [wallet, setWallet] = useState(() => readScopedCache('wallet_me', { maxAgeMs: 5 * 60 * 1000 }));
+  const [ledger, setLedger] = useState(() => readScopedCache('wallet_ledger', { maxAgeMs: 5 * 60 * 1000 }) || []);
+  const [accounts, setAccounts] = useState(() => readScopedCache('wallet_accounts', { maxAgeMs: 5 * 60 * 1000 }) || []);
+  const [loading, setLoading] = useState(() => !(readScopedCache('wallet_me', { maxAgeMs: 5 * 60 * 1000 }) || (readScopedCache('wallet_ledger', { maxAgeMs: 5 * 60 * 1000 }) || []).length));
   const [loadError, setLoadError] = useState('');
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     setLoadError('');
     try {
       const [walletRes, ledgerRes, accountRes] = await Promise.allSettled([
@@ -24,9 +24,20 @@ export default function WalletPage() {
         apiFetch('/wallet/ledger'),
         apiFetch('/wallet/bank-transfer-accounts'),
       ]);
-      if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
-      if (ledgerRes.status === 'fulfilled') setLedger(Array.isArray(ledgerRes.value) ? ledgerRes.value : []);
-      if (accountRes.status === 'fulfilled') setAccounts(Array.isArray(accountRes.value?.accounts) ? accountRes.value.accounts : []);
+      if (walletRes.status === 'fulfilled') {
+        setWallet(walletRes.value);
+        writeScopedCache('wallet_me', walletRes.value);
+      }
+      if (ledgerRes.status === 'fulfilled') {
+        const rows = Array.isArray(ledgerRes.value) ? ledgerRes.value : [];
+        setLedger(rows);
+        writeScopedCache('wallet_ledger', rows);
+      }
+      if (accountRes.status === 'fulfilled') {
+        const rows = Array.isArray(accountRes.value?.accounts) ? accountRes.value.accounts : [];
+        setAccounts(rows);
+        writeScopedCache('wallet_accounts', rows);
+      }
       if (walletRes.status === 'rejected' && ledgerRes.status === 'rejected' && accountRes.status === 'rejected') {
         setLoadError('Unable to load wallet data right now. Please refresh.');
       }
@@ -36,7 +47,7 @@ export default function WalletPage() {
   }, []);
 
   useEffect(() => {
-    load().catch(() => {});
+    load(!!wallet || ledger.length > 0 || accounts.length > 0).catch(() => {});
   }, [load]);
 
   const copy = async (value) => {

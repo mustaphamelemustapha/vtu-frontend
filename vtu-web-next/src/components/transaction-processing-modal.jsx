@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ShieldCheck } from 'lucide-react';
 
 export function TransactionProcessingModal({
   open,
@@ -38,11 +38,27 @@ export function TransactionProcessingModal({
             exit={{ opacity: 0, y: 8, scale: 0.99 }}
             transition={{ duration: 0.24, ease: 'easeOut' }}
           >
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-primary/20 bg-primary/10 text-primary">
-              <Loader2 className="h-6 w-6 animate-spin" />
+            <div className="relative mx-auto flex h-16 w-16 items-center justify-center">
+              <motion.span
+                className="absolute inset-0 rounded-full border border-primary/35"
+                animate={{ scale: [1, 1.08, 1], opacity: [0.28, 0.08, 0.28] }}
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <motion.span
+                className="absolute inset-[5px] rounded-full border border-primary/25"
+                animate={{ scale: [1, 1.05, 1], opacity: [0.45, 0.18, 0.45] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <div className="relative flex h-11 w-11 items-center justify-center rounded-full border border-primary/20 bg-primary/12 text-primary">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
             </div>
             <h3 className="mt-4 text-lg font-semibold text-foreground">{title}</h3>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Secure processing
+            </div>
           </motion.div>
         </motion.div>
       ) : null}

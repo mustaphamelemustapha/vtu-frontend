@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, RefreshCw, ShieldCheck } from 'lucide-react';
-import { adminGetAnalytics, adminGetPricingRules, apiFetch, getProfile } from '@/lib/api';
+import { adminGetAnalytics, adminGetPricingRules, adminGetServiceToggles, adminUpdateServiceToggle, apiFetch, getProfile } from '@/lib/api';
 import { formatDateTime } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,18 +16,22 @@ export default function AdminSettingsPage() {
   const [pricingRules, setPricingRules] = useState([]);
   const [catalog, setCatalog] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [serviceToggles, setServiceToggles] = useState({});
+  const [toggling, setToggling] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [pricingRes, catalogRes, analyticsRes] = await Promise.allSettled([
+      const [pricingRes, catalogRes, analyticsRes, togglesRes] = await Promise.allSettled([
         adminGetPricingRules(),
         apiFetch('/services/catalog'),
         adminGetAnalytics(),
+        adminGetServiceToggles(),
       ]);
       if (pricingRes.status === 'fulfilled') setPricingRules(Array.isArray(pricingRes.value?.items) ? pricingRes.value.items : []);
       if (catalogRes.status === 'fulfilled') setCatalog(catalogRes.value || {});
       if (analyticsRes.status === 'fulfilled') setAnalytics(analyticsRes.value || {});
+      if (togglesRes.status === 'fulfilled') setServiceToggles(togglesRes.value || {});
     } finally {
       setLoading(false);
     }
@@ -58,20 +62,40 @@ export default function AdminSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              ['Data', Array.isArray(catalog?.data_networks) && catalog.data_networks.length],
-              ['Airtime', Array.isArray(catalog?.airtime_networks) && catalog.airtime_networks.length],
-              ['Electricity', Array.isArray(catalog?.electricity_discos) && catalog.electricity_discos.length],
-              ['Cable TV', Array.isArray(catalog?.cable_providers) && catalog.cable_providers.length],
-              ['Exam PINs', Array.isArray(catalog?.exam_types) && catalog.exam_types.length],
-            ].map(([label, enabled]) => (
-              <div key={label} className="flex items-center justify-between rounded-2xl border border-border bg-secondary p-3">
-                <div className="text-sm font-medium text-foreground">{label}</div>
-                <div className="flex items-center gap-2">
-                  <StatusBadge status={enabled ? 'enabled' : 'disabled'} />
-                  <Button variant="secondary" size="sm" disabled>Change</Button>
+              ['data', 'Data'],
+              ['airtime', 'Airtime'],
+              ['electricity', 'Electricity'],
+              ['cable', 'Cable TV'],
+              ['exam', 'Exam PINs'],
+            ].map(([serviceKey, label]) => {
+              const enabled = serviceToggles[serviceKey] ?? true;
+              return (
+                <div key={label} className="flex items-center justify-between rounded-2xl border border-border bg-secondary p-3">
+                  <div className="text-sm font-medium text-foreground">{label}</div>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={enabled ? 'enabled' : 'disabled'} />
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      disabled={toggling}
+                      onClick={async () => {
+                        setToggling(true);
+                        try {
+                          await adminUpdateServiceToggle(serviceKey, { is_active: !enabled });
+                          await load();
+                        } catch (err) {
+                          alert(err.message || 'Failed to update toggle');
+                        } finally {
+                          setToggling(false);
+                        }
+                      }}
+                    >
+                      {enabled ? 'Disable' : 'Enable'}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
 

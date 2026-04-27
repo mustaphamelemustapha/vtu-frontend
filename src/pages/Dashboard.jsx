@@ -456,30 +456,27 @@ export default function Dashboard() {
   return (
     <div className="page dashboard-page" data-testid="dashboard-page">
       <section className="dashboard-shell-top">
-        <div className="hero-card dashboard-welcome-card">
-          <div className="dashboard-welcome-head">
-            <div className="label">DASHBOARD</div>
-            <h2 className="dashboard-welcome-title" data-testid="dashboard-welcome-title">Welcome back, {greetingName}!</h2>
-            <div className="muted">
-              {isRefreshing
-                ? "Refreshing live balances..."
-                : loadError
-                  ? "Live sync delayed. Showing best available data."
-                  : "Your account is active and ready for instant VTU purchases."}
-            </div>
+        <div className="dashboard-intro-panel">
+          <div className="label">DASHBOARD</div>
+          <h2 className="dashboard-welcome-title" data-testid="dashboard-welcome-title">
+            Welcome back, {greetingName}!
+          </h2>
+          <div className="muted">
+            {isRefreshing
+              ? "Refreshing live balances..."
+              : loadError
+                ? "Live sync delayed. Showing best available data."
+                : "Your account is active and ready for instant VTU purchases."}
           </div>
           <div className="dashboard-welcome-actions">
-            <Link className="primary hero-cta hero-cta-fund" to="/wallet">Fund Wallet</Link>
-            <Link className="ghost hero-cta hero-cta-kyc" to="/profile">Update Profile</Link>
-          </div>
-          <div className="dashboard-welcome-visual" aria-hidden="true">
-            <div className="dashboard-welcome-blob" />
-            <img src="/brand/axisvtu-icon.png" alt="" />
+            <Link className="primary hero-cta hero-cta-fund" to="/wallet">
+              Fund Wallet
+            </Link>
+            <Link className="ghost hero-cta hero-cta-kyc" to="/profile">
+              Update Profile
+            </Link>
           </div>
         </div>
-      </section>
-
-      <section className="section">
         <div className="card dashboard-funding-rail">
           <div className="section-head">
             <h3>Automated Bank Transfer</h3>

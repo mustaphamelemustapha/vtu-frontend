@@ -48,12 +48,12 @@ export function AdminShell({ children, profile }) {
   }, []);
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-[272px_minmax(0,1fr)]">
-      <div className="hidden border-r border-border lg:block">
+    <div className="min-h-screen bg-background">
+      <div className="hidden border-r border-border lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block lg:w-[272px] lg:overflow-y-auto">
         <AdminSidebar profile={me} onSignOut={handleSignOut} />
       </div>
 
-      <main className="min-w-0 bg-background">
+      <main className="min-w-0 bg-background lg:pl-[272px]">
         <AdminTopbar
           title="Admin workspace"
           onOpenMenu={() => setMobileOpen(true)}
@@ -61,7 +61,15 @@ export function AdminShell({ children, profile }) {
           onToggleTheme={toggleTheme}
           onOpenSupport={() => router.push('/admin/support')}
         />
-        <div className="px-4 py-5 md:px-6 lg:px-8 xl:px-10">{children}</div>
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.24, ease: 'easeOut' }}
+          className="px-4 py-5 md:px-6 lg:px-8 xl:px-10"
+        >
+          {children}
+        </motion.div>
       </main>
 
       <AnimatePresence>

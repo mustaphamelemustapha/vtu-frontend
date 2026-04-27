@@ -205,7 +205,7 @@ function MobileMenu({ open, onClose }) {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card text-muted-foreground">
+              <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card text-foreground dark:text-white">
                 <Link href="/login" onClick={onClose}>
                   Sign In
                 </Link>
@@ -226,6 +226,7 @@ function MobileMenu({ open, onClose }) {
 function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -233,6 +234,19 @@ function Header() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    setTheme(current);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(next);
+    window.localStorage.setItem('axis-theme', next);
+    setTheme(next);
+  };
 
   return (
     <>
@@ -246,7 +260,7 @@ function Header() {
             <BrandLogo className="[&_img]:h-9 [&_img]:w-9 sm:[&_img]:h-10 sm:[&_img]:w-10" />
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground lg:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-foreground/85 lg:flex">
             {navLinks.map((item) => (
               <a key={item.label} href={item.href} className="transition hover:text-foreground">
                 {item.label}
@@ -255,7 +269,10 @@ function Header() {
           </nav>
 
           <div className="hidden items-center gap-3 sm:flex">
-            <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card px-5 text-muted-foreground hover:bg-secondary">
+            <Button variant="secondary" size="icon" className="h-11 w-11 rounded-full" onClick={toggleTheme} title="Toggle theme" aria-label="Toggle theme">
+              <Sparkles className="h-4 w-4" />
+            </Button>
+            <Button asChild variant="secondary" className="h-11 rounded-full border-border/90 bg-secondary px-5 text-foreground hover:bg-secondary/85 dark:border-white/25 dark:bg-white/16 dark:text-white dark:hover:bg-white/22">
               <Link href="/login">Sign In</Link>
             </Button>
             <Button asChild className="h-11 rounded-full bg-primary px-5 text-primary-foreground shadow-sm shadow-orange-200 hover:bg-primary/90">
@@ -266,7 +283,7 @@ function Header() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground lg:hidden"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
@@ -327,7 +344,7 @@ function Hero() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="secondary" className="h-12 rounded-full border-border bg-card px-6 text-base text-muted-foreground hover:bg-secondary">
+            <Button asChild variant="secondary" className="h-12 rounded-full border-border bg-card px-6 text-base text-foreground hover:bg-secondary dark:text-white">
               <Link href="/login">Log in</Link>
             </Button>
           </motion.div>

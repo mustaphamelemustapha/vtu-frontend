@@ -56,15 +56,25 @@ function safeFileName(value) {
   return String(value || 'transaction').replace(/[^a-zA-Z0-9_-]/g, '');
 }
 
-export async function downloadReceipt(receipt, sourceNode) {
-  if (typeof window === 'undefined' || !sourceNode) return { ok: false };
-  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')]);
-  const canvas = await html2canvas(sourceNode, {
+async function renderReceiptCanvas(sourceNode) {
+  if (typeof window === 'undefined' || !sourceNode) return null;
+  const { default: html2canvas } = await import('html2canvas');
+  return html2canvas(sourceNode, {
     scale: 2,
     useCORS: true,
     backgroundColor: '#ffffff',
     logging: false,
   });
+}
+
+function canvasToBlob(canvas, type = 'image/png', quality) {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), type, quality);
+  });
+}
+
+async function buildReceiptPdf(receipt, canvas) {
+  const { jsPDF } = await import('jspdf');
 
   const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF('p', 'pt', 'a4');
@@ -96,13 +106,38 @@ export async function downloadReceipt(receipt, sourceNode) {
       rendered += pagePxHeight;
     }
   }
-
-  pdf.save(`AxisVTU-Receipt-${safeFileName(receipt.reference)}.pdf`);
-  return { ok: true };
+  return pdf;
 }
 
-export async function shareReceipt(receipt) {
+export async function downloadReceipt(receipt, sourceNode) {
+  if (typeof window === 'undefined' || !sourceNode) return { ok: false };
+  
+  try {
+    const canvas = await renderReceiptCanvas(sourceNode);
+    if (!canvas) return { ok: false };
+    const pdf = await buildReceiptPdf(receipt, canvas);
+
+    const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent || '');
+    if (isIOS) {
+      const blob = pdf.output('blob');
+      const url = window.URL.createObjectURL(blob);
+      window.location.assign(url);
+    } else {
+      pdf.save(`AxisVTU-Receipt-${safeFileName(receipt.reference)}.pdf`);
+    }
+    return { ok: true };
+  } catch (error) {
+    console.error('Download receipt error:', error);
+    return { ok: false };
+  }
+}
+
+export async function shareReceipt(receipt, sourceNode) {
+  // Mobile browsers (especially iOS Safari and Android Chrome) will block navigator.share() 
+  // if it is called after a long asynchronous operation like generating a canvas/PDF.
+  // To fix the async/mobile-browser conflict, we share the text immediately.
   const text = receiptShareText(receipt);
+
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
       await navigator.share({
@@ -110,14 +145,19 @@ export async function shareReceipt(receipt) {
         text,
       });
       return { mode: 'share' };
-    } catch {
-      // continue to clipboard fallback
+    } catch (error) {
+      // Ignore AbortError (user cancelled), but fallback to clipboard for others if needed
+      if (error.name === 'AbortError') return { mode: 'none' };
     }
   }
 
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return { mode: 'clipboard' };
+    try {
+      await navigator.clipboard.writeText(text);
+      return { mode: 'clipboard' };
+    } catch {
+      // Fallback
+    }
   }
 
   return { mode: 'none' };
