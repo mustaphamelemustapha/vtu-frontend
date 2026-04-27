@@ -115,7 +115,7 @@ export default function ElectricityPage() {
   const meterError = meterNumber && cleanMeter.length < 5 ? 'Enter a valid meter number.' : '';
   const amountError = amount && (!Number.isFinite(parsedAmount) || parsedAmount <= 0) ? 'Enter a valid amount.' : '';
   const canSubmit = Boolean(
-    disco && meterType && cleanMeter && cleanPhone && !phoneError && !meterError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy
+    disco && meterType && cleanMeter && cleanPhone && !phoneError && !meterError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy && verification.ok
   );
   const selectedDisco = useMemo(() => discos.find((item) => item.id === disco), [discos, disco]);
   const summaryDisco = selectedDisco?.name || meterLabel(disco) || '—';
@@ -126,7 +126,7 @@ export default function ElectricityPage() {
     setVerifying(true);
     setVerification({ checked: false, ok: false, customerName: '', message: '' });
     try {
-      const res = await apiFetch('/services/electricity/verify', {
+      const res = await apiFetch('/services/electricity/verify-meter', {
         method: 'POST',
         body: JSON.stringify({
           disco,
@@ -202,6 +202,7 @@ export default function ElectricityPage() {
             { label: 'Provider', value: summaryDisco },
             { label: 'Meter type', value: meterLabel(meterType) },
             { label: 'Meter number', value: cleanMeter || '—' },
+            ...(verification.customerName ? [{ label: 'Customer name', value: verification.customerName }] : []),
           ],
         });
       setAmount('');
@@ -217,6 +218,7 @@ export default function ElectricityPage() {
             { label: 'Provider', value: summaryDisco },
             { label: 'Meter type', value: meterLabel(meterType) },
             { label: 'Meter number', value: cleanMeter || '—' },
+            ...(verification.customerName ? [{ label: 'Customer name', value: verification.customerName }] : []),
           ],
         });
     } finally {
