@@ -35,12 +35,15 @@ const meterTypes = ['prepaid', 'postpaid'];
 
 export default function ElectricityPage() {
   const [catalog, setCatalog] = useState(null);
+  const [providerDiscos, setProviderDiscos] = useState([]);
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [busy, setBusy] = useState(false);
   const [processingOpen, setProcessingOpen] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+  const [verification, setVerification] = useState({ checked: false, ok: false, customerName: '', message: '' });
 
   const [disco, setDisco] = useState('');
   const [meterType, setMeterType] = useState('prepaid');
@@ -52,7 +55,11 @@ export default function ElectricityPage() {
     setLoading(true);
     setLoadError('');
     try {
-      const [catalogRes, walletRes] = await Promise.allSettled([apiFetch('/services/catalog'), apiFetch('/wallet/me')]);
+      const [catalogRes, walletRes, discosRes] = await Promise.allSettled([
+        apiFetch('/services/catalog'),
+        apiFetch('/wallet/me'),
+        apiFetch('/services/electricity/discos'),
+      ]);
       if (catalogRes.status === 'fulfilled') {
         setCatalog(catalogRes.value);
       } else {
@@ -60,6 +67,20 @@ export default function ElectricityPage() {
         setLoadError('Electricity provider catalog is unavailable right now. Please refresh.');
       }
       if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
+      if (discosRes.status === 'fulfilled') {
+        const rows = Array.isArray(discosRes.value?.discos) ? discosRes.value.discos : [];
+        setProviderDiscos(
+          rows
+            .map((row) => ({
+              id: String(row?.id || '').trim().toLowerCase(),
+              name: String(row?.name || '').trim(),
+              code: String(row?.code || '').trim(),
+            }))
+            .filter((row) => row.id)
+        );
+      } else {
+        setProviderDiscos([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -69,11 +90,22 @@ export default function ElectricityPage() {
     load().catch(() => {});
   }, [load]);
 
-  const discos = stringifyList(catalog?.electricity_discos);
+  const discos = useMemo(() => {
+    if (providerDiscos.length) return providerDiscos;
+    return stringifyList(catalog?.electricity_discos).map((id) => ({
+      id: String(id || '').trim().toLowerCase(),
+      name: meterLabel(id),
+      code: '',
+    }));
+  }, [providerDiscos, catalog]);
 
   useEffect(() => {
-    if (!disco && discos.length) setDisco(discos[0]);
+    if (!disco && discos.length) setDisco(discos[0].id);
   }, [disco, discos]);
+
+  useEffect(() => {
+    setVerification({ checked: false, ok: false, customerName: '', message: '' });
+  }, [disco, meterType, meterNumber]);
 
   const parsedAmount = Number.parseFloat(amount || '0');
   const cleanPhone = normalizePhone(phone);
@@ -85,9 +117,41 @@ export default function ElectricityPage() {
   const canSubmit = Boolean(
     disco && meterType && cleanMeter && cleanPhone && !phoneError && !meterError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy
   );
-  const summaryDisco = meterLabel(disco) || '—';
+  const selectedDisco = useMemo(() => discos.find((item) => item.id === disco), [discos, disco]);
+  const summaryDisco = selectedDisco?.name || meterLabel(disco) || '—';
+  const lookupReady = Boolean(disco && meterType && cleanMeter.length >= 5 && !verifying);
 
-  const lookupReady = false;
+  const verifyMeter = async () => {
+    if (!lookupReady) return;
+    setVerifying(true);
+    setVerification({ checked: false, ok: false, customerName: '', message: '' });
+    try {
+      const res = await apiFetch('/services/electricity/verify', {
+        method: 'POST',
+        body: JSON.stringify({
+          disco,
+          meter_type: meterType,
+          meter_number: cleanMeter,
+        }),
+      });
+      const ok = Boolean(res?.ok);
+      setVerification({
+        checked: true,
+        ok,
+        customerName: ok ? String(res?.customer_name || '').trim() : '',
+        message: ok ? 'Meter verified successfully.' : String(res?.message || 'Unable to verify meter number.'),
+      });
+    } catch (err) {
+      setVerification({
+        checked: true,
+        ok: false,
+        customerName: '',
+        message: err?.message || 'Unable to verify meter number right now.',
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -201,8 +265,8 @@ export default function ElectricityPage() {
                 >
                   {!discos.length ? <option value="">Loading providers...</option> : null}
                   {discos.map((item) => (
-                    <option key={item} value={item}>
-                      {meterLabel(item)}
+                    <option key={item.id} value={item.id}>
+                      {item.name || meterLabel(item.id)}
                     </option>
                   ))}
                 </select>
@@ -266,14 +330,33 @@ export default function ElectricityPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="secondary" disabled={!lookupReady} className="border-border bg-card text-muted-foreground">
-                Customer lookup (coming soon)
+              <Button variant="secondary" disabled={!lookupReady} onClick={verifyMeter} className="border-border bg-card text-muted-foreground">
+                {verifying ? 'Verifying meter...' : 'Verify meter'}
               </Button>
               <Button onClick={submit} disabled={!canSubmit}>
                 <Lightbulb className="h-4 w-4" />
                 {busy ? 'Processing...' : 'Pay Electricity'}
               </Button>
             </div>
+
+            {verification.checked ? (
+              <div
+                className={cn(
+                  'rounded-2xl border px-4 py-3 text-sm',
+                  verification.ok
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-400/35 dark:bg-emerald-500/12 dark:text-emerald-100'
+                    : 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100'
+                )}
+              >
+                {verification.ok ? (
+                  <span>
+                    Customer: <span className="font-semibold">{verification.customerName || 'Verified customer'}</span>
+                  </span>
+                ) : (
+                  verification.message
+                )}
+              </div>
+            ) : null}
 
           </CardContent>
         </Card>
@@ -294,6 +377,12 @@ export default function ElectricityPage() {
                 <span className="text-muted-foreground">Disco</span>
                 <span className="font-medium text-foreground">{summaryDisco}</span>
               </div>
+              {selectedDisco?.code ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Disco code</span>
+                  <span className="font-medium text-foreground">{selectedDisco.code}</span>
+                </div>
+              ) : null}
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">Meter type</span>
                 <span className="font-medium text-foreground">{meterLabel(meterType)}</span>
@@ -325,7 +414,7 @@ export default function ElectricityPage() {
         receipt={receipt}
         onClose={() => setReceipt(null)}
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
-        onShare={() => (receipt ? shareReceipt(receipt) : Promise.resolve({ mode: 'none' }))}
+        onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
     </div>
   );
