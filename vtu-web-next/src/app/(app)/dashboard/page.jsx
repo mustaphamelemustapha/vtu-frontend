@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Check, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles, TrendingUp, Users } from 'lucide-react';
-import { apiFetch, getProfile } from '@/lib/api';
+import { apiFetch, getProfile, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { quickActions } from '@/lib/nav';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,19 @@ import { buildReferralUrl } from '@/lib/site';
 
 function emptyOrRows(value) {
   return Array.isArray(value) ? value : [];
+}
+
+function txRecipientLabel(tx) {
+  const recipient =
+    tx?.meta?.recipient_phone ||
+    tx?.meta?.phone_number ||
+    tx?.meta?.customer ||
+    tx?.meta?.meter_no ||
+    tx?.meta?.meter_number ||
+    tx?.meta?.smartcard_no ||
+    tx?.meta?.smartcard ||
+    tx?.meta?.iuc;
+  return recipient ? String(recipient) : '';
 }
 
 const actionDetails = {
@@ -66,9 +79,9 @@ const actionDetails = {
 export default function DashboardPage() {
   const router = useRouter();
   const profile = getProfile();
-  const [summary, setSummary] = useState(null);
-  const [referrals, setReferrals] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState(() => readScopedCache('dashboard_summary', { maxAgeMs: 4 * 60 * 1000 }));
+  const [referrals, setReferrals] = useState(() => readScopedCache('dashboard_referrals', { maxAgeMs: 4 * 60 * 1000 }));
+  const [loading, setLoading] = useState(() => !(readScopedCache('dashboard_summary', { maxAgeMs: 4 * 60 * 1000 }) || readScopedCache('dashboard_referrals', { maxAgeMs: 4 * 60 * 1000 })));
   const [refreshing, setRefreshing] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
 
@@ -79,8 +92,14 @@ export default function DashboardPage() {
         apiFetch('/dashboard/summary'),
         apiFetch('/referrals/me'),
       ]);
-      if (dash.status === 'fulfilled') setSummary(dash.value);
-      if (refs.status === 'fulfilled') setReferrals(refs.value);
+      if (dash.status === 'fulfilled') {
+        setSummary(dash.value);
+        writeScopedCache('dashboard_summary', dash.value);
+      }
+      if (refs.status === 'fulfilled') {
+        setReferrals(refs.value);
+        writeScopedCache('dashboard_referrals', refs.value);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -88,7 +107,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    load().catch(() => {});
+    load(!!(summary || referrals)).catch(() => {});
   }, [load]);
 
   const wallet = summary?.wallet || {};
@@ -288,7 +307,10 @@ export default function DashboardPage() {
               <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
                 <div>
                   <div className="text-sm font-medium text-foreground">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
-                  <div className="text-xs text-muted-foreground">{String(tx.reference || '—')}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {txRecipientLabel(tx) ? `To ${txRecipientLabel(tx)}` : String(tx.reference || '—')}
+                  </div>
+                  {txRecipientLabel(tx) ? <div className="text-xs text-muted-foreground/80">Ref: {String(tx.reference || '—')}</div> : null}
                   <div className="text-xs text-muted-foreground">{formatDateTime(tx.created_at)}</div>
                 </div>
                 <div className="text-right">

@@ -57,7 +57,7 @@ export function AuthForgotPasswordPage() {
               <div className="space-y-1.5">
                 <label className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Email</label>
                 <Input
-                  className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                  className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 import { Phone, RefreshCw, Smartphone } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
@@ -16,6 +17,31 @@ import { cn } from '@/lib/utils';
 
 function stringifyList(items) {
   return Array.isArray(items) ? items.map((item) => String(item || '').trim()).filter(Boolean) : [];
+}
+
+function normalizeNetwork(value) {
+  const raw = String(value || '').trim().toLowerCase();
+  if (!raw) return '';
+  if (raw.includes('9mobile') || raw.includes('etisalat') || raw === '9' || raw.includes('t2')) return '9mobile';
+  if (raw.includes('mtn')) return 'mtn';
+  if (raw.includes('airtel')) return 'airtel';
+  if (raw.includes('glo')) return 'glo';
+  return raw;
+}
+
+function networkLabel(value) {
+  const key = normalizeNetwork(value);
+  if (key === '9mobile') return '9mobile';
+  return key ? key.toUpperCase() : '—';
+}
+
+function networkLogoSrc(value) {
+  const key = normalizeNetwork(value);
+  if (key === 'mtn') return '/brand/networks/mtn.png';
+  if (key === 'airtel') return '/brand/networks/airtel.png';
+  if (key === 'glo') return '/brand/networks/glo.png';
+  if (key === '9mobile') return '/brand/networks/9mobile.png';
+  return '/brand/networks/mtn.png';
 }
 
 function normalizePhone(value) {
@@ -62,7 +88,7 @@ export default function AirtimePage() {
     load().catch(() => {});
   }, [load]);
 
-  const networks = stringifyList(catalog?.airtime_networks).map((item) => item.toLowerCase());
+  const networks = stringifyList(catalog?.airtime_networks).map((item) => normalizeNetwork(item));
 
   useEffect(() => {
     if (!network && networks.length) setNetwork(networks[0]);
@@ -168,7 +194,7 @@ export default function AirtimePage() {
           <CardContent className="space-y-5">
             <div className="space-y-2">
               <div className="axis-label">Network</div>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {networks.map((item) => {
                   const active = network === item;
                   return (
@@ -177,13 +203,27 @@ export default function AirtimePage() {
                       type="button"
                       onClick={() => setNetwork(item)}
                       className={cn(
-                        'rounded-2xl border px-4 py-3 text-left text-sm font-medium transition',
+                        'rounded-2xl border px-4 py-4 text-left text-sm transition',
                         active
-                          ? 'border-primary/35 bg-primary/10 text-foreground'
-                          : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
+                          ? 'border-primary/45 bg-primary/12 text-foreground shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                          : 'border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground'
                       )}
                     >
-                      {item === '9mobile' ? '9mobile' : item.toUpperCase()}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
+                          <Image
+                            src={networkLogoSrc(item)}
+                            alt={`${networkLabel(item)} logo`}
+                            width={42}
+                            height={42}
+                            className="h-full w-full object-contain"
+                            unoptimized
+                          />
+                        </div>
+                        <Badge className="border-border bg-card text-muted-foreground">live</Badge>
+                      </div>
+                      <div className="mt-3 text-base font-semibold text-foreground">{networkLabel(item)}</div>
+                      <div className="text-xs text-muted-foreground">Available now</div>
                     </button>
                   );
                 })}
@@ -269,7 +309,7 @@ export default function AirtimePage() {
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">Network</span>
-                <span className="font-medium text-foreground">{network ? (network === '9mobile' ? '9mobile' : network.toUpperCase()) : '—'}</span>
+                <span className="font-medium text-foreground">{networkLabel(network)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">Phone</span>
@@ -298,7 +338,7 @@ export default function AirtimePage() {
         receipt={receipt}
         onClose={() => setReceipt(null)}
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
-        onShare={() => (receipt ? shareReceipt(receipt) : Promise.resolve({ mode: 'none' }))}
+        onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
     </div>
   );

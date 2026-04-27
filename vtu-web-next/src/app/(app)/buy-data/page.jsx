@@ -25,7 +25,17 @@ const NETWORK_TABS = [
 ];
 
 const BLOCK_KEYWORDS = ['night', 'social', 'weekend', 'daily', 'awoof', 'bonus', 'router', 'mifi', 'youtube', 'unlimited'];
-const AIRTEL_VISIBLE_CAPACITIES = new Set(['2GB', '3GB', '4GB', '8GB', '10GB', '13GB', '18GB', '25GB']);
+const AIRTEL_VISIBLE_CAPACITIES = new Set(['500MB', '1GB', '2GB', '3GB', '4GB', '10GB', '18GB', '25GB']);
+const AIRTEL_VALIDITY_TARGETS = {
+  '500MB': 7,
+  '1GB': 30,
+  '2GB': 30,
+  '3GB': 30,
+  '4GB': 30,
+  '10GB': 30,
+  '18GB': 30,
+  '25GB': 30,
+};
 
 function normalizeNetwork(value) {
   const raw = String(value || '').trim().toLowerCase();
@@ -128,7 +138,7 @@ function filterAirtelPlans(plans) {
     if (network !== 'airtel') return true;
     const capacity = capacityKey(plan.data_size || plan.plan_name);
     if (!AIRTEL_VISIBLE_CAPACITIES.has(capacity)) return false;
-    return validityDays(plan.validity || plan.plan_name) === 30;
+    return validityDays(plan.validity || plan.plan_name) === AIRTEL_VALIDITY_TARGETS[capacity];
   });
 }
 
@@ -360,15 +370,6 @@ export default function BuyDataPage() {
                   const group = planGroups.find((item) => item.network === tab.key);
                   const count = group?.plans.length || 0;
                   const isActive = activeNetwork === tab.key;
-                  const networkTone =
-                    tab.key === 'mtn'
-                      ? 'bg-amber-400 text-slate-950'
-                      : tab.key === 'glo'
-                        ? 'bg-emerald-500 text-foreground'
-                        : tab.key === 'airtel'
-                          ? 'bg-rose-500 text-foreground'
-                          : 'bg-orange-500 text-foreground';
-
                   return (
                     <button
                       key={tab.key}
@@ -382,7 +383,7 @@ export default function BuyDataPage() {
                       )}
                       >
                       <div className="flex items-start justify-between gap-3">
-                        <div className={cn('flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-secondary p-1 ring-1 ring-border md:h-12 md:w-12', networkTone)}>
+                        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border md:h-12 md:w-12">
                           <Image
                             src={networkLogoSrc(tab.key)}
                             alt={`${tab.label} logo`}
@@ -419,7 +420,7 @@ export default function BuyDataPage() {
                 inputMode="tel"
                 autoComplete="tel"
                 placeholder="08012345678 or 2348012345678"
-                className="h-[52px] rounded-2xl border-border bg-input text-base text-foreground placeholder:text-muted-foreground focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
+                className="h-[52px] rounded-2xl border-border bg-input text-base text-foreground placeholder:text-muted-foreground/60 focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
               />
               {phoneError ? (
                 <p className="text-xs font-medium text-rose-300">{phoneError}</p>

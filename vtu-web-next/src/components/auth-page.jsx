@@ -138,7 +138,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="First name">
                       <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                         value={form.first_name}
                         onChange={(e) => setForm((prev) => ({ ...prev, first_name: e.target.value }))}
                         placeholder="First name"
@@ -147,7 +147,7 @@ export function AuthPage({ initialMode = 'login' }) {
                     </Field>
                     <Field label="Last name">
                       <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                         value={form.last_name}
                         onChange={(e) => setForm((prev) => ({ ...prev, last_name: e.target.value }))}
                         placeholder="Last name"
@@ -158,7 +158,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Email">
                     <Input
-                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                       value={form.email}
                       onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="you@example.com"
@@ -168,7 +168,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Phone">
                     <Input
-                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                       value={form.phone_number}
                       onChange={(e) => setForm((prev) => ({ ...prev, phone_number: e.target.value }))}
                       placeholder="08012345678"
@@ -179,7 +179,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <Field label="Password">
                     <div className="relative">
                       <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 pr-12 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 pr-12 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Create a secure password"
@@ -199,7 +199,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
                   <Field label="Referral code" helper="Optional">
                     <Input
-                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                       value={form.referral_code}
                       onChange={(e) => setForm((prev) => ({ ...prev, referral_code: e.target.value }))}
                       placeholder="Enter a friend's code"
@@ -210,7 +210,7 @@ export function AuthPage({ initialMode = 'login' }) {
                 <>
                   <Field label="Email">
                     <Input
-                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                       value={form.email}
                       onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                       placeholder="you@example.com"
@@ -221,7 +221,7 @@ export function AuthPage({ initialMode = 'login' }) {
                   <Field label="Password">
                     <div className="relative">
                       <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 pr-12 text-[0.98rem] text-foreground placeholder:text-muted-foreground caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 pr-12 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
                         value={form.password}
                         onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
                         placeholder="Your password"

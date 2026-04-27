@@ -2,29 +2,50 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FileClock, RefreshCw } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/page-header';
 
+function txRecipientLabel(tx) {
+  const recipient =
+    tx?.meta?.recipient_phone ||
+    tx?.meta?.phone_number ||
+    tx?.meta?.customer ||
+    tx?.meta?.meter_no ||
+    tx?.meta?.meter_number ||
+    tx?.meta?.smartcard_no ||
+    tx?.meta?.smartcard ||
+    tx?.meta?.iuc;
+  return recipient ? String(recipient) : '';
+}
+
 export default function HistoryPage() {
-  const [transactions, setTransactions] = useState([]);
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [transactions, setTransactions] = useState(() => readScopedCache('history_transactions', { maxAgeMs: 5 * 60 * 1000 }) || []);
+  const [reports, setReports] = useState(() => readScopedCache('history_reports', { maxAgeMs: 5 * 60 * 1000 }) || []);
+  const [loading, setLoading] = useState(() => !(readScopedCache('history_transactions', { maxAgeMs: 5 * 60 * 1000 }) || []).length);
   const [loadError, setLoadError] = useState('');
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     setLoadError('');
     try {
       const [txRes, reportRes] = await Promise.allSettled([
         apiFetch('/transactions/me'),
         apiFetch('/transactions/reports/me'),
       ]);
-      if (txRes.status === 'fulfilled') setTransactions(Array.isArray(txRes.value) ? txRes.value : []);
-      if (reportRes.status === 'fulfilled') setReports(Array.isArray(reportRes.value) ? reportRes.value : []);
+      if (txRes.status === 'fulfilled') {
+        const rows = Array.isArray(txRes.value) ? txRes.value : [];
+        setTransactions(rows);
+        writeScopedCache('history_transactions', rows);
+      }
+      if (reportRes.status === 'fulfilled') {
+        const rows = Array.isArray(reportRes.value) ? reportRes.value : [];
+        setReports(rows);
+        writeScopedCache('history_reports', rows);
+      }
       if (txRes.status === 'rejected' && reportRes.status === 'rejected') {
         setLoadError('Unable to load transaction history right now. Please refresh.');
       }
@@ -34,7 +55,7 @@ export default function HistoryPage() {
   }, []);
 
   useEffect(() => {
-    load().catch(() => {});
+    load(transactions.length > 0 || reports.length > 0).catch(() => {});
   }, [load]);
 
   const summary = useMemo(() => {
@@ -90,7 +111,10 @@ export default function HistoryPage() {
             <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
               <div>
                 <div className="text-sm font-medium text-foreground">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{tx.reference || '—'} • {formatDateTime(tx.created_at)}</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {txRecipientLabel(tx) ? `To ${txRecipientLabel(tx)}` : (tx.reference || '—')} • {formatDateTime(tx.created_at)}
+                </div>
+                {txRecipientLabel(tx) ? <div className="mt-1 text-xs text-muted-foreground/80">Ref: {tx.reference || '—'}</div> : null}
               </div>
               <div className="flex items-center gap-3">
                 <Badge tone={String(tx.status || '').toLowerCase() === 'success' ? 'success' : String(tx.status || '').toLowerCase() === 'failed' ? 'danger' : 'warning'}>{tx.status || 'pending'}</Badge>
