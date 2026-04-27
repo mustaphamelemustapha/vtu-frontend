@@ -285,7 +285,12 @@ export default function CableTvPage() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => setProvider(item.id)}
+                      onClick={() => {
+                        setProvider(item.id);
+                        setPackageCode('');
+                        setAmount('');
+                        setVerifyResult({ ok: false, customerName: '', message: '' });
+                      }}
                       className={cn(
                         'rounded-2xl border px-4 py-3 text-left text-sm font-medium transition',
                         active
@@ -350,28 +355,37 @@ export default function CableTvPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Package code</div>
-                {packageChoices.length ? (
-                  <select
-                    value={packageCode}
-                    onChange={(e) => setPackageCode(e.target.value)}
-                    className="flex h-11 w-full rounded-2xl border border-border bg-input px-4 py-2 text-sm text-foreground outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                  >
-                    {packageChoices.map((item) => {
-                      const code = String(item?.code || item?.id || '').trim();
-                      const label = String(item?.name || code || '').trim();
-                      return (
-                        <option key={code} value={code}>
-                          {label}
-                        </option>
-                      );
-                    })}
-                  </select>
-                ) : (
-                  <Input value={packageCode} onChange={(e) => setPackageCode(e.target.value)} placeholder="e.g. dstv-padi" />
-                )}
+                <div className="axis-label">Cable plan</div>
+                <select
+                  value={packageCode}
+                  onChange={(e) => setPackageCode(e.target.value)}
+                  disabled={packageLoading || !provider || !packageChoices.length}
+                  className="flex h-11 w-full rounded-2xl border border-border bg-input px-4 py-2 text-sm text-foreground outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <option value="">
+                    {packageLoading
+                      ? 'Loading plans…'
+                      : !provider
+                        ? 'Select provider first'
+                        : packageChoices.length
+                          ? 'Select a plan'
+                          : 'No plans available for this provider'}
+                  </option>
+                  {packageChoices.map((item) => {
+                    const code = String(item?.code || item?.id || '').trim();
+                    const label = String(item?.name || code || '').trim();
+                    const planAmount = Number.parseFloat(String(item?.amount ?? ''));
+                    const amountLabel =
+                      Number.isFinite(planAmount) && planAmount > 0 ? ` — ₦${formatMoney(planAmount)}` : '';
+                    return (
+                      <option key={code} value={code}>
+                        {`${label}${amountLabel}`}
+                      </option>
+                    );
+                  })}
+                </select>
                 <p className={cn('text-xs', packageError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {packageError || (packageChoices.length ? 'Package list loaded from the provider catalog.' : 'Use your package code from support or provider docs.')}
+                  {packageError || (packageChoices.length ? 'Plan list updates automatically for selected provider.' : 'No plans found yet. Tap refresh packages.')}
                 </p>
                 {packageLoading ? <p className="text-xs text-muted-foreground">Loading live package list…</p> : null}
                 {packageLoadError ? <p className="text-xs text-amber-600 dark:text-amber-300">{packageLoadError}</p> : null}
