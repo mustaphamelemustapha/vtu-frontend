@@ -13,9 +13,11 @@ export default function HistoryPage() {
   const [transactions, setTransactions] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const [txRes, reportRes] = await Promise.allSettled([
         apiFetch('/transactions/me'),
@@ -23,6 +25,9 @@ export default function HistoryPage() {
       ]);
       if (txRes.status === 'fulfilled') setTransactions(Array.isArray(txRes.value) ? txRes.value : []);
       if (reportRes.status === 'fulfilled') setReports(Array.isArray(reportRes.value) ? reportRes.value : []);
+      if (txRes.status === 'rejected' && reportRes.status === 'rejected') {
+        setLoadError('Unable to load transaction history right now. Please refresh.');
+      }
     } finally {
       setLoading(false);
     }
@@ -75,6 +80,11 @@ export default function HistoryPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           {loading ? <div className="text-sm text-muted-foreground">Loading history...</div> : null}
+          {loadError ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
+              {loadError}
+            </div>
+          ) : null}
           {transactions.length === 0 && !loading ? <div className="text-sm text-muted-foreground">No transactions yet.</div> : null}
           {transactions.map((tx) => (
             <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">

@@ -52,8 +52,8 @@ const mobilePrimaryMenu = [
 
 const mobileSettingsMenu = [
   { label: 'Profile', href: '/profile', icon: UserCircle2 },
-  { label: 'Security', href: '/profile#security', icon: ShieldCheck },
-  { label: 'Support', href: 'mailto:mmtechglobe@gmail.com', icon: Headphones, external: true },
+  { label: 'Security', href: '/security', icon: ShieldCheck },
+  { label: 'Support', href: '/support', icon: Headphones },
 ];
 
 function MobileMenuLink({ item, activePath }) {
@@ -209,9 +209,10 @@ export function AppShell({ children }) {
 
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
-        <div className="rounded-3xl border border-border bg-card px-6 py-5 text-sm text-card-foreground shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
-          Loading AxisVTU dashboard...
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
+          <span>Loading dashboard...</span>
         </div>
       </div>
     );
@@ -266,6 +267,12 @@ export function AppShell({ children }) {
           <div className="grid gap-2">
             <Button variant="secondary" className="w-full" onClick={() => router.push('/profile')}>
               Profile
+            </Button>
+            <Button variant="secondary" className="w-full" onClick={() => router.push('/security')}>
+              Security
+            </Button>
+            <Button variant="secondary" className="w-full" onClick={() => router.push('/support')}>
+              Support
             </Button>
             {isAdmin ? (
               <Button variant="secondary" className="w-full" onClick={() => router.push('/admin')}>

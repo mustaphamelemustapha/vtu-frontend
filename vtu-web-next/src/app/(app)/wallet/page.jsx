@@ -13,9 +13,11 @@ export default function WalletPage() {
   const [ledger, setLedger] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const [walletRes, ledgerRes, accountRes] = await Promise.allSettled([
         apiFetch('/wallet/me'),
@@ -25,6 +27,9 @@ export default function WalletPage() {
       if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
       if (ledgerRes.status === 'fulfilled') setLedger(Array.isArray(ledgerRes.value) ? ledgerRes.value : []);
       if (accountRes.status === 'fulfilled') setAccounts(Array.isArray(accountRes.value?.accounts) ? accountRes.value.accounts : []);
+      if (walletRes.status === 'rejected' && ledgerRes.status === 'rejected' && accountRes.status === 'rejected') {
+        setLoadError('Unable to load wallet data right now. Please refresh.');
+      }
     } finally {
       setLoading(false);
     }
@@ -109,6 +114,12 @@ export default function WalletPage() {
           </CardContent>
         </Card>
       </div>
+
+      {loadError ? (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
+          {loadError}
+        </div>
+      ) : null}
 
       <Card>
         <CardHeader>

@@ -4,11 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { GraduationCap, RefreshCw, ReceiptText } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
+import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
+import { TransactionProcessingModal } from '@/components/transaction-processing-modal';
+import { TransactionReceiptModal } from '@/components/transaction-receipt-modal';
 import { cn } from '@/lib/utils';
 
 function stringifyList(items) {
@@ -35,8 +38,10 @@ export default function ExamPinsPage() {
   const [catalog, setCatalog] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [processingOpen, setProcessingOpen] = useState(false);
+  const [receipt, setReceipt] = useState(null);
 
   const [exam, setExam] = useState('');
   const [quantity, setQuantity] = useState('1');
@@ -44,9 +49,15 @@ export default function ExamPinsPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const [catalogRes, walletRes] = await Promise.allSettled([apiFetch('/services/catalog'), apiFetch('/wallet/me')]);
-      if (catalogRes.status === 'fulfilled') setCatalog(catalogRes.value);
+      if (catalogRes.status === 'fulfilled') {
+        setCatalog(catalogRes.value);
+      } else {
+        setCatalog(null);
+        setLoadError('Exam PIN catalog is unavailable right now. Please refresh.');
+      }
       if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
     } finally {
       setLoading(false);
@@ -73,24 +84,79 @@ export default function ExamPinsPage() {
 
   const submit = async () => {
     if (!canSubmit) return;
+    const startedAt = Date.now();
     setBusy(true);
-    setMessage('');
+    setProcessingOpen(true);
+    setReceipt(null);
+    let nextReceipt = null;
     try {
-      const res = await apiFetch('/services/exam/purchase', {
-        method: 'POST',
-        body: JSON.stringify({
-          exam,
-          quantity: qty,
-          phone_number: cleanPhone || null,
+      const timeoutMs = 30000;
+      const res = await Promise.race([
+        apiFetch('/services/exam/purchase', {
+          method: 'POST',
+          body: JSON.stringify({
+            client_request_id: `web-exam-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+            exam,
+            quantity: qty,
+            phone_number: cleanPhone || null,
+          }),
         }),
-      });
+        new Promise((_, reject) => {
+          setTimeout(() => {
+            const timeoutError = new Error('Transaction timed out. Please try again.');
+            timeoutError.code = 'REQUEST_TIMEOUT';
+            reject(timeoutError);
+          }, timeoutMs);
+        }),
+      ]);
       const pins = Array.isArray(res?.pins) && res.pins.length ? ` Pins: ${res.pins.join(', ')}` : '';
-      setMessage(`Exam PIN purchase submitted. Reference: ${res?.reference || '—'}.${pins}`);
+      const status = String(res?.status || '').toLowerCase();
+      const baseMessage =
+        status === 'success'
+          ? 'Exam PIN purchase completed.'
+          : status === 'pending'
+            ? 'Exam PIN request submitted and awaiting provider confirmation.'
+            : 'Exam PIN purchase submitted.';
+      nextReceipt =
+        buildTransactionReceipt({
+          service: 'Exam PIN Purchase',
+          status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
+          message: `${baseMessage}${pins ? ` ${pins.trim()}` : ''}`.trim(),
+          amount: total,
+          reference: res?.reference || '—',
+          phone: cleanPhone,
+          meta: [
+            { label: 'Exam body', value: exam ? titleCase(exam) : '—' },
+            { label: 'Quantity', value: Number.isFinite(qty) ? qty : '—' },
+          ],
+        });
       setQuantity('1');
     } catch (err) {
-      setMessage(err?.message || 'Unable to purchase exam PINs right now.');
+      nextReceipt =
+        buildTransactionReceipt({
+          service: 'Exam PIN Purchase',
+          status: 'failed',
+          message: err?.message || 'Unable to purchase exam PINs right now.',
+          amount: total,
+          phone: cleanPhone,
+          meta: [
+            { label: 'Exam body', value: exam ? titleCase(exam) : '—' },
+            { label: 'Quantity', value: Number.isFinite(qty) ? qty : '—' },
+          ],
+        });
     } finally {
+      const elapsed = Date.now() - startedAt;
+      const minimumProcessingMs = 700;
+      if (elapsed < minimumProcessingMs) {
+        await new Promise((resolve) => setTimeout(resolve, minimumProcessingMs - elapsed));
+      }
       setBusy(false);
+      setProcessingOpen(false);
+      if (nextReceipt) {
+        setTimeout(() => {
+          setReceipt(nextReceipt);
+        }, 120);
+      }
     }
   };
 
@@ -141,6 +207,12 @@ export default function ExamPinsPage() {
               </div>
             </div>
 
+            {loadError ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
+                {loadError}
+              </div>
+            ) : null}
+
             <div className="space-y-2">
               <div className="axis-label">Phone number (optional)</div>
               <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="08012345678" />
@@ -158,9 +230,6 @@ export default function ExamPinsPage() {
               {busy ? 'Processing...' : 'Buy PIN'}
             </Button>
 
-            {message ? (
-              <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">{message}</div>
-            ) : null}
           </CardContent>
         </Card>
 
@@ -196,7 +265,7 @@ export default function ExamPinsPage() {
                 <span className="font-medium text-foreground">₦{formatMoney(unitPrice)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Total</span>
+                <span className="text-muted-foreground">Estimated total</span>
                 <span className="font-semibold text-foreground">₦{formatMoney(total)}</span>
               </div>
               <div className="border-t border-border pt-3">
@@ -211,6 +280,15 @@ export default function ExamPinsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <TransactionProcessingModal open={busy || processingOpen} />
+      <TransactionReceiptModal
+        open={Boolean(receipt)}
+        receipt={receipt}
+        onClose={() => setReceipt(null)}
+        onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
+        onShare={() => (receipt ? shareReceipt(receipt) : Promise.resolve({ mode: 'none' }))}
+      />
     </div>
   );
 }

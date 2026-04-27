@@ -4,11 +4,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { Phone, RefreshCw, Smartphone } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
+import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
+import { TransactionProcessingModal } from '@/components/transaction-processing-modal';
+import { TransactionReceiptModal } from '@/components/transaction-receipt-modal';
 import { cn } from '@/lib/utils';
 
 function stringifyList(items) {
@@ -30,17 +33,25 @@ export default function AirtimePage() {
   const [catalog, setCatalog] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [processingOpen, setProcessingOpen] = useState(false);
+  const [receipt, setReceipt] = useState(null);
   const [network, setNetwork] = useState('');
   const [phone, setPhone] = useState('');
   const [amount, setAmount] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const [catalogRes, walletRes] = await Promise.allSettled([apiFetch('/services/catalog'), apiFetch('/wallet/me')]);
-      if (catalogRes.status === 'fulfilled') setCatalog(catalogRes.value);
+      if (catalogRes.status === 'fulfilled') {
+        setCatalog(catalogRes.value);
+      } else {
+        setCatalog(null);
+        setLoadError('Service catalog is currently unavailable. Please refresh.');
+      }
       if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
     } finally {
       setLoading(false);
@@ -65,19 +76,72 @@ export default function AirtimePage() {
 
   const submit = async () => {
     if (!canSubmit) return;
+    const startedAt = Date.now();
     setBusy(true);
-    setMessage('');
+    setProcessingOpen(true);
+    setReceipt(null);
+    let nextReceipt = null;
     try {
-      const res = await apiFetch('/services/airtime/purchase', {
-        method: 'POST',
-        body: JSON.stringify({ network, phone_number: cleanPhone, amount: parsedAmount }),
-      });
-      setMessage(`Airtime request submitted. Reference: ${res?.reference || '—'}`);
+      const timeoutMs = 30000;
+      const res = await Promise.race([
+        apiFetch('/services/airtime/purchase', {
+          method: 'POST',
+          body: JSON.stringify({
+            client_request_id: `web-airtime-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+            network,
+            phone_number: cleanPhone,
+            amount: parsedAmount,
+          }),
+        }),
+        new Promise((_, reject) => {
+          setTimeout(() => {
+            const timeoutError = new Error('Transaction timed out. Please try again.');
+            timeoutError.code = 'REQUEST_TIMEOUT';
+            reject(timeoutError);
+          }, timeoutMs);
+        }),
+      ]);
+      const status = String(res?.status || '').toLowerCase();
+      const baseMessage =
+        status === 'success'
+          ? 'Airtime delivered successfully.'
+          : status === 'pending'
+            ? 'Airtime request submitted and awaiting provider confirmation.'
+            : 'Airtime request submitted.';
+      nextReceipt =
+        buildTransactionReceipt({
+          service: 'Airtime Purchase',
+          status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
+          message: baseMessage,
+          amount: parsedAmount,
+          reference: res?.reference || '—',
+          phone: cleanPhone,
+          meta: [{ label: 'Network', value: network === '9mobile' ? '9mobile' : network.toUpperCase() }],
+        });
       setAmount('');
     } catch (err) {
-      setMessage(err?.message || 'Unable to complete airtime purchase right now.');
+      nextReceipt =
+        buildTransactionReceipt({
+          service: 'Airtime Purchase',
+          status: 'failed',
+          message: err?.message || 'Unable to complete airtime purchase right now.',
+          amount: parsedAmount,
+          phone: cleanPhone,
+          meta: [{ label: 'Network', value: network === '9mobile' ? '9mobile' : network.toUpperCase() }],
+        });
     } finally {
+      const elapsed = Date.now() - startedAt;
+      const minimumProcessingMs = 700;
+      if (elapsed < minimumProcessingMs) {
+        await new Promise((resolve) => setTimeout(resolve, minimumProcessingMs - elapsed));
+      }
       setBusy(false);
+      setProcessingOpen(false);
+      if (nextReceipt) {
+        setTimeout(() => {
+          setReceipt(nextReceipt);
+        }, 120);
+      }
     }
   };
 
@@ -131,6 +195,12 @@ export default function AirtimePage() {
               </div>
             </div>
 
+            {loadError ? (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
+                {loadError}
+              </div>
+            ) : null}
+
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <div className="axis-label">Phone number</div>
@@ -175,9 +245,6 @@ export default function AirtimePage() {
               {busy ? 'Processing...' : 'Buy Airtime'}
             </Button>
 
-            {message ? (
-              <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">{message}</div>
-            ) : null}
           </CardContent>
         </Card>
 
@@ -224,6 +291,15 @@ export default function AirtimePage() {
           </CardContent>
         </Card>
       </div>
+
+      <TransactionProcessingModal open={busy || processingOpen} />
+      <TransactionReceiptModal
+        open={Boolean(receipt)}
+        receipt={receipt}
+        onClose={() => setReceipt(null)}
+        onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
+        onShare={() => (receipt ? shareReceipt(receipt) : Promise.resolve({ mode: 'none' }))}
+      />
     </div>
   );
 }

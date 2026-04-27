@@ -2,14 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Copy, LogOut, ShieldCheck, Users } from 'lucide-react';
+import { Copy, LogOut } from 'lucide-react';
 import { apiFetch, clearAuth, getProfile, setProfile } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
-import { Badge } from '@/components/ui/badge';
 import { buildReferralUrl } from '@/lib/site';
 
 export default function ProfilePage() {
@@ -17,21 +16,14 @@ export default function ProfilePage() {
   const [profile, setProfileState] = useState(getProfile());
   const [referrals, setReferrals] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [password, setPassword] = useState({ current_password: '', new_password: '' });
-  const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [meRes, refRes] = await Promise.allSettled([apiFetch('/auth/me'), apiFetch('/referrals/me')]);
-      if (meRes.status === 'fulfilled') {
-        setProfile(meRes.value);
-        setProfileState(meRes.value);
-      }
-      if (refRes.status === 'fulfilled') setReferrals(refRes.value);
-    } finally {
-      setLoading(false);
+    const [meRes, refRes] = await Promise.allSettled([apiFetch('/auth/me'), apiFetch('/referrals/me')]);
+    if (meRes.status === 'fulfilled') {
+      setProfile(meRes.value);
+      setProfileState(meRes.value);
     }
+    if (refRes.status === 'fulfilled') setReferrals(refRes.value);
   }, []);
 
   useEffect(() => {
@@ -53,15 +45,6 @@ export default function ProfilePage() {
     }
   };
 
-  const changePassword = async () => {
-    await apiFetch('/auth/change-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(password),
-    });
-    setPassword({ current_password: '', new_password: '' });
-  };
-
   const copyReferral = async () => {
     await navigator.clipboard.writeText(String(buildReferralUrl(referrals?.referral_code || profile?.referral_code || '')));
   };
@@ -72,8 +55,8 @@ export default function ProfilePage() {
     <div className="space-y-6 pb-8">
       <PageHeader
         eyebrow="Profile"
-        title="Account, security, and referral controls"
-        description="Everything the operator needs in one calm, desktop-native profile workspace."
+        title="Account and referral controls"
+        description="Manage your account details and referral status."
         actions={(
           <Button variant="secondary" onClick={() => load()}>
             Reload
@@ -140,30 +123,18 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
-        <Card id="security">
-          <CardHeader>
-            <CardTitle>Security</CardTitle>
-            <CardDescription>Password update and account protection.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="axis-label">Current password</div>
-              <Input type="password" value={password.current_password} onChange={(e) => setPassword((prev) => ({ ...prev, current_password: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <div className="axis-label">New password</div>
-              <Input type="password" value={password.new_password} onChange={(e) => setPassword((prev) => ({ ...prev, new_password: e.target.value }))} />
-            </div>
-            <Button onClick={changePassword}><ShieldCheck className="h-4 w-4" />Update password</Button>
-          </CardContent>
-        </Card>
-
         <Card id="support">
           <CardHeader>
             <CardTitle>Account actions</CardTitle>
-            <CardDescription>Session and workspace-level controls.</CardDescription>
+            <CardDescription>Session and settings shortcuts.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            <Button variant="secondary" className="w-full" onClick={() => router.push('/security')}>
+              Open security
+            </Button>
+            <Button variant="secondary" className="w-full" onClick={() => router.push('/support')}>
+              Open support
+            </Button>
             <Button
               variant="secondary"
               className="w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"

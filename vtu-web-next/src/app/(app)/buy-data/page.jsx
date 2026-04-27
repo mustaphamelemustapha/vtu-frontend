@@ -5,10 +5,13 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, RefreshCw } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
+import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { TransactionProcessingModal } from '@/components/transaction-processing-modal';
+import { TransactionReceiptModal } from '@/components/transaction-receipt-modal';
 import { cn } from '@/lib/utils';
 
 const NETWORK_ORDER = ['mtn', 'airtel', 'glo', '9mobile'];
@@ -22,12 +25,43 @@ const NETWORK_TABS = [
 
 const BLOCK_KEYWORDS = ['night', 'social', 'weekend', 'daily', 'awoof', 'bonus', 'router', 'mifi', 'youtube', 'unlimited'];
 const AIRTEL_VISIBLE_CAPACITIES = new Set(['2GB', '3GB', '4GB', '8GB', '10GB', '13GB', '18GB', '25GB']);
+const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v1';
+const PLAN_CACHE_TTL_MS = 10 * 60 * 1000;
 
 function parsePlansResponse(raw) {
   if (Array.isArray(raw)) return raw;
   if (!raw || typeof raw !== 'object') return [];
   const list = raw.data ?? raw.plans ?? raw.items;
   return Array.isArray(list) ? list : [];
+}
+
+function readCachedPlans() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(PLAN_CACHE_KEY) || '{}');
+    const timestamp = Number(parsed?.timestamp || 0);
+    const plans = Array.isArray(parsed?.plans) ? parsed.plans : [];
+    if (!plans.length) return [];
+    if (Date.now() - timestamp > PLAN_CACHE_TTL_MS) return [];
+    return plans;
+  } catch {
+    return [];
+  }
+}
+
+function writeCachedPlans(plans) {
+  if (typeof window === 'undefined' || !Array.isArray(plans) || !plans.length) return;
+  try {
+    window.localStorage.setItem(
+      PLAN_CACHE_KEY,
+      JSON.stringify({
+        timestamp: Date.now(),
+        plans,
+      })
+    );
+  } catch {
+    // ignore storage errors
+  }
 }
 
 function normalizeNetwork(value) {
@@ -169,27 +203,43 @@ export default function BuyDataPage() {
   const [plans, setPlans] = useState([]);
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [activeNetwork, setActiveNetwork] = useState('mtn');
   const [phone, setPhone] = useState('');
   const [selected, setSelected] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [receipt, setReceipt] = useState(null);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
+    setLoadError('');
     try {
       const [plansRes, walletRes] = await Promise.allSettled([
         apiFetch('/data/plans'),
         apiFetch('/wallet/me'),
       ]);
-      if (plansRes.status === 'fulfilled') setPlans(Array.isArray(plansRes.value) ? plansRes.value : []);
+      if (plansRes.status === 'fulfilled') {
+        const livePlans = parsePlansResponse(plansRes.value);
+        setPlans(livePlans);
+        writeCachedPlans(livePlans);
+      } else {
+        if (!silent) setPlans([]);
+        setLoadError('Unable to load live data plans right now. Please refresh.');
+      }
       if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    const cachedPlans = readCachedPlans();
+    if (cachedPlans.length) {
+      setPlans(cachedPlans);
+      setLoading(false);
+      load({ silent: true }).catch(() => {});
+      return;
+    }
     load().catch(() => {});
   }, [load]);
 
@@ -217,6 +267,12 @@ export default function BuyDataPage() {
     return activeGroup?.plans || [];
   }, [activeGroup, activeNetwork, planGroups]);
 
+  useEffect(() => {
+    if (!selected) return;
+    const exists = visiblePlans.some((plan) => plan.plan_code === selected.plan_code);
+    if (!exists) setSelected(null);
+  }, [selected, visiblePlans]);
+
   const summaryNetwork = selected?.network || activeNetwork;
   const summaryPlanName = selected?.plan_name || selected?.plan_code || '—';
   const summaryPlanCode = selected?.plan_code || '—';
@@ -227,21 +283,66 @@ export default function BuyDataPage() {
 
   const purchase = async () => {
     if (!selected || !normalizedPhone || phoneError) return;
+    if (process.env.NODE_ENV !== 'production') console.info('[BuyData] buy button clicked');
     setBusy(true);
-    setMessage('');
+    if (process.env.NODE_ENV !== 'production') console.info('[BuyData] processing modal opened');
+    setReceipt(null);
     try {
       const payload = {
+        client_request_id: `web-data-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         plan_code: selected.plan_code,
         phone_number: normalizedPhone,
         network: selected.network,
       };
-      const res = await apiFetch('/data/purchase', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-      setMessage(`${res?.message || 'Purchase submitted.'} Ref: ${res?.reference || '—'}`);
+      const timeoutMs = 30000;
+      const res = await Promise.race([
+        apiFetch('/data/purchase', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        }),
+        new Promise((_, reject) => {
+          setTimeout(() => {
+            const timeoutError = new Error('Transaction timed out. Please try again.');
+            timeoutError.code = 'REQUEST_TIMEOUT';
+            reject(timeoutError);
+          }, timeoutMs);
+        }),
+      ]);
+      if (process.env.NODE_ENV !== 'production') console.info('[BuyData] API response received', res);
+      const status = String(res?.status || '').toLowerCase();
+      setReceipt(
+        buildTransactionReceipt({
+          service: 'Data Purchase',
+          status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
+          message: res?.message || 'Purchase submitted.',
+          amount: Number(selected?.price || 0),
+          reference: res?.reference || '—',
+          phone: normalizedPhone,
+          meta: [
+            { label: 'Network', value: networkLabel(selected?.network || summaryNetwork) },
+            { label: 'Plan', value: selected?.plan_name || selected?.plan_code || '—' },
+            { label: 'Bundle code', value: selected?.plan_code || '—' },
+          ],
+        })
+      );
+      if (process.env.NODE_ENV !== 'production') console.info('[BuyData] receipt modal opened', status || 'pending');
     } catch (err) {
-      setMessage(err?.message || 'Purchase failed.');
+      setReceipt(
+        buildTransactionReceipt({
+          service: 'Data Purchase',
+          status: 'failed',
+          message: err?.message || 'Purchase failed.',
+          amount: Number(selected?.price || 0),
+          phone: normalizedPhone,
+          meta: [
+            { label: 'Network', value: networkLabel(selected?.network || summaryNetwork) },
+            { label: 'Plan', value: selected?.plan_name || selected?.plan_code || '—' },
+            { label: 'Bundle code', value: selected?.plan_code || '—' },
+          ],
+        })
+      );
+      if (process.env.NODE_ENV !== 'production') console.info('[BuyData] API failed', err);
+      if (process.env.NODE_ENV !== 'production') console.info('[BuyData] receipt modal opened', 'failed');
     } finally {
       setBusy(false);
     }
@@ -361,11 +462,6 @@ export default function BuyDataPage() {
                 {busy ? 'Processing...' : selected ? `Buy Data — ₦${formatMoney(summaryPrice || 0)}` : 'Buy Data'}
                 <ArrowRight className="h-4 w-4" />
               </Button>
-              {message ? (
-                <div className="rounded-[18px] border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
-                  {message}
-                </div>
-              ) : null}
             </section>
 
             <section className="space-y-4">
@@ -392,6 +488,12 @@ export default function BuyDataPage() {
               {!loading && !visiblePlans.length ? (
                 <div className="rounded-[22px] border border-dashed border-border bg-secondary px-4 py-5 text-sm text-muted-foreground">
                   No bundles are available for this network right now.
+                </div>
+              ) : null}
+
+              {!loading && loadError ? (
+                <div className="rounded-[22px] border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
+                  {loadError}
                 </div>
               ) : null}
 
@@ -532,6 +634,15 @@ export default function BuyDataPage() {
           </Button>
         </div>
       </div>
+
+      <TransactionProcessingModal open={busy} />
+      <TransactionReceiptModal
+        open={Boolean(receipt)}
+        receipt={receipt}
+        onClose={() => setReceipt(null)}
+        onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
+        onShare={() => (receipt ? shareReceipt(receipt) : Promise.resolve({ mode: 'none' }))}
+      />
     </div>
   );
 }
