@@ -46,6 +46,10 @@ export default function CableTvPage() {
   const [busy, setBusy] = useState(false);
   const [processingOpen, setProcessingOpen] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [packageLoading, setPackageLoading] = useState(false);
+  const [packageLoadError, setPackageLoadError] = useState('');
+  const [verifyBusy, setVerifyBusy] = useState(false);
+  const [verifyResult, setVerifyResult] = useState({ ok: false, customerName: '', message: '' });
 
   const [provider, setProvider] = useState('');
   const [smartcardNumber, setSmartcardNumber] = useState('');
@@ -83,12 +87,50 @@ export default function CableTvPage() {
   const selectedProvider = providers.find((item) => item.id === provider) || null;
   const packageChoices = Array.isArray(selectedProvider?.packages) ? selectedProvider.packages : [];
 
+  const loadProviderPackages = useCallback(async (providerId) => {
+    if (!providerId) return;
+    setPackageLoading(true);
+    setPackageLoadError('');
+    setVerifyResult({ ok: false, customerName: '', message: '' });
+    try {
+      const data = await apiFetch(`/services/cable/packages?provider=${encodeURIComponent(providerId)}`);
+      const rows = Array.isArray(data?.packages) ? data.packages : [];
+      setCatalog((prev) => {
+        const current = Array.isArray(prev?.cable_providers) ? prev.cable_providers : [];
+        const nextProviders = current.map((item) => {
+          const id = String(item?.id || '').trim().toLowerCase();
+          if (id !== providerId) return item;
+          return { ...item, packages: rows };
+        });
+        return { ...(prev || {}), cable_providers: nextProviders };
+      });
+    } catch {
+      setPackageLoadError('Unable to load package list right now. You can still enter package code manually.');
+    } finally {
+      setPackageLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!provider) return;
+    loadProviderPackages(provider).catch(() => {});
+  }, [provider, loadProviderPackages]);
+
   useEffect(() => {
     if (packageChoices.length > 0 && !packageCode) {
       const first = packageChoices[0];
       setPackageCode(String(first?.code || first?.id || '').trim());
     }
   }, [packageChoices, packageCode]);
+
+  useEffect(() => {
+    if (!packageChoices.length) return;
+    const selected = packageChoices.find((item) => String(item?.code || item?.id || '').trim() === packageCode);
+    const amountFromPackage = Number.parseFloat(String(selected?.amount ?? ''));
+    if (selected && Number.isFinite(amountFromPackage) && amountFromPackage > 0) {
+      setAmount(String(amountFromPackage));
+    }
+  }, [packageCode, packageChoices]);
 
   const parsedAmount = Number.parseFloat(amount || '0');
   const cleanPhone = normalizePhone(phone);
@@ -103,7 +145,35 @@ export default function CableTvPage() {
     provider && cleanCard && cleanPhone && cleanPackage && !phoneError && !smartCardError && !packageError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy
   );
 
-  const lookupReady = false;
+  const verifySmartcard = async () => {
+    const card = String(smartcardNumber || '').trim();
+    if (!provider || card.length < 5 || verifyBusy) return;
+    setVerifyBusy(true);
+    setVerifyResult({ ok: false, customerName: '', message: '' });
+    try {
+      const res = await apiFetch('/services/cable/verify', {
+        method: 'POST',
+        body: JSON.stringify({
+          provider,
+          smartcard_number: card,
+        }),
+      });
+      const ok = Boolean(res?.ok);
+      setVerifyResult({
+        ok,
+        customerName: ok ? String(res?.customer_name || '').trim() : '',
+        message: ok ? 'Smartcard verified successfully.' : String(res?.message || 'Unable to verify smartcard number.'),
+      });
+    } catch (err) {
+      setVerifyResult({
+        ok: false,
+        customerName: '',
+        message: err?.message || 'Unable to verify smartcard right now.',
+      });
+    } finally {
+      setVerifyBusy(false);
+    }
+  };
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -245,6 +315,26 @@ export default function CableTvPage() {
               <div className="space-y-2">
                 <div className="axis-label">Smartcard / IUC number</div>
                 <Input value={smartcardNumber} onChange={(e) => setSmartcardNumber(e.target.value)} placeholder="Enter smartcard number" />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={verifySmartcard}
+                    disabled={!provider || cleanCard.length < 5 || verifyBusy || busy}
+                    className="h-9 border-border bg-card px-3 text-xs text-muted-foreground hover:bg-secondary"
+                  >
+                    {verifyBusy ? 'Verifying...' : 'Verify smartcard'}
+                  </Button>
+                  {verifyResult.ok ? (
+                    <Badge tone="success" className="text-xs">
+                      {verifyResult.customerName || 'Verified'}
+                    </Badge>
+                  ) : verifyResult.message ? (
+                    <Badge tone="warning" className="text-xs">
+                      {verifyResult.message}
+                    </Badge>
+                  ) : null}
+                </div>
                 <p className={cn('text-xs', smartCardError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
                   {smartCardError || 'Use the registered smartcard or IUC number.'}
                 </p>
@@ -283,6 +373,8 @@ export default function CableTvPage() {
                 <p className={cn('text-xs', packageError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
                   {packageError || (packageChoices.length ? 'Package list loaded from the provider catalog.' : 'Use your package code from support or provider docs.')}
                 </p>
+                {packageLoading ? <p className="text-xs text-muted-foreground">Loading live package list…</p> : null}
+                {packageLoadError ? <p className="text-xs text-amber-600 dark:text-amber-300">{packageLoadError}</p> : null}
               </div>
 
               <div className="space-y-2">
@@ -295,8 +387,8 @@ export default function CableTvPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="secondary" disabled={!lookupReady} className="border-border bg-card text-muted-foreground">
-                Customer lookup (coming soon)
+              <Button variant="secondary" onClick={() => loadProviderPackages(provider)} disabled={!provider || packageLoading} className="border-border bg-card text-muted-foreground">
+                {packageLoading ? 'Refreshing packages…' : 'Refresh packages'}
               </Button>
               <Button onClick={submit} disabled={!canSubmit}>
                 <Tv2 className="h-4 w-4" />
@@ -348,6 +440,11 @@ export default function CableTvPage() {
                   Package options are not exposed by the API yet. Enter the package code manually.
                 </div>
               ) : null}
+              {verifyResult.ok ? (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  Verified customer: {verifyResult.customerName}
+                </div>
+              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -359,7 +456,7 @@ export default function CableTvPage() {
         receipt={receipt}
         onClose={() => setReceipt(null)}
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
-        onShare={() => (receipt ? shareReceipt(receipt) : Promise.resolve({ mode: 'none' }))}
+        onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
     </div>
   );
