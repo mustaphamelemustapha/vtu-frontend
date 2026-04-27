@@ -6,6 +6,7 @@ import { ArrowRight, RefreshCw } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
+import { getDataPlansFast, prefetchDataPlans } from '@/lib/data-plans-cache';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,44 +26,6 @@ const NETWORK_TABS = [
 
 const BLOCK_KEYWORDS = ['night', 'social', 'weekend', 'daily', 'awoof', 'bonus', 'router', 'mifi', 'youtube', 'unlimited'];
 const AIRTEL_VISIBLE_CAPACITIES = new Set(['2GB', '3GB', '4GB', '8GB', '10GB', '13GB', '18GB', '25GB']);
-const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v1';
-const PLAN_CACHE_TTL_MS = 10 * 60 * 1000;
-
-function parsePlansResponse(raw) {
-  if (Array.isArray(raw)) return raw;
-  if (!raw || typeof raw !== 'object') return [];
-  const list = raw.data ?? raw.plans ?? raw.items;
-  return Array.isArray(list) ? list : [];
-}
-
-function readCachedPlans() {
-  if (typeof window === 'undefined') return [];
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(PLAN_CACHE_KEY) || '{}');
-    const timestamp = Number(parsed?.timestamp || 0);
-    const plans = Array.isArray(parsed?.plans) ? parsed.plans : [];
-    if (!plans.length) return [];
-    if (Date.now() - timestamp > PLAN_CACHE_TTL_MS) return [];
-    return plans;
-  } catch {
-    return [];
-  }
-}
-
-function writeCachedPlans(plans) {
-  if (typeof window === 'undefined' || !Array.isArray(plans) || !plans.length) return;
-  try {
-    window.localStorage.setItem(
-      PLAN_CACHE_KEY,
-      JSON.stringify({
-        timestamp: Date.now(),
-        plans,
-      })
-    );
-  } catch {
-    // ignore storage errors
-  }
-}
 
 function normalizeNetwork(value) {
   const raw = String(value || '').trim().toLowerCase();
@@ -214,18 +177,19 @@ export default function BuyDataPage() {
     if (!silent) setLoading(true);
     setLoadError('');
     try {
-      const [plansRes, walletRes] = await Promise.allSettled([
-        apiFetch('/data/plans'),
-        apiFetch('/wallet/me'),
-      ]);
+      const [plansRes, walletRes] = await Promise.allSettled([getDataPlansFast(apiFetch), apiFetch('/wallet/me')]);
+
       if (plansRes.status === 'fulfilled') {
-        const livePlans = parsePlansResponse(plansRes.value);
-        setPlans(livePlans);
-        writeCachedPlans(livePlans);
-      } else {
-        if (!silent) setPlans([]);
+        const nextPlans = Array.isArray(plansRes.value?.plans) ? plansRes.value.plans : [];
+        setPlans(nextPlans);
+        if (!nextPlans.length) {
+          setLoadError('No plans are available right now. Please refresh.');
+        }
+      } else if (!silent) {
+        setPlans([]);
         setLoadError('Unable to load live data plans right now. Please refresh.');
       }
+
       if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
     } finally {
       if (!silent) setLoading(false);
@@ -233,13 +197,6 @@ export default function BuyDataPage() {
   }, []);
 
   useEffect(() => {
-    const cachedPlans = readCachedPlans();
-    if (cachedPlans.length) {
-      setPlans(cachedPlans);
-      setLoading(false);
-      load({ silent: true }).catch(() => {});
-      return;
-    }
     load().catch(() => {});
   }, [load]);
 
@@ -362,7 +319,22 @@ export default function BuyDataPage() {
           </div>
           <Button
             variant="secondary"
-            onClick={() => load()}
+            onClick={() => {
+              setLoadError('');
+              setLoading(true);
+              Promise.allSettled([prefetchDataPlans(apiFetch), apiFetch('/wallet/me')])
+                .then(([plansRes, walletRes]) => {
+                  if (plansRes.status === 'fulfilled') {
+                    const nextPlans = Array.isArray(plansRes.value) ? plansRes.value : [];
+                    setPlans(nextPlans);
+                    if (!nextPlans.length) setLoadError('No plans are available right now. Please refresh.');
+                  } else {
+                    setLoadError('Unable to load live data plans right now. Please refresh.');
+                  }
+                  if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
+                })
+                .finally(() => setLoading(false));
+            }}
             className="border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
@@ -641,7 +613,7 @@ export default function BuyDataPage() {
         receipt={receipt}
         onClose={() => setReceipt(null)}
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
-        onShare={() => (receipt ? shareReceipt(receipt) : Promise.resolve({ mode: 'none' }))}
+        onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
     </div>
   );

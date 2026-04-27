@@ -24,7 +24,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { appNav } from '@/lib/nav';
-import { clearAuth, apiFetch, getProfile, getToken, setProfile } from '@/lib/api';
+import { clearAuth, apiFetch, getProfile, getToken, setProfile, warmBackend } from '@/lib/api';
+import { prefetchDataPlans } from '@/lib/data-plans-cache';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -136,6 +137,13 @@ export function AppShell({ children }) {
       mounted = false;
     };
   }, [router]);
+
+  useEffect(() => {
+    if (!ready) return;
+    // Warm backend + cache plans right after auth so /buy-data opens faster.
+    warmBackend().catch(() => {});
+    prefetchDataPlans(apiFetch).catch(() => {});
+  }, [ready]);
 
   useEffect(() => {
     const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
