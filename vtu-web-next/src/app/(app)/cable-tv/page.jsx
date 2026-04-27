@@ -38,6 +38,13 @@ function titleCase(value) {
   return String(value || '').replace(/[-_]/g, ' ').replace(/\b\w/g, (x) => x.toUpperCase());
 }
 
+function parseAmountFromPlanText(value) {
+  const text = String(value || '');
+  const match = text.match(/N\s*([\d,]+(?:\.\d+)?)/i);
+  if (!match) return NaN;
+  return Number.parseFloat(match[1].replace(/,/g, ''));
+}
+
 export default function CableTvPage() {
   const [catalog, setCatalog] = useState(null);
   const [wallet, setWallet] = useState(null);
@@ -55,7 +62,6 @@ export default function CableTvPage() {
   const [smartcardNumber, setSmartcardNumber] = useState('');
   const [phone, setPhone] = useState('');
   const [packageCode, setPackageCode] = useState('');
-  const [amount, setAmount] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -122,17 +128,9 @@ export default function CableTvPage() {
       setPackageCode(String(first?.code || first?.id || '').trim());
     }
   }, [packageChoices, packageCode]);
-
-  useEffect(() => {
-    if (!packageChoices.length) return;
-    const selected = packageChoices.find((item) => String(item?.code || item?.id || '').trim() === packageCode);
-    const amountFromPackage = Number.parseFloat(String(selected?.amount ?? ''));
-    if (selected && Number.isFinite(amountFromPackage) && amountFromPackage > 0) {
-      setAmount(String(amountFromPackage));
-    }
-  }, [packageCode, packageChoices]);
-
-  const parsedAmount = Number.parseFloat(amount || '0');
+  const selectedPackage = packageChoices.find((item) => String(item?.code || item?.id || '').trim() === packageCode) || null;
+  const planAmountRaw = Number.parseFloat(String(selectedPackage?.amount ?? ''));
+  const parsedAmount = Number.isFinite(planAmountRaw) && planAmountRaw > 0 ? planAmountRaw : parseAmountFromPlanText(selectedPackage?.name);
   const cleanPhone = normalizePhone(phone);
   const cleanCard = String(smartcardNumber || '').trim();
   const cleanPackage = String(packageCode || '').trim();
@@ -140,9 +138,9 @@ export default function CableTvPage() {
   const phoneError = cleanPhone && !validNigerianPhone(phone) ? 'Enter a valid Nigerian phone number.' : '';
   const smartCardError = smartcardNumber && cleanCard.length < 5 ? 'Enter a valid smartcard or IUC number.' : '';
   const packageError = packageCode && !cleanPackage ? 'Enter a package code.' : '';
-  const amountError = amount && (!Number.isFinite(parsedAmount) || parsedAmount <= 0) ? 'Enter a valid amount.' : '';
+  const amountError = cleanPackage && (!Number.isFinite(parsedAmount) || parsedAmount <= 0) ? 'Selected plan amount is unavailable.' : '';
   const canSubmit = Boolean(
-    provider && cleanCard && cleanPhone && cleanPackage && !phoneError && !smartCardError && !packageError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy
+    provider && cleanCard && cleanPhone && cleanPackage && !phoneError && !smartCardError && !packageError && !amountError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy
   );
 
   const verifySmartcard = async () => {
@@ -288,7 +286,6 @@ export default function CableTvPage() {
                       onClick={() => {
                         setProvider(item.id);
                         setPackageCode('');
-                        setAmount('');
                         setVerifyResult({ ok: false, customerName: '', message: '' });
                       }}
                       className={cn(
@@ -374,7 +371,8 @@ export default function CableTvPage() {
                   {packageChoices.map((item) => {
                     const code = String(item?.code || item?.id || '').trim();
                     const label = String(item?.name || code || '').trim();
-                    const planAmount = Number.parseFloat(String(item?.amount ?? ''));
+                    const planAmountRaw = Number.parseFloat(String(item?.amount ?? ''));
+                    const planAmount = Number.isFinite(planAmountRaw) && planAmountRaw > 0 ? planAmountRaw : parseAmountFromPlanText(label);
                     const amountLabel =
                       Number.isFinite(planAmount) && planAmount > 0 ? ` — ₦${formatMoney(planAmount)}` : '';
                     return (
@@ -392,10 +390,12 @@ export default function CableTvPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="axis-label">Amount (NGN)</div>
-                <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="5400" />
+                <div className="axis-label">Plan amount</div>
+                <div className="flex h-11 w-full items-center rounded-2xl border border-border bg-secondary px-4 text-sm font-medium text-foreground">
+                  {Number.isFinite(parsedAmount) && parsedAmount > 0 ? `₦${formatMoney(parsedAmount)}` : '—'}
+                </div>
                 <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {amountError || 'Enter the package amount before checkout.'}
+                  {amountError || 'Amount comes directly from the selected cable plan.'}
                 </p>
               </div>
             </div>
@@ -435,7 +435,7 @@ export default function CableTvPage() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">Package</span>
-                <span className="font-medium text-foreground">{cleanPackage || '—'}</span>
+                <span className="font-medium text-foreground">{selectedPackage?.name || cleanPackage || '—'}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">Amount</span>
@@ -451,7 +451,7 @@ export default function CableTvPage() {
               </div>
               {!packageChoices.length ? (
                 <div className="rounded-2xl border border-dashed border-border bg-card px-3 py-2 text-xs text-muted-foreground">
-                  Package options are not exposed by the API yet. Enter the package code manually.
+                  No package list available for this provider right now.
                 </div>
               ) : null}
               {verifyResult.ok ? (
