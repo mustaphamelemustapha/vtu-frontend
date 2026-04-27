@@ -10,7 +10,6 @@ import {
   Clock3,
   GraduationCap,
   Gauge,
-  Headphones,
   LogOut,
   Menu,
   Package2,
@@ -20,23 +19,14 @@ import {
   Smartphone,
   Sparkles,
   Tv2,
-  UserCircle2,
   Users,
   X,
   Zap,
 } from 'lucide-react';
 import { appNav } from '@/lib/nav';
 import { clearAuth, apiFetch, getProfile, getToken, setProfile } from '@/lib/api';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-function brandInitials(profile) {
-  const name = String(profile?.full_name || profile?.email || 'AxisVTU').trim();
-  const parts = name.split(/\s+/).filter(Boolean);
-  const letters = parts.slice(0, 2).map((part) => part[0]).join('');
-  return (letters || 'AX').toUpperCase();
-}
 
 const mobilePrimaryMenu = [
   { label: 'Dashboard', href: '/dashboard', icon: Gauge },
@@ -48,12 +38,6 @@ const mobilePrimaryMenu = [
   { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'Referrals', href: '/referrals', icon: Users },
   { label: 'Transaction history', href: '/history', icon: Clock3 },
-];
-
-const mobileSettingsMenu = [
-  { label: 'Profile', href: '/profile', icon: UserCircle2 },
-  { label: 'Security', href: '/security', icon: ShieldCheck },
-  { label: 'Support', href: '/support', icon: Headphones },
 ];
 
 function MobileMenuLink({ item, activePath }) {
@@ -189,14 +173,6 @@ export function AppShell({ children }) {
     if (hasAdminItem) return mobilePrimaryMenu;
     return [{ label: 'Admin Panel', href: '/admin', icon: ShieldCheck }, ...mobilePrimaryMenu];
   }, [isAdmin]);
-  const mobileSettingsItems = useMemo(() => {
-    if (!isAdmin) return mobileSettingsMenu;
-    return [
-      ...mobileSettingsMenu,
-      { label: 'Admin Panel', href: '/admin', icon: ShieldCheck },
-    ];
-  }, [isAdmin]);
-
   const toggleTheme = useCallback(() => {
     setTheme((current) => {
       const next = current === 'dark' ? 'light' : 'dark';
@@ -218,11 +194,9 @@ export function AppShell({ children }) {
     );
   }
 
-  const initials = brandInitials(profile);
-
   return (
-    <div className="axis-shell grid min-h-screen lg:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="hidden border-r border-border bg-card p-5 text-card-foreground lg:flex lg:flex-col">
+    <div className="axis-shell min-h-screen">
+      <aside className="hidden border-r border-border bg-card p-5 text-card-foreground lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-[280px] lg:flex-col lg:overflow-y-auto">
         <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl border border-border bg-secondary px-4 py-3">
           <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
             <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
@@ -255,40 +229,21 @@ export function AppShell({ children }) {
           })}
         </nav>
 
-        <div className="mt-auto space-y-4 rounded-3xl border border-border bg-secondary p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-card text-sm font-semibold text-foreground">{initials}</div>
-            <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-foreground">{profile.full_name || profile.email || 'AxisVTU User'}</div>
-              <div className="truncate text-xs text-muted-foreground">{profile.email || 'No email attached'}</div>
-            </div>
-          </div>
-          <Badge tone="neutral" className="w-fit">Premium workspace</Badge>
-          <div className="grid gap-2">
-            <Button variant="secondary" className="w-full" onClick={() => router.push('/profile')}>
-              Profile
+        <div className="mt-auto grid gap-2 rounded-3xl border border-border bg-secondary p-4">
+          {isAdmin ? (
+            <Button variant="secondary" className="w-full" onClick={() => router.push('/admin')}>
+              <ShieldCheck className="h-4 w-4" />
+              Admin Panel
             </Button>
-            <Button variant="secondary" className="w-full" onClick={() => router.push('/security')}>
-              Security
-            </Button>
-            <Button variant="secondary" className="w-full" onClick={() => router.push('/support')}>
-              Support
-            </Button>
-            {isAdmin ? (
-              <Button variant="secondary" className="w-full" onClick={() => router.push('/admin')}>
-                <ShieldCheck className="h-4 w-4" />
-                Admin Panel
-              </Button>
-            ) : null}
-            <Button variant="secondary" className="w-full border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </Button>
-          </div>
+          ) : null}
+          <Button variant="danger" className="w-full" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </Button>
         </div>
       </aside>
 
-      <main className="min-w-0 bg-background">
+      <main className="min-w-0 bg-background lg:pl-[280px]">
         <header
           className="sticky top-0 z-30 border-b border-border bg-background/92 backdrop-blur-xl"
         >
@@ -341,6 +296,16 @@ export function AppShell({ children }) {
             <Button
               variant="secondary"
               size="icon"
+              className="hidden md:inline-flex"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              title="Theme"
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="secondary"
+              size="icon"
               className={cn(
                 'h-9 w-9 shrink-0 rounded-xl md:hidden',
                 'border-border bg-card text-foreground hover:bg-secondary'
@@ -365,8 +330,8 @@ export function AppShell({ children }) {
               <Sparkles className="h-4 w-4" />
             </Button>
             <Button
-              variant="secondary"
-              className="hidden border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18 md:inline-flex"
+              variant="danger"
+              className="hidden md:inline-flex"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
@@ -411,7 +376,7 @@ export function AppShell({ children }) {
                       </div>
                       <div className="min-w-0">
                         <div className="truncate text-sm font-semibold tracking-tight text-foreground">AxisVTU</div>
-                        <div className="truncate text-[11px] text-muted-foreground">{profile.full_name || profile.email || 'Wallet workspace'}</div>
+                        <div className="truncate text-[11px] text-muted-foreground">Wallet workspace</div>
                       </div>
                     </div>
                     <Button
@@ -442,23 +407,10 @@ export function AppShell({ children }) {
                     <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                   ))}
                 </nav>
-
-                <div className="mt-5 border-t border-border pt-4">
-                  <div className="axis-label mb-2">Personal settings</div>
-                  <nav className="space-y-1">
-                    {mobileSettingsItems.map((item) => (
-                      <MobileMenuLink key={item.label} item={item} activePath={activePath} />
-                    ))}
-                  </nav>
-                </div>
               </div>
 
               <div className="shrink-0 border-t border-border bg-card p-3">
-                <Button
-                  variant="secondary"
-                  className="h-11 w-full justify-center border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18"
-                  onClick={handleSignOut}
-                >
+                <Button variant="danger" className="h-11 w-full justify-center" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
                   Logout
                 </Button>
