@@ -243,7 +243,7 @@ export function AuthPage({ initialMode = 'login' }) {
 
               {error ? <div className="rounded-[10px] border border-rose-400/15 bg-rose-500/8 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
 
-              <div className={`flex items-center ${isRegister ? 'justify-end' : 'justify-between'} gap-3 pt-1 text-sm`}>
+              <div className={`flex items-start ${isRegister ? 'justify-end' : 'justify-between'} gap-3 pt-1 text-sm`}>
                 {!isRegister ? (
                   <label className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-muted-foreground">
                     <input
@@ -258,12 +258,22 @@ export function AuthPage({ initialMode = 'login' }) {
                   <span />
                 )}
 
-                <Link
-                  href={isRegister ? '/login' : '/register'}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:underline hover:decoration-current hover:underline-offset-4"
-                >
-                  {isRegister ? 'Already have an account? Sign in' : 'Need an account? Register'}
-                </Link>
+                <div className={`flex ${isRegister ? 'items-center' : 'items-end'} gap-2 ${isRegister ? '' : 'flex-col'}`}>
+                  {!isRegister ? (
+                    <Link
+                      href="/forgot-password"
+                      className="text-sm font-medium text-primary/90 transition-colors hover:text-primary hover:underline hover:decoration-current hover:underline-offset-4"
+                    >
+                      Forgot password?
+                    </Link>
+                  ) : null}
+                  <Link
+                    href={isRegister ? '/login' : '/register'}
+                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:underline hover:decoration-current hover:underline-offset-4"
+                  >
+                    {isRegister ? 'Already have an account? Sign in' : 'Need an account? Register'}
+                  </Link>
+                </div>
               </div>
 
               <Button
