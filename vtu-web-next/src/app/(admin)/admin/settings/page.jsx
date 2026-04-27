@@ -1,14 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, RefreshCw, ShieldCheck } from 'lucide-react';
-import { adminGetAnalytics, adminGetPricingRules, adminGetServiceToggles, adminUpdateServiceToggle, apiFetch, getProfile } from '@/lib/api';
-import { formatDateTime } from '@/lib/format';
+import { AlertTriangle, RefreshCw, ShieldCheck, X } from 'lucide-react';
+import { adminGetAnalytics, adminGetPricingRules, adminGetServiceToggles, adminUpdatePricingRule, adminUpdateServiceToggle, apiFetch, getProfile } from '@/lib/api';
+import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { AdminTable } from '@/components/admin/admin-table';
 
 export default function AdminSettingsPage() {
   const profile = getProfile();
@@ -18,6 +19,12 @@ export default function AdminSettingsPage() {
   const [analytics, setAnalytics] = useState(null);
   const [serviceToggles, setServiceToggles] = useState({});
   const [toggling, setToggling] = useState(false);
+  
+  // Margin Edit State
+  const [editingMarginFor, setEditingMarginFor] = useState(null);
+  const [marginInput, setMarginInput] = useState('');
+  const [marginTypeInput, setMarginTypeInput] = useState('fixed');
+  const [isSavingMargin, setIsSavingMargin] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -41,8 +48,38 @@ export default function AdminSettingsPage() {
     load().catch(() => setLoading(false));
   }, [load]);
 
+  const handleOpenMarginModal = (rule) => {
+    setEditingMarginFor(rule);
+    setMarginInput(String(rule.margin || '0'));
+    setMarginTypeInput(rule.margin_type || 'fixed');
+  };
+
+  const handleSaveMargin = async () => {
+    if (!editingMarginFor) return;
+    setIsSavingMargin(true);
+    try {
+      const val = parseFloat(marginInput);
+      if (isNaN(val) || val < 0) throw new Error('Invalid margin value');
+      
+      const payload = {
+        network: editingMarginFor.network,
+        role: editingMarginFor.role,
+        margin: val,
+        margin_type: marginTypeInput,
+      };
+      
+      await adminUpdatePricingRule(payload);
+      await load();
+      setEditingMarginFor(null);
+    } catch (err) {
+      alert(err.message || 'Failed to update margin');
+    } finally {
+      setIsSavingMargin(false);
+    }
+  };
+
   return (
-    <div className="space-y-5 pb-8">
+    <div className="space-y-5 pb-8 relative">
       <AdminPageHeader
         title="Admin settings"
         description="Service toggles, provider health, referral policy, support channels, and admin profile security."
@@ -58,7 +95,7 @@ export default function AdminSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Service toggles</CardTitle>
-            <CardDescription>Toggle endpoints require dedicated backend controls before activation.</CardDescription>
+            <CardDescription>Enable or disable core services on the platform.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {[
@@ -120,6 +157,37 @@ export default function AdminSettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Service Margins</CardTitle>
+          <CardDescription>Configure profit margins for transactions. Margins can be fixed amounts or percentages.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AdminTable
+            columns={[
+              { key: 'network', label: 'Service / Network', render: (row) => String(row.network).toUpperCase() },
+              { key: 'role', label: 'User Role', render: (row) => <span className="capitalize">{row.role}</span> },
+              { key: 'margin', label: 'Current Margin', render: (row) => {
+                const type = row.margin_type || 'fixed';
+                return type === 'percentage' ? `${row.margin}%` : `₦${formatMoney(row.margin)}`;
+              }},
+              { key: 'type', label: 'Margin Type', render: (row) => <span className="capitalize text-muted-foreground">{row.margin_type || 'fixed'}</span> },
+              {
+                key: 'actions',
+                label: 'Actions',
+                render: (row) => (
+                  <Button variant="secondary" size="sm" onClick={() => handleOpenMarginModal(row)}>
+                    Edit
+                  </Button>
+                ),
+              },
+            ]}
+            rows={pricingRules}
+            empty={loading ? 'Loading margins...' : 'No margin rules defined yet.'}
+          />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-5 xl:grid-cols-2">
         <Card>
@@ -187,6 +255,70 @@ export default function AdminSettingsPage() {
           Secrets are intentionally hidden from this UI. Use secured backend environment management for keys and provider credentials.
         </div>
       </div>
+
+      {editingMarginFor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <Card className="w-full max-w-md shadow-2xl">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+              <CardTitle className="text-lg">Edit Service Margin</CardTitle>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setEditingMarginFor(null)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+              <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Service/Network:</span>
+                  <span className="font-medium text-foreground">{String(editingMarginFor.network).toUpperCase()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">User Role:</span>
+                  <span className="font-medium text-foreground capitalize">{editingMarginFor.role}</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Margin Type</label>
+                  <select
+                    value={marginTypeInput}
+                    onChange={(e) => setMarginTypeInput(e.target.value)}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    disabled={isSavingMargin}
+                  >
+                    <option value="fixed">Fixed Amount (₦)</option>
+                    <option value="percentage">Percentage (%)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Margin Value</label>
+                  <Input
+                    type="number"
+                    value={marginInput}
+                    onChange={(e) => setMarginInput(e.target.value)}
+                    disabled={isSavingMargin}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {marginTypeInput === 'percentage' 
+                      ? 'The percentage of the base price to add as profit.' 
+                      : 'The flat amount in Naira to add on top of the provider cost.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="secondary" onClick={() => setEditingMarginFor(null)} disabled={isSavingMargin}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveMargin} disabled={isSavingMargin}>
+                  {isSavingMargin ? 'Saving...' : 'Save Margin'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

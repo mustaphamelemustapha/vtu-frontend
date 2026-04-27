@@ -304,6 +304,10 @@ export async function adminUpdatePricingRule(payload) {
   });
 }
 
+// Aliases for margin specific functions, pointing to the same endpoints
+export const adminGetServiceMargins = adminGetPricingRules;
+export const adminSetServiceMargin = adminUpdatePricingRule;
+
 export async function adminFundWallet(payload) {
   return apiFetch('/admin/fund-wallet', {
     method: 'POST',
