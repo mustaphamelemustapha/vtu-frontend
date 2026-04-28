@@ -1,5 +1,6 @@
 {
   "redirects": [
+    { "source": "/privacy", "destination": "/privacy.html", "permanent": false },
     { "source": "/login", "destination": "/app/login", "permanent": true },
     { "source": "/register", "destination": "/app/register", "permanent": true },
     { "source": "/reset-password", "destination": "/app/reset-password", "permanent": true },
