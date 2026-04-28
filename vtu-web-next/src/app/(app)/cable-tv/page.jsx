@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Tv2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
@@ -43,6 +44,15 @@ function parseAmountFromPlanText(value) {
   const match = text.match(/N\s*([\d,]+(?:\.\d+)?)/i);
   if (!match) return NaN;
   return Number.parseFloat(match[1].replace(/,/g, ''));
+}
+
+function providerLogoSrc(id) {
+  const key = String(id || '').toLowerCase();
+  if (key.includes('dstv')) return '/brand/networks/dstv.png';
+  if (key.includes('gotv')) return '/brand/networks/gotv.png';
+  if (key.includes('startimes')) return '/brand/networks/startimes.jpg';
+  if (key.includes('showmax')) return '/brand/networks/showmax.jpg';
+  return '/brand/axisvtu-icon.png';
 }
 
 const FALLBACK_CABLE_PACKAGES = {
@@ -315,7 +325,7 @@ export default function CableTvPage() {
           <CardContent className="space-y-5">
             <div className="space-y-2">
               <div className="axis-label">Provider</div>
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {providers.map((item) => {
                   const active = provider === item.id;
                   return (
@@ -328,13 +338,27 @@ export default function CableTvPage() {
                         setVerifyResult({ ok: false, customerName: '', message: '' });
                       }}
                       className={cn(
-                        'rounded-2xl border px-4 py-3 text-left text-sm font-medium transition',
+                        'rounded-2xl border px-4 py-4 text-left text-sm transition',
                         active
-                          ? 'border-primary/35 bg-primary/10 text-foreground'
-                          : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
+                          ? 'border-primary/45 bg-primary/12 text-foreground shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                          : 'border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground'
                       )}
                     >
-                      {item.name}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
+                          <Image
+                            src={providerLogoSrc(item.id)}
+                            alt={`${item.name} logo`}
+                            width={42}
+                            height={42}
+                            className="h-full w-full object-contain"
+                            unoptimized
+                          />
+                        </div>
+                        <Badge className="border-border bg-card text-muted-foreground">live</Badge>
+                      </div>
+                      <div className="mt-3 text-base font-semibold text-foreground">{titleCase(item.name)}</div>
+                      <div className="text-xs text-muted-foreground">Available now</div>
                     </button>
                   );
                 })}

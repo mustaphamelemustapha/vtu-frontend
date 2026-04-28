@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/page-header';
+import { TransactionReceiptModal } from '@/components/transaction-receipt-modal';
+import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
 
 function txRecipientLabel(tx) {
   const recipient =
@@ -27,6 +29,9 @@ export default function HistoryPage() {
   const [reports, setReports] = useState(() => readScopedCache('history_reports', { maxAgeMs: 5 * 60 * 1000 }) || []);
   const [loading, setLoading] = useState(() => !(readScopedCache('history_transactions', { maxAgeMs: 5 * 60 * 1000 }) || []).length);
   const [loadError, setLoadError] = useState('');
+
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -64,6 +69,33 @@ export default function HistoryPage() {
     const total = transactions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
     return { success, pending, total };
   }, [transactions]);
+
+  const handleTxClick = useCallback((tx) => {
+    const metaArr = [];
+    if (tx.meta) {
+      if (tx.meta.plan_name) metaArr.push({ label: 'Plan', value: tx.meta.plan_name });
+      if (tx.meta.token) metaArr.push({ label: 'Token', value: tx.meta.token });
+      if (tx.meta.network) metaArr.push({ label: 'Network', value: String(tx.meta.network).toUpperCase() });
+      if (tx.meta.customer_name) metaArr.push({ label: 'Customer Name', value: tx.meta.customer_name });
+      if (tx.meta.provider_ref) metaArr.push({ label: 'Provider Ref', value: tx.meta.provider_ref });
+      if (tx.meta.units) metaArr.push({ label: 'Units', value: tx.meta.units });
+    }
+
+    const receiptData = buildTransactionReceipt({
+      service: String(tx.tx_type || 'Transaction').replace(/_/g, ' ').toUpperCase(),
+      status: String(tx.status || 'pending').toLowerCase(),
+      amount: tx.amount,
+      reference: tx.reference,
+      customer: txRecipientLabel(tx),
+      meta: metaArr,
+    });
+    
+    // Use actual transaction date instead of current date
+    receiptData.createdAt = tx.created_at || receiptData.createdAt;
+
+    setSelectedReceipt(receiptData);
+    setReceiptModalOpen(true);
+  }, []);
 
   return (
     <div className="space-y-6 pb-8">
@@ -108,17 +140,23 @@ export default function HistoryPage() {
           ) : null}
           {transactions.length === 0 && !loading ? <div className="text-sm text-muted-foreground">No transactions yet.</div> : null}
           {transactions.map((tx) => (
-            <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
-              <div>
-                <div className="text-sm font-medium text-foreground">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {txRecipientLabel(tx) ? `To ${txRecipientLabel(tx)}` : (tx.reference || '—')} • {formatDateTime(tx.created_at)}
+            <div 
+              key={tx.reference || tx.id} 
+              onClick={() => handleTxClick(tx)}
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-border bg-secondary p-4 cursor-pointer hover:bg-secondary/80 active:bg-secondary/60 transition-colors min-w-0"
+            >
+              <div className="min-w-0 flex-1 w-full sm:w-auto">
+                <div className="text-sm font-medium text-foreground capitalize truncate">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
+                <div className="mt-1 text-xs text-muted-foreground truncate">
+                  {txRecipientLabel(tx) ? `${txRecipientLabel(tx)} • ` : ''}{formatDateTime(tx.created_at)}
                 </div>
-                {txRecipientLabel(tx) ? <div className="mt-1 text-xs text-muted-foreground/80">Ref: {tx.reference || '—'}</div> : null}
+                <div className="mt-1 text-xs text-muted-foreground/80 truncate">
+                   {tx.reference ? `Ref: ${tx.reference.length > 18 ? tx.reference.slice(0, 18) + '...' : tx.reference}` : 'View receipt'}
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Badge tone={String(tx.status || '').toLowerCase() === 'success' ? 'success' : String(tx.status || '').toLowerCase() === 'failed' ? 'danger' : 'warning'}>{tx.status || 'pending'}</Badge>
+              <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-1 sm:mt-0">
                 <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
+                <Badge tone={String(tx.status || '').toLowerCase() === 'success' ? 'success' : String(tx.status || '').toLowerCase() === 'failed' ? 'danger' : 'warning'}>{tx.status || 'pending'}</Badge>
               </div>
             </div>
           ))}
@@ -143,6 +181,14 @@ export default function HistoryPage() {
           ))}
         </CardContent>
       </Card>
+
+      <TransactionReceiptModal
+        open={receiptModalOpen}
+        receipt={selectedReceipt}
+        onClose={() => setReceiptModalOpen(false)}
+        onDownload={(node) => (selectedReceipt ? downloadReceipt(selectedReceipt, node) : null)}
+        onShare={(node) => (selectedReceipt ? shareReceipt(selectedReceipt, node) : null)}
+      />
     </div>
   );
 }
