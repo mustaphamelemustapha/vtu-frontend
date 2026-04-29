@@ -1,4 +1,4 @@
-const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v2';
+const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v3';
 const PLAN_CACHE_TTL_MS = 2 * 60 * 1000;
 const PLAN_REQUEST_TIMEOUT_MS = 18000;
 
@@ -99,13 +99,6 @@ export async function getDataPlansFast(apiFetchFn, { forceRefresh = false } = {}
     return { plans: freshCache, source: 'cache' };
   }
 
-  const staleCache = readCachedDataPlans({ allowStale: true });
-  if (staleCache.length) {
-    prefetchDataPlans(apiFetchFn).catch(() => {});
-    return { plans: staleCache, source: 'stale-cache' };
-  }
-
   const live = await prefetchDataPlans(apiFetchFn);
   return { plans: live, source: 'live' };
 }
-
