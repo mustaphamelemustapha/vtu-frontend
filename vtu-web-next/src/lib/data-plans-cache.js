@@ -1,5 +1,5 @@
 const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v2';
-const PLAN_CACHE_TTL_MS = 15 * 60 * 1000;
+const PLAN_CACHE_TTL_MS = 2 * 60 * 1000;
 const PLAN_REQUEST_TIMEOUT_MS = 18000;
 
 let inFlightPlansPromise = null;
