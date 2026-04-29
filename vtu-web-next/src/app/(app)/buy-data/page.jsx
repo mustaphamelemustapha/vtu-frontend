@@ -24,18 +24,7 @@ const NETWORK_TABS = [
   { key: '9mobile', label: '9mobile' },
 ];
 
-const BLOCK_KEYWORDS = ['night', 'social', 'weekend', 'daily', 'awoof', 'bonus', 'router', 'mifi', 'youtube', 'unlimited'];
-const AIRTEL_VISIBLE_CAPACITIES = new Set(['500MB', '1GB', '2GB', '3GB', '4GB', '10GB', '18GB', '25GB']);
-const AIRTEL_VALIDITY_TARGETS = {
-  '500MB': 7,
-  '1GB': 30,
-  '2GB': 30,
-  '3GB': 30,
-  '4GB': 30,
-  '10GB': 30,
-  '18GB': 30,
-  '25GB': 30,
-};
+const BLOCK_KEYWORDS = [];
 
 function normalizeNetwork(value) {
   const raw = String(value || '').trim().toLowerCase();
@@ -109,11 +98,7 @@ function validityDays(value) {
   return amount;
 }
 
-function isNoisyPlan(plan) {
-  if (!plan || typeof plan !== 'object') return false;
-  const label = `${plan.plan_name || ''} ${plan.data_size || ''} ${plan.validity || ''}`.toLowerCase();
-  return BLOCK_KEYWORDS.some((keyword) => label.includes(keyword));
-}
+
 
 function normalizePlan(raw) {
   const plan = { ...(raw || {}) };
@@ -130,16 +115,6 @@ function normalizePlan(raw) {
   }
 
   return plan;
-}
-
-function filterAirtelPlans(plans) {
-  return plans.filter((plan) => {
-    const network = normalizeNetwork(plan.network);
-    if (network !== 'airtel') return true;
-    const capacity = capacityKey(plan.data_size || plan.plan_name);
-    if (!AIRTEL_VISIBLE_CAPACITIES.has(capacity)) return false;
-    return validityDays(plan.validity || plan.plan_name) === AIRTEL_VALIDITY_TARGETS[capacity];
-  });
 }
 
 function curatePlans(rows) {
