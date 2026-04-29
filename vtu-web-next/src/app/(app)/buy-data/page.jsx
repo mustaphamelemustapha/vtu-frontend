@@ -153,20 +153,16 @@ function curatePlans(rows) {
   }
 
   const curatedGroups = [];
-  for (const networkKey of [...NETWORK_ORDER, ...Array.from(grouped.keys()).filter((key) => !NETWORK_ORDER.includes(key) && key !== 'other'), 'other']) {
+  const networks = [...NETWORK_ORDER, ...Array.from(grouped.keys()).filter((key) => !NETWORK_ORDER.includes(key) && key !== 'other'), 'other'];
+  
+  for (const networkKey of networks) {
     const items = grouped.get(networkKey);
     if (!items || !items.length) continue;
-    const clean = items.filter((plan) => !isNoisyPlan(plan));
-    const source =
-      networkKey === 'airtel'
-        ? filterAirtelPlans(clean.length ? clean : items)
-        : clean.length >= 4
-          ? clean
-          : items;
-    if (!source.length) continue;
+    
+    // Sort by price and show all plans the backend sent us
     curatedGroups.push({
       network: networkKey,
-      plans: [...source].sort((a, b) => planPrice(a) - planPrice(b)).slice(0, 8),
+      plans: [...items].sort((a, b) => planPrice(a) - planPrice(b)),
     });
   }
   return curatedGroups;
