@@ -1,4 +1,5 @@
 import { formatMoney } from '@/lib/format';
+import { sanitizeProviderMessage } from '@/lib/transaction-status';
 
 function timestampLabel(date) {
   try {
@@ -25,7 +26,7 @@ export function buildTransactionReceipt({
     id: `receipt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     service: service || 'AxisVTU Transaction',
     status: ['success', 'failed', 'pending'].includes(status) ? status : 'pending',
-    message: message || '',
+    message: sanitizeProviderMessage(message || ''),
     amount: Number.isFinite(Number(amount)) ? Number(amount) : 0,
     reference: String(reference || 'N/A'),
     customer: customer || phone || '',

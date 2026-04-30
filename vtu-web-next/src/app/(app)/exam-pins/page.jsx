@@ -5,6 +5,7 @@ import { GraduationCap, RefreshCw, ReceiptText } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
+import { normalizeTransactionStatus, sanitizeProviderMessage, waitForTransactionFinalStatus } from '@/lib/transaction-status';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -121,7 +122,7 @@ export default function ExamPinsPage() {
         buildTransactionReceipt({
           service: 'Exam PIN Purchase',
           status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
-          message: `${baseMessage}${pins ? ` ${pins.trim()}` : ''}`.trim(),
+          message: sanitizeProviderMessage(`${res?.message || ''} ${baseMessage}${pins ? ` ${pins.trim()}` : ''}`.trim()) || `${baseMessage}${pins ? ` ${pins.trim()}` : ''}`.trim(),
           amount: total,
           reference: res?.reference || '—',
           phone: cleanPhone,
@@ -136,7 +137,7 @@ export default function ExamPinsPage() {
         buildTransactionReceipt({
           service: 'Exam PIN Purchase',
           status: 'failed',
-          message: err?.message || 'Unable to purchase exam PINs right now.',
+          message: sanitizeProviderMessage(err?.message) || 'Unable to purchase exam PINs right now.',
           amount: total,
           phone: cleanPhone,
           meta: [
@@ -159,6 +160,44 @@ export default function ExamPinsPage() {
       }
     }
   };
+
+  useEffect(() => {
+    if (!receipt || receipt.status !== 'pending') return undefined;
+    const reference = String(receipt.reference || '').trim();
+    if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
+
+    let cancelled = false;
+    (async () => {
+      const result = await waitForTransactionFinalStatus(apiFetch, reference, {
+        timeoutMs: 90000,
+        intervalMs: 2500,
+      });
+      if (cancelled || !result?.final) return;
+      const finalStatus = normalizeTransactionStatus(result.status);
+      const tx = result.transaction || {};
+      setReceipt((prev) => {
+        if (!prev) return prev;
+        const mappedStatus = finalStatus === 'success' ? 'success' : 'failed';
+        const nextMessage =
+          mappedStatus === 'success'
+            ? 'Transaction confirmed successfully.'
+            : finalStatus === 'refunded'
+              ? 'Transaction was reversed and wallet refunded.'
+              : 'Transaction failed.';
+        return {
+          ...prev,
+          status: mappedStatus,
+          message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
+          createdAt: tx?.created_at || prev.createdAt,
+        };
+      });
+      load().catch(() => {});
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [receipt, load]);
 
   return (
     <div className="space-y-6 pb-10">

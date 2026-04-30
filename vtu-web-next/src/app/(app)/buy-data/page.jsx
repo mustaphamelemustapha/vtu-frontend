@@ -7,6 +7,11 @@ import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
 import { getDataPlansFast, prefetchDataPlans } from '@/lib/data-plans-cache';
+import {
+  normalizeTransactionStatus,
+  sanitizeProviderMessage,
+  waitForTransactionFinalStatus,
+} from '@/lib/transaction-status';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -252,7 +257,7 @@ export default function BuyDataPage() {
         buildTransactionReceipt({
           service: 'Data Purchase',
           status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
-          message: res?.message || 'Purchase submitted.',
+          message: sanitizeProviderMessage(res?.message) || (status === 'pending' ? 'Transaction submitted and being confirmed.' : 'Purchase submitted.'),
           amount: Number(selected?.price || 0),
           reference: res?.reference || '—',
           phone: normalizedPhone,
@@ -269,7 +274,7 @@ export default function BuyDataPage() {
         buildTransactionReceipt({
           service: 'Data Purchase',
           status: 'failed',
-          message: err?.message || 'Purchase failed.',
+          message: sanitizeProviderMessage(err?.message) || 'Purchase failed.',
           amount: Number(selected?.price || 0),
           phone: normalizedPhone,
           meta: [
@@ -285,6 +290,46 @@ export default function BuyDataPage() {
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    if (!receipt || receipt.status !== 'pending') return undefined;
+    const reference = String(receipt.reference || '').trim();
+    if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
+
+    let cancelled = false;
+    (async () => {
+      const result = await waitForTransactionFinalStatus(apiFetch, reference, {
+        timeoutMs: 90000,
+        intervalMs: 2500,
+      });
+      if (cancelled || !result?.final) return;
+      const finalStatus = normalizeTransactionStatus(result.status);
+      const tx = result.transaction || {};
+
+      setReceipt((prev) => {
+        if (!prev) return prev;
+        const mappedStatus = finalStatus === 'success' ? 'success' : 'failed';
+        const nextMessage =
+          mappedStatus === 'success'
+            ? 'Transaction confirmed successfully.'
+            : finalStatus === 'refunded'
+              ? 'Transaction was reversed and wallet refunded.'
+              : 'Transaction failed.';
+        return {
+          ...prev,
+          status: mappedStatus,
+          message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
+          createdAt: tx?.created_at || prev.createdAt,
+        };
+      });
+
+      load({ silent: true }).catch(() => {});
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [receipt, load]);
 
   return (
     <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
