@@ -344,6 +344,17 @@ export async function adminAdjustWallet(payload) {
   });
 }
 
+export async function adminGetWallets(params = {}) {
+  return apiFetch(`/admin/wallets${toQuery(params)}`);
+}
+
+export async function adminReconcileDelivered(payload) {
+  return apiFetch('/admin/transactions/reconcile-delivered', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
 export async function adminGetServiceToggles() {
   return apiFetch('/admin/services/toggles');
 }

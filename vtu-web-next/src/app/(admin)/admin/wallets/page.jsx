@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, RefreshCw, Wallet2 } from 'lucide-react';
-import { adminGetTransactions, adminGetUserDetails, adminGetUsers } from '@/lib/api';
+import { adminGetTransactions, adminGetWallets, adminReconcileDelivered } from '@/lib/api';
 import { ADMIN_NOTES } from '@/lib/admin-placeholders';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ export default function AdminWalletsPage() {
   const [walletRows, setWalletRows] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aggregateBalance, setAggregateBalance] = useState(0);
   const [adjustForm, setAdjustForm] = useState({
     userId: '',
     amount: '',
@@ -26,28 +27,31 @@ export default function AdminWalletsPage() {
     error: '',
     success: '',
   });
+  const [reconcileForm, setReconcileForm] = useState({
+    reference: '',
+    note: '',
+    loading: false,
+    error: '',
+    success: '',
+  });
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const users = await adminGetUsers({ page: 1, page_size: 18 });
-      const baseUsers = Array.isArray(users?.items) ? users.items : [];
-
-      const detailsSettled = await Promise.allSettled(baseUsers.map((user) => adminGetUserDetails(user.id)));
-      const balances = baseUsers.map((user, index) => {
-        const detail = detailsSettled[index];
-        const walletBalance = detail?.status === 'fulfilled' ? Number(detail.value?.wallet?.balance || 0) : 0;
-        return {
-          id: user.id,
-          full_name: user.full_name,
-          email: user.email,
-          phone_number: user.phone_number,
-          balance: walletBalance,
-          status: user.is_active ? 'active' : 'suspended',
-          updated_at: detail?.status === 'fulfilled' ? detail.value?.wallet?.updated_at : null,
-        };
-      });
-      setWalletRows(balances);
+      const wallets = await adminGetWallets({ page: 1, page_size: 50 });
+      const rows = Array.isArray(wallets?.items) ? wallets.items : [];
+      setWalletRows(
+        rows.map((item) => ({
+          id: item.user_id,
+          full_name: item.full_name,
+          email: item.email,
+          phone_number: item.phone_number,
+          balance: Number(item.wallet_balance || 0),
+          status: item.is_active ? 'active' : 'suspended',
+          updated_at: item.wallet_updated_at,
+        })),
+      );
+      setAggregateBalance(Number(wallets?.aggregate_balance || 0));
 
       const ledger = await adminGetTransactions({ page: 1, page_size: 60 });
       setLedgerRows(Array.isArray(ledger?.items) ? ledger.items : []);
@@ -60,7 +64,10 @@ export default function AdminWalletsPage() {
     load().catch(() => setLoading(false));
   }, [load]);
 
-  const totalBalance = useMemo(() => walletRows.reduce((sum, row) => sum + Number(row.balance || 0), 0), [walletRows]);
+  const totalBalance = useMemo(
+    () => (aggregateBalance ? aggregateBalance : walletRows.reduce((sum, row) => sum + Number(row.balance || 0), 0)),
+    [aggregateBalance, walletRows],
+  );
 
   return (
     <div className="space-y-5 pb-8">
@@ -98,6 +105,7 @@ export default function AdminWalletsPage() {
 
       <AdminTable
         columns={[
+          { key: 'id', label: 'User ID' },
           { key: 'full_name', label: 'User' },
           { key: 'email', label: 'Email' },
           { key: 'phone_number', label: 'Phone' },
@@ -216,6 +224,63 @@ export default function AdminWalletsPage() {
             )}
             {adjustForm.success && (
               <div className="text-sm font-medium text-green-600 dark:text-green-400 mt-2">{adjustForm.success}</div>
+            )}
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setReconcileForm((s) => ({ ...s, loading: true, error: '', success: '' }));
+                try {
+                  const res = await adminReconcileDelivered({
+                    reference: reconcileForm.reference,
+                    note: reconcileForm.note || undefined,
+                  });
+                  setReconcileForm((s) => ({
+                    ...s,
+                    loading: false,
+                    success: `Reconciled ${res.reference} to success.`,
+                    reference: '',
+                    note: '',
+                  }));
+                  load();
+                } catch (err) {
+                  setReconcileForm((s) => ({
+                    ...s,
+                    loading: false,
+                    error: err.message || 'Failed to reconcile transaction',
+                  }));
+                }
+              }}
+              className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-5 items-end"
+            >
+              <div className="space-y-2 lg:col-span-2">
+                <label className="text-xs font-medium">Transaction reference</label>
+                <Input
+                  required
+                  placeholder="e.g. DATA_0A95372693093E3AA2A466C5"
+                  value={reconcileForm.reference}
+                  onChange={(e) => setReconcileForm((s) => ({ ...s, reference: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2 lg:col-span-2">
+                <label className="text-xs font-medium">Admin note</label>
+                <Input
+                  placeholder="Delivered confirmed by customer"
+                  value={reconcileForm.note}
+                  onChange={(e) => setReconcileForm((s) => ({ ...s, note: e.target.value }))}
+                />
+              </div>
+              <Button type="submit" disabled={reconcileForm.loading} className="w-full">
+                {reconcileForm.loading ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Wallet2 className="mr-2 h-4 w-4" />}
+                Reconcile
+              </Button>
+            </form>
+
+            {reconcileForm.error && (
+              <div className="text-sm font-medium text-destructive mt-2">{reconcileForm.error}</div>
+            )}
+            {reconcileForm.success && (
+              <div className="text-sm font-medium text-green-600 dark:text-green-400 mt-2">{reconcileForm.success}</div>
             )}
           </div>
         </CardContent>
