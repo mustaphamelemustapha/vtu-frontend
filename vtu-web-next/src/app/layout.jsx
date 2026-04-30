@@ -14,6 +14,9 @@ export const metadata = {
     shortcut: '/brand/axisvtu-icon.png',
     apple: '/brand/axisvtu-icon.png',
   },
+  verification: {
+    google: 'BYzwpVMC9af2r91Y5yd5lR5FBQJEOk7cwx45Hl9iU9c',
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -34,6 +37,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta
+          name="google-site-verification"
+          content="BYzwpVMC9af2r91Y5yd5lR5FBQJEOk7cwx45Hl9iU9c"
+        />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="antialiased">
