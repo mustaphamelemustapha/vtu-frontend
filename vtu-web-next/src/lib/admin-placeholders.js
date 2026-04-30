@@ -25,5 +25,5 @@ export const ADMIN_PLACEHOLDER = {
 
 export const ADMIN_NOTES = {
   referrals: 'Referrals admin endpoint is not exposed yet. This panel is display-only until backend support is added.',
-  walletAdjustments: 'Manual wallet adjustments require backend approval workflow. Action is intentionally disabled in web admin.',
+  walletAdjustments: 'Manual wallet adjustment is protected. Use only with traceable reason and follow internal finance approval steps.',
 };

@@ -2,14 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, RefreshCw } from 'lucide-react';
-import { adminGetTransactions } from '@/lib/api';
+import { adminGetTransactions, adminReconcileDelivered } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { startCase } from '@/lib/admin-utils';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { FilterBar } from '@/components/admin/filter-bar';
 import { AdminTable } from '@/components/admin/admin-table';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 
 const STATUS_FILTERS = ['', 'success', 'pending', 'failed', 'refunded'];
 const TYPE_FILTERS = ['', 'data', 'airtime', 'electricity', 'cable', 'exam', 'deposit'];
@@ -23,6 +25,11 @@ export default function AdminTransactionsPage() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [selected, setSelected] = useState(null);
+  const [reconcileNote, setReconcileNote] = useState('');
+  const [reconcileConfirmOpen, setReconcileConfirmOpen] = useState(false);
+  const [reconcileBusy, setReconcileBusy] = useState(false);
+  const [reconcileError, setReconcileError] = useState('');
+  const [reconcileSuccess, setReconcileSuccess] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -111,10 +118,61 @@ export default function AdminTransactionsPage() {
             ))}
           </div>
           <div className="mt-3 rounded-2xl border border-dashed border-border bg-secondary p-3 text-sm text-muted-foreground">
-            Retry/check status and receipt regeneration are backend-dependent. This page shows details safely without destructive actions.
+            Use reconciliation only when customer confirms service delivery but system status is wrong.
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+            <div className="space-y-2">
+              <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Audit note</div>
+              <Input
+                value={reconcileNote}
+                onChange={(e) => setReconcileNote(e.target.value)}
+                placeholder="Delivered confirmed by customer"
+              />
+              {reconcileError ? <div className="text-xs font-medium text-destructive">{reconcileError}</div> : null}
+              {reconcileSuccess ? <div className="text-xs font-medium text-emerald-600 dark:text-emerald-300">{reconcileSuccess}</div> : null}
+            </div>
+            <Button
+              variant="default"
+              disabled={reconcileBusy || !selected?.reference}
+              onClick={() => {
+                setReconcileError('');
+                setReconcileSuccess('');
+                setReconcileConfirmOpen(true);
+              }}
+            >
+              Reconcile delivered
+            </Button>
           </div>
         </div>
       ) : null}
+      <ConfirmDialog
+        open={reconcileConfirmOpen}
+        title="Reconcile transaction to success?"
+        description="This will mark the transaction as delivered success. If it was refunded, wallet refund reversal will be attempted and logged."
+        confirmLabel="Yes, reconcile"
+        busy={reconcileBusy}
+        onCancel={() => setReconcileConfirmOpen(false)}
+        onConfirm={async () => {
+          if (!selected?.reference) return;
+          setReconcileBusy(true);
+          setReconcileError('');
+          setReconcileSuccess('');
+          try {
+            const result = await adminReconcileDelivered({
+              reference: selected.reference,
+              note: reconcileNote || undefined,
+            });
+            setSelected((prev) => (prev ? { ...prev, status: result.new_status } : prev));
+            setReconcileSuccess(`Reconciled ${result.reference} successfully.`);
+            setReconcileConfirmOpen(false);
+            await load();
+          } catch (err) {
+            setReconcileError(err?.message || 'Failed to reconcile this transaction.');
+          } finally {
+            setReconcileBusy(false);
+          }
+        }}
+      />
     </div>
   );
 }
