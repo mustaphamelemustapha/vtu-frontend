@@ -282,6 +282,10 @@ export async function adminGetTransactions(params = {}) {
   return apiFetch(`/admin/transactions${toQuery(params)}`);
 }
 
+export async function adminGetTransactionDetails(reference) {
+  return apiFetch(`/admin/transactions/${encodeURIComponent(reference)}`);
+}
+
 export async function adminGetReports(params = {}) {
   return apiFetch(`/admin/reports${toQuery(params)}`);
 }

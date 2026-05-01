@@ -84,7 +84,7 @@ export default function AdminUsersPage() {
       label: 'Wallet balance',
       render: (row) => <span className="font-medium">{selectedDetails?.user?.id === row.id ? `₦${formatMoney(selectedDetails?.wallet?.balance || 0)}` : 'Open user'}</span>,
     },
-    { key: 'is_verified', label: 'Verification', render: (row) => <StatusBadge status={row.is_verified ? 'verified' : 'pending'} /> },
+    { key: 'is_verified', label: 'Verification', render: (row) => <StatusBadge status={row.is_verified ? 'verified' : 'unverified'} /> },
     { key: 'is_active', label: 'Status', render: (row) => <StatusBadge status={row.is_active ? 'active' : 'suspended'} /> },
     { key: 'created_at', label: 'Joined', render: (row) => <span className="text-muted-foreground">{formatDateTime(row.created_at)}</span> },
     {
@@ -157,7 +157,7 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="text-right space-y-2">
                   <div><StatusBadge status={selectedUser.is_active ? 'active' : 'suspended'} /></div>
-                  <div><StatusBadge status={selectedUser.is_verified ? 'verified' : 'pending'} /></div>
+                  <div><StatusBadge status={selectedUser.is_verified ? 'verified' : 'unverified'} /></div>
                 </div>
               </div>
 

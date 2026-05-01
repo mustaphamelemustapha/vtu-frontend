@@ -92,14 +92,14 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
     <AnimatePresence>
       {open && receipt ? (
         <motion.div
-          className="fixed inset-0 z-[310] flex items-center justify-center bg-black/65 px-4 py-6"
+          className="fixed inset-0 z-[310] flex items-end justify-center bg-black/65 px-0 py-0 md:items-center md:px-4 md:py-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-lg rounded-3xl border border-border bg-card shadow-2xl"
+            className="w-full max-w-lg rounded-t-3xl border border-border bg-card shadow-2xl md:rounded-3xl"
             initial={{ opacity: 0, y: 12, scale: 0.99 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.99 }}
@@ -126,16 +126,17 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
               </div>
             </div>
 
-            <div className="max-h-[min(78vh,740px)] space-y-4 overflow-y-auto px-5 py-5 md:px-6">
+            <div className="max-h-[min(84vh,760px)] space-y-4 overflow-y-auto px-5 py-5 md:px-6">
+              <div className="mx-auto -mt-1 mb-1 h-1.5 w-12 rounded-full bg-border md:hidden" />
               <div className="rounded-2xl border border-border bg-secondary/75 px-4 py-4">
                 <div className="flex items-start gap-3">
                   <div className={`flex h-11 w-11 items-center justify-center rounded-full border ${status.iconTone}`}>
                     <StatusIcon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-base font-semibold text-foreground">{status.label}</div>
+                    <div className="text-xl font-semibold tracking-tight text-foreground">{status.label}</div>
                     <div className="mt-1 text-sm font-medium text-muted-foreground">{receipt.service}</div>
-                    <div className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+                    <div className="mt-2 text-4xl font-semibold tracking-tight text-foreground">
                       ₦{formatMoney(receipt.amount || 0)}
                     </div>
                   </div>

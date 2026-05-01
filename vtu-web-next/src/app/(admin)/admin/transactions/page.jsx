@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, RefreshCw } from 'lucide-react';
-import { adminGetTransactions, adminReconcileDelivered } from '@/lib/api';
+import { adminGetTransactionDetails, adminGetTransactions, adminReconcileDelivered } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { startCase } from '@/lib/admin-utils';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,9 @@ export default function AdminTransactionsPage() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [selected, setSelected] = useState(null);
+  const [selectedDetails, setSelectedDetails] = useState(null);
+  const [selectedDetailsLoading, setSelectedDetailsLoading] = useState(false);
+  const [selectedDetailsError, setSelectedDetailsError] = useState('');
   const [reconcileNote, setReconcileNote] = useState('');
   const [reconcileConfirmOpen, setReconcileConfirmOpen] = useState(false);
   const [reconcileBusy, setReconcileBusy] = useState(false);
@@ -65,7 +68,24 @@ export default function AdminTransactionsPage() {
       key: 'actions',
       label: 'Action',
       render: (row) => (
-        <Button variant="secondary" size="sm" onClick={() => setSelected(row)}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={async () => {
+            setSelected(row);
+            setSelectedDetails(null);
+            setSelectedDetailsError('');
+            setSelectedDetailsLoading(true);
+            try {
+              const details = await adminGetTransactionDetails(row.reference);
+              setSelectedDetails(details || null);
+            } catch (err) {
+              setSelectedDetailsError(err?.message || 'Unable to load provider details.');
+            } finally {
+              setSelectedDetailsLoading(false);
+            }
+          }}
+        >
           <ExternalLink className="h-3.5 w-3.5" />
           View details
         </Button>
@@ -107,7 +127,17 @@ export default function AdminTransactionsPage() {
         <div className="rounded-3xl border border-border bg-card p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-semibold text-foreground">Transaction details</h3>
-            <Button variant="secondary" size="sm" onClick={() => setSelected(null)}>Close</Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setSelected(null);
+                setSelectedDetails(null);
+                setSelectedDetailsError('');
+              }}
+            >
+              Close
+            </Button>
           </div>
           <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             {Object.entries(selected).map(([key, value]) => (
@@ -119,6 +149,20 @@ export default function AdminTransactionsPage() {
           </div>
           <div className="mt-3 rounded-2xl border border-dashed border-border bg-secondary p-3 text-sm text-muted-foreground">
             Use reconciliation only when customer confirms service delivery but system status is wrong.
+          </div>
+          <div className="mt-3 rounded-2xl border border-border bg-secondary p-3">
+            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Provider raw response</div>
+            {selectedDetailsLoading ? (
+              <div className="mt-2 text-sm text-muted-foreground">Loading provider payload...</div>
+            ) : selectedDetailsError ? (
+              <div className="mt-2 text-sm font-medium text-destructive">{selectedDetailsError}</div>
+            ) : selectedDetails?.provider_payload_pretty ? (
+              <pre className="mt-2 max-h-64 overflow-auto rounded-xl border border-border bg-background p-3 text-xs leading-5 text-foreground">
+                {selectedDetails.provider_payload_pretty}
+              </pre>
+            ) : (
+              <div className="mt-2 text-sm text-muted-foreground">No provider payload captured for this transaction.</div>
+            )}
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
             <div className="space-y-2">

@@ -39,6 +39,7 @@ export const statusTones = {
   rewarded: 'success',
   enabled: 'success',
   pending: 'warning',
+  unverified: 'danger',
   open: 'warning',
   inactive: 'warning',
   queued: 'warning',
