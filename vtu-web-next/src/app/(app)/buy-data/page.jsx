@@ -376,18 +376,10 @@ export default function BuyDataPage() {
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardContent className="space-y-5 p-3.5 md:space-y-7 md:p-7">
             <section className="space-y-3.5 md:space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
-                  <div className="mt-2 text-sm text-muted-foreground">Pick your preferred network to load available plans.</div>
-                </div>
-                <Badge className="h-8 rounded-full border-primary/25 bg-primary/10 px-3 text-primary">Live catalog</Badge>
-              </div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
 
               <div className="grid grid-cols-2 gap-2.5 md:gap-3 xl:grid-cols-4">
                 {NETWORK_TABS.filter((tab) => tab.key !== 'all').map((tab) => {
-                  const group = planGroups.find((item) => item.network === tab.key);
-                  const count = group?.plans.length || 0;
                   const isActive = activeNetwork === tab.key;
                   return (
                     <button
@@ -395,14 +387,14 @@ export default function BuyDataPage() {
                       type="button"
                       onClick={() => setActiveNetwork(tab.key)}
                       className={cn(
-                        'group min-h-[120px] rounded-2xl border px-3 py-3.5 text-left transition md:min-h-[140px] md:px-4 md:py-5',
+                        'group min-h-[120px] rounded-2xl border px-3 py-3.5 text-center transition md:min-h-[140px] md:px-4 md:py-5',
                         isActive
                           ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.16),0_10px_20px_rgba(249,115,22,0.08)]'
                           : 'border-border bg-secondary hover:border-border hover:bg-secondary/90'
                       )}
                       >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border md:h-12 md:w-12">
+                      <div className="flex justify-center">
+                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden md:h-12 md:w-12">
                           <Image
                             src={networkLogoSrc(tab.key)}
                             alt={`${tab.label} logo`}
@@ -412,15 +404,9 @@ export default function BuyDataPage() {
                             unoptimized
                           />
                         </div>
-                        <Badge className="h-7 rounded-full border-border bg-background text-muted-foreground">
-                          {count}
-                        </Badge>
                       </div>
                       <div className="mt-3 text-[15px] font-semibold tracking-tight text-foreground md:mt-4 md:text-base">
                         {tab.label}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {count ? 'Available now' : 'No bundles visible'}
                       </div>
                     </button>
                   );
