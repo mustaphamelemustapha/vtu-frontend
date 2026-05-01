@@ -275,31 +275,29 @@ export default function DashboardPage() {
             <Badge tone="neutral" className="hidden sm:inline-flex">Responsive</Badge>
           </CardHeader>
           <CardContent className="p-4 sm:p-5">
-            <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
-              {quickActions.map((item, index) => {
+            <div className="grid grid-cols-2 gap-3 2xl:grid-cols-3">
+              {quickActions.map((item) => {
                 const Icon = item.icon;
                 const detail = actionDetails[item.href] || actionDetails['/profile'];
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`group relative overflow-hidden rounded-3xl border bg-gradient-to-br ${detail.tone} p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] focus:outline-none focus:ring-2 focus:ring-primary/25 dark:hover:shadow-[0_18px_45px_rgba(0,0,0,0.22)] ${
-                      index === 0 ? 'sm:col-span-2 2xl:col-span-1' : ''
-                    }`}
+                    className={`group relative overflow-hidden rounded-3xl border bg-gradient-to-br ${detail.tone} p-3.5 text-left ring-1 ring-primary/10 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] focus:outline-none focus:ring-2 focus:ring-primary/25 dark:hover:shadow-[0_18px_45px_rgba(0,0,0,0.22)] sm:p-4`}
                   >
                     <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-white/35 blur-2xl dark:bg-white/5" />
                     <div className="relative flex items-start justify-between gap-4">
-                      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-lg ${detail.iconTone}`}>
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-lg ${detail.iconTone} sm:h-11 sm:w-11`}>
                         <Icon className="h-4 w-4" />
                       </div>
-                      <span className="rounded-full border border-border bg-card/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      <span className="rounded-full border border-border bg-card/70 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:px-2.5 sm:text-[10px] sm:tracking-[0.16em]">
                         {detail.kicker}
                       </span>
                     </div>
-                    <div className="relative mt-5">
-                      <div className="text-base font-semibold tracking-tight text-foreground">{item.label}</div>
-                      <p className="mt-2 min-h-[44px] text-sm leading-6 text-muted-foreground">{detail.description}</p>
-                      <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                    <div className="relative mt-4">
+                      <div className="text-[15px] font-semibold tracking-tight text-foreground sm:text-base">{item.label}</div>
+                      <p className="mt-1.5 min-h-[44px] text-xs leading-5 text-muted-foreground sm:mt-2 sm:text-sm sm:leading-6">{detail.description}</p>
+                      <div className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-primary sm:mt-4 sm:text-sm">
                         {detail.cta}
                         <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                       </div>
