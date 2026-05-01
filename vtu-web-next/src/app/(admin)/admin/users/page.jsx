@@ -84,7 +84,6 @@ export default function AdminUsersPage() {
       label: 'Wallet balance',
       render: (row) => <span className="font-medium">{selectedDetails?.user?.id === row.id ? `₦${formatMoney(selectedDetails?.wallet?.balance || 0)}` : 'Open user'}</span>,
     },
-    { key: 'is_verified', label: 'Verification', render: (row) => <StatusBadge status={row.is_verified ? 'verified' : 'unverified'} /> },
     { key: 'is_active', label: 'Status', render: (row) => <StatusBadge status={row.is_active ? 'active' : 'suspended'} /> },
     { key: 'created_at', label: 'Joined', render: (row) => <span className="text-muted-foreground">{formatDateTime(row.created_at)}</span> },
     {
@@ -118,7 +117,7 @@ export default function AdminUsersPage() {
     <div className="space-y-5 pb-8">
       <AdminPageHeader
         title="Users management"
-        description="Review accounts, verification status, and suspend or re-enable users with confirmation."
+        description="Review accounts, and suspend or re-enable users with confirmation."
         actions={(
           <Button variant="secondary" onClick={loadUsers} disabled={loading}>
             <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
@@ -157,7 +156,6 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="text-right space-y-2">
                   <div><StatusBadge status={selectedUser.is_active ? 'active' : 'suspended'} /></div>
-                  <div><StatusBadge status={selectedUser.is_verified ? 'verified' : 'unverified'} /></div>
                 </div>
               </div>
 

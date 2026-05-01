@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Check, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight, Check, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles } from 'lucide-react';
 import { apiFetch, getProfile, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { quickActions } from '@/lib/nav';
@@ -84,6 +84,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(() => !(readScopedCache('dashboard_summary', { maxAgeMs: 4 * 60 * 1000 }) || readScopedCache('dashboard_referrals', { maxAgeMs: 4 * 60 * 1000 })));
   const [refreshing, setRefreshing] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
+  const [showStartHere, setShowStartHere] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
@@ -110,6 +111,15 @@ export default function DashboardPage() {
     load(!!(summary || referrals)).catch(() => {});
   }, [load]);
 
+  useEffect(() => {
+    try {
+      const dismissed = window.localStorage.getItem('axisvtu_start_here_dismissed');
+      setShowStartHere(dismissed !== '1');
+    } catch {
+      setShowStartHere(true);
+    }
+  }, []);
+
   const wallet = summary?.wallet || {};
   const txs = emptyOrRows(summary?.transactions).slice(0, 6);
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
@@ -119,10 +129,8 @@ export default function DashboardPage() {
   const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
     { label: 'Wallet balance', value: `₦${formatMoney(wallet.balance || 0)}`, detail: 'Live available balance', icon: CircleDollarSign, tone: 'brand' },
-    { label: 'Total referrals', value: String(referrals?.total_referrals ?? 0), detail: 'Friends brought in', icon: Users, tone: 'emerald' },
     { label: 'Rewards earned', value: `₦${formatMoney(referrals?.total_earned ?? 0)}`, detail: 'Referral revenue', icon: Gift, tone: 'violet' },
-    { label: 'Recent tx', value: String(txs.length), detail: 'Latest transactions in view', icon: TrendingUp, tone: 'amber' },
-  ], [wallet.balance, referrals?.total_referrals, referrals?.total_earned, txs.length]);
+  ], [wallet.balance, referrals?.total_earned]);
 
   const copyFundingAccount = useCallback(async () => {
     const accountNumber = primaryFundingAccount?.account_number;
@@ -137,7 +145,7 @@ export default function DashboardPage() {
   }, [primaryFundingAccount?.account_number]);
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="min-w-0 space-y-6 overflow-x-hidden pb-8">
       <PageHeader
         eyebrow="Dashboard"
         title={`Good to see you, ${String(profile?.full_name || profile?.email || 'User').split(' ')[0]}`}
@@ -156,15 +164,46 @@ export default function DashboardPage() {
         )}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {showStartHere ? (
+        <Card className="border-primary/25 bg-gradient-to-r from-primary/10 via-card to-card">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div className="min-w-0">
+                <div className="axis-label text-primary">Start here</div>
+                <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">3 quick steps to use AxisVTU smoothly</div>
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">1. Fund Wallet</span>
+                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">2. Buy Data</span>
+                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">3. View Receipt in History</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" onClick={() => router.push('/wallet')}>Fund wallet</Button>
+                <Button onClick={() => router.push('/buy-data')}>Buy data</Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setShowStartHere(false);
+                    try { window.localStorage.setItem('axisvtu_start_here_dismissed', '1'); } catch {}
+                  }}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
         {quickStats.map((item) => (
           <MetricCard key={item.label} {...item} />
         ))}
       </div>
 
       <Card className="overflow-hidden border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card shadow-[0_24px_70px_rgba(234,115,69,0.10)]">
-        <CardContent className="grid gap-5 p-5 md:grid-cols-[1fr_auto] md:items-center sm:p-6">
-          <div className="flex items-start gap-4">
+        <CardContent className="grid min-w-0 gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,430px)] lg:items-center sm:p-6">
+          <div className="flex min-w-0 items-start gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg shadow-orange-500/20">
               <Landmark className="h-6 w-6" />
             </div>
@@ -178,9 +217,9 @@ export default function DashboardPage() {
           </div>
 
           {primaryFundingAccount ? (
-            <div className="rounded-3xl border border-border bg-card/85 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:min-w-[390px]">
+            <div className="min-w-0 rounded-3xl border border-border bg-card/85 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
               <div className="flex items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account number</div>
                   <div className="mt-2 break-all font-mono text-3xl font-semibold tracking-[0.16em] text-foreground sm:text-4xl">
                     {primaryFundingAccount.account_number}
@@ -212,7 +251,7 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-dashed border-border bg-card/85 p-5 text-sm leading-6 text-muted-foreground md:min-w-[360px]">
+            <div className="min-w-0 rounded-3xl border border-dashed border-border bg-card/85 p-5 text-sm leading-6 text-muted-foreground">
               {bankTransfer?.message || 'Wallet transfer account will appear here once it is available.'}
               <Button className="mt-4 w-full" onClick={() => router.push('/wallet')}>
                 Open wallet
@@ -302,7 +341,14 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? <div className="text-sm text-muted-foreground">Loading transactions...</div> : null}
-            {txs.length === 0 && !loading ? <div className="text-sm text-muted-foreground">No recent activity yet.</div> : null}
+            {txs.length === 0 && !loading ? (
+              <div className="rounded-2xl border border-dashed border-border bg-secondary p-4 text-sm text-muted-foreground">
+                No recent activity yet.
+                <div className="mt-3">
+                  <Button size="sm" onClick={() => router.push('/buy-data')}>Buy data now</Button>
+                </div>
+              </div>
+            ) : null}
             {txs.map((tx) => (
               <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
                 <div>

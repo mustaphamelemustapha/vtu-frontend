@@ -10,6 +10,7 @@ import {
   Clock3,
   GraduationCap,
   Gauge,
+  LifeBuoy,
   LogOut,
   Menu,
   Package2,
@@ -30,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const mobilePrimaryMenu = [
-  { label: 'Dashboard', href: '/dashboard', icon: Gauge },
+  { label: 'Home', href: '/dashboard', icon: Gauge },
   { label: 'Data', href: '/buy-data', icon: Package2 },
   { label: 'Airtime', href: '/airtime', icon: Smartphone },
   { label: 'Cable TV', href: '/cable-tv', icon: Tv2 },
@@ -38,7 +39,7 @@ const mobilePrimaryMenu = [
   { label: 'Education', href: '/exam-pins', icon: GraduationCap },
   { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'Referrals', href: '/referrals', icon: Users },
-  { label: 'Transaction history', href: '/history', icon: Clock3 },
+  { label: 'History', href: '/history', icon: Clock3 },
 ];
 
 function MobileMenuLink({ item, activePath }) {
@@ -200,7 +201,7 @@ export function AppShell({ children }) {
   }
 
   return (
-    <div className="axis-shell min-h-screen">
+    <div className="axis-shell min-h-screen overflow-x-hidden">
       <aside className="hidden border-r border-border bg-card p-5 text-card-foreground lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-[280px] lg:flex-col lg:overflow-y-auto">
         <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl border border-border bg-secondary px-4 py-3">
           <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
@@ -248,7 +249,7 @@ export function AppShell({ children }) {
         </div>
       </aside>
 
-      <main className="min-w-0 bg-background lg:pl-[280px]">
+      <main className="min-w-0 overflow-x-hidden bg-background lg:pl-[280px]">
         <header
           className="sticky top-0 z-30 border-b border-border bg-background/92 backdrop-blur-xl"
         >
@@ -335,6 +336,16 @@ export function AppShell({ children }) {
               <Sparkles className="h-4 w-4" />
             </Button>
             <Button
+              variant="secondary"
+              className="hidden md:inline-flex"
+              onClick={() => router.push('/support')}
+              aria-label="Need help"
+              title="Need help"
+            >
+              <LifeBuoy className="h-4 w-4" />
+              Need help?
+            </Button>
+            <Button
               variant="danger"
               className="hidden md:inline-flex"
               onClick={handleSignOut}
@@ -349,7 +360,7 @@ export function AppShell({ children }) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          className="px-4 py-5 md:px-6 lg:px-8 xl:px-10"
+          className="min-w-0 overflow-x-hidden px-4 py-5 md:px-6 lg:px-8 xl:px-10"
         >
           {children}
         </motion.div>
@@ -420,6 +431,21 @@ export function AppShell({ children }) {
                     <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                   ))}
                 </nav>
+                <div className="mt-3 border-t border-border pt-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      router.push('/support');
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-xl border border-border bg-secondary px-2.5 py-2.5 text-left text-[13px] font-medium text-foreground transition hover:bg-card"
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground">
+                      <LifeBuoy className="h-3.5 w-3.5" />
+                    </span>
+                    Need help?
+                  </button>
+                </div>
               </div>
 
               <div className="shrink-0 border-t border-border bg-card p-3">
