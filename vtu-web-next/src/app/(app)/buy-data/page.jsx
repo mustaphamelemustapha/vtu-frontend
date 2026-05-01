@@ -366,10 +366,10 @@ export default function BuyDataPage() {
         </div>
       </div>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Card className="overflow-hidden border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-          <CardContent className="space-y-6 p-4 md:space-y-8 md:p-7">
-            <section className="space-y-4">
+          <CardContent className="space-y-5 p-3.5 md:space-y-7 md:p-7">
+            <section className="space-y-3.5 md:space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
@@ -378,7 +378,7 @@ export default function BuyDataPage() {
                 <Badge className="border-primary/25 bg-primary/10 text-primary">Live catalog</Badge>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2.5 md:gap-3 xl:grid-cols-4">
                 {NETWORK_TABS.filter((tab) => tab.key !== 'all').map((tab) => {
                   const group = planGroups.find((item) => item.network === tab.key);
                   const count = group?.plans.length || 0;
@@ -389,14 +389,14 @@ export default function BuyDataPage() {
                       type="button"
                       onClick={() => setActiveNetwork(tab.key)}
                       className={cn(
-                        'group min-h-[132px] rounded-2xl border px-3 py-4 text-left transition md:min-h-[140px] md:px-4 md:py-5',
+                        'group min-h-[120px] rounded-2xl border px-3 py-3.5 text-left transition md:min-h-[140px] md:px-4 md:py-5',
                         isActive
                           ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.12)]'
                           : 'border-border bg-secondary hover:border-border hover:bg-secondary'
                       )}
                       >
                       <div className="flex items-start justify-between gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border md:h-12 md:w-12">
+                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border md:h-12 md:w-12">
                           <Image
                             src={networkLogoSrc(tab.key)}
                             alt={`${tab.label} logo`}
@@ -410,7 +410,7 @@ export default function BuyDataPage() {
                           {count}
                         </Badge>
                       </div>
-                      <div className="mt-4 text-base font-semibold tracking-tight text-foreground">
+                      <div className="mt-3 text-[15px] font-semibold tracking-tight text-foreground md:mt-4 md:text-base">
                         {tab.label}
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
@@ -422,7 +422,7 @@ export default function BuyDataPage() {
               </div>
             </section>
 
-            <section className="space-y-4">
+            <section className="space-y-3.5 md:space-y-4">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
                 <div className="mt-2 text-sm text-muted-foreground">Enter recipient number.</div>
@@ -434,7 +434,7 @@ export default function BuyDataPage() {
                   inputMode="tel"
                   autoComplete="tel"
                   placeholder="e.g. 08012345678"
-                  className="h-[52px] rounded-xl border-border bg-background text-base text-foreground placeholder:italic placeholder:text-muted-foreground/55 focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
+                  className="h-[50px] rounded-xl border-border bg-background text-base text-foreground placeholder:italic placeholder:font-medium placeholder:text-muted-foreground/50 focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
                 />
               </div>
               {phoneError ? (
@@ -450,7 +450,7 @@ export default function BuyDataPage() {
               </Button>
             </section>
 
-            <section className="space-y-4">
+            <section className="space-y-3.5 md:space-y-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select plan</div>
@@ -464,7 +464,7 @@ export default function BuyDataPage() {
               </div>
 
               {loading ? (
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-2.5 md:gap-3 md:grid-cols-2">
                   {Array.from({ length: 4 }).map((_, idx) => (
                     <div key={idx} className="h-32 animate-pulse rounded-[22px] border border-border bg-secondary" />
                   ))}
@@ -484,7 +484,7 @@ export default function BuyDataPage() {
               ) : null}
 
               {!loading && visiblePlans.length ? (
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-2.5 md:gap-3 md:grid-cols-2">
                   {visiblePlans.map((plan) => {
                     const isActive = selected?.plan_code === plan.plan_code;
                     return (
@@ -493,7 +493,7 @@ export default function BuyDataPage() {
                         type="button"
                         onClick={() => setSelected(plan)}
                         className={cn(
-                          'rounded-2xl border px-4 py-4 text-left transition min-h-[146px]',
+                          'rounded-2xl border px-3.5 py-3.5 text-left transition min-h-[136px] md:min-h-[146px] md:px-4 md:py-4',
                           isActive
                             ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.12)]'
                             : 'border-border bg-secondary hover:border-border hover:bg-secondary'
@@ -512,22 +512,22 @@ export default function BuyDataPage() {
                               />
                             </div>
                             <div className="min-w-0">
-                            <div className="truncate text-base font-semibold tracking-tight text-foreground">{plan.plan_name || plan.plan_code}</div>
-                            <div className="mt-1 truncate text-xs text-muted-foreground/90">{plan.plan_code || 'Plan code unavailable'}</div>
+                            <div className="truncate text-[17px] font-semibold tracking-tight text-foreground md:text-base">{plan.plan_name || plan.plan_code}</div>
+                            <div className="mt-1 truncate text-[11px] text-muted-foreground/90">{plan.plan_code || 'Plan code unavailable'}</div>
                             </div>
                           </div>
                           <Badge className="border-border bg-secondary text-muted-foreground">
                             {plan.validity || 'Plan'}
                           </Badge>
                         </div>
-                        <div className="mt-4 flex items-end justify-between gap-3">
+                        <div className="mt-3.5 flex items-end justify-between gap-2.5 md:mt-4 md:gap-3">
                           <div>
                             <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Price</div>
-                            <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">
+                            <div className="mt-1 text-[30px] leading-none font-semibold tracking-tight text-foreground md:text-lg md:leading-normal">
                               ₦{formatMoney(plan.price || 0)}
                             </div>
                           </div>
-                          <div className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">{plan.data_size || '—'}</div>
+                          <div className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground md:px-3 md:text-xs">{plan.data_size || '—'}</div>
                         </div>
                       </button>
                     );
@@ -589,29 +589,27 @@ export default function BuyDataPage() {
               </div>
             </div>
 
-            <div className="text-xs leading-6 text-muted-foreground">
-              Live bundles are loaded from the backend catalog. MTN and Glo plans are surfaced first when available.
-            </div>
+            <div className="text-xs leading-6 text-muted-foreground">Live bundles are loaded from the backend catalog.</div>
           </CardContent>
         </Card>
         </div>
       </div>
 
       <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pt-3 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-3 pt-2.5 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}
       >
-        <div className="mx-auto flex max-w-md items-center gap-3">
+        <div className="mx-auto flex max-w-md items-center gap-2.5">
           <div className="min-w-0 flex-1">
             <div className="truncate text-xs text-muted-foreground">
               {selected ? summaryPlanName : 'Select a plan to continue'}
             </div>
-            <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">
+            <div className="mt-1 text-base font-semibold tracking-tight text-foreground">
               ₦{formatMoney(summaryPrice || 0)}
             </div>
           </div>
           <Button
-            className="h-12 shrink-0 rounded-xl bg-primary px-5 text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98]"
+            className="h-11 shrink-0 rounded-xl bg-primary px-4 text-primary-foreground shadow-[0_10px_22px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98]"
             onClick={purchase}
             disabled={!canSubmit}
           >
