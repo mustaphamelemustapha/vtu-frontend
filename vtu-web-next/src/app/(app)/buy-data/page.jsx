@@ -337,8 +337,9 @@ export default function BuyDataPage() {
         <div className="space-y-2">
         <div className="axis-label text-muted-foreground">Services</div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Buy Data</h1>
+            <p className="text-sm text-muted-foreground">Fast purchase flow with live plans and instant confirmation.</p>
           </div>
           <Button
             variant="secondary"
@@ -358,7 +359,7 @@ export default function BuyDataPage() {
                 })
                 .finally(() => setLoading(false));
             }}
-            className="border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="h-11 rounded-xl border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh plans
@@ -367,7 +368,7 @@ export default function BuyDataPage() {
       </div>
 
         <div className="grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="overflow-hidden border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardContent className="space-y-5 p-3.5 md:space-y-7 md:p-7">
             <section className="space-y-3.5 md:space-y-4">
               <div className="flex items-center justify-between gap-3">
@@ -375,7 +376,7 @@ export default function BuyDataPage() {
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
                   <div className="mt-2 text-sm text-muted-foreground">Pick your preferred network to load available plans.</div>
                 </div>
-                <Badge className="border-primary/25 bg-primary/10 text-primary">Live catalog</Badge>
+                <Badge className="h-8 rounded-full border-primary/25 bg-primary/10 px-3 text-primary">Live catalog</Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 md:gap-3 xl:grid-cols-4">
@@ -391,8 +392,8 @@ export default function BuyDataPage() {
                       className={cn(
                         'group min-h-[120px] rounded-2xl border px-3 py-3.5 text-left transition md:min-h-[140px] md:px-4 md:py-5',
                         isActive
-                          ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.12)]'
-                          : 'border-border bg-secondary hover:border-border hover:bg-secondary'
+                          ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.16),0_10px_20px_rgba(249,115,22,0.08)]'
+                          : 'border-border bg-secondary hover:border-border hover:bg-secondary/90'
                       )}
                       >
                       <div className="flex items-start justify-between gap-3">
@@ -406,7 +407,7 @@ export default function BuyDataPage() {
                             unoptimized
                           />
                         </div>
-                        <Badge className="border-border bg-secondary text-muted-foreground">
+                        <Badge className="h-7 rounded-full border-border bg-background text-muted-foreground">
                           {count}
                         </Badge>
                       </div>
@@ -427,21 +428,21 @@ export default function BuyDataPage() {
                 <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
                 <div className="mt-2 text-sm text-muted-foreground">Enter recipient number.</div>
               </div>
-              <div className="rounded-2xl border border-border bg-secondary/70 p-2">
+              <div className="rounded-2xl border border-border bg-secondary/70 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <Input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   inputMode="tel"
                   autoComplete="tel"
                   placeholder="e.g. 08012345678"
-                  className="h-[50px] rounded-xl border-border bg-background text-base text-foreground placeholder:italic placeholder:font-medium placeholder:text-muted-foreground/50 focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
+                  className="h-[50px] rounded-xl border-border bg-background text-base text-foreground placeholder:italic placeholder:font-medium placeholder:text-muted-foreground/50 focus:border-primary/45 focus:ring-amber-500/20 md:h-12"
                 />
               </div>
               {phoneError ? (
                 <p className="text-xs font-medium text-rose-300">{phoneError}</p>
               ) : null}
               <Button
-                className="hidden h-12 w-full rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98] md:inline-flex"
+                className="hidden h-12 w-full rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.2)] transition hover:bg-primary/90 active:scale-[0.98] md:inline-flex"
                 onClick={purchase}
                 disabled={!canSubmit}
               >
@@ -458,7 +459,7 @@ export default function BuyDataPage() {
                     {activeNetwork === 'all' ? 'Choose from all live bundles.' : `${networkLabel(activeNetwork)} bundles ready for purchase.`}
                   </div>
                 </div>
-                <Badge className="border-border bg-secondary text-muted-foreground">
+                <Badge className="h-8 rounded-full border-border bg-secondary px-3 text-muted-foreground">
                   {activeNetwork === 'all' ? totalCuratedPlans : activeGroup?.plans.length || 0} plan{activeNetwork === 'all' ? (totalCuratedPlans === 1 ? '' : 's') : (activeGroup?.plans.length === 1 ? '' : 's')}
                 </Badge>
               </div>
@@ -466,7 +467,7 @@ export default function BuyDataPage() {
               {loading ? (
                 <div className="grid gap-2.5 md:gap-3 md:grid-cols-2">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <div key={idx} className="h-32 animate-pulse rounded-[22px] border border-border bg-secondary" />
+                    <div key={idx} className="h-[136px] animate-pulse rounded-2xl border border-border bg-secondary" />
                   ))}
                 </div>
               ) : null}
@@ -495,8 +496,8 @@ export default function BuyDataPage() {
                         className={cn(
                           'min-w-0 overflow-hidden rounded-2xl border px-3.5 py-3.5 text-left transition min-h-[136px] md:min-h-[146px] md:px-4 md:py-4',
                           isActive
-                            ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.12)]'
-                            : 'border-border bg-secondary hover:border-border hover:bg-secondary'
+                            ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.16),0_10px_20px_rgba(249,115,22,0.08)]'
+                            : 'border-border bg-secondary hover:border-border hover:bg-secondary/90'
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -516,14 +517,14 @@ export default function BuyDataPage() {
                             <div className="mt-1 truncate break-all text-[11px] text-muted-foreground/90">{plan.plan_code || 'Plan code unavailable'}</div>
                             </div>
                           </div>
-                          <Badge className="shrink-0 border-border bg-secondary text-muted-foreground">
+                          <Badge className="h-7 shrink-0 rounded-full border-border bg-background text-muted-foreground">
                             {plan.validity || 'Plan'}
                           </Badge>
                         </div>
                         <div className="mt-3.5 flex items-end justify-between gap-2.5 md:mt-4 md:gap-3">
                           <div>
                             <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Price</div>
-                            <div className="mt-1 text-[30px] leading-none font-semibold tracking-tight text-foreground md:text-lg md:leading-normal">
+                            <div className="mt-1 text-[29px] leading-none font-semibold tracking-tight text-foreground md:text-lg md:leading-normal">
                               ₦{formatMoney(plan.price || 0)}
                             </div>
                           </div>
@@ -538,13 +539,13 @@ export default function BuyDataPage() {
           </CardContent>
         </Card>
 
-        <Card className="h-fit border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)] xl:sticky xl:top-24">
+        <Card className="h-fit rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)] xl:sticky xl:top-24">
           <CardHeader>
             <CardTitle className="text-foreground">Order Summary</CardTitle>
             <CardDescription className="text-muted-foreground">Bundle delivery</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            <div className="rounded-[22px] border border-border bg-secondary p-4">
+            <div className="rounded-2xl border border-border bg-secondary p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
                   <Image
@@ -563,7 +564,7 @@ export default function BuyDataPage() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[22px] border border-border bg-secondary p-4">
+            <div className="space-y-4 rounded-2xl border border-border bg-secondary p-4">
               {[
                 { label: 'Network', value: networkLabel(summaryNetwork) },
                 { label: 'Bundle type', value: 'Single' },
@@ -577,7 +578,7 @@ export default function BuyDataPage() {
               ))}
             </div>
 
-            <div className="flex items-end justify-between gap-4 rounded-[22px] border border-border bg-secondary p-4">
+            <div className="flex items-end justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
               <div>
                 <div className="text-sm text-muted-foreground">Total</div>
                 <div className="mt-1 text-2xl font-semibold tracking-tight text-primary">
@@ -589,7 +590,7 @@ export default function BuyDataPage() {
               </div>
             </div>
 
-            <div className="text-xs leading-6 text-muted-foreground">Live bundles are loaded from the backend catalog.</div>
+            <div className="text-xs leading-6 text-muted-foreground">Live bundles are loaded from the backend catalog and update automatically.</div>
           </CardContent>
         </Card>
         </div>
@@ -609,7 +610,7 @@ export default function BuyDataPage() {
             </div>
           </div>
           <Button
-            className="h-11 shrink-0 rounded-xl bg-primary px-4 text-primary-foreground shadow-[0_10px_22px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98]"
+            className="h-11 shrink-0 rounded-xl bg-primary px-4 text-primary-foreground shadow-[0_10px_22px_rgba(249,115,22,0.22)] transition hover:bg-primary/90 active:scale-[0.98]"
             onClick={purchase}
             disabled={!canSubmit}
           >
