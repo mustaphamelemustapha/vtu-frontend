@@ -82,12 +82,14 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState(() => readScopedCache('dashboard_summary', { maxAgeMs: 4 * 60 * 1000 }));
   const [referrals, setReferrals] = useState(() => readScopedCache('dashboard_referrals', { maxAgeMs: 4 * 60 * 1000 }));
   const [loading, setLoading] = useState(() => !(readScopedCache('dashboard_summary', { maxAgeMs: 4 * 60 * 1000 }) || readScopedCache('dashboard_referrals', { maxAgeMs: 4 * 60 * 1000 })));
+  const [loadError, setLoadError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
   const [showStartHere, setShowStartHere] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
+    if (!quiet) setLoadError('');
     try {
       const [dash, refs] = await Promise.allSettled([
         apiFetch('/dashboard/summary'),
@@ -100,6 +102,9 @@ export default function DashboardPage() {
       if (refs.status === 'fulfilled') {
         setReferrals(refs.value);
         writeScopedCache('dashboard_referrals', refs.value);
+      }
+      if (dash.status !== 'fulfilled' && refs.status !== 'fulfilled') {
+        setLoadError('Unable to refresh dashboard right now. Please try again.');
       }
     } finally {
       setLoading(false);
@@ -163,6 +168,12 @@ export default function DashboardPage() {
           </>
         )}
       />
+
+      {loadError ? (
+        <div className="rounded-2xl border border-amber-300/50 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/35 dark:bg-amber-500/10 dark:text-amber-100">
+          {loadError}
+        </div>
+      ) : null}
 
       {showStartHere ? (
         <Card className="border-primary/25 bg-gradient-to-r from-primary/10 via-card to-card">
@@ -243,7 +254,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="rounded-2xl border border-border bg-secondary p-3">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Account name</div>
-                  <div className="mt-1 truncate text-sm font-semibold text-foreground">{primaryFundingAccount.account_name || 'AxisVTU Wallet'}</div>
+                  <div className="mt-1 break-words text-sm font-semibold text-foreground">{primaryFundingAccount.account_name || 'AxisVTU Wallet'}</div>
                 </div>
               </div>
               <div className="mt-3 text-xs font-medium text-primary">
@@ -283,7 +294,7 @@ export default function DashboardPage() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`group relative overflow-hidden rounded-3xl border bg-gradient-to-br ${detail.tone} p-3.5 text-left ring-1 ring-primary/10 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] focus:outline-none focus:ring-2 focus:ring-primary/25 dark:hover:shadow-[0_18px_45px_rgba(0,0,0,0.22)] sm:p-4`}
+                    className={`group relative flex min-h-[198px] flex-col overflow-hidden rounded-3xl border bg-gradient-to-br ${detail.tone} p-3.5 text-left ring-1 ring-primary/10 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] focus:outline-none focus:ring-2 focus:ring-primary/25 dark:hover:shadow-[0_18px_45px_rgba(0,0,0,0.22)] sm:min-h-[212px] sm:p-4`}
                   >
                     <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-white/35 blur-2xl dark:bg-white/5" />
                     <div className="relative flex items-start justify-between gap-4">
@@ -296,8 +307,8 @@ export default function DashboardPage() {
                     </div>
                     <div className="relative mt-4">
                       <div className="text-[15px] font-semibold tracking-tight text-foreground sm:text-base">{item.label}</div>
-                      <p className="mt-1.5 min-h-[44px] text-xs leading-5 text-muted-foreground sm:mt-2 sm:text-sm sm:leading-6">{detail.description}</p>
-                      <div className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-primary sm:mt-4 sm:text-sm">
+                      <p className="mt-1.5 min-h-[52px] text-xs leading-5 text-muted-foreground sm:mt-2 sm:text-sm sm:leading-6">{detail.description}</p>
+                      <div className="mt-auto pt-3 inline-flex items-center gap-2 text-xs font-semibold text-primary sm:pt-4 sm:text-sm">
                         {detail.cta}
                         <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                       </div>
@@ -338,7 +349,13 @@ export default function DashboardPage() {
             <CardDescription>Latest wallet and service movements.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {loading ? <div className="text-sm text-muted-foreground">Loading transactions...</div> : null}
+            {loading ? (
+              <div className="space-y-3">
+                <div className="h-20 animate-pulse rounded-2xl border border-border bg-secondary" />
+                <div className="h-20 animate-pulse rounded-2xl border border-border bg-secondary" />
+                <div className="h-20 animate-pulse rounded-2xl border border-border bg-secondary" />
+              </div>
+            ) : null}
             {txs.length === 0 && !loading ? (
               <div className="rounded-2xl border border-dashed border-border bg-secondary p-4 text-sm text-muted-foreground">
                 No recent activity yet.
