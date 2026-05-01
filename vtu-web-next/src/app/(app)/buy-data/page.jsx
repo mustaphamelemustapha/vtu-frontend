@@ -13,7 +13,7 @@ import {
   waitForTransactionFinalStatus,
 } from '@/lib/transaction-status';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { TransactionProcessingModal } from '@/components/transaction-processing-modal';
@@ -158,6 +158,7 @@ export default function BuyDataPage() {
   const [selected, setSelected] = useState(null);
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
 
   const load = useCallback(async ({ silent = false } = {}) => {
     if (!silent) setLoading(true);
@@ -223,6 +224,10 @@ export default function BuyDataPage() {
   const normalizedPhone = phoneDigits(phone);
   const phoneError = normalizedPhone && !isValidNigerianPhone(phone) ? 'Enter a valid Nigerian phone number.' : '';
   const canSubmit = Boolean(selected && normalizedPhone && !phoneError && !busy);
+  const openConfirm = () => {
+    if (!canSubmit) return;
+    setSummaryOpen(true);
+  };
 
   const purchase = async () => {
     if (!selected || !normalizedPhone || phoneError) return;
@@ -367,7 +372,7 @@ export default function BuyDataPage() {
         </div>
       </div>
 
-        <div className="grid gap-3 md:gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-3 md:gap-4">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardContent className="space-y-5 p-3.5 md:space-y-7 md:p-7">
             <section className="space-y-3.5 md:space-y-4">
@@ -443,10 +448,10 @@ export default function BuyDataPage() {
               ) : null}
               <Button
                 className="hidden h-12 w-full rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.2)] transition hover:bg-primary/90 active:scale-[0.98] md:inline-flex"
-                onClick={purchase}
+                onClick={openConfirm}
                 disabled={!canSubmit}
               >
-                {busy ? 'Processing...' : selected ? `Buy Data — ₦${formatMoney(summaryPrice || 0)}` : 'Buy Data'}
+                {busy ? 'Processing...' : 'Confirm'}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </section>
@@ -539,60 +544,6 @@ export default function BuyDataPage() {
           </CardContent>
         </Card>
 
-        <Card className="h-fit rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)] xl:sticky xl:top-24">
-          <CardHeader>
-            <CardTitle className="text-foreground">Order Summary</CardTitle>
-            <CardDescription className="text-muted-foreground">Bundle delivery</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="rounded-2xl border border-border bg-secondary p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
-                  <Image
-                    src={networkLogoSrc(summaryNetwork)}
-                    alt={`${networkLabel(summaryNetwork)} logo`}
-                    width={44}
-                    height={44}
-                    className="h-full w-full object-contain"
-                    unoptimized
-                  />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-foreground">{networkLabel(summaryNetwork)} Data</div>
-                  <div className="text-xs text-muted-foreground">Bundle delivery</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 rounded-2xl border border-border bg-secondary p-4">
-              {[
-                { label: 'Network', value: networkLabel(summaryNetwork) },
-                { label: 'Bundle type', value: 'Single' },
-                { label: 'Plan', value: summaryPlanName },
-                { label: 'Phone', value: phone.trim() || '—' },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0">
-                  <span className="text-sm text-muted-foreground">{item.label}</span>
-                  <span className="text-sm font-medium text-foreground">{item.value}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-end justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
-              <div>
-                <div className="text-sm text-muted-foreground">Total</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight text-primary">
-                  ₦{formatMoney(summaryPrice || 0)}
-                </div>
-              </div>
-              <div className="text-right text-xs text-muted-foreground">
-                {summaryPlanCode !== '—' ? summaryPlanCode : 'Select a bundle to continue'}
-              </div>
-            </div>
-
-            <div className="text-xs leading-6 text-muted-foreground">Live bundles are loaded from the backend catalog and update automatically.</div>
-          </CardContent>
-        </Card>
         </div>
       </div>
 
@@ -611,14 +562,89 @@ export default function BuyDataPage() {
           </div>
           <Button
             className="h-11 shrink-0 rounded-xl bg-primary px-4 text-primary-foreground shadow-[0_10px_22px_rgba(249,115,22,0.22)] transition hover:bg-primary/90 active:scale-[0.98]"
-            onClick={purchase}
+            onClick={openConfirm}
             disabled={!canSubmit}
           >
-            {busy ? 'Processing...' : 'Buy Data'}
+            {busy ? 'Processing...' : 'Confirm'}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
+
+      {summaryOpen ? (
+        <div className="fixed inset-0 z-[210] flex items-end justify-center bg-black/50 p-0 md:items-center md:p-6">
+          <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Order summary</h3>
+                <p className="text-sm text-muted-foreground">Confirm your purchase details.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSummaryOpen(false)}
+                className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="space-y-4 px-5 py-5">
+              <div className="rounded-2xl border border-border bg-secondary p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
+                    <Image
+                      src={networkLogoSrc(summaryNetwork)}
+                      alt={`${networkLabel(summaryNetwork)} logo`}
+                      width={36}
+                      height={36}
+                      className="h-full w-full object-contain"
+                      unoptimized
+                    />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-foreground">{networkLabel(summaryNetwork)} Data</div>
+                    <div className="text-xs text-muted-foreground">{summaryPlanName}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
+                {[
+                  { label: 'Phone', value: phone.trim() || '—' },
+                  { label: 'Plan code', value: summaryPlanCode },
+                  { label: 'Amount', value: `₦${formatMoney(summaryPrice || 0)}` },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
+                    <span className="text-sm text-muted-foreground">{item.label}</span>
+                    <span className="text-sm font-medium text-foreground">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
+              <Button
+                variant="secondary"
+                className="h-11 rounded-xl"
+                onClick={() => setSummaryOpen(false)}
+                disabled={busy}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={async () => {
+                  setSummaryOpen(false);
+                  await purchase();
+                }}
+                disabled={!canSubmit}
+              >
+                Buy Data
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <TransactionProcessingModal open={busy} />
       <TransactionReceiptModal
