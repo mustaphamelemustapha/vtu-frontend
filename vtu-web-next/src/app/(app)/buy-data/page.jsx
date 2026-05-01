@@ -339,9 +339,6 @@ export default function BuyDataPage() {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Buy Data</h1>
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-              Affordable data bundles for MTN, Airtel, Glo, and 9mobile from one sharp purchase workspace.
-            </p>
           </div>
           <Button
             variant="secondary"
@@ -369,37 +366,6 @@ export default function BuyDataPage() {
         </div>
       </div>
 
-        <Card className="border-border bg-card/80 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
-          <CardContent className="p-3 sm:p-4">
-            <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 sm:text-sm">
-              {[
-                { idx: '1', label: 'Pick network', active: true },
-                { idx: '2', label: 'Enter number', active: true },
-                { idx: '3', label: 'Select plan', active: Boolean(selected) },
-                { idx: '4', label: 'Confirm purchase', active: canSubmit },
-              ].map((step) => (
-                <div
-                  key={step.idx}
-                  className={cn(
-                    'flex items-center gap-2 rounded-xl border px-2.5 py-2 sm:px-3',
-                    step.active ? 'border-primary/35 bg-primary/10 text-foreground' : 'border-border bg-secondary text-muted-foreground'
-                  )}
-                >
-                  <span
-                    className={cn(
-                      'inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold',
-                      step.active ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground ring-1 ring-border'
-                    )}
-                  >
-                    {step.idx}
-                  </span>
-                  <span className="truncate font-medium">{step.label}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Card className="overflow-hidden border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
           <CardContent className="space-y-6 p-4 md:space-y-8 md:p-7">
@@ -407,9 +373,9 @@ export default function BuyDataPage() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
-                  <div className="mt-2 text-sm text-muted-foreground">Choose the bundle family you want to view.</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Pick your preferred network to load available plans.</div>
                 </div>
-                <Badge className="border-border bg-secondary text-muted-foreground">Live catalog</Badge>
+                <Badge className="border-primary/25 bg-primary/10 text-primary">Live catalog</Badge>
               </div>
 
               <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -423,9 +389,9 @@ export default function BuyDataPage() {
                       type="button"
                       onClick={() => setActiveNetwork(tab.key)}
                       className={cn(
-                        'group min-h-[138px] rounded-[20px] border px-3 py-4 text-left transition md:min-h-[146px] md:rounded-[22px] md:px-4 md:py-5',
+                        'group min-h-[132px] rounded-2xl border px-3 py-4 text-left transition md:min-h-[140px] md:px-4 md:py-5',
                         isActive
-                          ? 'border-primary/45 bg-primary/12 shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                          ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.12)]'
                           : 'border-border bg-secondary hover:border-border hover:bg-secondary'
                       )}
                       >
@@ -444,7 +410,7 @@ export default function BuyDataPage() {
                           {count}
                         </Badge>
                       </div>
-                      <div className="mt-4 text-sm font-semibold tracking-wide text-foreground">
+                      <div className="mt-4 text-base font-semibold tracking-tight text-foreground">
                         {tab.label}
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
@@ -459,21 +425,21 @@ export default function BuyDataPage() {
             <section className="space-y-4">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
-                <div className="mt-2 text-sm text-muted-foreground">Enter the recipient line before choosing a bundle.</div>
+                <div className="mt-2 text-sm text-muted-foreground">Enter recipient number.</div>
               </div>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="08012345678 or 2348012345678"
-                className="h-[52px] rounded-2xl border-border bg-input text-base text-foreground placeholder:text-muted-foreground/60 focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
-              />
+              <div className="rounded-2xl border border-border bg-secondary/70 p-2">
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="e.g. 08012345678"
+                  className="h-[52px] rounded-xl border-border bg-background text-base text-foreground placeholder:italic placeholder:text-muted-foreground/55 focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
+                />
+              </div>
               {phoneError ? (
                 <p className="text-xs font-medium text-rose-300">{phoneError}</p>
-              ) : (
-                <p className="text-xs text-muted-foreground">Use 08012345678 or 2348012345678.</p>
-              )}
+              ) : null}
               <Button
                 className="hidden h-12 w-full rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98] md:inline-flex"
                 onClick={purchase}
@@ -489,7 +455,7 @@ export default function BuyDataPage() {
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select plan</div>
                   <div className="mt-2 text-sm text-muted-foreground">
-                    {activeNetwork === 'all' ? 'All live bundles in one place.' : `${networkLabel(activeNetwork)} plans from the backend catalog.`}
+                    {activeNetwork === 'all' ? 'Choose from all live bundles.' : `${networkLabel(activeNetwork)} bundles ready for purchase.`}
                   </div>
                 </div>
                 <Badge className="border-border bg-secondary text-muted-foreground">
@@ -527,9 +493,9 @@ export default function BuyDataPage() {
                         type="button"
                         onClick={() => setSelected(plan)}
                         className={cn(
-                          'rounded-[22px] border px-4 py-4 text-left transition min-h-[144px]',
+                          'rounded-2xl border px-4 py-4 text-left transition min-h-[146px]',
                           isActive
-                            ? 'border-primary/45 bg-primary/12 shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                            ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.12)]'
                             : 'border-border bg-secondary hover:border-border hover:bg-secondary'
                         )}
                       >
@@ -546,8 +512,8 @@ export default function BuyDataPage() {
                               />
                             </div>
                             <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold text-foreground">{plan.plan_name || plan.plan_code}</div>
-                            <div className="mt-1 truncate text-xs text-muted-foreground">{plan.plan_code || 'Plan code unavailable'}</div>
+                            <div className="truncate text-base font-semibold tracking-tight text-foreground">{plan.plan_name || plan.plan_code}</div>
+                            <div className="mt-1 truncate text-xs text-muted-foreground/90">{plan.plan_code || 'Plan code unavailable'}</div>
                             </div>
                           </div>
                           <Badge className="border-border bg-secondary text-muted-foreground">
@@ -561,7 +527,7 @@ export default function BuyDataPage() {
                               ₦{formatMoney(plan.price || 0)}
                             </div>
                           </div>
-                          <div className="text-sm text-muted-foreground">{plan.data_size || '—'}</div>
+                          <div className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">{plan.data_size || '—'}</div>
                         </div>
                       </button>
                     );
