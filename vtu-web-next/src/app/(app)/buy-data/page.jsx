@@ -369,6 +369,37 @@ export default function BuyDataPage() {
         </div>
       </div>
 
+        <Card className="border-border bg-card/80 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
+          <CardContent className="p-3 sm:p-4">
+            <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 sm:text-sm">
+              {[
+                { idx: '1', label: 'Pick network', active: true },
+                { idx: '2', label: 'Enter number', active: true },
+                { idx: '3', label: 'Select plan', active: Boolean(selected) },
+                { idx: '4', label: 'Confirm purchase', active: canSubmit },
+              ].map((step) => (
+                <div
+                  key={step.idx}
+                  className={cn(
+                    'flex items-center gap-2 rounded-xl border px-2.5 py-2 sm:px-3',
+                    step.active ? 'border-primary/35 bg-primary/10 text-foreground' : 'border-border bg-secondary text-muted-foreground'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'inline-flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold',
+                      step.active ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground ring-1 ring-border'
+                    )}
+                  >
+                    {step.idx}
+                  </span>
+                  <span className="truncate font-medium">{step.label}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <Card className="overflow-hidden border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
           <CardContent className="space-y-6 p-4 md:space-y-8 md:p-7">
@@ -392,7 +423,7 @@ export default function BuyDataPage() {
                       type="button"
                       onClick={() => setActiveNetwork(tab.key)}
                       className={cn(
-                        'group rounded-[20px] border px-3 py-4 text-left transition md:rounded-[22px] md:px-4 md:py-5',
+                        'group min-h-[138px] rounded-[20px] border px-3 py-4 text-left transition md:min-h-[146px] md:rounded-[22px] md:px-4 md:py-5',
                         isActive
                           ? 'border-primary/45 bg-primary/12 shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
                           : 'border-border bg-secondary hover:border-border hover:bg-secondary'
@@ -496,7 +527,7 @@ export default function BuyDataPage() {
                         type="button"
                         onClick={() => setSelected(plan)}
                         className={cn(
-                          'rounded-[22px] border px-4 py-4 text-left transition',
+                          'rounded-[22px] border px-4 py-4 text-left transition min-h-[144px]',
                           isActive
                             ? 'border-primary/45 bg-primary/12 shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
                             : 'border-border bg-secondary hover:border-border hover:bg-secondary'
@@ -514,9 +545,9 @@ export default function BuyDataPage() {
                                 unoptimized
                               />
                             </div>
-                            <div>
-                            <div className="text-sm font-medium text-foreground">{plan.plan_name || plan.plan_code}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">{plan.plan_code || 'Plan code unavailable'}</div>
+                            <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-foreground">{plan.plan_name || plan.plan_code}</div>
+                            <div className="mt-1 truncate text-xs text-muted-foreground">{plan.plan_code || 'Plan code unavailable'}</div>
                             </div>
                           </div>
                           <Badge className="border-border bg-secondary text-muted-foreground">
@@ -541,7 +572,7 @@ export default function BuyDataPage() {
           </CardContent>
         </Card>
 
-        <Card className="h-fit border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+        <Card className="h-fit border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)] xl:sticky xl:top-24">
           <CardHeader>
             <CardTitle className="text-foreground">Order Summary</CardTitle>
             <CardDescription className="text-muted-foreground">Bundle delivery</CardDescription>
