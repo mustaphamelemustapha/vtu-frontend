@@ -332,7 +332,7 @@ export default function BuyDataPage() {
   }, [receipt, load]);
 
   return (
-    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
       <div className="space-y-6 pb-28 md:pb-8">
         <div className="space-y-2">
         <div className="axis-label text-muted-foreground">Services</div>
@@ -493,14 +493,14 @@ export default function BuyDataPage() {
                         type="button"
                         onClick={() => setSelected(plan)}
                         className={cn(
-                          'rounded-2xl border px-3.5 py-3.5 text-left transition min-h-[136px] md:min-h-[146px] md:px-4 md:py-4',
+                          'min-w-0 overflow-hidden rounded-2xl border px-3.5 py-3.5 text-left transition min-h-[136px] md:min-h-[146px] md:px-4 md:py-4',
                           isActive
                             ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.12)]'
                             : 'border-border bg-secondary hover:border-border hover:bg-secondary'
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-start gap-3">
+                          <div className="flex min-w-0 items-start gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 ring-1 ring-border">
                               <Image
                                 src={networkLogoSrc(plan.network)}
@@ -513,10 +513,10 @@ export default function BuyDataPage() {
                             </div>
                             <div className="min-w-0">
                             <div className="truncate text-[17px] font-semibold tracking-tight text-foreground md:text-base">{plan.plan_name || plan.plan_code}</div>
-                            <div className="mt-1 truncate text-[11px] text-muted-foreground/90">{plan.plan_code || 'Plan code unavailable'}</div>
+                            <div className="mt-1 truncate break-all text-[11px] text-muted-foreground/90">{plan.plan_code || 'Plan code unavailable'}</div>
                             </div>
                           </div>
-                          <Badge className="border-border bg-secondary text-muted-foreground">
+                          <Badge className="shrink-0 border-border bg-secondary text-muted-foreground">
                             {plan.validity || 'Plan'}
                           </Badge>
                         </div>
