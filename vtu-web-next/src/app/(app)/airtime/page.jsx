@@ -231,7 +231,8 @@ export default function AirtimePage() {
   }, [receipt, load]);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-10">
       <PageHeader
         eyebrow="Services"
         title="Airtime"
@@ -239,10 +240,10 @@ export default function AirtimePage() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <Card>
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Buy Airtime</CardTitle>
-            <CardDescription>Select network, enter phone number, set amount, and submit.</CardDescription>
+            <CardDescription>Pick network, enter recipient, and confirm amount.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -262,8 +263,8 @@ export default function AirtimePage() {
                           : 'border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground'
                       )}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
+                      <div className="flex items-center justify-center">
+                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden p-0.5">
                           <Image
                             src={networkLogoSrc(item)}
                             alt={`${networkLabel(item)} logo`}
@@ -273,10 +274,8 @@ export default function AirtimePage() {
                             unoptimized
                           />
                         </div>
-                        <Badge className="border-border bg-card text-muted-foreground">live</Badge>
                       </div>
-                      <div className="mt-3 text-base font-semibold text-foreground">{networkLabel(item)}</div>
-                      <div className="text-xs text-muted-foreground">Available now</div>
+                      <div className="mt-3 text-center text-base font-semibold text-foreground">{networkLabel(item)}</div>
                     </button>
                   );
                 })}
@@ -301,18 +300,19 @@ export default function AirtimePage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   inputMode="tel"
-                  placeholder="08012345678 or 2348012345678"
+                  placeholder="e.g. 08012345678"
+                  className="placeholder:italic placeholder:text-muted-foreground/60"
                 />
                 <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {phoneError || 'Use 08012345678 or 2348012345678 format.'}
+                  {phoneError || 'Nigerian mobile format.'}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <div className="axis-label">Amount (NGN)</div>
-                <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="500" />
+                <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="e.g. 500" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {amountError || 'Enter the airtime amount to charge your wallet.'}
+                  {amountError || 'Amount to charge wallet.'}
                 </p>
               </div>
             </div>
@@ -341,7 +341,7 @@ export default function AirtimePage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Order summary</CardTitle>
             <CardDescription>Live preview before purchase.</CardDescription>
@@ -393,6 +393,7 @@ export default function AirtimePage() {
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
         onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
+      </div>
     </div>
   );
 }

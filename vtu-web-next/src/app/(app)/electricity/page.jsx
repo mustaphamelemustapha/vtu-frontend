@@ -302,7 +302,8 @@ export default function ElectricityPage() {
     };
   }, [receipt, load]);
   return (
-    <div className="space-y-6 pb-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-10">
       <PageHeader
         eyebrow="Services"
         title="Electricity"
@@ -310,10 +311,10 @@ export default function ElectricityPage() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <Card>
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Pay electricity bill</CardTitle>
-            <CardDescription>Select disco, meter type, and payment details before checkout.</CardDescription>
+            <CardDescription>Select disco, meter details, then confirm.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
@@ -367,7 +368,7 @@ export default function ElectricityPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <div className="axis-label">Meter number</div>
-                <Input value={meterNumber} onChange={(e) => setMeterNumber(e.target.value)} placeholder="Enter meter number" />
+                <Input value={meterNumber} onChange={(e) => setMeterNumber(e.target.value)} placeholder="e.g. 1234567890" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', meterError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
                   {meterError || 'Use the meter number exactly as registered.'}
                 </p>
@@ -375,7 +376,7 @@ export default function ElectricityPage() {
 
               <div className="space-y-2">
                 <div className="axis-label">Phone number</div>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="08012345678" />
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="e.g. 08012345678" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
                   {phoneError || 'Used for provider notifications.'}
                 </p>
@@ -384,7 +385,7 @@ export default function ElectricityPage() {
 
             <div className="space-y-2">
               <div className="axis-label">Amount (NGN)</div>
-              <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="5000" />
+              <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="e.g. 5000" className="placeholder:italic placeholder:text-muted-foreground/60" />
               <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
                 {amountError || 'Enter the bill amount to charge your wallet.'}
               </p>
@@ -448,7 +449,7 @@ export default function ElectricityPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Order summary</CardTitle>
             <CardDescription>Review details before payment.</CardDescription>
@@ -503,6 +504,7 @@ export default function ElectricityPage() {
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
         onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
+      </div>
     </div>
   );
 }

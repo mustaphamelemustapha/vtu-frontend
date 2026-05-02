@@ -220,7 +220,8 @@ export default function ExamPinsPage() {
   }, [receipt, load]);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-10">
       <PageHeader
         eyebrow="Services"
         title="Exam PINs"
@@ -228,7 +229,7 @@ export default function ExamPinsPage() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <Card>
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Buy Exam PIN</CardTitle>
             <CardDescription>Choose exam body, quantity, and optional phone reference.</CardDescription>
@@ -253,7 +254,7 @@ export default function ExamPinsPage() {
 
               <div className="space-y-2">
                 <div className="axis-label">Quantity</div>
-                <Input value={quantity} onChange={(e) => setQuantity(e.target.value)} inputMode="numeric" placeholder="1" />
+                <Input value={quantity} onChange={(e) => setQuantity(e.target.value)} inputMode="numeric" placeholder="e.g. 1" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', quantityError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
                   {quantityError || 'Allowed quantity: 1 to 10 PINs.'}
                 </p>
@@ -268,7 +269,7 @@ export default function ExamPinsPage() {
 
             <div className="space-y-2">
               <div className="axis-label">Phone number (optional)</div>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="08012345678" />
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="e.g. 08012345678" className="placeholder:italic placeholder:text-muted-foreground/60" />
               <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
                 {phoneError || 'Optional, used as a customer reference.'}
               </p>
@@ -286,7 +287,7 @@ export default function ExamPinsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Order summary</CardTitle>
             <CardDescription>Review quantity and payable amount.</CardDescription>
@@ -342,6 +343,7 @@ export default function ExamPinsPage() {
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
         onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
+      </div>
     </div>
   );
 }

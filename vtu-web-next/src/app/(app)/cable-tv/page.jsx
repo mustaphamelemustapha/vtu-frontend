@@ -362,7 +362,8 @@ export default function CableTvPage() {
   }, [receipt, load]);
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-10">
       <PageHeader
         eyebrow="Services"
         title="Cable TV"
@@ -370,10 +371,10 @@ export default function CableTvPage() {
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <Card>
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Pay Cable TV</CardTitle>
-            <CardDescription>Choose provider, enter smartcard details, select package, and submit payment.</CardDescription>
+            <CardDescription>Choose provider, enter smartcard details, select package, then confirm.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -397,8 +398,8 @@ export default function CableTvPage() {
                           : 'border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground'
                       )}
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
+                      <div className="flex items-center justify-center">
+                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden p-0.5">
                           <Image
                             src={providerLogoSrc(item.id)}
                             alt={`${item.name} logo`}
@@ -408,10 +409,8 @@ export default function CableTvPage() {
                             unoptimized
                           />
                         </div>
-                        <Badge className="border-border bg-card text-muted-foreground">live</Badge>
                       </div>
-                      <div className="mt-3 text-base font-semibold text-foreground">{titleCase(item.name)}</div>
-                      <div className="text-xs text-muted-foreground">Available now</div>
+                      <div className="mt-3 text-center text-base font-semibold text-foreground">{titleCase(item.name)}</div>
                     </button>
                   );
                 })}
@@ -432,7 +431,7 @@ export default function CableTvPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <div className="axis-label">Smartcard / IUC number</div>
-                <Input value={smartcardNumber} onChange={(e) => setSmartcardNumber(e.target.value)} placeholder="Enter smartcard number" />
+                <Input value={smartcardNumber} onChange={(e) => setSmartcardNumber(e.target.value)} placeholder="e.g. 1234567890" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
                     type="button"
@@ -459,7 +458,7 @@ export default function CableTvPage() {
               </div>
               <div className="space-y-2">
                 <div className="axis-label">Phone number</div>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="08012345678" />
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="e.g. 08012345678" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
                   {phoneError || 'Used by provider for transaction updates.'}
                 </p>
@@ -526,7 +525,7 @@ export default function CableTvPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Order summary</CardTitle>
             <CardDescription>Live preview before payment.</CardDescription>
@@ -585,6 +584,7 @@ export default function CableTvPage() {
         onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
         onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
       />
+      </div>
     </div>
   );
 }
