@@ -40,6 +40,7 @@ const mobilePrimaryMenu = [
   { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'Referrals', href: '/referrals', icon: Users },
   { label: 'History', href: '/history', icon: Clock3 },
+  { label: 'Profile', href: '/profile', icon: Settings2 },
 ];
 
 function MobileMenuLink({ item, activePath }) {
