@@ -11,9 +11,11 @@ import { adminAdjustWallet } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { AdminTable } from '@/components/admin/admin-table';
+import { FilterBar } from '@/components/admin/filter-bar';
 import { StatusBadge } from '@/components/admin/status-badge';
 
 export default function AdminWalletsPage() {
+  const [query, setQuery] = useState('');
   const [walletRows, setWalletRows] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,10 +40,37 @@ export default function AdminWalletsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const wallets = await adminGetWallets({ page: 1, page_size: 50 });
-      const rows = Array.isArray(wallets?.items) ? wallets.items : [];
+      const pageSize = 100;
+      const maxPages = 20;
+      let page = 1;
+      const allRows = [];
+      let aggregate = 0;
+
+      while (page <= maxPages) {
+        const wallets = await adminGetWallets({ page, page_size: pageSize, q: query || undefined });
+        const rows = Array.isArray(wallets?.items) ? wallets.items : [];
+        if (Number(wallets?.aggregate_balance || 0)) aggregate = Number(wallets.aggregate_balance);
+        allRows.push(...rows);
+
+        const hasNext =
+          wallets?.has_next === true ||
+          wallets?.next_page != null ||
+          (typeof wallets?.total_pages === 'number' && page < wallets.total_pages) ||
+          rows.length === pageSize;
+        if (!hasNext) break;
+        page += 1;
+      }
+
+      const normalizedQuery = String(query || '').trim().toLowerCase();
+      const visibleRows = normalizedQuery
+        ? allRows.filter((item) => {
+            const text = `${item?.full_name || ''} ${item?.email || ''} ${item?.phone_number || ''} ${item?.user_id || ''}`.toLowerCase();
+            return text.includes(normalizedQuery);
+          })
+        : allRows;
+
       setWalletRows(
-        rows.map((item) => ({
+        visibleRows.map((item) => ({
           id: item.user_id,
           full_name: item.full_name,
           email: item.email,
@@ -51,17 +80,20 @@ export default function AdminWalletsPage() {
           updated_at: item.wallet_updated_at,
         })),
       );
-      setAggregateBalance(Number(wallets?.aggregate_balance || 0));
+      setAggregateBalance(aggregate);
 
       const ledger = await adminGetTransactions({ page: 1, page_size: 60 });
       setLedgerRows(Array.isArray(ledger?.items) ? ledger.items : []);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [query]);
 
   useEffect(() => {
-    load().catch(() => setLoading(false));
+    const timer = setTimeout(() => {
+      load().catch(() => setLoading(false));
+    }, 220);
+    return () => clearTimeout(timer);
   }, [load]);
 
   const totalBalance = useMemo(
@@ -102,6 +134,12 @@ export default function AdminWalletsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <FilterBar
+        searchValue={query}
+        onSearchChange={setQuery}
+        searchPlaceholder="Search by user name, email, phone, or user ID"
+      />
 
       <AdminTable
         columns={[
