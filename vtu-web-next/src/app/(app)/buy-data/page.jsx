@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight, RefreshCw } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
@@ -346,29 +346,6 @@ export default function BuyDataPage() {
             <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Buy Data</h1>
             <p className="text-sm text-muted-foreground">Fast purchase flow with live plans and instant confirmation.</p>
           </div>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setLoadError('');
-              setLoading(true);
-              Promise.allSettled([prefetchDataPlans(apiFetch), apiFetch('/wallet/me')])
-                .then(([plansRes, walletRes]) => {
-                  if (plansRes.status === 'fulfilled') {
-                    const nextPlans = Array.isArray(plansRes.value) ? plansRes.value : [];
-                    setPlans(nextPlans);
-                    if (!nextPlans.length) setLoadError('No plans are available right now. Please refresh.');
-                  } else {
-                    setLoadError('Unable to load live data plans right now. Please refresh.');
-                  }
-                  if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
-                })
-                .finally(() => setLoading(false));
-            }}
-            className="h-11 rounded-xl border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground"
-          >
-            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
-            Refresh plans
-          </Button>
         </div>
       </div>
 

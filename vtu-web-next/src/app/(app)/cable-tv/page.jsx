@@ -2,11 +2,12 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Tv2 } from 'lucide-react';
+import { Tv2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
 import { normalizeTransactionStatus, sanitizeProviderMessage, waitForTransactionFinalStatus } from '@/lib/transaction-status';
+import { readViewCache, writeViewCache } from '@/lib/view-cache';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,6 +79,7 @@ const FALLBACK_CABLE_PACKAGES = {
     { code: 'dstv-showmax-premier-league', name: 'DStv Showmax Premier League Add-on', amount: 3600 },
   ],
 };
+const CACHE_KEY = 'cable-tv:v1';
 
 function fallbackPackagesForProvider(providerId) {
   const key = String(providerId || '').trim().toLowerCase();
@@ -104,17 +106,35 @@ export default function CableTvPage() {
   const [packageCode, setPackageCode] = useState('');
 
   const load = useCallback(async () => {
-    setLoading(true);
+    const cached = readViewCache(CACHE_KEY, 10 * 60 * 1000);
+    if (cached) {
+      if (cached.catalog) setCatalog(cached.catalog);
+      if (cached.wallet) setWallet(cached.wallet);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setLoadError('');
     try {
       const [catalogRes, walletRes] = await Promise.allSettled([apiFetch('/services/catalog'), apiFetch('/wallet/me')]);
+      let nextCatalog = cached?.catalog || null;
+      let nextWallet = cached?.wallet || null;
       if (catalogRes.status === 'fulfilled') {
-        setCatalog(catalogRes.value);
+        nextCatalog = catalogRes.value;
+        setCatalog(nextCatalog);
       } else {
-        setCatalog(null);
-        setLoadError('Cable provider catalog is unavailable right now. Please refresh.');
+        if (!cached?.catalog) {
+          setCatalog(null);
+          setLoadError('Cable provider catalog is unavailable right now. Please try again shortly.');
+        }
       }
-      if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
+      if (walletRes.status === 'fulfilled') {
+        nextWallet = walletRes.value;
+        setWallet(nextWallet);
+      }
+      if (nextCatalog || nextWallet) {
+        writeViewCache(CACHE_KEY, { catalog: nextCatalog, wallet: nextWallet });
+      }
     } finally {
       setLoading(false);
     }
@@ -347,12 +367,6 @@ export default function CableTvPage() {
         eyebrow="Services"
         title="Cable TV"
         description="Renew DSTV, GOtv, or StarTimes subscriptions through the wallet with clean transaction records."
-        actions={
-          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
-            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
-            Refresh
-          </Button>
-        }
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
@@ -485,7 +499,7 @@ export default function CableTvPage() {
                   })}
                 </select>
                 <p className={cn('text-xs', packageError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {packageError || (packageChoices.length ? 'Plan list updates automatically for selected provider.' : 'No plans found yet. Tap refresh packages.')}
+                  {packageError || (packageChoices.length ? 'Plan list updates automatically for selected provider.' : 'No plans found yet for this provider.')}
                 </p>
                 {packageLoading ? <p className="text-xs text-muted-foreground">Loading live package list…</p> : null}
                 {packageLoadError ? <p className="text-xs text-amber-600 dark:text-amber-300">{packageLoadError}</p> : null}
@@ -503,9 +517,6 @@ export default function CableTvPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="secondary" onClick={() => loadProviderPackages(provider)} disabled={!provider || packageLoading} className="border-border bg-card text-muted-foreground">
-                {packageLoading ? 'Refreshing packages…' : 'Refresh packages'}
-              </Button>
               <Button onClick={submit} disabled={!canSubmit}>
                 <Tv2 className="h-4 w-4" />
                 {busy ? 'Processing...' : 'Pay Cable'}

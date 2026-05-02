@@ -2,11 +2,12 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
-import { Phone, RefreshCw, Smartphone } from 'lucide-react';
+import { Phone, Smartphone } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
 import { normalizeTransactionStatus, sanitizeProviderMessage, waitForTransactionFinalStatus } from '@/lib/transaction-status';
+import { readViewCache, writeViewCache } from '@/lib/view-cache';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +56,7 @@ function validNigerianPhone(value) {
 }
 
 const defaultRecentRecipients = ['08012345678', '08134567890', '09023456789'];
+const CACHE_KEY = 'airtime:v1';
 
 export default function AirtimePage() {
   const [catalog, setCatalog] = useState(null);
@@ -69,17 +71,35 @@ export default function AirtimePage() {
   const [amount, setAmount] = useState('');
 
   const load = useCallback(async () => {
-    setLoading(true);
+    const cached = readViewCache(CACHE_KEY, 10 * 60 * 1000);
+    if (cached) {
+      if (cached.catalog) setCatalog(cached.catalog);
+      if (cached.wallet) setWallet(cached.wallet);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setLoadError('');
     try {
       const [catalogRes, walletRes] = await Promise.allSettled([apiFetch('/services/catalog'), apiFetch('/wallet/me')]);
+      let nextCatalog = cached?.catalog || null;
+      let nextWallet = cached?.wallet || null;
       if (catalogRes.status === 'fulfilled') {
-        setCatalog(catalogRes.value);
+        nextCatalog = catalogRes.value;
+        setCatalog(nextCatalog);
       } else {
-        setCatalog(null);
-        setLoadError('Service catalog is currently unavailable. Please refresh.');
+        if (!cached?.catalog) {
+          setCatalog(null);
+          setLoadError('Service catalog is currently unavailable. Please try again shortly.');
+        }
       }
-      if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
+      if (walletRes.status === 'fulfilled') {
+        nextWallet = walletRes.value;
+        setWallet(nextWallet);
+      }
+      if (nextCatalog || nextWallet) {
+        writeViewCache(CACHE_KEY, { catalog: nextCatalog, wallet: nextWallet });
+      }
     } finally {
       setLoading(false);
     }
@@ -216,12 +236,6 @@ export default function AirtimePage() {
         eyebrow="Services"
         title="Airtime"
         description="Top up supported Nigerian networks from a clean airtime workspace."
-        actions={
-          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
-            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
-            Refresh
-          </Button>
-        }
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">

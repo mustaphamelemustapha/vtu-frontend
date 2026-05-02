@@ -1,11 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Lightbulb, Loader2, RefreshCw, XCircle } from 'lucide-react';
+import { CheckCircle2, Lightbulb, Loader2, XCircle } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
 import { normalizeTransactionStatus, sanitizeProviderMessage, waitForTransactionFinalStatus } from '@/lib/transaction-status';
+import { readViewCache, writeViewCache } from '@/lib/view-cache';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +34,7 @@ function meterLabel(value) {
 }
 
 const meterTypes = ['prepaid', 'postpaid'];
+const CACHE_KEY = 'electricity:v1';
 
 export default function ElectricityPage() {
   const [catalog, setCatalog] = useState(null);
@@ -53,7 +55,15 @@ export default function ElectricityPage() {
   const [amount, setAmount] = useState('');
 
   const load = useCallback(async () => {
-    setLoading(true);
+    const cached = readViewCache(CACHE_KEY, 10 * 60 * 1000);
+    if (cached) {
+      if (cached.catalog) setCatalog(cached.catalog);
+      if (cached.wallet) setWallet(cached.wallet);
+      if (Array.isArray(cached.providerDiscos)) setProviderDiscos(cached.providerDiscos);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     setLoadError('');
     try {
       const [catalogRes, walletRes, discosRes] = await Promise.allSettled([
@@ -61,16 +71,25 @@ export default function ElectricityPage() {
         apiFetch('/wallet/me'),
         apiFetch('/services/electricity/discos'),
       ]);
+      let nextCatalog = cached?.catalog || null;
+      let nextWallet = cached?.wallet || null;
+      let nextDiscos = Array.isArray(cached?.providerDiscos) ? cached.providerDiscos : [];
       if (catalogRes.status === 'fulfilled') {
-        setCatalog(catalogRes.value);
+        nextCatalog = catalogRes.value;
+        setCatalog(nextCatalog);
       } else {
-        setCatalog(null);
-        setLoadError('Electricity provider catalog is unavailable right now. Please refresh.');
+        if (!cached?.catalog) {
+          setCatalog(null);
+          setLoadError('Electricity provider catalog is unavailable right now. Please try again shortly.');
+        }
       }
-      if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
+      if (walletRes.status === 'fulfilled') {
+        nextWallet = walletRes.value;
+        setWallet(nextWallet);
+      }
       if (discosRes.status === 'fulfilled') {
         const rows = Array.isArray(discosRes.value?.discos) ? discosRes.value.discos : [];
-        setProviderDiscos(
+        nextDiscos =
           rows
             .map((row) => ({
               id: String(row?.id || '').trim().toLowerCase(),
@@ -78,9 +97,16 @@ export default function ElectricityPage() {
               code: String(row?.code || '').trim(),
             }))
             .filter((row) => row.id)
-        );
+        setProviderDiscos(nextDiscos);
       } else {
-        setProviderDiscos([]);
+        if (!cached?.providerDiscos) setProviderDiscos([]);
+      }
+      if (nextCatalog || nextWallet || nextDiscos.length) {
+        writeViewCache(CACHE_KEY, {
+          catalog: nextCatalog,
+          wallet: nextWallet,
+          providerDiscos: nextDiscos,
+        });
       }
     } finally {
       setLoading(false);
@@ -281,12 +307,6 @@ export default function ElectricityPage() {
         eyebrow="Services"
         title="Electricity"
         description="Pay electricity bills with meter details, amount, and a clean wallet-funded checkout flow."
-        actions={
-          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
-            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
-            Refresh
-          </Button>
-        }
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
