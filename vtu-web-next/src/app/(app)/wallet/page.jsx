@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Copy, RefreshCw, Wallet2 } from 'lucide-react';
 import { apiFetch, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
@@ -9,6 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PageHeader } from '@/components/page-header';
 
 export default function WalletPage() {
+  const searchParams = useSearchParams();
+  const pageQuery = String(searchParams.get('q') || '').trim().toLowerCase();
   const [wallet, setWallet] = useState(() => readScopedCache('wallet_me', { maxAgeMs: 5 * 60 * 1000 }));
   const [ledger, setLedger] = useState(() => readScopedCache('wallet_ledger', { maxAgeMs: 5 * 60 * 1000 }) || []);
   const [accounts, setAccounts] = useState(() => readScopedCache('wallet_accounts', { maxAgeMs: 5 * 60 * 1000 }) || []);
@@ -55,6 +59,21 @@ export default function WalletPage() {
   };
 
   const primary = accounts[0];
+  const filteredLedger = useMemo(() => {
+    if (!pageQuery) return ledger;
+    return ledger.filter((item) => {
+      const haystack = [
+        item?.description,
+        item?.reference,
+        item?.entry_type,
+        item?.created_at,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(pageQuery);
+    });
+  }, [ledger, pageQuery]);
 
   return (
     <div className="space-y-6 pb-8">
@@ -138,8 +157,12 @@ export default function WalletPage() {
           <CardDescription>Wallet movements in clean chronological order.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {ledger.length === 0 ? <div className="text-sm text-muted-foreground">No ledger records yet.</div> : null}
-          {ledger.map((item) => (
+          {filteredLedger.length === 0 ? (
+            <div className="text-sm text-muted-foreground">
+              {pageQuery ? 'No wallet records matched your search.' : 'No ledger records yet.'}
+            </div>
+          ) : null}
+          {filteredLedger.map((item) => (
             <div key={item.id || item.reference} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
               <div>
                 <div className="text-sm font-medium text-foreground">{item.description || item.reference || 'Wallet entry'}</div>

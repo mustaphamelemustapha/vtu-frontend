@@ -39,7 +39,7 @@ export default function ReferralsPage() {
   }, [load]);
 
   const referralCode = data?.referral_code || profile?.referral_code || '—';
-  const referralLink = data?.referral_link || buildReferralUrl(referralCode === '—' ? '' : referralCode);
+  const referralLink = buildReferralUrl(referralCode === '—' ? '' : referralCode);
   const rows = Array.isArray(data?.referrals) ? data.referrals : [];
 
   const stats = useMemo(

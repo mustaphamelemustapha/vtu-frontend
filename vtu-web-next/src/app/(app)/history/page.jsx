@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FileClock, RefreshCw } from 'lucide-react';
 import { apiFetch, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
@@ -25,6 +26,9 @@ function txRecipientLabel(tx) {
 }
 
 export default function HistoryPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pageQuery = String(searchParams.get('q') || '').trim().toLowerCase();
   const [transactions, setTransactions] = useState(() => readScopedCache('history_transactions', { maxAgeMs: 5 * 60 * 1000 }) || []);
   const [reports, setReports] = useState(() => readScopedCache('history_reports', { maxAgeMs: 5 * 60 * 1000 }) || []);
   const [loading, setLoading] = useState(() => !(readScopedCache('history_transactions', { maxAgeMs: 5 * 60 * 1000 }) || []).length);
@@ -69,6 +73,24 @@ export default function HistoryPage() {
     const total = transactions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
     return { success, pending, total };
   }, [transactions]);
+
+  const filteredTransactions = useMemo(() => {
+    if (!pageQuery) return transactions;
+    return transactions.filter((tx) => {
+      const haystack = [
+        tx?.reference,
+        tx?.tx_type,
+        txRecipientLabel(tx),
+        tx?.meta?.customer_name,
+        tx?.meta?.plan_name,
+        tx?.meta?.network,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(pageQuery);
+    });
+  }, [pageQuery, transactions]);
 
   const handleTxClick = useCallback((tx) => {
     const metaArr = [];
@@ -138,8 +160,17 @@ export default function HistoryPage() {
               {loadError}
             </div>
           ) : null}
-          {transactions.length === 0 && !loading ? <div className="text-sm text-muted-foreground">No transactions yet.</div> : null}
-          {transactions.map((tx) => (
+          {filteredTransactions.length === 0 && !loading ? (
+            <div className="rounded-2xl border border-dashed border-border bg-secondary p-4 text-sm text-muted-foreground">
+              {pageQuery
+                ? 'No transactions matched your search.'
+                : 'No transactions yet. Your receipts will appear here after a purchase.'}
+              <div className="mt-3">
+                <Button size="sm" onClick={() => router.push('/buy-data')}>Buy data</Button>
+              </div>
+            </div>
+          ) : null}
+          {filteredTransactions.map((tx) => (
             <div 
               key={tx.reference || tx.id} 
               onClick={() => handleTxClick(tx)}

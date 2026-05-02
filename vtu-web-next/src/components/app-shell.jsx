@@ -96,6 +96,7 @@ export function AppShell({ children }) {
   const [adminShortcutAllowed, setAdminShortcutAllowed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState('light');
+  const [globalQuery, setGlobalQuery] = useState('');
 
   const handleSignOut = useCallback(() => {
     clearAuth();
@@ -190,6 +191,19 @@ export function AppShell({ children }) {
     });
   }, []);
 
+  const runGlobalSearch = useCallback(() => {
+    const q = String(globalQuery || '').trim();
+    if (!q) return;
+    const lower = q.toLowerCase();
+    const walletIntent =
+      lower.includes('wallet') ||
+      lower.includes('fund') ||
+      lower.includes('balance') ||
+      lower.includes('ledger');
+    const target = walletIntent ? '/wallet' : '/history';
+    router.push(`${target}?q=${encodeURIComponent(q)}`);
+  }, [globalQuery, router]);
+
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-6">
@@ -276,10 +290,22 @@ export function AppShell({ children }) {
                 AxisVTU
               </div>
             </div>
-            <div className="hidden h-11 flex-1 items-center gap-3 rounded-2xl border border-border bg-card px-4 md:flex">
+            <form
+              className="hidden h-11 flex-1 items-center gap-3 rounded-2xl border border-border bg-card px-4 md:flex"
+              onSubmit={(event) => {
+                event.preventDefault();
+                runGlobalSearch();
+              }}
+            >
               <Search className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Search transactions, wallets, or beneficiaries</span>
-            </div>
+              <input
+                value={globalQuery}
+                onChange={(event) => setGlobalQuery(event.target.value)}
+                placeholder="Search transactions, wallets, or beneficiaries"
+                className="h-full w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                aria-label="Global search"
+              />
+            </form>
             <Button
               variant="secondary"
               size="icon"
