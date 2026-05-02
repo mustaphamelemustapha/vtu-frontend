@@ -22,8 +22,8 @@ export function getSiteOrigin() {
     const host = String(window.location.hostname || '').toLowerCase();
     const isLocalHost = host === 'localhost' || host === '127.0.0.1';
     if (isLocalHost) return window.location.origin;
-    if (host.endsWith('.vercel.app')) return canonical;
-    return envResolved || canonical;
+    // Production must always share the canonical AxisVTU domain.
+    return canonical;
   }
 
   return envResolved || canonical;
