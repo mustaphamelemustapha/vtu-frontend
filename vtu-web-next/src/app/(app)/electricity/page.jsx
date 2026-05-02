@@ -45,6 +45,7 @@ export default function ElectricityPage() {
   const [busy, setBusy] = useState(false);
   const [processingOpen, setProcessingOpen] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verification, setVerification] = useState({ checked: false, ok: false, customerName: '', message: '' });
 
@@ -144,6 +145,10 @@ export default function ElectricityPage() {
   const canSubmit = Boolean(
     disco && meterType && cleanMeter && cleanPhone && !phoneError && !meterError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy && verification.ok
   );
+  const openConfirm = () => {
+    if (!canSubmit) return;
+    setSummaryOpen(true);
+  };
   const selectedDisco = useMemo(() => discos.find((item) => item.id === disco), [discos, disco]);
   const summaryDisco = selectedDisco?.name || meterLabel(disco) || '—';
   const lookupReady = Boolean(disco && meterType && cleanMeter.length >= 5 && !verifying);
@@ -310,7 +315,7 @@ export default function ElectricityPage() {
         description="Pay electricity bills with meter details, amount, and a clean wallet-funded checkout flow."
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
+      <div className="grid gap-4">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Pay electricity bill</CardTitle>
@@ -407,9 +412,9 @@ export default function ElectricityPage() {
                   'Verify Meter'
                 )}
               </Button>
-              <Button onClick={submit} disabled={!canSubmit}>
+              <Button onClick={openConfirm} disabled={!canSubmit}>
                 <Lightbulb className="h-4 w-4" />
-                {busy ? 'Processing...' : 'Pay Electricity'}
+                {busy ? 'Processing...' : 'Confirm'}
               </Button>
             </div>
 
@@ -449,52 +454,51 @@ export default function ElectricityPage() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-          <CardHeader>
-            <CardTitle>Order summary</CardTitle>
-            <CardDescription>Review details before payment.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border border-border bg-secondary p-4">
-              <div className="text-sm font-semibold text-foreground">Electricity bill payment</div>
-              <div className="mt-1 text-xs text-muted-foreground">Token receipts are tracked in history.</div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Disco</span>
-                <span className="font-medium text-foreground">{summaryDisco}</span>
-              </div>
-              {selectedDisco?.code ? (
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Disco code</span>
-                  <span className="font-medium text-foreground">{selectedDisco.code}</span>
-                </div>
-              ) : null}
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Meter type</span>
-                <span className="font-medium text-foreground">{meterLabel(meterType)}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Meter number</span>
-                <span className="font-medium text-foreground">{cleanMeter || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-medium text-foreground">₦{Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}</span>
-              </div>
-              <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Wallet balance</span>
-                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
-                    ₦{formatMoney(wallet?.balance || 0)}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      {summaryOpen ? (
+        <div className="fixed inset-0 z-[210] flex items-end justify-center bg-black/50 p-0 md:items-center md:p-6">
+          <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Order summary</h3>
+                <p className="text-sm text-muted-foreground">Confirm electricity payment details.</p>
+              </div>
+              <button type="button" onClick={() => setSummaryOpen(false)} className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
+                Close
+              </button>
+            </div>
+            <div className="space-y-4 px-5 py-5">
+              <div className="rounded-2xl border border-border bg-secondary p-4">
+                <div className="text-sm font-semibold text-foreground">{summaryDisco} Electricity</div>
+                <div className="text-xs text-muted-foreground">Wallet-funded bill payment</div>
+              </div>
+              <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
+                {[
+                  { label: 'Meter number', value: cleanMeter || '—' },
+                  { label: 'Meter type', value: meterLabel(meterType) },
+                  { label: 'Phone', value: cleanPhone || '—' },
+                  { label: 'Amount', value: `₦${Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}` },
+                  { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
+                    <span className="text-sm text-muted-foreground">{item.label}</span>
+                    <span className="text-sm font-medium text-foreground">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
+              <Button variant="secondary" className="h-11 rounded-xl" onClick={() => setSummaryOpen(false)} disabled={busy}>
+                Cancel
+              </Button>
+              <Button className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={async () => { setSummaryOpen(false); await submit(); }} disabled={!canSubmit}>
+                Pay Electricity
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <TransactionProcessingModal open={busy || processingOpen} />
       <TransactionReceiptModal

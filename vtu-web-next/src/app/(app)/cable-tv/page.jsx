@@ -95,6 +95,7 @@ export default function CableTvPage() {
   const [busy, setBusy] = useState(false);
   const [processingOpen, setProcessingOpen] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const [packageLoading, setPackageLoading] = useState(false);
   const [packageLoadError, setPackageLoadError] = useState('');
   const [verifyBusy, setVerifyBusy] = useState(false);
@@ -212,6 +213,10 @@ export default function CableTvPage() {
   const canSubmit = Boolean(
     provider && cleanCard && cleanPhone && cleanPackage && !phoneError && !smartCardError && !packageError && !amountError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy
   );
+  const openConfirm = () => {
+    if (!canSubmit) return;
+    setSummaryOpen(true);
+  };
 
   const verifySmartcard = async () => {
     const card = String(smartcardNumber || '').trim();
@@ -370,7 +375,7 @@ export default function CableTvPage() {
         description="Renew DSTV, GOtv, or StarTimes subscriptions through the wallet with clean transaction records."
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
+      <div className="grid gap-4">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Pay Cable TV</CardTitle>
@@ -516,65 +521,60 @@ export default function CableTvPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={submit} disabled={!canSubmit}>
+              <Button onClick={openConfirm} disabled={!canSubmit}>
                 <Tv2 className="h-4 w-4" />
-                {busy ? 'Processing...' : 'Pay Cable'}
+                {busy ? 'Processing...' : 'Confirm'}
               </Button>
             </div>
 
           </CardContent>
         </Card>
-
-        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-          <CardHeader>
-            <CardTitle>Order summary</CardTitle>
-            <CardDescription>Live preview before payment.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border border-border bg-secondary p-4">
-              <div className="text-sm font-semibold text-foreground">Cable subscription</div>
-              <div className="mt-1 text-xs text-muted-foreground">Receipts remain available in transaction history.</div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Provider</span>
-                <span className="font-medium text-foreground">{selectedProvider?.name || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Smartcard/IUC</span>
-                <span className="font-medium text-foreground">{cleanCard || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Package</span>
-                <span className="font-medium text-foreground">{selectedPackage?.name || cleanPackage || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-medium text-foreground">₦{Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}</span>
-              </div>
-              <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Wallet balance</span>
-                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
-                    ₦{formatMoney(wallet?.balance || 0)}
-                  </Badge>
-                </div>
-              </div>
-              {!packageChoices.length ? (
-                <div className="rounded-2xl border border-dashed border-border bg-card px-3 py-2 text-xs text-muted-foreground">
-                  No package list available for this provider right now.
-                </div>
-              ) : null}
-              {verifyResult.ok ? (
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-200">
-                  Verified customer: {verifyResult.customerName}
-                </div>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      {summaryOpen ? (
+        <div className="fixed inset-0 z-[210] flex items-end justify-center bg-black/50 p-0 md:items-center md:p-6">
+          <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Order summary</h3>
+                <p className="text-sm text-muted-foreground">Confirm cable subscription details.</p>
+              </div>
+              <button type="button" onClick={() => setSummaryOpen(false)} className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
+                Close
+              </button>
+            </div>
+            <div className="space-y-4 px-5 py-5">
+              <div className="rounded-2xl border border-border bg-secondary p-4">
+                <div className="text-sm font-semibold text-foreground">{selectedProvider?.name || '—'} Cable TV</div>
+                <div className="text-xs text-muted-foreground">Wallet-funded subscription</div>
+              </div>
+              <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
+                {[
+                  { label: 'Smartcard / IUC', value: cleanCard || '—' },
+                  { label: 'Provider', value: selectedProvider?.name || '—' },
+                  { label: 'Package', value: selectedPackage?.name || cleanPackage || '—' },
+                  { label: 'Phone', value: cleanPhone || '—' },
+                  { label: 'Amount', value: `₦${Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}` },
+                  { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
+                    <span className="text-sm text-muted-foreground">{item.label}</span>
+                    <span className="text-sm font-medium text-foreground">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
+              <Button variant="secondary" className="h-11 rounded-xl" onClick={() => setSummaryOpen(false)} disabled={busy}>
+                Cancel
+              </Button>
+              <Button className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={async () => { setSummaryOpen(false); await submit(); }} disabled={!canSubmit}>
+                Pay Cable
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <TransactionProcessingModal open={busy || processingOpen} />
       <TransactionReceiptModal

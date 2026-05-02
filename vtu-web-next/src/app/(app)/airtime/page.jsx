@@ -66,6 +66,7 @@ export default function AirtimePage() {
   const [busy, setBusy] = useState(false);
   const [processingOpen, setProcessingOpen] = useState(false);
   const [receipt, setReceipt] = useState(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const [network, setNetwork] = useState('');
   const [phone, setPhone] = useState('');
   const [amount, setAmount] = useState('');
@@ -120,6 +121,10 @@ export default function AirtimePage() {
   const phoneError = cleanPhone && !validNigerianPhone(phone) ? 'Enter a valid Nigerian phone number.' : '';
   const amountError = amount && (!Number.isFinite(parsedAmount) || parsedAmount <= 0) ? 'Enter a valid airtime amount.' : '';
   const canSubmit = Boolean(network && cleanPhone && !phoneError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy);
+  const openConfirm = () => {
+    if (!canSubmit) return;
+    setSummaryOpen(true);
+  };
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -239,7 +244,7 @@ export default function AirtimePage() {
         description="Top up supported Nigerian networks from a clean airtime workspace."
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
+      <div className="grid gap-4">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Buy Airtime</CardTitle>
@@ -333,57 +338,64 @@ export default function AirtimePage() {
               </div>
             </div>
 
-            <Button onClick={submit} disabled={!canSubmit} className="w-full sm:w-auto">
+            <Button onClick={openConfirm} disabled={!canSubmit} className="w-full sm:w-auto">
               <Smartphone className="h-4 w-4" />
-              {busy ? 'Processing...' : 'Buy Airtime'}
+              {busy ? 'Processing...' : 'Confirm'}
             </Button>
 
           </CardContent>
         </Card>
-
-        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-          <CardHeader>
-            <CardTitle>Order summary</CardTitle>
-            <CardDescription>Live preview before purchase.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border border-border bg-secondary p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50 text-primary">
-                  <Phone className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">Airtime purchase</div>
-                  <div className="text-xs text-muted-foreground">Wallet-funded transaction</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Network</span>
-                <span className="font-medium text-foreground">{networkLabel(network)}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Phone</span>
-                <span className="font-medium text-foreground">{cleanPhone || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-medium text-foreground">₦{Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}</span>
-              </div>
-              <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Wallet balance</span>
-                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
-                    ₦{formatMoney(wallet?.balance || 0)}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
+
+      {summaryOpen ? (
+        <div className="fixed inset-0 z-[210] flex items-end justify-center bg-black/50 p-0 md:items-center md:p-6">
+          <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">Order summary</h3>
+                <p className="text-sm text-muted-foreground">Confirm your airtime purchase details.</p>
+              </div>
+              <button type="button" onClick={() => setSummaryOpen(false)} className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
+                Close
+              </button>
+            </div>
+            <div className="space-y-4 px-5 py-5">
+              <div className="rounded-2xl border border-border bg-secondary p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">{networkLabel(network)} Airtime</div>
+                    <div className="text-xs text-muted-foreground">Wallet-funded transaction</div>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
+                {[
+                  { label: 'Phone', value: cleanPhone || '—' },
+                  { label: 'Network', value: networkLabel(network) },
+                  { label: 'Amount', value: `₦${Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}` },
+                  { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
+                    <span className="text-sm text-muted-foreground">{item.label}</span>
+                    <span className="text-sm font-medium text-foreground">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
+              <Button variant="secondary" className="h-11 rounded-xl" onClick={() => setSummaryOpen(false)} disabled={busy}>
+                Cancel
+              </Button>
+              <Button className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={async () => { setSummaryOpen(false); await submit(); }} disabled={!canSubmit}>
+                Buy Airtime
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <TransactionProcessingModal open={busy || processingOpen} />
       <TransactionReceiptModal
