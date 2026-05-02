@@ -57,6 +57,7 @@ function validNigerianPhone(value) {
 
 const defaultRecentRecipients = ['08012345678', '08134567890', '09023456789'];
 const CACHE_KEY = 'airtime:v1';
+const AIRTIME_NETWORK_ORDER = ['mtn', 'glo', 'airtel', '9mobile'];
 
 export default function AirtimePage() {
   const [catalog, setCatalog] = useState(null);
@@ -111,6 +112,12 @@ export default function AirtimePage() {
   }, [load]);
 
   const networks = stringifyList(catalog?.airtime_networks).map((item) => normalizeNetwork(item));
+  const orderedNetworks = useMemo(() => {
+    const set = new Set(networks.filter(Boolean));
+    const ordered = AIRTIME_NETWORK_ORDER.filter((item) => set.has(item));
+    const extras = [...set].filter((item) => !AIRTIME_NETWORK_ORDER.includes(item));
+    return [...ordered, ...extras];
+  }, [networks]);
 
   useEffect(() => {
     if (!network && networks.length) setNetwork(networks[0]);
@@ -253,8 +260,8 @@ export default function AirtimePage() {
           <CardContent className="space-y-5">
             <div className="space-y-2">
               <div className="axis-label">Network</div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {networks.map((item) => {
+              <div className="grid grid-cols-2 gap-3">
+                {orderedNetworks.map((item) => {
                   const active = network === item;
                   return (
                     <button
@@ -284,8 +291,8 @@ export default function AirtimePage() {
                     </button>
                   );
                 })}
-                {!networks.length ? (
-                  <div className="rounded-2xl border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground sm:col-span-2 lg:col-span-4">
+                {!orderedNetworks.length ? (
+                  <div className="rounded-2xl border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground col-span-2">
                     Network catalog is still loading.
                   </div>
                 ) : null}

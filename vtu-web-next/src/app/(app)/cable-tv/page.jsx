@@ -80,6 +80,7 @@ const FALLBACK_CABLE_PACKAGES = {
   ],
 };
 const CACHE_KEY = 'cable-tv:v1';
+const CABLE_PROVIDER_ORDER = ['dstv', 'gotv', 'startimes', 'showmax'];
 
 function fallbackPackagesForProvider(providerId) {
   const key = String(providerId || '').trim().toLowerCase();
@@ -146,10 +147,16 @@ export default function CableTvPage() {
   }, [load]);
 
   const providers = useMemo(() => providerOptions(catalog?.cable_providers), [catalog?.cable_providers]);
+  const orderedProviders = useMemo(() => {
+    const byId = new Map(providers.map((item) => [item.id, item]));
+    const ordered = CABLE_PROVIDER_ORDER.map((id) => byId.get(id)).filter(Boolean);
+    const extras = providers.filter((item) => !CABLE_PROVIDER_ORDER.includes(item.id));
+    return [...ordered, ...extras];
+  }, [providers]);
 
   useEffect(() => {
-    if (!provider && providers.length) setProvider(providers[0].id);
-  }, [provider, providers]);
+    if (!provider && orderedProviders.length) setProvider(orderedProviders[0].id);
+  }, [provider, orderedProviders]);
 
   const selectedProvider = providers.find((item) => item.id === provider) || null;
   const packageChoices = Array.isArray(selectedProvider?.packages) ? selectedProvider.packages : [];
@@ -384,8 +391,8 @@ export default function CableTvPage() {
           <CardContent className="space-y-5">
             <div className="space-y-2">
               <div className="axis-label">Provider</div>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {providers.map((item) => {
+              <div className="grid grid-cols-2 gap-3">
+                {orderedProviders.map((item) => {
                   const active = provider === item.id;
                   return (
                     <button
@@ -419,8 +426,8 @@ export default function CableTvPage() {
                     </button>
                   );
                 })}
-                {!providers.length ? (
-                  <div className="rounded-2xl border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground sm:col-span-3">
+                {!orderedProviders.length ? (
+                  <div className="rounded-2xl border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground col-span-2">
                     Provider catalog is still loading.
                   </div>
                 ) : null}

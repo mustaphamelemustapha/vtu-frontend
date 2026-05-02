@@ -47,6 +47,10 @@ export default function ExamPinsPage() {
   const [receipt, setReceipt] = useState(null);
 
   const [exam, setExam] = useState('');
+  const [packages, setPackages] = useState([]);
+  const [packagesBusy, setPackagesBusy] = useState(false);
+  const [packagesError, setPackagesError] = useState('');
+  const [examType, setExamType] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [phone, setPhone] = useState('');
 
@@ -89,19 +93,55 @@ export default function ExamPinsPage() {
     load().catch(() => {});
   }, [load]);
 
-  const examTypes = stringifyList(catalog?.exam_types);
+  const examTypes = stringifyList(catalog?.exam_types).filter((item) => ['waec', 'jamb'].includes(String(item).toLowerCase()));
 
   useEffect(() => {
     if (!exam && examTypes.length) setExam(examTypes[0]);
   }, [exam, examTypes]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const selectedExam = String(exam || '').trim().toLowerCase();
+    if (!selectedExam) {
+      setPackages([]);
+      setExamType('');
+      return;
+    }
+    setPackagesBusy(true);
+    setPackagesError('');
+    apiFetch(`/services/exam/packages?exam=${encodeURIComponent(selectedExam)}`)
+      .then((res) => {
+        if (cancelled) return;
+        const rows = Array.isArray(res?.packages) ? res.packages : [];
+        setPackages(rows);
+        const first = rows[0]?.code ? String(rows[0].code) : '';
+        setExamType((prev) => (prev && rows.some((item) => String(item.code) === prev) ? prev : first));
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setPackages([]);
+        setExamType('');
+        setPackagesError(sanitizeProviderMessage(err?.message) || 'Unable to load exam packages right now.');
+      })
+      .finally(() => {
+        if (!cancelled) setPackagesBusy(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [exam]);
+
   const qty = Number.parseInt(quantity || '0', 10);
   const cleanPhone = normalizePhone(phone);
   const phoneError = cleanPhone && !validNigerianPhone(phone) ? 'Enter a valid Nigerian phone number or leave it empty.' : '';
   const quantityError = quantity && (!Number.isFinite(qty) || qty < 1 || qty > 10) ? 'Quantity must be between 1 and 10.' : '';
-  const total = Number.isFinite(qty) && qty > 0 ? qty * unitPrice : 0;
-
-  const canSubmit = Boolean(exam && Number.isFinite(qty) && qty >= 1 && qty <= 10 && !phoneError && !quantityError && !busy);
+  const selectedPackage = useMemo(() => {
+    if (!examType) return null;
+    return packages.find((item) => String(item?.code) === String(examType)) || null;
+  }, [packages, examType]);
+  const effectiveUnitPrice = Number(selectedPackage?.amount || unitPrice);
+  const effectiveTotal = Number.isFinite(qty) && qty > 0 ? qty * effectiveUnitPrice : 0;
+  const canSubmit = Boolean(exam && examType && Number.isFinite(qty) && qty >= 1 && qty <= 10 && !phoneError && !quantityError && !busy && !packagesBusy);
 
   const submit = async () => {
     if (!canSubmit) return;
@@ -118,6 +158,7 @@ export default function ExamPinsPage() {
           body: JSON.stringify({
             client_request_id: `web-exam-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
             exam,
+            exam_type: examType,
             quantity: qty,
             phone_number: cleanPhone || null,
           }),
@@ -143,11 +184,12 @@ export default function ExamPinsPage() {
           service: 'Exam PIN Purchase',
           status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
           message: sanitizeProviderMessage(`${res?.message || ''} ${baseMessage}${pins ? ` ${pins.trim()}` : ''}`.trim()) || `${baseMessage}${pins ? ` ${pins.trim()}` : ''}`.trim(),
-          amount: total,
+          amount: effectiveTotal,
           reference: res?.reference || '—',
           phone: cleanPhone,
           meta: [
             { label: 'Exam body', value: exam ? titleCase(exam) : '—' },
+            { label: 'Package', value: selectedPackage?.name || examType || '—' },
             { label: 'Quantity', value: Number.isFinite(qty) ? qty : '—' },
           ],
         });
@@ -158,10 +200,11 @@ export default function ExamPinsPage() {
           service: 'Exam PIN Purchase',
           status: 'failed',
           message: sanitizeProviderMessage(err?.message) || 'Unable to purchase exam PINs right now.',
-          amount: total,
+          amount: effectiveTotal,
           phone: cleanPhone,
           meta: [
             { label: 'Exam body', value: exam ? titleCase(exam) : '—' },
+            { label: 'Package', value: selectedPackage?.name || examType || '—' },
             { label: 'Quantity', value: Number.isFinite(qty) ? qty : '—' },
           ],
         });
@@ -225,14 +268,14 @@ export default function ExamPinsPage() {
       <PageHeader
         eyebrow="Services"
         title="Exam PINs"
-        description="Buy WAEC, NECO, or JAMB PINs from your wallet and keep the purchase record in history."
+        description="Buy WAEC and JAMB PINs from your wallet with live package codes."
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
             <CardTitle>Buy Exam PIN</CardTitle>
-            <CardDescription>Choose exam body, quantity, and optional phone reference.</CardDescription>
+            <CardDescription>Choose exam body, package, quantity, and optional phone reference.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
@@ -259,6 +302,28 @@ export default function ExamPinsPage() {
                   {quantityError || 'Allowed quantity: 1 to 10 PINs.'}
                 </p>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="axis-label">Package</div>
+              <select
+                value={examType}
+                onChange={(e) => setExamType(e.target.value)}
+                disabled={packagesBusy || !packages.length}
+                className="flex h-11 w-full rounded-2xl border border-border bg-input px-4 py-2 text-sm text-foreground outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {packagesBusy ? <option value="">Loading packages...</option> : null}
+                {!packagesBusy && !packages.length ? <option value="">No package available</option> : null}
+                {packages.map((item) => (
+                  <option key={item.code} value={item.code}>
+                    {item.name}
+                    {item.amount ? ` - ₦${formatMoney(item.amount)}` : ''}
+                  </option>
+                ))}
+              </select>
+              <p className={cn('text-xs', packagesError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
+                {packagesError || (selectedPackage?.code ? `Code: ${selectedPackage.code}` : 'Select package before checkout.')}
+              </p>
             </div>
 
             {loadError ? (
@@ -316,11 +381,11 @@ export default function ExamPinsPage() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">Unit price</span>
-                <span className="font-medium text-foreground">₦{formatMoney(unitPrice)}</span>
+                <span className="font-medium text-foreground">₦{formatMoney(effectiveUnitPrice)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-muted-foreground">Estimated total</span>
-                <span className="font-semibold text-foreground">₦{formatMoney(total)}</span>
+                <span className="font-semibold text-foreground">₦{formatMoney(effectiveTotal)}</span>
               </div>
               <div className="border-t border-border pt-3">
                 <div className="flex items-center justify-between gap-3">
