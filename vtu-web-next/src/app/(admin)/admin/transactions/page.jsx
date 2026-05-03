@@ -61,23 +61,26 @@ export default function AdminTransactionsPage() {
         allTransactions.push(...pageItems);
       }
 
-      const auditFirstPage = await adminGetAuditLogs({ page: 1, page_size: ADMIN_PAGE_SIZE });
-      const allAuditLogs = Array.isArray(auditFirstPage?.items) ? [...auditFirstPage.items] : [];
-      const expectedAuditTotal = Number(auditFirstPage?.total || allAuditLogs.length || 0);
-      let auditPage = 1;
-      while (allAuditLogs.length < expectedAuditTotal) {
-        auditPage += 1;
-        const pageResult = await adminGetAuditLogs({ page: auditPage, page_size: ADMIN_PAGE_SIZE });
-        const pageItems = Array.isArray(pageResult?.items) ? pageResult.items : [];
-        if (!pageItems.length) break;
-        allAuditLogs.push(...pageItems);
-      }
-
       const latestAuditByReference = new Map();
-      for (const log of allAuditLogs) {
-        const target = String(log?.target || '').trim();
-        if (!target || latestAuditByReference.has(target)) continue;
-        latestAuditByReference.set(target, log);
+      try {
+        const auditFirstPage = await adminGetAuditLogs({ page: 1, page_size: ADMIN_PAGE_SIZE });
+        const allAuditLogs = Array.isArray(auditFirstPage?.items) ? [...auditFirstPage.items] : [];
+        const expectedAuditTotal = Number(auditFirstPage?.total || allAuditLogs.length || 0);
+        let auditPage = 1;
+        while (allAuditLogs.length < expectedAuditTotal) {
+          auditPage += 1;
+          const pageResult = await adminGetAuditLogs({ page: auditPage, page_size: ADMIN_PAGE_SIZE });
+          const pageItems = Array.isArray(pageResult?.items) ? pageResult.items : [];
+          if (!pageItems.length) break;
+          allAuditLogs.push(...pageItems);
+        }
+        for (const log of allAuditLogs) {
+          const target = String(log?.target || '').trim();
+          if (!target || latestAuditByReference.has(target)) continue;
+          latestAuditByReference.set(target, log);
+        }
+      } catch {
+        // Keep transactions visible even if audit logs endpoint is unavailable.
       }
 
       const mergedRows = allTransactions.map((row) => ({
@@ -87,6 +90,10 @@ export default function AdminTransactionsPage() {
 
       setRows(mergedRows);
       setTotalRows(expectedTotal);
+    } catch (err) {
+      setRows([]);
+      setTotalRows(0);
+      console.error('Admin transactions load failed:', err);
     } finally {
       setLoading(false);
     }
