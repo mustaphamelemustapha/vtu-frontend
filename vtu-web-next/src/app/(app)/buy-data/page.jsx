@@ -30,12 +30,6 @@ const NETWORK_TABS = [
 ];
 
 const BLOCK_KEYWORDS = [];
-const PROMO_PLAN_CONFIG = {
-  'mtn:1001': {
-    oldPrice: 339,
-    discountLabel: 'Promo',
-  },
-};
 
 function normalizeNetwork(value) {
   const raw = String(value || '').trim().toLowerCase();
@@ -84,17 +78,14 @@ function sanitizePlanText(value) {
     .trim();
 }
 
-function promoKeyForPlan(plan) {
-  const network = normalizeNetwork(plan?.network);
-  const code = String(plan?.plan_code || '').trim().toLowerCase();
-  if (!network || !code) return '';
-  const normalizedCode = code.includes(':') ? code.split(':').pop() : code;
-  return `${network}:${normalizedCode}`;
-}
-
 function promoConfigForPlan(plan) {
-  const key = promoKeyForPlan(plan);
-  return key ? PROMO_PLAN_CONFIG[key] || null : null;
+  if (!plan || !plan.promo_active) return null;
+  return {
+    oldPrice: Number(plan.promo_old_price || 0) || null,
+    discountLabel: plan.promo_label || 'Promo',
+    remaining: Number(plan.promo_remaining || 0),
+    limit: Number(plan.promo_limit || 0),
+  };
 }
 
 function planPrice(plan) {
@@ -532,8 +523,15 @@ export default function BuyDataPage() {
                               ) : null}
                             </div>
                             {promo?.discountLabel ? (
-                              <div className="mt-2 inline-flex h-6 items-center rounded-full border border-emerald-400/70 bg-emerald-500/10 px-2.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-300">
-                                {promo.discountLabel}
+                              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                <div className="inline-flex h-6 items-center rounded-full border border-emerald-400/70 bg-emerald-500/10 px-2.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-300">
+                                  {promo.discountLabel}
+                                </div>
+                                {Number.isFinite(promo.remaining) && promo.remaining >= 0 ? (
+                                  <div className="inline-flex h-6 items-center rounded-full border border-border bg-background px-2.5 text-[11px] font-medium text-muted-foreground">
+                                    {promo.remaining} left
+                                  </div>
+                                ) : null}
                               </div>
                             ) : null}
                           </div>

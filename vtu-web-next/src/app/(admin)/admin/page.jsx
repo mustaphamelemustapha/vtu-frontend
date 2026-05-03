@@ -61,6 +61,15 @@ export default function AdminOverviewPage() {
     { label: 'Failed tx', value: String(statusCounts.failed), detail: 'Needs operational review', icon: ShieldAlert, tone: 'danger' },
     { label: 'Pending tx', value: String(statusCounts.pending), detail: 'Awaiting provider callback', icon: TrendingUp, tone: 'warning' },
     { label: 'Support issues', value: String(analytics?.reports_open ?? reports.length), detail: 'Open disputes and reports', icon: Gift, tone: 'danger' },
+    {
+      label: 'MTN 1GB promo',
+      value: `${Number(analytics?.promo_mtn_1gb_users_used || 0)}/${Number(analytics?.promo_mtn_1gb_limit || 50)}`,
+      detail: Number(analytics?.promo_mtn_1gb_remaining || 0) > 0
+        ? `${Number(analytics?.promo_mtn_1gb_remaining || 0)} slots left`
+        : 'Promo exhausted',
+      icon: TrendingUp,
+      tone: Number(analytics?.promo_mtn_1gb_remaining || 0) > 0 ? 'brand' : 'warning',
+    },
   ];
 
   const periodCards = analytics?.profit_period_estimates || {};
