@@ -18,6 +18,7 @@ export default function AdminWalletsPage() {
   const [query, setQuery] = useState('');
   const [walletRows, setWalletRows] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
+  const [ledgerTotal, setLedgerTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [aggregateBalance, setAggregateBalance] = useState(0);
   const [adjustForm, setAdjustForm] = useState({
@@ -82,8 +83,22 @@ export default function AdminWalletsPage() {
       );
       setAggregateBalance(aggregate);
 
-      const ledger = await adminGetTransactions({ page: 1, page_size: 60 });
-      setLedgerRows(Array.isArray(ledger?.items) ? ledger.items : []);
+      // Load full ledger history (all pages), not only recent rows.
+      const ledgerPageSize = 200;
+      let ledgerPage = 1;
+      const ledgerAllRows = [];
+      let ledgerExpectedTotal = 0;
+      while (ledgerPage <= 200) {
+        const ledger = await adminGetTransactions({ page: ledgerPage, page_size: ledgerPageSize });
+        const ledgerItems = Array.isArray(ledger?.items) ? ledger.items : [];
+        ledgerExpectedTotal = Number(ledger?.total || ledgerExpectedTotal || 0);
+        if (!ledgerItems.length) break;
+        ledgerAllRows.push(...ledgerItems);
+        if (ledgerExpectedTotal > 0 && ledgerAllRows.length >= ledgerExpectedTotal) break;
+        ledgerPage += 1;
+      }
+      setLedgerRows(ledgerAllRows);
+      setLedgerTotal(ledgerExpectedTotal || ledgerAllRows.length);
     } finally {
       setLoading(false);
     }
@@ -130,7 +145,7 @@ export default function AdminWalletsPage() {
         <Card>
           <CardContent className="p-5">
             <div className="axis-label">Ledger records</div>
-            <div className="mt-2 text-2xl font-semibold text-foreground">{ledgerRows.length}</div>
+            <div className="mt-2 text-2xl font-semibold text-foreground">{ledgerTotal || ledgerRows.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -161,7 +176,7 @@ export default function AdminWalletsPage() {
           <CardDescription>Funding events, service debits, and referral rewards from transaction rails.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {ledgerRows.slice(0, 18).map((row) => (
+          {ledgerRows.map((row) => (
             <div key={row.reference || row.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-secondary p-3">
               <div>
                 <div className="text-sm font-medium text-foreground">{row.reference}</div>
