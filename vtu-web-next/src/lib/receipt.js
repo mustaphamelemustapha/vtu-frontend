@@ -61,7 +61,7 @@ async function renderReceiptCanvas(sourceNode) {
   if (typeof window === 'undefined' || !sourceNode) return null;
   const { default: html2canvas } = await import('html2canvas');
   return html2canvas(sourceNode, {
-    scale: 2,
+    scale: Math.min(3, typeof window !== 'undefined' ? window.devicePixelRatio || 2 : 2),
     useCORS: true,
     backgroundColor: '#ffffff',
     logging: false,

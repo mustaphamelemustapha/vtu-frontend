@@ -177,41 +177,44 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
             </div>
           </motion.div>
 
-          <div className="pointer-events-none fixed -left-[9999px] top-0 w-[560px]">
-            <div ref={pdfReceiptRef} className="w-[560px] overflow-hidden rounded-2xl bg-slate-100 text-slate-900">
-              <div className="bg-gradient-to-br from-[#2563eb] via-[#2f6ceb] to-[#3b82f6] px-8 pb-8 pt-10">
+          <div className="pointer-events-none fixed -left-[9999px] top-0 w-[900px]">
+            <div ref={pdfReceiptRef} className="w-[900px] overflow-hidden rounded-[28px] bg-[#f3f6fb] text-slate-900">
+              <div className="bg-gradient-to-br from-[#2563eb] via-[#2f6ceb] to-[#3b82f6] px-12 pb-12 pt-14">
                 <div className="mx-auto flex w-fit flex-col items-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg">
-                    <Image src="/brand/axisvtu-icon.png" alt="AxisVTU" width={42} height={42} className="h-10 w-10 object-contain" />
+                  <div className="rounded-2xl bg-white px-5 py-4 shadow-lg">
+                    <Image src="/brand/axisvtu-logo.png" alt="AxisVTU" width={220} height={56} className="h-12 w-auto object-contain" />
                   </div>
-                  <div className="mt-3 text-[42px] font-semibold tracking-tight text-white">AxisVTU</div>
-                  <div className="mt-1 text-[28px] text-blue-100">Transaction Receipt</div>
+                  <div className="mt-5 text-[46px] font-semibold tracking-tight text-white">Transaction Receipt</div>
                 </div>
               </div>
-              <div className="px-6 py-6">
-                <div className="rounded-[22px] border border-slate-200 bg-white px-6 py-6 shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+              <div className="px-10 py-10">
+                <div className="rounded-[24px] border border-slate-200 bg-white px-8 py-8 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
                   <div className="flex items-center justify-center">
-                    <span className={`rounded-full border px-3 py-1 text-[22px] font-semibold ${status.badge}`}>
+                    <span className={`rounded-full border px-4 py-1.5 text-[24px] font-semibold ${status.badge}`}>
                       ● {receipt.status === 'success' ? 'Successful' : receipt.status === 'failed' ? 'Failed' : 'Pending'}
                     </span>
                   </div>
-                  <div className="mt-5 text-center text-[44px] font-semibold tracking-tight text-slate-900">
+
+                  <div className="mt-5 text-center text-[52px] font-semibold tracking-tight text-slate-900">
                     ₦{formatMoney(receipt.amount || 0)}
                   </div>
-                  <div className="mt-1 text-center text-[22px] text-slate-600">{receipt.service}</div>
-                  <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2">
+                  <div className="mt-2 text-center text-[30px] font-medium text-slate-700">{receipt.service}</div>
+
+                  <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3">
                     {rows.map((row) => (
-                      <div key={`pdf-${row.label}-${row.value}`} className="flex items-center justify-between gap-4 border-b border-slate-200 py-3 last:border-b-0">
-                        <span className="text-[20px] text-slate-500">{row.label}</span>
-                        <span className="text-[20px] font-medium text-slate-900 text-right">{row.value}</span>
+                      <div key={`pdf-${row.label}-${row.value}`} className="flex items-start justify-between gap-6 border-b border-slate-200 py-4 last:border-b-0">
+                        <span className="text-[24px] text-slate-500">{row.label}</span>
+                        <span className="max-w-[60%] text-right text-[24px] font-semibold text-slate-900">{row.value}</span>
                       </div>
                     ))}
                   </div>
+
                   {receipt.message ? (
-                    <div className="mt-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[18px] leading-8 text-slate-700">{receipt.message}</div>
+                    <div className="mt-5 rounded-xl border border-slate-200 bg-white px-5 py-4 text-[22px] leading-9 text-slate-700">{receipt.message}</div>
                   ) : null}
                 </div>
-                <div className="mt-5 text-center text-[20px] text-slate-400">www.axisvtu.com</div>
+
+                <div className="mt-6 text-center text-[22px] font-medium text-slate-500">www.axisvtu.com</div>
               </div>
             </div>
           </div>
