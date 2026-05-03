@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Database, RefreshCw, X } from 'lucide-react';
 import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan } from '@/lib/api';
+import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,10 +16,10 @@ import { Input } from '@/components/ui/input';
 const NETWORKS = ['', 'mtn', 'airtel', 'glo', '9mobile'];
 
 function asList(value) {
-  if (Array.isArray(value)) return value;
+  if (Array.isArray(value)) return filterAllowedAmigoPlans(value);
   if (value && typeof value === 'object') {
     const list = value.data ?? value.items ?? value.plans;
-    return Array.isArray(list) ? list : [];
+    return Array.isArray(list) ? filterAllowedAmigoPlans(list) : [];
   }
   return [];
 }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Cable, GraduationCap, RefreshCw, Smartphone, Wifi, Zap } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 import { formatDateTime } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,7 +31,10 @@ export default function AdminServicesPage() {
 
       if (catalogRes.status === 'fulfilled') setCatalog(catalogRes.value || {});
       if (plansRes.status === 'fulfilled') {
-        const next = Array.isArray(plansRes.value) ? plansRes.value : [];
+        const source = Array.isArray(plansRes.value)
+          ? plansRes.value
+          : plansRes.value?.data ?? plansRes.value?.items ?? plansRes.value?.plans ?? [];
+        const next = filterAllowedAmigoPlans(Array.isArray(source) ? source : []);
         setPlans(next);
         setLastSync(new Date().toISOString());
       }

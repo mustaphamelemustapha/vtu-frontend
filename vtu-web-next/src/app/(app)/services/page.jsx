@@ -17,6 +17,7 @@ import {
   ReceiptText,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 import { formatMoney } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -112,10 +113,10 @@ function stringifyList(items) {
 }
 
 function parsePlansResponse(raw) {
-  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw)) return filterAllowedAmigoPlans(raw);
   if (!raw || typeof raw !== 'object') return [];
   const list = raw.data ?? raw.plans ?? raw.items;
-  return Array.isArray(list) ? list : [];
+  return Array.isArray(list) ? filterAllowedAmigoPlans(list) : [];
 }
 
 function groupPlans(rows) {

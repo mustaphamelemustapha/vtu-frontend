@@ -1,3 +1,4 @@
+import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v3';
 const PLAN_CACHE_TTL_MS = 2 * 60 * 1000;
 const PLAN_REQUEST_TIMEOUT_MS = 18000;
@@ -5,10 +6,10 @@ const PLAN_REQUEST_TIMEOUT_MS = 18000;
 let inFlightPlansPromise = null;
 
 function parsePlansResponse(raw) {
-  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw)) return filterAllowedAmigoPlans(raw);
   if (!raw || typeof raw !== 'object') return [];
   const list = raw.data ?? raw.plans ?? raw.items;
-  return Array.isArray(list) ? list : [];
+  return Array.isArray(list) ? filterAllowedAmigoPlans(list) : [];
 }
 
 function wait(ms) {
@@ -34,19 +35,22 @@ function safeReadCache() {
 export function readCachedDataPlans({ allowStale = true } = {}) {
   const { timestamp, plans } = safeReadCache();
   if (!plans.length) return [];
-  if (allowStale) return plans;
+  const filteredPlans = filterAllowedAmigoPlans(plans);
+  if (allowStale) return filteredPlans;
   if (now() - timestamp > PLAN_CACHE_TTL_MS) return [];
-  return plans;
+  return filteredPlans;
 }
 
 export function writeCachedDataPlans(plans) {
   if (typeof window === 'undefined' || !Array.isArray(plans) || !plans.length) return;
+  const filteredPlans = filterAllowedAmigoPlans(plans);
+  if (!filteredPlans.length) return;
   try {
     window.localStorage.setItem(
       PLAN_CACHE_KEY,
       JSON.stringify({
         timestamp: now(),
-        plans,
+        plans: filteredPlans,
       })
     );
   } catch {
