@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, RefreshCw } from 'lucide-react';
-import { adminGetTransactionDetails, adminGetTransactions, adminReconcileDelivered } from '@/lib/api';
+import { adminGetAuditLogs, adminGetTransactionDetails, adminGetTransactions, adminReconcileDelivered } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { startCase } from '@/lib/admin-utils';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,12 @@ import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 
 const STATUS_FILTERS = ['', 'success', 'pending', 'failed', 'refunded'];
 const TYPE_FILTERS = ['', 'data', 'airtime', 'electricity', 'cable', 'exam', 'deposit'];
+const ADMIN_PAGE_SIZE = 200;
 
 export default function AdminTransactionsPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalRows, setTotalRows] = useState(0);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
@@ -37,16 +39,54 @@ export default function AdminTransactionsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await adminGetTransactions({
+      const txParams = {
         q: query,
         status: status || undefined,
         tx_type: type || undefined,
         from: fromDate || undefined,
         to: toDate || undefined,
         page: 1,
-        page_size: 100,
-      });
-      setRows(Array.isArray(result?.items) ? result.items : []);
+        page_size: ADMIN_PAGE_SIZE,
+      };
+      const firstPage = await adminGetTransactions(txParams);
+      const allTransactions = Array.isArray(firstPage?.items) ? [...firstPage.items] : [];
+      const expectedTotal = Number(firstPage?.total || allTransactions.length || 0);
+      let currentPage = 1;
+
+      while (allTransactions.length < expectedTotal) {
+        currentPage += 1;
+        const pageResult = await adminGetTransactions({ ...txParams, page: currentPage });
+        const pageItems = Array.isArray(pageResult?.items) ? pageResult.items : [];
+        if (!pageItems.length) break;
+        allTransactions.push(...pageItems);
+      }
+
+      const auditFirstPage = await adminGetAuditLogs({ page: 1, page_size: ADMIN_PAGE_SIZE });
+      const allAuditLogs = Array.isArray(auditFirstPage?.items) ? [...auditFirstPage.items] : [];
+      const expectedAuditTotal = Number(auditFirstPage?.total || allAuditLogs.length || 0);
+      let auditPage = 1;
+      while (allAuditLogs.length < expectedAuditTotal) {
+        auditPage += 1;
+        const pageResult = await adminGetAuditLogs({ page: auditPage, page_size: ADMIN_PAGE_SIZE });
+        const pageItems = Array.isArray(pageResult?.items) ? pageResult.items : [];
+        if (!pageItems.length) break;
+        allAuditLogs.push(...pageItems);
+      }
+
+      const latestAuditByReference = new Map();
+      for (const log of allAuditLogs) {
+        const target = String(log?.target || '').trim();
+        if (!target || latestAuditByReference.has(target)) continue;
+        latestAuditByReference.set(target, log);
+      }
+
+      const mergedRows = allTransactions.map((row) => ({
+        ...row,
+        audit: latestAuditByReference.get(String(row.reference || '').trim()) || null,
+      }));
+
+      setRows(mergedRows);
+      setTotalRows(expectedTotal);
     } finally {
       setLoading(false);
     }
@@ -63,6 +103,19 @@ export default function AdminTransactionsPage() {
     { key: 'network', label: 'Provider/Network', render: (row) => row.network || '—' },
     { key: 'amount', label: 'Amount', render: (row) => `₦${formatMoney(row.amount || 0)}` },
     { key: 'status', label: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+    {
+      key: 'audit',
+      label: 'Audit',
+      render: (row) => {
+        if (!row.audit) return '—';
+        return (
+          <div className="space-y-0.5">
+            <div className="text-xs font-semibold text-foreground">{startCase(row.audit.action || 'updated')}</div>
+            <div className="text-[11px] text-muted-foreground">{formatDateTime(row.audit.created_at)}</div>
+          </div>
+        );
+      },
+    },
     { key: 'created_at', label: 'Date/time', render: (row) => formatDateTime(row.created_at) },
     {
       key: 'actions',
@@ -97,7 +150,7 @@ export default function AdminTransactionsPage() {
     <div className="space-y-5 pb-8">
       <AdminPageHeader
         title="Transactions management"
-        description="Inspect status, provider, and references. Use filters to focus success, pending, failed, and refunded events."
+        description={`Inspect status, provider, references, and audit activity. Showing ${loading ? '...' : totalRows} transactions.`}
         actions={(
           <Button variant="secondary" onClick={load} disabled={loading}>
             <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
@@ -162,6 +215,27 @@ export default function AdminTransactionsPage() {
               </pre>
             ) : (
               <div className="mt-2 text-sm text-muted-foreground">No provider payload captured for this transaction.</div>
+            )}
+          </div>
+          <div className="mt-3 rounded-2xl border border-border bg-secondary p-3">
+            <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Latest audit</div>
+            {selected?.audit ? (
+              <div className="mt-2 grid gap-2 md:grid-cols-2">
+                <div className="text-sm text-foreground">
+                  <span className="text-muted-foreground">Action: </span>
+                  {startCase(selected.audit.action || 'updated')}
+                </div>
+                <div className="text-sm text-foreground">
+                  <span className="text-muted-foreground">Time: </span>
+                  {formatDateTime(selected.audit.created_at)}
+                </div>
+                <div className="text-sm text-foreground md:col-span-2 break-all">
+                  <span className="text-muted-foreground">Admin: </span>
+                  {selected.audit.admin_email || '—'}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2 text-sm text-muted-foreground">No audit entry recorded for this reference yet.</div>
             )}
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
