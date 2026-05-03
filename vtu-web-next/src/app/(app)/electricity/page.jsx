@@ -216,6 +216,8 @@ export default function ElectricityPage() {
       ]);
       const tokenLine = res?.token ? ` Token: ${res.token}` : '';
       const status = String(res?.status || '').toLowerCase();
+      const pendingVerification = status === 'pending';
+      const displayStatus = status === 'failed' ? 'failed' : 'success';
       const baseMessage =
         status === 'success'
           ? 'Electricity payment completed.'
@@ -225,7 +227,8 @@ export default function ElectricityPage() {
       nextReceipt =
         buildTransactionReceipt({
           service: 'Electricity Payment',
-          status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
+          status: displayStatus,
+          pendingVerification,
           message: sanitizeProviderMessage(`${res?.message || ''} ${baseMessage}${tokenLine}`.trim()) || `${baseMessage}${tokenLine}`.trim(),
           amount: parsedAmount,
           reference: res?.reference || '—',
@@ -270,7 +273,7 @@ export default function ElectricityPage() {
   };
 
   useEffect(() => {
-    if (!receipt || receipt.status !== 'pending') return undefined;
+    if (!receipt || !receipt.pendingVerification) return undefined;
     const reference = String(receipt.reference || '').trim();
     if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
 
@@ -294,6 +297,7 @@ export default function ElectricityPage() {
               : 'Transaction failed.';
         return {
           ...prev,
+          pendingVerification: false,
           status: mappedStatus,
           message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
           createdAt: tx?.created_at || prev.createdAt,

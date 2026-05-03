@@ -285,6 +285,8 @@ export default function CableTvPage() {
         }),
       ]);
       const status = String(res?.status || '').toLowerCase();
+      const pendingVerification = status === 'pending';
+      const displayStatus = status === 'failed' ? 'failed' : 'success';
       const baseMessage =
         status === 'success'
           ? 'Cable payment completed.'
@@ -294,7 +296,8 @@ export default function CableTvPage() {
       nextReceipt =
         buildTransactionReceipt({
           service: 'Cable TV Payment',
-          status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
+          status: displayStatus,
+          pendingVerification,
           message: sanitizeProviderMessage(res?.message) || baseMessage,
           amount: parsedAmount,
           reference: res?.reference || '—',
@@ -336,7 +339,7 @@ export default function CableTvPage() {
   };
 
   useEffect(() => {
-    if (!receipt || receipt.status !== 'pending') return undefined;
+    if (!receipt || !receipt.pendingVerification) return undefined;
     const reference = String(receipt.reference || '').trim();
     if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
 
@@ -360,6 +363,7 @@ export default function CableTvPage() {
               : 'Transaction failed.';
         return {
           ...prev,
+          pendingVerification: false,
           status: mappedStatus,
           message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
           createdAt: tx?.created_at || prev.createdAt,

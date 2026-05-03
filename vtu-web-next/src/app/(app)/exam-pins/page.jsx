@@ -173,6 +173,8 @@ export default function ExamPinsPage() {
       ]);
       const pins = Array.isArray(res?.pins) && res.pins.length ? ` Pins: ${res.pins.join(', ')}` : '';
       const status = String(res?.status || '').toLowerCase();
+      const pendingVerification = status === 'pending';
+      const displayStatus = status === 'failed' ? 'failed' : 'success';
       const baseMessage =
         status === 'success'
           ? 'Exam PIN purchase completed.'
@@ -182,7 +184,8 @@ export default function ExamPinsPage() {
       nextReceipt =
         buildTransactionReceipt({
           service: 'Exam PIN Purchase',
-          status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
+          status: displayStatus,
+          pendingVerification,
           message: sanitizeProviderMessage(`${res?.message || ''} ${baseMessage}${pins ? ` ${pins.trim()}` : ''}`.trim()) || `${baseMessage}${pins ? ` ${pins.trim()}` : ''}`.trim(),
           amount: effectiveTotal,
           reference: res?.reference || '—',
@@ -225,7 +228,7 @@ export default function ExamPinsPage() {
   };
 
   useEffect(() => {
-    if (!receipt || receipt.status !== 'pending') return undefined;
+    if (!receipt || !receipt.pendingVerification) return undefined;
     const reference = String(receipt.reference || '').trim();
     if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
 
@@ -249,6 +252,7 @@ export default function ExamPinsPage() {
               : 'Transaction failed.';
         return {
           ...prev,
+          pendingVerification: false,
           status: mappedStatus,
           message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
           createdAt: tx?.created_at || prev.createdAt,

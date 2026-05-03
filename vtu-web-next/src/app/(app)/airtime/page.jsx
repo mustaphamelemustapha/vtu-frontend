@@ -161,6 +161,8 @@ export default function AirtimePage() {
         }),
       ]);
       const status = String(res?.status || '').toLowerCase();
+      const pendingVerification = status === 'pending';
+      const displayStatus = status === 'failed' ? 'failed' : 'success';
       const baseMessage =
         status === 'success'
           ? 'Airtime delivered successfully.'
@@ -170,7 +172,8 @@ export default function AirtimePage() {
       nextReceipt =
         buildTransactionReceipt({
           service: 'Airtime Purchase',
-          status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
+          status: displayStatus,
+          pendingVerification,
           message: sanitizeProviderMessage(res?.message) || baseMessage,
           amount: parsedAmount,
           reference: res?.reference || '—',
@@ -205,7 +208,7 @@ export default function AirtimePage() {
   };
 
   useEffect(() => {
-    if (!receipt || receipt.status !== 'pending') return undefined;
+    if (!receipt || !receipt.pendingVerification) return undefined;
     const reference = String(receipt.reference || '').trim();
     if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
 
@@ -229,6 +232,7 @@ export default function AirtimePage() {
               : 'Transaction failed.';
         return {
           ...prev,
+          pendingVerification: false,
           status: mappedStatus,
           message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
           createdAt: tx?.created_at || prev.createdAt,

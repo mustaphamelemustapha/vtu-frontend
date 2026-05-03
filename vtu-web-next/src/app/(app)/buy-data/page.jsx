@@ -241,6 +241,7 @@ export default function BuyDataPage() {
         plan_code: selected.plan_code,
         phone_number: normalizedPhone,
         network: selected.network,
+        ported_number: true,
       };
       const timeoutMs = 30000;
       const res = await Promise.race([
@@ -258,11 +259,18 @@ export default function BuyDataPage() {
       ]);
       if (process.env.NODE_ENV !== 'production') console.info('[BuyData] API response received', res);
       const status = String(res?.status || '').toLowerCase();
+      const pendingVerification = status === 'pending';
+      const displayStatus = status === 'failed' ? 'failed' : 'success';
       setReceipt(
         buildTransactionReceipt({
           service: 'Data Purchase',
-          status: status === 'failed' ? 'failed' : status === 'success' ? 'success' : 'pending',
-          message: sanitizeProviderMessage(res?.message) || (status === 'pending' ? 'Transaction submitted and being confirmed.' : 'Purchase submitted.'),
+          status: displayStatus,
+          pendingVerification,
+          message:
+            sanitizeProviderMessage(res?.message) ||
+            (pendingVerification
+              ? 'Purchase submitted successfully. We are confirming provider status in the background.'
+              : 'Purchase submitted.'),
           amount: Number(selected?.price || 0),
           reference: res?.reference || '—',
           phone: normalizedPhone,
@@ -297,7 +305,7 @@ export default function BuyDataPage() {
   };
 
   useEffect(() => {
-    if (!receipt || receipt.status !== 'pending') return undefined;
+    if (!receipt || !receipt.pendingVerification) return undefined;
     const reference = String(receipt.reference || '').trim();
     if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
 
@@ -322,6 +330,7 @@ export default function BuyDataPage() {
               : 'Transaction failed.';
         return {
           ...prev,
+          pendingVerification: false,
           status: mappedStatus,
           message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
           createdAt: tx?.created_at || prev.createdAt,
