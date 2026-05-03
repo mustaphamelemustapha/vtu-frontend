@@ -134,10 +134,32 @@ export async function downloadReceipt(receipt, sourceNode) {
 }
 
 export async function shareReceipt(receipt, sourceNode) {
-  // Mobile browsers (especially iOS Safari and Android Chrome) will block navigator.share() 
-  // if it is called after a long asynchronous operation like generating a canvas/PDF.
-  // To fix the async/mobile-browser conflict, we share the text immediately.
   const text = receiptShareText(receipt);
+
+  if (typeof navigator !== 'undefined' && navigator.share && sourceNode) {
+    try {
+      const canvas = await renderReceiptCanvas(sourceNode);
+      const imageBlob = canvas ? await canvasToBlob(canvas, 'image/png', 1) : null;
+      if (imageBlob) {
+        const file = new File(
+          [imageBlob],
+          `AxisVTU-Receipt-${safeFileName(receipt.reference)}.png`,
+          { type: 'image/png' }
+        );
+        const payload = {
+          title: 'AxisVTU Transaction Receipt',
+          text,
+          files: [file],
+        };
+        if (typeof navigator.canShare !== 'function' || navigator.canShare({ files: [file] })) {
+          await navigator.share(payload);
+          return { mode: 'file-share' };
+        }
+      }
+    } catch (error) {
+      if (error?.name === 'AbortError') return { mode: 'none' };
+    }
+  }
 
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {

@@ -68,8 +68,8 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
   const rows = useMemo(() => {
     if (!receipt) return [];
     const baseRows = [
+      { label: 'Time', value: formatDate(receipt.createdAt) },
       { label: 'Reference', value: receipt.reference || 'N/A' },
-      { label: 'Date & time', value: formatDate(receipt.createdAt) },
     ];
     if (receipt.customer) baseRows.push({ label: 'Customer', value: receipt.customer });
     for (const item of receipt.meta || []) {
@@ -99,7 +99,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
           onClick={onClose}
         >
           <motion.div
-            className="w-full max-w-lg overflow-hidden rounded-t-3xl border border-slate-200 bg-slate-100 shadow-2xl md:rounded-3xl"
+            className="h-[100dvh] w-full max-w-[560px] overflow-hidden rounded-none border-0 bg-[#eef2f7] shadow-2xl md:h-auto md:max-h-[92vh] md:rounded-3xl md:border md:border-slate-200"
             initial={{ opacity: 0, y: 12, scale: 0.99 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.99 }}
@@ -116,7 +116,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
               </div>
             </div>
 
-            <div className="max-h-[min(84vh,760px)] space-y-4 overflow-y-auto px-5 py-5 md:px-6">
+            <div className="max-h-[calc(100dvh-180px)] space-y-4 overflow-y-auto px-5 py-5 md:max-h-[calc(92vh-180px)] md:px-6">
               <div className="mx-auto -mt-2 mb-2 h-1.5 w-12 rounded-full bg-slate-300 md:hidden" />
               <div className="rounded-[22px] border border-slate-200 bg-white px-5 py-5 shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
                 <div className="flex items-start justify-between gap-4">
@@ -168,7 +168,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
                   </Button>
                   <Button onClick={handleShare} className="h-12 bg-[#2563eb] text-white hover:bg-[#1d4ed8]">
                     <Share2 className="h-4 w-4" />
-                    Share receipt file
+                    Share receipt
                   </Button>
                 </div>
                 {actionNote ? <p className="mt-2 text-xs text-slate-500">{actionNote}</p> : null}
