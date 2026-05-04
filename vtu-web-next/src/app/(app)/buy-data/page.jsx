@@ -177,8 +177,8 @@ export default function BuyDataPage() {
 
       if (plansRes.status === 'fulfilled') {
         const val = plansRes.value;
-        // val is from getDataPlansFast, which returns { plans: [], source: '...' }
-        // but we'll be extremely safe here
+        setLoadError(`RAW VAL TYPE: ${typeof val}, IS_ARRAY: ${Array.isArray(val)}, HAS_PLANS: ${!!val?.plans}`);
+        
         let list = [];
         if (Array.isArray(val)) {
           list = val;
@@ -189,9 +189,7 @@ export default function BuyDataPage() {
         }
 
         setPlans(Array.isArray(list) ? list : []);
-        if (!Array.isArray(list) || !list.length) {
-          setLoadError('No data plans were found. Please check back later.');
-        }
+        // temporarily disabling the "No data plans were found" error so we can see the debug message
       } else if (!silent) {
         setPlans([]);
         const reason = plansRes.reason?.message || 'Unknown error';
