@@ -216,7 +216,15 @@ export default function AdminDataPlansPage() {
               </div>
             );
           }},
-          { key: 'plan_code', label: 'Provider code', render: (row) => <span className="font-mono text-xs">{row.plan_code || '—'}</span> },
+          { key: 'provider', label: 'Provider API', render: (row) => (
+            <div className="flex flex-col">
+              <span className="text-xs font-semibold uppercase">{row.provider || 'unknown'}</span>
+              <span className="font-mono text-[9px] text-muted-foreground tracking-tight">
+                ID: {row.provider_plan_id || row.plan_code || '—'}
+              </span>
+            </div>
+          )},
+          { key: 'plan_code', label: 'System code', render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.plan_code || '—'}</span> },
           { key: 'enabled', label: 'State', render: (row) => <StatusBadge status={row.is_active === false ? 'disabled' : 'enabled'} /> },
           {
             key: 'actions',
