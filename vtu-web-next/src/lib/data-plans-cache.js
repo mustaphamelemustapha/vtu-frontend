@@ -1,5 +1,5 @@
 import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
-const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v3';
+const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v4';
 const PLAN_CACHE_TTL_MS = 5 * 1000;
 const PLAN_REQUEST_TIMEOUT_MS = 18000;
 
@@ -8,7 +8,8 @@ let inFlightPlansPromise = null;
 function parsePlansResponse(raw) {
   if (Array.isArray(raw)) return filterAllowedAmigoPlans(raw);
   if (!raw || typeof raw !== 'object') return [];
-  const list = raw.data ?? raw.plans ?? raw.items;
+  // Robustly find the list of plans in common wrapper objects
+  const list = raw.plans ?? raw.data ?? raw.items ?? (Array.isArray(raw.results) ? raw.results : []);
   return Array.isArray(list) ? filterAllowedAmigoPlans(list) : [];
 }
 
