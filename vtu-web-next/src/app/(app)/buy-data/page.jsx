@@ -28,7 +28,6 @@ const NETWORK_TABS = [
   { key: 'glo', label: 'Glo' },
   { key: '9mobile', label: '9mobile' },
 ];
-const AIRTEL_AMIGO_ALLOWED_CODES = new Set(['163', '145', '146', '532', '148', '150', '405', '404']);
 
 const BLOCK_KEYWORDS = [];
 
@@ -126,14 +125,6 @@ function normalizePlan(raw) {
     else if (networkHint.includes('airtel')) plan.network = 'airtel';
     else if (networkHint.includes('glo')) plan.network = 'glo';
     else if (networkHint.includes('9mobile') || networkHint.includes('etisalat')) plan.network = '9mobile';
-  }
-
-  if (plan.network === 'airtel') {
-    const rawCode = String(plan.plan_code || '').trim().toLowerCase();
-    const code = rawCode.includes(':') ? rawCode.split(':').pop() : rawCode;
-    if (!AIRTEL_AMIGO_ALLOWED_CODES.has(code)) {
-      return null;
-    }
   }
 
   return plan;
