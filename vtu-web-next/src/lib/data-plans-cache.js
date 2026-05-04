@@ -92,7 +92,8 @@ export async function prefetchDataPlans(apiFetchFn) {
   return inFlightPlansPromise;
 }
 
-export async function getDataPlansFast(apiFetchFn, { forceRefresh = false } = {}) {
+export async function getDataPlansFast(apiFetchFn, { forceRefresh = true } = {}) {
+  // forceRefresh = true by default now to bypass any stale localStorage cache
   if (forceRefresh) {
     const live = await prefetchDataPlans(apiFetchFn);
     return { plans: live, source: 'live' };
