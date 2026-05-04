@@ -304,12 +304,22 @@ export default function ElectricityPage() {
             : mappedStatus === 'refunded'
               ? 'Transaction was reversed and wallet refunded.'
               : 'Transaction failed.';
+        
+        const txMeta = tx?.meta || {};
+        const retrievedToken = String(txMeta.token || txMeta.Token || txMeta.metertoken || '').trim();
+        const retrievedName = String(txMeta.customer_name || txMeta.CustomerName || '').trim();
+        
         return {
           ...prev,
           pendingVerification: false,
           status: mappedStatus,
           message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
           createdAt: tx?.created_at || prev.createdAt,
+          meta: [
+            ...prev.meta.filter(m => !['Token', 'Customer Name', 'Customer name'].includes(m.label)),
+            ...(retrievedToken ? [{ label: 'Token', value: retrievedToken }] : []),
+            ...(retrievedName ? [{ label: 'Customer Name', value: retrievedName }] : []),
+          ]
         };
       });
       load().catch(() => {});
