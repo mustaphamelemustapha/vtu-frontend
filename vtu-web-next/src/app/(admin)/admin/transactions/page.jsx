@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, RefreshCw } from 'lucide-react';
-import { adminGetAuditLogs, adminGetTransactionDetails, adminGetTransactions, adminReconcileDelivered } from '@/lib/api';
+import { adminFailAndRefundPending, adminFailAndRefundPendingBulk, adminGetAuditLogs, adminGetTransactionDetails, adminGetTransactions, adminReconcileDelivered, adminReconcileDeliveredBulk } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { startCase } from '@/lib/admin-utils';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,18 @@ export default function AdminTransactionsPage() {
   const [reconcileBusy, setReconcileBusy] = useState(false);
   const [reconcileError, setReconcileError] = useState('');
   const [reconcileSuccess, setReconcileSuccess] = useState('');
+  const [bulkReferences, setBulkReferences] = useState('');
+  const [bulkNote, setBulkNote] = useState('');
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkError, setBulkError] = useState('');
+  const [bulkSuccess, setBulkSuccess] = useState('');
+  const [bulkFailBusy, setBulkFailBusy] = useState(false);
+  const [bulkFailError, setBulkFailError] = useState('');
+  const [bulkFailSuccess, setBulkFailSuccess] = useState('');
+  const [failRefundConfirmOpen, setFailRefundConfirmOpen] = useState(false);
+  const [failRefundBusy, setFailRefundBusy] = useState(false);
+  const [failRefundError, setFailRefundError] = useState('');
+  const [failRefundSuccess, setFailRefundSuccess] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -181,6 +193,102 @@ export default function AdminTransactionsPage() {
         <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-11 rounded-2xl border border-border bg-card px-3 text-sm text-foreground" />
       </FilterBar>
 
+      <div className="rounded-3xl border border-border bg-card p-4">
+        <h3 className="text-base font-semibold text-foreground">Bulk reconcile delivered</h3>
+        <p className="mt-1 text-sm text-muted-foreground">Paste references (one per line). Use only when customers confirmed delivery.</p>
+        <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_280px_auto]">
+          <textarea
+            value={bulkReferences}
+            onChange={(e) => setBulkReferences(e.target.value)}
+            placeholder={'DATA_ABC...\nDATA_DEF...\nDATA_XYZ...'}
+            className="min-h-[110px] rounded-2xl border border-border bg-secondary px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          <Input
+            value={bulkNote}
+            onChange={(e) => setBulkNote(e.target.value)}
+            placeholder="Audit note (optional)"
+          />
+          <Button
+            variant="default"
+            disabled={bulkBusy}
+            onClick={async () => {
+              const refs = bulkReferences
+                .split('\n')
+                .map((item) => item.trim())
+                .filter(Boolean);
+              if (!refs.length) {
+                setBulkError('Please add at least one reference.');
+                setBulkSuccess('');
+                return;
+              }
+              setBulkBusy(true);
+              setBulkError('');
+              setBulkSuccess('');
+              try {
+                const result = await adminReconcileDeliveredBulk({
+                  references: refs,
+                  note: bulkNote || undefined,
+                });
+                setBulkSuccess(`Processed ${result?.processed || refs.length}. Succeeded: ${result?.succeeded || 0}, Failed: ${result?.failed || 0}.`);
+                await load();
+              } catch (err) {
+                setBulkError(err?.message || 'Bulk reconcile failed.');
+              } finally {
+                setBulkBusy(false);
+              }
+            }}
+          >
+            {bulkBusy ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
+            Run bulk reconcile
+          </Button>
+        </div>
+        {bulkError ? <div className="mt-2 text-xs font-medium text-destructive">{bulkError}</div> : null}
+        {bulkSuccess ? <div className="mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-300">{bulkSuccess}</div> : null}
+        <div className="mt-5 border-t border-border pt-4">
+          <h4 className="text-sm font-semibold text-foreground">Bulk fail + refund pending</h4>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Use only for provider-confirmed failures that are still pending. This refunds user wallets.
+          </p>
+          <div className="mt-3 flex justify-end">
+            <Button
+              variant="destructive"
+              disabled={bulkFailBusy}
+              onClick={async () => {
+                const refs = bulkReferences
+                  .split('\n')
+                  .map((item) => item.trim())
+                  .filter(Boolean);
+                if (!refs.length) {
+                  setBulkFailError('Please add at least one reference.');
+                  setBulkFailSuccess('');
+                  return;
+                }
+                setBulkFailBusy(true);
+                setBulkFailError('');
+                setBulkFailSuccess('');
+                try {
+                  const result = await adminFailAndRefundPendingBulk({
+                    references: refs,
+                    note: bulkNote || undefined,
+                  });
+                  setBulkFailSuccess(`Processed ${result?.processed || refs.length}. Succeeded: ${result?.succeeded || 0}, Failed: ${result?.failed || 0}.`);
+                  await load();
+                } catch (err) {
+                  setBulkFailError(err?.message || 'Bulk fail + refund failed.');
+                } finally {
+                  setBulkFailBusy(false);
+                }
+              }}
+            >
+              {bulkFailBusy ? <RefreshCw className="h-4 w-4 animate-spin" /> : null}
+              Run bulk fail + refund
+            </Button>
+          </div>
+          {bulkFailError ? <div className="mt-2 text-xs font-medium text-destructive">{bulkFailError}</div> : null}
+          {bulkFailSuccess ? <div className="mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-300">{bulkFailSuccess}</div> : null}
+        </div>
+      </div>
+
       <AdminTable columns={columns} rows={rows} empty={loading ? 'Loading transactions...' : 'No transactions for this filter.'} />
 
       {selected ? (
@@ -255,18 +363,33 @@ export default function AdminTransactionsPage() {
               />
               {reconcileError ? <div className="text-xs font-medium text-destructive">{reconcileError}</div> : null}
               {reconcileSuccess ? <div className="text-xs font-medium text-emerald-600 dark:text-emerald-300">{reconcileSuccess}</div> : null}
+              {failRefundError ? <div className="text-xs font-medium text-destructive">{failRefundError}</div> : null}
+              {failRefundSuccess ? <div className="text-xs font-medium text-emerald-600 dark:text-emerald-300">{failRefundSuccess}</div> : null}
             </div>
-            <Button
-              variant="default"
-              disabled={reconcileBusy || !selected?.reference}
-              onClick={() => {
-                setReconcileError('');
-                setReconcileSuccess('');
-                setReconcileConfirmOpen(true);
-              }}
-            >
-              Reconcile delivered
-            </Button>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                variant="secondary"
+                disabled={failRefundBusy || reconcileBusy || !selected?.reference || String(selected?.status || '').toLowerCase() !== 'pending'}
+                onClick={() => {
+                  setFailRefundError('');
+                  setFailRefundSuccess('');
+                  setFailRefundConfirmOpen(true);
+                }}
+              >
+                Fail + refund pending
+              </Button>
+              <Button
+                variant="default"
+                disabled={reconcileBusy || failRefundBusy || !selected?.reference}
+                onClick={() => {
+                  setReconcileError('');
+                  setReconcileSuccess('');
+                  setReconcileConfirmOpen(true);
+                }}
+              >
+                Reconcile delivered
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -295,6 +418,34 @@ export default function AdminTransactionsPage() {
             setReconcileError(err?.message || 'Failed to reconcile this transaction.');
           } finally {
             setReconcileBusy(false);
+          }
+        }}
+      />
+      <ConfirmDialog
+        open={failRefundConfirmOpen}
+        title="Fail and refund this pending transaction?"
+        description="This action is for provider-confirmed failures. It will credit user wallet and mark the transaction as refunded."
+        confirmLabel="Yes, fail + refund"
+        busy={failRefundBusy}
+        onCancel={() => setFailRefundConfirmOpen(false)}
+        onConfirm={async () => {
+          if (!selected?.reference) return;
+          setFailRefundBusy(true);
+          setFailRefundError('');
+          setFailRefundSuccess('');
+          try {
+            const result = await adminFailAndRefundPending({
+              reference: selected.reference,
+              note: reconcileNote || undefined,
+            });
+            setSelected((prev) => (prev ? { ...prev, status: result.new_status } : prev));
+            setFailRefundSuccess(`Marked ${result.reference} as refunded.`);
+            setFailRefundConfirmOpen(false);
+            await load();
+          } catch (err) {
+            setFailRefundError(err?.message || 'Failed to fail/refund this transaction.');
+          } finally {
+            setFailRefundBusy(false);
           }
         }}
       />

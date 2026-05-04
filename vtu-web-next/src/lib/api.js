@@ -359,6 +359,27 @@ export async function adminReconcileDelivered(payload) {
   });
 }
 
+export async function adminReconcileDeliveredBulk(payload) {
+  return apiFetch('/admin/transactions/reconcile-delivered-bulk', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function adminFailAndRefundPending(payload) {
+  return apiFetch('/admin/transactions/fail-and-refund', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function adminFailAndRefundPendingBulk(payload) {
+  return apiFetch('/admin/transactions/fail-and-refund-bulk', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
 export async function adminGetServiceToggles() {
   return apiFetch('/admin/services/toggles');
 }

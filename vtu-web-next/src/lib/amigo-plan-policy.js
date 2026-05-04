@@ -21,8 +21,10 @@ export function filterAllowedAmigoPlans(rows) {
   return rows.filter((item) => {
     const network = normalizeNetwork(item?.network || item?.provider || item?.plan_code || '');
     if (network !== 'airtel') return true;
-    const code = extractPlanCodeId(item?.plan_code);
-    return AIRTEL_AMIGO_ALLOWED_CODES.has(code);
+
+    // We now allow all Airtel plans to support SMEPlug and full administrative control 
+    // via the backend dashboard. The backend already filters by is_active=True.
+    return true;
   });
 }
 
