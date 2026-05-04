@@ -130,16 +130,46 @@ export default function AdminDataPlansPage() {
     }
   };
 
+  const handleDisableAll = async () => {
+    const activePlans = plans.filter((p) => p.is_active !== false);
+    if (!activePlans.length) {
+      alert('All plans are already disabled.');
+      return;
+    }
+    if (!confirm(`Are you sure you want to disable all ${activePlans.length} active data plans?`)) return;
+    
+    setToggling('all');
+    try {
+      // Process in small batches to avoid overloading the browser or server
+      const batchSize = 5;
+      for (let i = 0; i < activePlans.length; i += batchSize) {
+        const batch = activePlans.slice(i, i + batchSize);
+        await Promise.all(batch.map(plan => adminUpdateDataPlan(plan.id, { is_active: false })));
+      }
+      alert(`Successfully disabled ${activePlans.length} plans.`);
+      await load();
+    } catch (err) {
+      alert(err.message || 'An error occurred while disabling plans.');
+    } finally {
+      setToggling(null);
+    }
+  };
+
   return (
     <div className="space-y-5 pb-8 relative">
       <AdminPageHeader
         title="Data plans management"
         description="Filter network plans, inspect provider metadata, and sync plan catalog from backend provider rails."
         actions={(
-          <Button onClick={handleSync} disabled={syncing}>
-            <RefreshCw className={syncing ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
-            {syncing ? 'Syncing...' : 'Sync plans from provider'}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="destructive" onClick={handleDisableAll} disabled={syncing || toggling === 'all'}>
+              {toggling === 'all' ? 'Disabling...' : 'Disable All Active'}
+            </Button>
+            <Button onClick={handleSync} disabled={syncing || toggling === 'all'}>
+              <RefreshCw className={syncing ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
+              {syncing ? 'Syncing...' : 'Sync plans'}
+            </Button>
+          </div>
         )}
       />
 
@@ -196,7 +226,7 @@ export default function AdminDataPlansPage() {
                 <Button 
                   variant="secondary" 
                   size="sm" 
-                  disabled={toggling === row.id}
+                  disabled={toggling === row.id || toggling === 'all'}
                   onClick={async () => {
                     setToggling(row.id);
                     try {
