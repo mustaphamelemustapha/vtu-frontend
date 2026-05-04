@@ -217,13 +217,22 @@ export default function ElectricityPage() {
       const tokenLine = res?.token ? ` Token: ${res.token}` : '';
       const status = String(res?.status || '').toLowerCase();
       const pendingVerification = status === 'pending';
-      const displayStatus = status === 'failed' ? 'failed' : 'success';
+      const displayStatus =
+        status === 'success'
+          ? 'success'
+          : status === 'pending'
+            ? 'pending'
+            : status === 'refunded'
+              ? 'refunded'
+              : 'failed';
       const baseMessage =
         status === 'success'
           ? 'Electricity payment completed.'
           : status === 'pending'
             ? 'Electricity payment is pending provider confirmation.'
-            : 'Electricity payment submitted.';
+            : status === 'refunded'
+              ? 'Transaction was reversed and wallet refunded.'
+              : 'Electricity payment failed.';
       nextReceipt =
         buildTransactionReceipt({
           service: 'Electricity Payment',
@@ -288,11 +297,11 @@ export default function ElectricityPage() {
       const tx = result.transaction || {};
       setReceipt((prev) => {
         if (!prev) return prev;
-        const mappedStatus = finalStatus === 'success' ? 'success' : 'failed';
+        const mappedStatus = finalStatus === 'success' ? 'success' : finalStatus === 'refunded' ? 'refunded' : 'failed';
         const nextMessage =
           mappedStatus === 'success'
             ? 'Transaction confirmed successfully.'
-            : finalStatus === 'refunded'
+            : mappedStatus === 'refunded'
               ? 'Transaction was reversed and wallet refunded.'
               : 'Transaction failed.';
         return {

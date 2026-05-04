@@ -269,7 +269,14 @@ export default function BuyDataPage() {
       if (process.env.NODE_ENV !== 'production') console.info('[BuyData] API response received', res);
       const status = String(res?.status || '').toLowerCase();
       const pendingVerification = status === 'pending';
-      const displayStatus = status === 'failed' ? 'failed' : 'success';
+      const displayStatus =
+        status === 'success'
+          ? 'success'
+          : status === 'pending'
+            ? 'pending'
+            : status === 'refunded'
+              ? 'refunded'
+              : 'failed';
       setReceipt(
         buildTransactionReceipt({
           service: 'Data Purchase',
@@ -277,9 +284,13 @@ export default function BuyDataPage() {
           pendingVerification,
           message:
             sanitizeProviderMessage(res?.message) ||
-            (pendingVerification
-              ? 'Purchase submitted successfully. We are confirming provider status in the background.'
-              : 'Purchase submitted.'),
+            (status === 'success'
+              ? 'Purchase delivered successfully.'
+              : pendingVerification
+                ? 'Purchase submitted successfully. We are confirming provider status in the background.'
+                : status === 'refunded'
+                  ? 'Transaction was reversed and your wallet was refunded.'
+                  : 'Purchase failed.'),
           amount: Number(selected?.price || 0),
           reference: res?.reference || '—',
           phone: normalizedPhone,
@@ -330,11 +341,11 @@ export default function BuyDataPage() {
 
       setReceipt((prev) => {
         if (!prev) return prev;
-        const mappedStatus = finalStatus === 'success' ? 'success' : 'failed';
+        const mappedStatus = finalStatus === 'success' ? 'success' : finalStatus === 'refunded' ? 'refunded' : 'failed';
         const nextMessage =
           mappedStatus === 'success'
             ? 'Transaction confirmed successfully.'
-            : finalStatus === 'refunded'
+            : mappedStatus === 'refunded'
               ? 'Transaction was reversed and wallet refunded.'
               : 'Transaction failed.';
         return {

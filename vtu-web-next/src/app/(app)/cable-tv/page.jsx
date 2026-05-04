@@ -286,13 +286,22 @@ export default function CableTvPage() {
       ]);
       const status = String(res?.status || '').toLowerCase();
       const pendingVerification = status === 'pending';
-      const displayStatus = status === 'failed' ? 'failed' : 'success';
+      const displayStatus =
+        status === 'success'
+          ? 'success'
+          : status === 'pending'
+            ? 'pending'
+            : status === 'refunded'
+              ? 'refunded'
+              : 'failed';
       const baseMessage =
         status === 'success'
           ? 'Cable payment completed.'
           : status === 'pending'
             ? 'Cable payment is pending provider confirmation.'
-            : 'Cable payment submitted.';
+            : status === 'refunded'
+              ? 'Transaction was reversed and wallet refunded.'
+              : 'Cable payment failed.';
       nextReceipt =
         buildTransactionReceipt({
           service: 'Cable TV Payment',
@@ -354,11 +363,11 @@ export default function CableTvPage() {
       const tx = result.transaction || {};
       setReceipt((prev) => {
         if (!prev) return prev;
-        const mappedStatus = finalStatus === 'success' ? 'success' : 'failed';
+        const mappedStatus = finalStatus === 'success' ? 'success' : finalStatus === 'refunded' ? 'refunded' : 'failed';
         const nextMessage =
           mappedStatus === 'success'
             ? 'Transaction confirmed successfully.'
-            : finalStatus === 'refunded'
+            : mappedStatus === 'refunded'
               ? 'Transaction was reversed and wallet refunded.'
               : 'Transaction failed.';
         return {

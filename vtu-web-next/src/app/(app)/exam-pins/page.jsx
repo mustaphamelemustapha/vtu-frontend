@@ -174,13 +174,22 @@ export default function ExamPinsPage() {
       const pins = Array.isArray(res?.pins) && res.pins.length ? ` Pins: ${res.pins.join(', ')}` : '';
       const status = String(res?.status || '').toLowerCase();
       const pendingVerification = status === 'pending';
-      const displayStatus = status === 'failed' ? 'failed' : 'success';
+      const displayStatus =
+        status === 'success'
+          ? 'success'
+          : status === 'pending'
+            ? 'pending'
+            : status === 'refunded'
+              ? 'refunded'
+              : 'failed';
       const baseMessage =
         status === 'success'
           ? 'Exam PIN purchase completed.'
+          : status === 'refunded'
+            ? 'Transaction was reversed and your wallet was refunded.'
           : status === 'pending'
             ? 'Exam PIN request submitted and awaiting provider confirmation.'
-            : 'Exam PIN purchase submitted.';
+            : 'Exam PIN purchase failed.';
       nextReceipt =
         buildTransactionReceipt({
           service: 'Exam PIN Purchase',

@@ -17,6 +17,14 @@ function statusUi(status) {
       iconTone: 'text-emerald-700 bg-emerald-100 border-emerald-200',
     };
   }
+  if (status === 'refunded') {
+    return {
+      label: 'Transaction refunded',
+      badge: 'bg-orange-100 text-orange-700 border-orange-200',
+      icon: XCircle,
+      iconTone: 'text-orange-700 bg-orange-100 border-orange-200',
+    };
+  }
   if (status === 'failed') {
     return {
       label: 'Transaction failed',
@@ -136,7 +144,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
 
                 <div className="mt-4 flex items-center justify-start">
                   <span className={`rounded-full border px-3 py-1 text-sm font-semibold ${status.badge}`}>
-                    ● {receipt.status === 'success' ? 'Successful' : receipt.status === 'failed' ? 'Failed' : 'Pending'}
+                    ● {receipt.status === 'success' ? 'Successful' : receipt.status === 'refunded' ? 'Refunded' : receipt.status === 'failed' ? 'Failed' : 'Pending'}
                   </span>
                 </div>
 
@@ -191,7 +199,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
                 <div className="rounded-[24px] border border-slate-200 bg-white px-8 py-8 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
                   <div className="flex items-center justify-center">
                     <span className={`rounded-full border px-4 py-1.5 text-[24px] font-semibold ${status.badge}`}>
-                      ● {receipt.status === 'success' ? 'Successful' : receipt.status === 'failed' ? 'Failed' : 'Pending'}
+                      ● {receipt.status === 'success' ? 'Successful' : receipt.status === 'refunded' ? 'Refunded' : receipt.status === 'failed' ? 'Failed' : 'Pending'}
                     </span>
                   </div>
 

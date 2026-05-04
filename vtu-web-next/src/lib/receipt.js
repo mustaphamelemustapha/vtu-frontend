@@ -25,7 +25,7 @@ export function buildTransactionReceipt({
   return {
     id: `receipt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     service: service || 'AxisVTU Transaction',
-    status: ['success', 'failed', 'pending'].includes(status) ? status : 'pending',
+    status: ['success', 'failed', 'pending', 'refunded'].includes(status) ? status : 'pending',
     message: sanitizeProviderMessage(message || ''),
     amount: Number.isFinite(Number(amount)) ? Number(amount) : 0,
     reference: String(reference || 'N/A'),
