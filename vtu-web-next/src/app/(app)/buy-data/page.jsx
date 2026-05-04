@@ -177,8 +177,6 @@ export default function BuyDataPage() {
 
       if (plansRes.status === 'fulfilled') {
         const val = plansRes.value;
-        setLoadError(`RAW VAL TYPE: ${typeof val}, IS_ARRAY: ${Array.isArray(val)}, HAS_PLANS: ${!!val?.plans}`);
-        
         let list = [];
         if (Array.isArray(val)) {
           list = val;
@@ -189,7 +187,9 @@ export default function BuyDataPage() {
         }
 
         setPlans(Array.isArray(list) ? list : []);
-        // temporarily disabling the "No data plans were found" error so we can see the debug message
+        if (!Array.isArray(list) || !list.length) {
+          setLoadError('No data plans were found. Please check back later.');
+        }
       } else if (!silent) {
         setPlans([]);
         const reason = plansRes.reason?.message || 'Unknown error';
@@ -377,21 +377,6 @@ export default function BuyDataPage() {
 
   return (
     <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
-      {/* Debug Overlay */}
-      <div className="fixed left-4 top-20 z-[9999] max-w-xs rounded-lg border border-border bg-card/90 p-4 text-[10px] shadow-xl backdrop-blur">
-        <h4 className="mb-2 font-bold uppercase">Debug Info</h4>
-        <div className="space-y-1">
-          <p>Raw Count: {plans.length}</p>
-          <p>Active Network: {activeNetwork}</p>
-          <p>Total Curated: {totalCuratedPlans}</p>
-          <p>Filtered Count: {visiblePlans.length}</p>
-          <p>Plan Groups: {JSON.stringify(planGroups.map(g => g.network))}</p>
-          <p>First 3 Raw Networks: {JSON.stringify(plans.slice(0, 3).map(p => p.network))}</p>
-          <p>Load Error: {loadError || 'None'}</p>
-          <p>First Plan: {plans[0] ? JSON.stringify(plans[0]).slice(0, 80) + '...' : 'None'}</p>
-          <Button variant="outline" size="sm" className="mt-2 h-6 text-[9px]" onClick={() => load()}>Force Reload</Button>
-        </div>
-      </div>
 
       <div className="space-y-6 pb-28 md:pb-8">
         <div className="space-y-2">
