@@ -1,6 +1,6 @@
 import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 const PLAN_CACHE_KEY = 'axisvtu_data_plans_cache_v3';
-const PLAN_CACHE_TTL_MS = 2 * 60 * 1000;
+const PLAN_CACHE_TTL_MS = 5 * 1000;
 const PLAN_REQUEST_TIMEOUT_MS = 18000;
 
 let inFlightPlansPromise = null;
