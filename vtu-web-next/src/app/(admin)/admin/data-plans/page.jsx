@@ -37,6 +37,7 @@ export default function AdminDataPlansPage() {
   const [editingPlan, setEditingPlan] = useState(null);
   const [displayPriceInput, setDisplayPriceInput] = useState('');
   const [planNameInput, setPlanNameInput] = useState('');
+  const [costPriceInput, setCostPriceInput] = useState('');
   const [isSavingPlan, setIsSavingPlan] = useState(false);
 
   const load = useCallback(async () => {
@@ -158,6 +159,7 @@ export default function AdminDataPlansPage() {
   const handleOpenEditModal = (plan) => {
     setEditingPlan(plan);
     setPlanNameInput(plan.plan_name || '');
+    setCostPriceInput(String(plan.base_price || ''));
     setDisplayPriceInput(plan.display_price !== null ? String(plan.display_price) : '');
   };
 
@@ -166,7 +168,8 @@ export default function AdminDataPlansPage() {
     setIsSavingPlan(true);
     try {
       const payload = {
-        plan_name: planNameInput.trim()
+        plan_name: planNameInput.trim(),
+        base_price: parseFloat(costPriceInput) || 0
       };
       const val = displayPriceInput.trim();
       if (val === '') {
@@ -343,10 +346,6 @@ export default function AdminDataPlansPage() {
                   <span className="text-muted-foreground">Network:</span>
                   <span className="font-medium text-foreground">{String(editingPlan.network).toUpperCase()}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Cost Price:</span>
-                  <span className="font-medium text-foreground">₦{formatMoney(editingPlan.base_price)}</span>
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -355,6 +354,18 @@ export default function AdminDataPlansPage() {
                   placeholder="e.g. 1GB - 30 Days"
                   value={planNameInput}
                   onChange={(e) => setPlanNameInput(e.target.value)}
+                  disabled={isSavingPlan}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Cost Price (₦)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="The price you pay to the provider"
+                  value={costPriceInput}
+                  onChange={(e) => setCostPriceInput(e.target.value)}
                   disabled={isSavingPlan}
                 />
               </div>
