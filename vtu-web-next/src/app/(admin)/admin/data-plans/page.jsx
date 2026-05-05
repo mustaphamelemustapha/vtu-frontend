@@ -411,6 +411,7 @@ export default function AdminDataPlansPage() {
                     >
                       <option value="amigo">Amigo</option>
                       <option value="smeplug">SMEPlug</option>
+                      <option value="clubkonnect">ClubKonnect</option>
                     </select>
                   </div>
                 </div>
