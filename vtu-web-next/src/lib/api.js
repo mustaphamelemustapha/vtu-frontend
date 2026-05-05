@@ -412,7 +412,7 @@ export async function adminUpdateDataPlan(planId, payload) {
 }
 
 export async function adminCreateDataPlan(payload) {
-  return apiFetch('/admin/data-plans/', {
+  return apiFetch('/admin/data-plans', {
     method: 'POST',
     body: JSON.stringify(payload || {}),
   });
