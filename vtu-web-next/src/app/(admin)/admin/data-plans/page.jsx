@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Database, RefreshCw, X } from 'lucide-react';
+import { Database, RefreshCw, X, Plus } from 'lucide-react';
 import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan } from '@/lib/api';
 import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 import { formatDateTime, formatMoney } from '@/lib/format';
@@ -103,6 +103,43 @@ export default function AdminDataPlansPage() {
     }
   }, [load]);
 
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newPlan, setNewPlan] = useState({
+    network: 'mtn',
+    plan_code: '',
+    plan_name: '',
+    data_size: '',
+    validity: '30 Days',
+    base_price: '',
+    provider: 'amigo',
+    provider_plan_id: '',
+    is_active: true
+  });
+
+  const handleCreatePlan = async (e) => {
+    e.preventDefault();
+    try {
+      const { adminCreateDataPlan } = await import('@/lib/api');
+      await adminCreateDataPlan(newPlan);
+      setIsAddModalOpen(false);
+      setNewPlan({
+        network: 'mtn',
+        plan_code: '',
+        plan_name: '',
+        data_size: '',
+        validity: '30 Days',
+        base_price: '',
+        provider: 'amigo',
+        provider_plan_id: '',
+        is_active: true
+      });
+      alert("Plan created successfully!");
+      await load();
+    } catch (err) {
+      alert(err.message || "Failed to create plan");
+    }
+  };
+
   const calculateEffectivePrice = (plan) => {
     if (plan.display_price !== null && plan.display_price !== undefined) {
       return plan.display_price;
@@ -178,6 +215,10 @@ export default function AdminDataPlansPage() {
         description="Filter network plans, inspect provider metadata, and sync plan catalog from backend provider rails."
         actions={(
           <div className="flex gap-2">
+            <Button onClick={() => setIsAddModalOpen(true)}>
+              <Plus className="h-4 w-4" />
+              Add Manual Plan
+            </Button>
             <Button variant="destructive" onClick={handleCleanLegacy} disabled={cleaning || syncing || toggling === 'all'}>
               {cleaning ? 'Cleaning...' : 'Clean Old Plans'}
             </Button>
@@ -332,6 +373,115 @@ export default function AdminDataPlansPage() {
                 </Button>
               </div>
             </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <Card className="w-full max-w-lg shadow-2xl my-8">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
+              <CardTitle className="text-lg">Add Manual Data Plan</CardTitle>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsAddModalOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <form onSubmit={handleCreatePlan}>
+              <CardContent className="pt-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Network</label>
+                    <select 
+                      className="w-full axis-input p-2 rounded-md border border-border"
+                      value={newPlan.network}
+                      onChange={(e) => setNewPlan({...newPlan, network: e.target.value})}
+                    >
+                      <option value="mtn">MTN</option>
+                      <option value="airtel">AIRTEL</option>
+                      <option value="glo">GLO</option>
+                      <option value="9mobile">9MOBILE</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Provider</label>
+                    <select 
+                      className="w-full axis-input p-2 rounded-md border border-border"
+                      value={newPlan.provider}
+                      onChange={(e) => setNewPlan({...newPlan, provider: e.target.value})}
+                    >
+                      <option value="amigo">Amigo</option>
+                      <option value="smeplug">SMEPlug</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Plan Name (Display)</label>
+                  <Input 
+                    placeholder="e.g. 1GB - 30 Days"
+                    value={newPlan.plan_name}
+                    onChange={(e) => setNewPlan({...newPlan, plan_name: e.target.value})}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">System Plan Code (Unique)</label>
+                    <Input 
+                      placeholder="e.g. amigo:mtn:1001"
+                      value={newPlan.plan_code}
+                      onChange={(e) => setNewPlan({...newPlan, plan_code: e.target.value})}
+                      required
+                    />
+                    <p className="text-[10px] text-muted-foreground">Follow provider:network:id format</p>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Provider Plan ID</label>
+                    <Input 
+                      placeholder="e.g. 1001"
+                      value={newPlan.provider_plan_id}
+                      onChange={(e) => setNewPlan({...newPlan, provider_plan_id: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Cost Price (₦)</label>
+                    <Input 
+                      type="number"
+                      step="0.01"
+                      value={newPlan.base_price}
+                      onChange={(e) => setNewPlan({...newPlan, base_price: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Validity</label>
+                    <Input 
+                      placeholder="e.g. 30 Days"
+                      value={newPlan.validity}
+                      onChange={(e) => setNewPlan({...newPlan, validity: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Data Size</label>
+                  <Input 
+                    placeholder="e.g. 1GB"
+                    value={newPlan.data_size}
+                    onChange={(e) => setNewPlan({...newPlan, data_size: e.target.value})}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end gap-3 border-t border-border/50 pt-4">
+                <Button variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
+                <Button type="submit">Create Plan</Button>
+              </CardFooter>
+            </form>
           </Card>
         </div>
       )}
