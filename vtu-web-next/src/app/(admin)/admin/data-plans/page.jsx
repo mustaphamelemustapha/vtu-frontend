@@ -34,9 +34,10 @@ export default function AdminDataPlansPage() {
   const [query, setQuery] = useState('');
 
   // Modal State
-  const [editingPriceFor, setEditingPriceFor] = useState(null);
+  const [editingPlan, setEditingPlan] = useState(null);
   const [displayPriceInput, setDisplayPriceInput] = useState('');
-  const [isSavingPrice, setIsSavingPrice] = useState(false);
+  const [planNameInput, setPlanNameInput] = useState('');
+  const [isSavingPlan, setIsSavingPlan] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -154,16 +155,19 @@ export default function AdminDataPlansPage() {
     return base + margin;
   };
 
-  const handleOpenPriceModal = (plan) => {
-    setEditingPriceFor(plan);
+  const handleOpenEditModal = (plan) => {
+    setEditingPlan(plan);
+    setPlanNameInput(plan.plan_name || '');
     setDisplayPriceInput(plan.display_price !== null ? String(plan.display_price) : '');
   };
 
-  const handleSavePrice = async () => {
-    if (!editingPriceFor) return;
-    setIsSavingPrice(true);
+  const handleSavePlan = async () => {
+    if (!editingPlan) return;
+    setIsSavingPlan(true);
     try {
-      const payload = {};
+      const payload = {
+        plan_name: planNameInput.trim()
+      };
       const val = displayPriceInput.trim();
       if (val === '') {
         payload.clear_display_price = true;
@@ -173,13 +177,13 @@ export default function AdminDataPlansPage() {
           throw new Error('Invalid price value');
         }
       }
-      await adminUpdateDataPlan(editingPriceFor.id, payload);
+      await adminUpdateDataPlan(editingPlan.id, payload);
       await load();
-      setEditingPriceFor(null);
+      setEditingPlan(null);
     } catch (err) {
-      alert(err.message || 'Failed to update price');
+      alert(err.message || 'Failed to update plan');
     } finally {
-      setIsSavingPrice(false);
+      setIsSavingPlan(false);
     }
   };
 
@@ -309,8 +313,8 @@ export default function AdminDataPlansPage() {
                 >
                   {row.is_active === false ? 'Enable' : 'Disable'}
                 </Button>
-                <Button variant="secondary" size="sm" onClick={() => handleOpenPriceModal(row)}>
-                  Edit price
+                <Button variant="secondary" size="sm" onClick={() => handleOpenEditModal(row)}>
+                  Edit plan
                 </Button>
                 <Button variant="secondary" size="sm" title={JSON.stringify(row)}>
                   <Database className="h-3.5 w-3.5" />
@@ -324,29 +328,35 @@ export default function AdminDataPlansPage() {
         empty={loading ? 'Loading data plans...' : 'No plans available for the selected filter.'}
       />
 
-      {editingPriceFor && (
+      {editingPlan && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <Card className="w-full max-w-md shadow-2xl">
             <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
-              <CardTitle className="text-lg">Edit Display Price</CardTitle>
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setEditingPriceFor(null)}>
+              <CardTitle className="text-lg">Edit Data Plan</CardTitle>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setEditingPlan(null)}>
                 <X className="h-4 w-4" />
               </Button>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Plan:</span>
-                  <span className="font-medium text-foreground">{editingPriceFor.plan_name}</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-muted-foreground">Network:</span>
-                  <span className="font-medium text-foreground">{String(editingPriceFor.network).toUpperCase()}</span>
+                  <span className="font-medium text-foreground">{String(editingPlan.network).toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Cost Price:</span>
-                  <span className="font-medium text-foreground">₦{formatMoney(editingPriceFor.base_price)}</span>
+                  <span className="font-medium text-foreground">₦{formatMoney(editingPlan.base_price)}</span>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Plan Name (Display)</label>
+                <Input
+                  placeholder="e.g. 1GB - 30 Days"
+                  value={planNameInput}
+                  onChange={(e) => setPlanNameInput(e.target.value)}
+                  disabled={isSavingPlan}
+                />
               </div>
 
               <div className="space-y-2">
@@ -356,7 +366,7 @@ export default function AdminDataPlansPage() {
                   placeholder="Leave empty to use automatic margin"
                   value={displayPriceInput}
                   onChange={(e) => setDisplayPriceInput(e.target.value)}
-                  disabled={isSavingPrice}
+                  disabled={isSavingPlan}
                 />
                 <p className="text-xs text-muted-foreground">
                   If set, this exact price will be charged to users, ignoring network margins.
@@ -365,11 +375,11 @@ export default function AdminDataPlansPage() {
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
-                <Button variant="secondary" onClick={() => setEditingPriceFor(null)} disabled={isSavingPrice}>
+                <Button variant="secondary" onClick={() => setEditingPlan(null)} disabled={isSavingPlan}>
                   Cancel
                 </Button>
-                <Button onClick={handleSavePrice} disabled={isSavingPrice}>
-                  {isSavingPrice ? 'Saving...' : 'Save Price'}
+                <Button onClick={handleSavePlan} disabled={isSavingPlan}>
+                  {isSavingPlan ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
             </CardContent>
