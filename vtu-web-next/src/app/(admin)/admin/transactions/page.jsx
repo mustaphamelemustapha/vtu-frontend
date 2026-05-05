@@ -271,7 +271,12 @@ export default function AdminTransactionsPage() {
                     references: refs,
                     note: bulkNote || undefined,
                   });
-                  setBulkFailSuccess(`Processed ${result?.processed || refs.length}. Succeeded: ${result?.succeeded || 0}, Failed: ${result?.failed || 0}.`);
+                  let msg = `Processed ${result?.processed || refs.length}. Succeeded: ${result?.succeeded || 0}, Failed: ${result?.failed || 0}.`;
+                  if (result?.failed > 0 && Array.isArray(result.results)) {
+                    const errs = result.results.filter(r => !r.ok).map(r => `${r.reference}: ${r.detail}`).join(' | ');
+                    msg += ` Errors: ${errs}`;
+                  }
+                  setBulkFailSuccess(msg);
                   await load();
                 } catch (err) {
                   setBulkFailError(err?.message || 'Bulk fail + refund failed.');
