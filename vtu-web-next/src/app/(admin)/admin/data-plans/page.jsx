@@ -38,6 +38,8 @@ export default function AdminDataPlansPage() {
   const [displayPriceInput, setDisplayPriceInput] = useState('');
   const [planNameInput, setPlanNameInput] = useState('');
   const [costPriceInput, setCostPriceInput] = useState('');
+  const [dataSizeInput, setDataSizeInput] = useState('');
+  const [validityInput, setValidityInput] = useState('');
   const [isSavingPlan, setIsSavingPlan] = useState(false);
 
   const load = useCallback(async () => {
@@ -160,6 +162,8 @@ export default function AdminDataPlansPage() {
     setEditingPlan(plan);
     setPlanNameInput(plan.plan_name || '');
     setCostPriceInput(String(plan.base_price || ''));
+    setDataSizeInput(plan.data_size || '');
+    setValidityInput(plan.validity || '');
     setDisplayPriceInput(plan.display_price !== null ? String(plan.display_price) : '');
   };
 
@@ -169,7 +173,9 @@ export default function AdminDataPlansPage() {
     try {
       const payload = {
         plan_name: planNameInput.trim(),
-        base_price: parseFloat(costPriceInput) || 0
+        base_price: parseFloat(costPriceInput) || 0,
+        data_size: dataSizeInput.trim(),
+        validity: validityInput.trim()
       };
       const val = displayPriceInput.trim();
       if (val === '') {
@@ -368,6 +374,27 @@ export default function AdminDataPlansPage() {
                   onChange={(e) => setCostPriceInput(e.target.value)}
                   disabled={isSavingPlan}
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Data Size</label>
+                  <Input
+                    placeholder="e.g. 1GB"
+                    value={dataSizeInput}
+                    onChange={(e) => setDataSizeInput(e.target.value)}
+                    disabled={isSavingPlan}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Validity</label>
+                  <Input
+                    placeholder="e.g. 30 Days"
+                    value={validityInput}
+                    onChange={(e) => setValidityInput(e.target.value)}
+                    disabled={isSavingPlan}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
