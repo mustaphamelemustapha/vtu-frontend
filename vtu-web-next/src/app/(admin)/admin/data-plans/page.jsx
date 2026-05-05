@@ -87,6 +87,22 @@ export default function AdminDataPlansPage() {
     }
   }, [load]);
 
+  const [cleaning, setCleaning] = useState(false);
+  const handleCleanLegacy = useCallback(async () => {
+    if (!window.confirm("This will permanently delete all old 'unknown' or broken data plans from the database. Are you sure?")) return;
+    setCleaning(true);
+    try {
+      const { adminCleanLegacyDataPlans } = await import('@/lib/api');
+      const res = await adminCleanLegacyDataPlans();
+      alert(res.message || "Legacy plans deleted successfully");
+      await load();
+    } catch (err) {
+      alert(err.message || "Failed to clean legacy plans");
+    } finally {
+      setCleaning(false);
+    }
+  }, [load]);
+
   const calculateEffectivePrice = (plan) => {
     if (plan.display_price !== null && plan.display_price !== undefined) {
       return plan.display_price;
@@ -162,10 +178,13 @@ export default function AdminDataPlansPage() {
         description="Filter network plans, inspect provider metadata, and sync plan catalog from backend provider rails."
         actions={(
           <div className="flex gap-2">
-            <Button variant="destructive" onClick={handleDisableAll} disabled={syncing || toggling === 'all'}>
+            <Button variant="destructive" onClick={handleCleanLegacy} disabled={cleaning || syncing || toggling === 'all'}>
+              {cleaning ? 'Cleaning...' : 'Clean Old Plans'}
+            </Button>
+            <Button variant="destructive" onClick={handleDisableAll} disabled={cleaning || syncing || toggling === 'all'}>
               {toggling === 'all' ? 'Disabling...' : 'Disable All Active'}
             </Button>
-            <Button onClick={handleSync} disabled={syncing || toggling === 'all'}>
+            <Button onClick={handleSync} disabled={cleaning || syncing || toggling === 'all'}>
               <RefreshCw className={syncing ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
               {syncing ? 'Syncing...' : 'Sync plans'}
             </Button>

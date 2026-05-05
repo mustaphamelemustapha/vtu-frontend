@@ -346,6 +346,10 @@ export async function adminSyncDataPlans() {
   return apiFetch('/data/sync', { method: 'POST' });
 }
 
+export async function adminCleanLegacyDataPlans() {
+  return apiFetch('/admin/data-plans/clean-legacy', { method: 'POST' });
+}
+
 export async function adminAdjustWallet(payload) {
   return apiFetch('/admin/wallets/adjust', {
     method: 'POST',
