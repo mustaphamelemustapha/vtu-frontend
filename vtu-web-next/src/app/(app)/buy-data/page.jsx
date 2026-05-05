@@ -493,7 +493,7 @@ export default function BuyDataPage() {
               ) : null}
 
               {!loading && visiblePlans.length ? (
-                <div className="grid gap-2.5 md:gap-3 md:grid-cols-2">
+                <div className="grid gap-2.5 md:gap-4 md:grid-cols-2">
                   {visiblePlans.map((plan) => {
                     const isActive = selected?.plan_code === plan.plan_code;
                     const promo = promoConfigForPlan(plan);
@@ -503,58 +503,68 @@ export default function BuyDataPage() {
                         type="button"
                         onClick={() => setSelected(plan)}
                         className={cn(
-                          'min-w-0 overflow-hidden rounded-2xl border px-3.5 py-3.5 text-left transition min-h-[136px] md:min-h-[146px] md:px-4 md:py-4',
+                          'group relative flex min-w-0 flex-col overflow-hidden rounded-[26px] border px-5 py-5 transition-all duration-300',
                           isActive
-                            ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.16),0_10px_20px_rgba(249,115,22,0.08)]'
-                            : 'border-border bg-secondary hover:border-border hover:bg-secondary/90'
+                            ? 'border-primary/50 bg-primary/5 shadow-[0_12px_28px_rgba(249,115,22,0.12),0_4px_10px_rgba(249,115,22,0.06)]'
+                            : 'border-border/60 bg-card hover:border-primary/20 hover:bg-secondary/40'
                         )}
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex min-w-0 items-start gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 ring-1 ring-border">
+                        <div className="flex w-full items-start justify-between gap-4">
+                          <div className="flex min-w-0 items-center gap-4">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-white p-1 shadow-sm ring-1 ring-black/5">
                               <Image
                                 src={networkLogoSrc(plan.network)}
                                 alt={`${networkLabel(plan.network)} logo`}
-                                width={36}
-                                height={36}
+                                width={44}
+                                height={44}
                                 className="h-full w-full object-contain"
                                 unoptimized
                               />
                             </div>
-                            <div className="min-w-0">
-                            <div className="truncate text-[17px] font-semibold tracking-tight text-foreground md:text-base">{plan.plan_name || plan.plan_code}</div>
-                            <div className="mt-1 truncate break-all text-[11px] text-muted-foreground/90">{plan.plan_code || 'Plan code unavailable'}</div>
+                            <div className="min-w-0 flex-1 text-left">
+                              <div className="text-[17px] font-bold tracking-tight text-foreground md:text-lg">
+                                {plan.plan_name || plan.data_size}
+                              </div>
+                              <div className="mt-0.5 flex items-center gap-2">
+                                <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
+                                  {plan.validity || '30 Days'}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                          <Badge className="h-7 shrink-0 rounded-full border-border bg-background text-muted-foreground">
-                            {plan.validity || 'Plan'}
-                          </Badge>
+                          
+                          {isActive && (
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
                         </div>
-                        <div className="mt-3.5 flex items-end justify-between gap-2.5 md:mt-4 md:gap-3">
-                          <div>
-                            <div className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Price</div>
-                            <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                              <span className="text-[29px] leading-none font-semibold tracking-tight text-foreground md:text-lg md:leading-normal">
+
+                        <div className="mt-6 flex items-end justify-between border-t border-border/40 pt-4">
+                          <div className="space-y-0.5 text-left">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70">Amount</div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-2xl font-extrabold tracking-tighter text-foreground">
                                 ₦{formatMoney(plan.price || 0)}
                               </span>
-                              {promo?.oldPrice ? (
-                                <span className="text-[18px] leading-none text-muted-foreground line-through md:text-sm">
+                              {promo?.oldPrice && (
+                                <span className="text-sm text-muted-foreground line-through decoration-muted-foreground/40">
                                   ₦{formatMoney(promo.oldPrice)}
                                 </span>
-                              ) : null}
+                              )}
                             </div>
-                            {promo?.discountLabel ? (
-                              <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                <div className="inline-flex h-6 items-center rounded-full border border-emerald-400/70 bg-emerald-500/10 px-2.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-300">
-                                  {promo.discountLabel}
-                                </div>
-                              </div>
-                            ) : null}
                           </div>
+
                           <div className="flex flex-col items-end gap-1.5">
-                            <div className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground md:px-3 md:text-xs">{plan.data_size || '—'}</div>
-                            <div className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground md:px-3 md:text-xs">
-                              {plan.validity || '30d'}
+                             {promo?.discountLabel && (
+                              <div className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400">
+                                {promo.discountLabel}
+                              </div>
+                            )}
+                            <div className="rounded-full bg-secondary/80 px-3 py-1 text-[11px] font-bold text-foreground ring-1 ring-border/50 shadow-sm">
+                              {plan.data_size || 'Data'}
                             </div>
                           </div>
                         </div>
@@ -634,7 +644,6 @@ export default function BuyDataPage() {
               <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
                 {[
                   { label: 'Phone', value: phone.trim() || '—' },
-                  { label: 'Plan code', value: summaryPlanCode },
                   { label: 'Amount', value: `₦${formatMoney(summaryPrice || 0)}` },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
