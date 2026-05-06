@@ -262,16 +262,16 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="relative mt-10 grid grid-cols-2 gap-4 border-t border-border/60 pt-6">
+              <div className="relative mt-10 grid gap-6 border-t border-border/60 pt-6 sm:grid-cols-2 sm:items-center">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bank Provider</div>
                   <div className="mt-1 text-lg font-black tracking-tight text-foreground">
                     {primaryFundingAccount.bank_name || 'Virtual Bank'}
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Account Holder</div>
-                  <div className="mt-1 truncate text-sm font-bold text-foreground">
+                  <div className="mt-1 break-words text-sm font-bold text-foreground">
                     {primaryFundingAccount.account_name || 'AxisVTU User'}
                   </div>
                 </div>
