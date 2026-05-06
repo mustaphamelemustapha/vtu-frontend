@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { MetricCard } from '@/components/metric-card';
 import { PageHeader } from '@/components/page-header';
 import { buildReferralUrl } from '@/lib/site';
+import { cn } from '@/lib/utils';
 
 function emptyOrRows(value) {
   return Array.isArray(value) ? value : [];
@@ -212,60 +213,86 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <Card className="overflow-hidden border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card shadow-[0_24px_70px_rgba(234,115,69,0.10)]">
-        <CardContent className="grid min-w-0 gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,430px)] lg:items-center sm:p-6">
-          <div className="flex min-w-0 items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg shadow-orange-500/20">
-              <Landmark className="h-6 w-6" />
+      <Card className="overflow-hidden border-none bg-secondary/30 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_40px_80px_-16px_rgba(249,115,22,0.08)] dark:bg-slate-900/40">
+        <CardContent className="grid min-w-0 gap-8 p-6 lg:grid-cols-[1fr_420px] lg:items-center sm:p-8">
+          <div className="flex min-w-0 items-start gap-5">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.3)]">
+              <Landmark className="h-7 w-7" />
             </div>
             <div className="min-w-0">
-              <div className="axis-label text-primary">Fund your wallet</div>
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:text-2xl">Dedicated funding account</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Transfer to this account to fund your AxisVTU wallet. Copy the account number and send money from your bank app.
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80">Wallet Funding</div>
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">Your Personal Bank Account</h2>
+              <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+                Instantly fund your AxisVTU wallet by transferring to your dedicated bank account below. Most transfers reflect in <span className="font-semibold text-foreground">under 60 seconds</span>.
               </p>
             </div>
           </div>
 
           {primaryFundingAccount ? (
-            <div className="min-w-0 rounded-3xl border border-border bg-card/85 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account number</div>
-                  <div className="mt-2 break-all font-mono text-3xl font-semibold tracking-[0.16em] text-foreground sm:text-4xl">
+            <div className="group relative min-w-0 overflow-hidden rounded-[32px] border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 shadow-2xl shadow-primary/5">
+              <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/10 blur-3xl transition-all duration-500 group-hover:scale-150" />
+              
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active & Ready</span>
+                </div>
+                <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">AxisVTU Finance</div>
+              </div>
+
+              <div className="relative mt-8">
+                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">Account Number</div>
+                <div className="mt-1 flex items-center justify-between gap-4">
+                  <div className="font-mono text-3xl font-bold tracking-[0.12em] text-foreground sm:text-4xl">
                     {primaryFundingAccount.account_number}
                   </div>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-11 w-11 shrink-0 border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
-                  onClick={copyFundingAccount}
-                  aria-label="Copy funding account number"
-                  title="Copy account number"
-                >
-                  {copiedAccount ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-border bg-secondary p-3">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Bank</div>
-                  <div className="mt-1 text-sm font-semibold text-foreground">{primaryFundingAccount.bank_name || 'Bank account'}</div>
-                </div>
-                <div className="rounded-2xl border border-border bg-secondary p-3">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Account name</div>
-                  <div className="mt-1 break-words text-sm font-semibold text-foreground">{primaryFundingAccount.account_name || 'AxisVTU Wallet'}</div>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className={cn(
+                      "h-12 w-12 shrink-0 rounded-2xl border transition-all duration-300",
+                      copiedAccount 
+                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600" 
+                        : "border-primary/20 bg-primary/10 text-primary hover:scale-110 hover:bg-primary/20"
+                    )}
+                    onClick={copyFundingAccount}
+                  >
+                    {copiedAccount ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                  </Button>
                 </div>
               </div>
-              <div className="mt-3 text-xs font-medium text-primary">
-                {copiedAccount ? 'Account number copied.' : 'Tap copy, then transfer from your bank app.'}
+
+              <div className="relative mt-10 grid grid-cols-2 gap-4 border-t border-border/60 pt-6">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bank Provider</div>
+                  <div className="mt-1 text-lg font-black tracking-tight text-foreground">
+                    {primaryFundingAccount.bank_name || 'Virtual Bank'}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Account Holder</div>
+                  <div className="mt-1 truncate text-sm font-bold text-foreground">
+                    {primaryFundingAccount.account_name || 'AxisVTU User'}
+                  </div>
+                </div>
               </div>
+
+              {copiedAccount && (
+                <div className="absolute inset-x-0 bottom-0 flex justify-center pb-2">
+                  <div className="rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold text-white shadow-lg">
+                    Copied to clipboard
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <div className="min-w-0 rounded-3xl border border-dashed border-border bg-card/85 p-5 text-sm leading-6 text-muted-foreground">
-              {bankTransfer?.message || 'Wallet transfer account will appear here once it is available.'}
-              <Button className="mt-4 w-full" onClick={() => router.push('/wallet')}>
-                Open wallet
+            <div className="min-w-0 rounded-[32px] border border-dashed border-border/60 bg-card/50 p-8 text-center transition-all hover:bg-card">
+              <Landmark className="mx-auto h-10 w-10 text-muted-foreground/30" />
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                {bankTransfer?.message || 'We are generating your dedicated funding account. This usually takes a few minutes.'}
+              </p>
+              <Button variant="outline" className="mt-6 w-full rounded-2xl border-primary/20 text-primary" onClick={() => router.push('/wallet')}>
+                Check Progress
               </Button>
             </div>
           )}
