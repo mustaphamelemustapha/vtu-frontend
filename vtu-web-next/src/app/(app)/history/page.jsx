@@ -124,7 +124,7 @@ export default function HistoryPage() {
       <PageHeader
         eyebrow="History"
         title="Operations timeline"
-        description="A compact audit trail for wallet funding, data purchases, and service activity."
+        description="A compact audit trail for account top-ups, data purchases, and service activity."
         actions={(
           <Button variant="secondary" onClick={() => load()}>
             <RefreshCw className="h-4 w-4" />
@@ -150,8 +150,8 @@ export default function HistoryPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Transactions</CardTitle>
-          <CardDescription>Latest movements from the backend timeline.</CardDescription>
+          <CardTitle>Service Orders</CardTitle>
+          <CardDescription>Latest activity from the backend timeline.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {loading ? <div className="text-sm text-muted-foreground">Loading history...</div> : null}
@@ -163,8 +163,8 @@ export default function HistoryPage() {
           {filteredTransactions.length === 0 && !loading ? (
             <div className="rounded-2xl border border-dashed border-border bg-secondary p-4 text-sm text-muted-foreground">
               {pageQuery
-                ? 'No transactions matched your search.'
-                : 'No transactions yet. Your receipts will appear here after a purchase.'}
+                ? 'No orders matched your search.'
+                : 'No orders yet. Your receipts will appear here after a purchase.'}
               <div className="mt-3">
                 <Button size="sm" onClick={() => router.push('/buy-data')}>Buy data</Button>
               </div>
@@ -177,7 +177,7 @@ export default function HistoryPage() {
               className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-border bg-secondary p-4 cursor-pointer hover:bg-secondary/80 active:bg-secondary/60 transition-colors min-w-0"
             >
               <div className="min-w-0 flex-1 w-full sm:w-auto">
-                <div className="text-sm font-medium text-foreground capitalize truncate">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
+                <div className="text-sm font-medium text-foreground capitalize truncate">{String(tx.tx_type || 'Order').replace(/_/g, ' ')}</div>
                 <div className="mt-1 text-xs text-muted-foreground truncate">
                   {txRecipientLabel(tx) ? `${txRecipientLabel(tx)} • ` : ''}{formatDateTime(tx.created_at)}
                 </div>

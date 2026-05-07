@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 function statusUi(status) {
   if (status === 'success') {
     return {
-      label: 'Transaction successful',
+      label: 'Order successful',
       badge: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       icon: CheckCircle2,
       iconTone: 'text-emerald-700 bg-emerald-100 border-emerald-200',
@@ -19,7 +19,7 @@ function statusUi(status) {
   }
   if (status === 'refunded') {
     return {
-      label: 'Transaction refunded',
+      label: 'Order refunded',
       badge: 'bg-orange-100 text-orange-700 border-orange-200',
       icon: XCircle,
       iconTone: 'text-orange-700 bg-orange-100 border-orange-200',
@@ -27,14 +27,14 @@ function statusUi(status) {
   }
   if (status === 'failed') {
     return {
-      label: 'Transaction failed',
+      label: 'Order failed',
       badge: 'bg-rose-100 text-rose-700 border-rose-200',
       icon: XCircle,
       iconTone: 'text-rose-700 bg-rose-100 border-rose-200',
     };
   }
   return {
-    label: 'Transaction pending',
+    label: 'Order pending',
     badge: 'bg-amber-100 text-amber-700 border-amber-200',
     icon: Clock3,
     iconTone: 'text-amber-700 bg-amber-100 border-amber-200',
@@ -120,7 +120,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
                   <Image src="/brand/axisvtu-icon.png" alt="AxisVTU" width={44} height={44} className="h-11 w-11 object-contain" />
                 </div>
                 <div className="mt-3 text-4xl font-semibold tracking-tight text-white">AxisVTU</div>
-                <div className="mt-1 text-lg text-blue-100">Transaction Receipt</div>
+                <div className="mt-1 text-lg text-blue-100">Order Receipt</div>
               </div>
             </div>
 
@@ -192,7 +192,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
                   <div className="rounded-2xl bg-white px-5 py-4 shadow-lg">
                     <Image src="/brand/axisvtu-logo.png" alt="AxisVTU" width={220} height={56} className="h-12 w-auto object-contain" />
                   </div>
-                  <div className="mt-5 text-[46px] font-semibold tracking-tight text-white">Transaction Receipt</div>
+                  <div className="mt-5 text-[46px] font-semibold tracking-tight text-white">Order Receipt</div>
                 </div>
               </div>
               <div className="px-10 py-10">

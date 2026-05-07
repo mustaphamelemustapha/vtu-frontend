@@ -48,9 +48,9 @@ const actionDetails = {
     iconTone: 'bg-sky-500 text-white shadow-sky-500/20',
   },
   '/wallet': {
-    kicker: 'Funding',
-    description: 'Check balance, view account details, and fund your wallet.',
-    cta: 'Open wallet',
+    kicker: 'Top-up',
+    description: 'Check balance, view account credit details, and add credit.',
+    cta: 'Open account',
     tone: 'from-emerald-500/14 via-emerald-500/7 to-transparent border-emerald-300/70',
     iconTone: 'bg-emerald-500 text-white shadow-emerald-500/20',
   },
@@ -134,7 +134,7 @@ export default function DashboardPage() {
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
   const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
-    { label: 'Wallet balance', value: `₦${formatMoney(wallet.balance || 0)}`, detail: 'Live available balance', icon: CircleDollarSign, tone: 'brand' },
+    { label: 'Available credit', value: `₦${formatMoney(wallet.balance || 0)}`, detail: 'Live available balance', icon: CircleDollarSign, tone: 'brand' },
     { label: 'Rewards earned', value: `₦${formatMoney(referrals?.total_earned ?? 0)}`, detail: 'Referral revenue', icon: Gift, tone: 'violet' },
   ], [wallet.balance, referrals?.total_earned]);
 
@@ -184,13 +184,13 @@ export default function DashboardPage() {
                 <div className="axis-label text-primary">Start here</div>
                 <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">3 quick steps to use AxisVTU smoothly</div>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">1. Fund Wallet</span>
+                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">1. Add Credit</span>
                   <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">2. Buy Data</span>
                   <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">3. View Receipt in History</span>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" onClick={() => router.push('/wallet')}>Fund wallet</Button>
+                <Button variant="secondary" onClick={() => router.push('/wallet')}>Add credit</Button>
                 <Button onClick={() => router.push('/buy-data')}>Buy data</Button>
                 <Button
                   variant="ghost"
@@ -220,10 +220,10 @@ export default function DashboardPage() {
               <Landmark className="h-7 w-7" />
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80">Wallet Funding</div>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">Your Personal Bank Account</h2>
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80">Account Top-up</div>
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">Your Top-up Details</h2>
               <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-                Instantly fund your AxisVTU wallet by transferring to your dedicated bank account below. Most transfers reflect in <span className="font-semibold text-foreground">under 60 seconds</span>.
+                Instantly add credit to your AxisVTU account by transferring to your dedicated details below. Most top-ups reflect in <span className="font-semibold text-foreground">under 60 seconds</span>.
               </p>
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function DashboardPage() {
                   <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active & Ready</span>
                 </div>
-                <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">AxisVTU Finance</div>
+                <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">AxisVTU Utility Services</div>
               </div>
 
               <div className="relative mt-8">
@@ -264,9 +264,9 @@ export default function DashboardPage() {
 
               <div className="relative mt-10 grid gap-6 border-t border-border/60 pt-6 sm:grid-cols-2 sm:items-center">
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bank Provider</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Service Provider</div>
                   <div className="mt-1 text-lg font-black tracking-tight text-foreground">
-                    {primaryFundingAccount.bank_name || 'Virtual Bank'}
+                    {primaryFundingAccount.bank_name || 'Top-up Provider'}
                   </div>
                 </div>
                 <div className="sm:text-right">
@@ -289,7 +289,7 @@ export default function DashboardPage() {
             <div className="min-w-0 rounded-[32px] border border-dashed border-border/60 bg-card/50 p-8 text-center transition-all hover:bg-card">
               <Landmark className="mx-auto h-10 w-10 text-muted-foreground/30" />
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                {bankTransfer?.message || 'We are generating your dedicated funding account. This usually takes a few minutes.'}
+                {bankTransfer?.message || 'We are generating your dedicated top-up details. This usually takes a few minutes.'}
               </p>
               <Button variant="outline" className="mt-6 w-full rounded-2xl border-primary/20 text-primary" onClick={() => router.push('/wallet')}>
                 Check Progress
@@ -350,13 +350,13 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Referral position</CardTitle>
-            <CardDescription>Invite-first deposit rewards, surfaced directly on the dashboard.</CardDescription>
+            <CardDescription>Invite-first top-up rewards, surfaced directly on the dashboard.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-3xl border border-border bg-secondary p-4">
               <div className="axis-label">Your code</div>
               <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{referralCode}</div>
-              <div className="mt-2 text-sm text-muted-foreground">Share this code with new users to earn rewards after their first deposit.</div>
+              <div className="mt-2 text-sm text-muted-foreground">Share this code with new users to earn rewards after their first top-up.</div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Button variant="secondary" onClick={() => router.push('/profile')} className="border-border bg-card text-muted-foreground hover:bg-secondary">
@@ -373,7 +373,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Recent activity</CardTitle>
-            <CardDescription>Latest wallet and service movements.</CardDescription>
+            <CardDescription>Latest credit and service movements.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
