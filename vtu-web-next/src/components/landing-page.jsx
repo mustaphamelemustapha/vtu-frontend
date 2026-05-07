@@ -35,7 +35,7 @@ const navLinks = [
   { label: 'FAQ', href: '#faq' },
 ];
 
-const heroPoints = ['Instant purchases', 'Wallet funding', 'Clear receipts'];
+const heroPoints = ['Instant services', 'Easy top-up', 'Clear receipts'];
 
 const services = [
   {
@@ -50,13 +50,13 @@ const services = [
   },
   {
     icon: Wallet,
-    title: 'Fund Wallet',
-    text: 'Transfer money to your dedicated account and use the balance for everyday services.',
+    title: 'Top Up Account',
+    text: 'Add credit to your account and use the balance for everyday utility services.',
   },
   {
     icon: CreditCard,
-    title: 'Transaction History',
-    text: 'Review purchases, receipts, and wallet activity from one organised view.',
+    title: 'Order History',
+    text: 'Review service purchases, receipts, and account activity from one organised view.',
   },
   {
     icon: Zap,
@@ -75,16 +75,16 @@ const services = [
   },
   {
     icon: Banknote,
-    title: 'Account Funding',
-    text: 'Use your dedicated virtual account to fund your wallet and keep the record clear.',
+    title: 'Account Credit',
+    text: 'Use your dedicated account number to add credit and keep your records clear.',
   },
 ];
 
 const trustPoints = [
   {
     icon: ShieldCheck,
-    title: 'Secure wallet system',
-    text: 'Wallet activity stays structured and easy to review.',
+    title: 'Secure credit system',
+    text: 'Account activity stays structured and easy to review.',
   },
   {
     icon: BadgeCheck,
@@ -111,8 +111,8 @@ const aboutBullets = [
 
 const faqs = [
   {
-    q: 'How do I fund my wallet?',
-    a: 'Transfer money to your dedicated account, then wait for confirmation before making purchases.',
+    q: 'How do I add credit to my account?',
+    a: 'Transfer to your dedicated account number, then wait for confirmation before purchasing services.',
   },
   {
     q: 'How fast are data purchases?',
@@ -308,7 +308,7 @@ function Hero() {
             className="inline-flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-card px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary shadow-sm"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            AxisVTU for everyday payments
+            AxisVTU for everyday utility services
           </motion.div>
 
           <motion.h1
@@ -328,7 +328,7 @@ function Hero() {
             custom={0.16}
             className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl"
           >
-            Top up any network, fund your wallet, and manage everyday payments with a simple, reliable AxisVTU account.
+            Top up any network, add account credit, and manage everyday utility services with a simple, reliable AxisVTU account.
           </motion.p>
 
           <motion.div
@@ -381,7 +381,7 @@ function Hero() {
                   </div>
                   <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">Clean dashboard preview</h2>
                   <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-                    The interface is designed for quick top-ups, wallet funding, and clear transaction records on desktop.
+                    The interface is designed for quick top-ups, adding account credit, and clear service records on desktop.
                   </p>
                 </div>
                   <div className="rounded-2xl bg-orange-50 p-3 text-primary">
@@ -391,9 +391,9 @@ function Hero() {
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-3xl border border-border bg-secondary p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Wallet balance</div>
-                  <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Available for purchases</div>
-                  <div className="mt-2 text-sm text-muted-foreground">Funded through the dedicated account route.</div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Account Credit</div>
+                  <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Available for services</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Add credit through the dedicated account route.</div>
                 </div>
                 <div className="rounded-3xl border border-border bg-secondary p-4">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Receipts</div>
@@ -408,8 +408,8 @@ function Hero() {
                   <div className="mt-4 space-y-3">
                     {[
                       ['Data purchase', 'MTN 2GB - ₦1,500', 'Completed'],
-                      ['Wallet funding', 'Virtual account transfer', 'Confirmed'],
-                      ['Airtime top-up', 'Glo - ₦2,000', 'Completed'],
+                      ['Account credit', 'Bank transfer', 'Confirmed'],
+                      ['Airtime recharge', 'Glo - ₦2,000', 'Completed'],
                     ].map(([title, detail, status]) => (
                       <div key={title} className="flex items-center justify-between rounded-2xl border border-border bg-secondary px-3 py-3">
                         <div>
@@ -426,7 +426,7 @@ function Hero() {
                   <div className="rounded-3xl border border-border bg-card p-4">
                     <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Quick actions</div>
                     <div className="mt-4 grid gap-2">
-                      {['Buy Data', 'Buy Airtime', 'Fund Wallet', 'View History'].map((item) => (
+                      {['Buy Data', 'Buy Airtime', 'Add Credit', 'View History'].map((item) => (
                         <div key={item} className="rounded-2xl border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground">
                           {item}
                         </div>
@@ -552,10 +552,10 @@ function AboutSection() {
         <motion.div variants={motionFadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} custom={0}>
           <div className="axis-label text-primary">About AxisVTU</div>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            A simple platform for airtime, data, wallet funding, and utility payments
+            A simple platform for airtime, data, account top-up, and utility services
           </h2>
           <p className="mt-5 text-lg leading-8 text-muted-foreground">
-            AxisVTU is a Nigerian VTU and payments platform designed to help people handle ordinary account tasks without friction. It brings top-ups, wallet funding, receipts, and transaction history into one clear web experience.
+            AxisVTU is a Nigerian digital services platform designed to help people handle ordinary utility tasks without friction. It brings top-ups, account credit, receipts, and order history into one clear web experience.
           </p>
           <p className="mt-5 text-lg leading-8 text-muted-foreground">
             The goal is straightforward: keep the interface human, the flow reliable, and the account details easy to understand.
@@ -603,7 +603,7 @@ function FaqSection() {
         <PageSection
           eyebrow="FAQ / Support"
           title="Helpful answers before you get started"
-          description="A few common questions users usually ask before opening an account or funding their wallet."
+          description="A few common questions users usually ask before opening an account or adding credit."
           align="center"
         />
 
@@ -682,7 +682,7 @@ function Footer() {
           <div>
             <BrandLogo className="[&_span]:text-white" />
             <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300">
-              AxisVTU helps users buy airtime, data, and everyday utility services while keeping wallet funding and transaction records clear.
+              AxisVTU helps users buy airtime, data, and everyday utility services while keeping account credit and service records clear.
             </p>
             <div className="mt-5 flex items-center gap-3 text-sm text-slate-200">
               <span className="h-2 w-2 rounded-full bg-primary" />
@@ -704,7 +704,7 @@ function Footer() {
               <div className="text-sm font-semibold text-white">Policies</div>
               <div className="mt-4 space-y-3 text-sm">
                 <div><a href="#" className="hover:text-white">Terms &amp; Conditions</a></div>
-                <div><a href="#" className="hover:text-white">Privacy Policy</a></div>
+                <div><Link href="/privacy" className="hover:text-white">Privacy Policy</Link></div>
               </div>
             </div>
           </div>

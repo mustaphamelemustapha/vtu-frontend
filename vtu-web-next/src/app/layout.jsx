@@ -6,7 +6,7 @@ export const metadata = {
     default: 'AxisVTU',
     template: '%s | AxisVTU',
   },
-  description: 'Premium fintech dashboard for AxisVTU',
+  description: 'Premium utility services dashboard for AxisVTU',
   applicationName: 'AxisVTU',
   metadataBase: new URL('https://axisvtu.com'),
   icons: {
