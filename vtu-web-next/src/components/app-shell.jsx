@@ -99,9 +99,12 @@ export function AppShell({ children }) {
   const [globalQuery, setGlobalQuery] = useState('');
 
   const handleSignOut = useCallback(() => {
-    clearAuth();
-    router.replace('/');
-  }, [router]);
+    if (typeof window !== 'undefined') {
+      console.log('[AppShell] Clearing auth and redirecting to landing...');
+      clearAuth();
+      window.location.href = '/';
+    }
+  }, []);
 
   useEffect(() => {
     const token = getToken();
