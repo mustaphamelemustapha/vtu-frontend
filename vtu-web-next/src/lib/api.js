@@ -283,6 +283,11 @@ export async function adminActivateUser(userId) {
   return apiFetch(`/admin/users/${userId}/activate`, { method: 'POST' });
 }
 
+export async function adminDeleteUser(userId) {
+  return apiFetch(`/admin/users/${userId}`, { method: 'DELETE' });
+}
+
+
 export async function adminGetTransactions(params = {}) {
   return apiFetch(`/admin/transactions${toQuery(params)}`);
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X } from 'lucide-react';
 import {
   adminActivateUser,
+  adminDeleteUser,
   adminGetUserDetails,
   adminGetUsers,
   adminSuspendUser,
@@ -61,6 +62,8 @@ export default function AdminUsersPage() {
     try {
       if (confirmAction.type === 'suspend') {
         await adminSuspendUser(confirmAction.user.id);
+      } else if (confirmAction.type === 'delete') {
+        await adminDeleteUser(confirmAction.user.id);
       } else {
         await adminActivateUser(confirmAction.user.id);
       }
@@ -107,6 +110,14 @@ export default function AdminUsersPage() {
           <Button variant="secondary" size="sm" onClick={() => openUser(row)}>
             <Wallet className="h-3.5 w-3.5" />
             Wallet ledger
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => setConfirmAction({ type: 'delete', user: row })}
+          >
+            Delete
           </Button>
         </div>
       ),
@@ -210,9 +221,20 @@ export default function AdminUsersPage() {
 
       <ConfirmDialog
         open={Boolean(confirmAction)}
-        title={`${confirmAction?.type === 'suspend' ? 'Suspend' : 'Activate'} user account`}
-        description={`You are about to ${confirmAction?.type || 'update'} ${confirmAction?.user?.email || 'this account'}. This action is logged for audit.`}
-        confirmLabel={confirmAction?.type === 'suspend' ? 'Suspend user' : 'Activate user'}
+        title={`${confirmAction?.type === 'suspend' ? 'Suspend' : confirmAction?.type === 'delete' ? 'Permanently Delete' : 'Activate'} user account`}
+        description={
+          confirmAction?.type === 'delete'
+            ? `Are you absolutely sure you want to delete ${confirmAction?.user?.email}? This will suffix their credentials and they will no longer be able to log in. This action is irreversible.`
+            : `You are about to ${confirmAction?.type || 'update'} ${confirmAction?.user?.email || 'this account'}. This action is logged for audit.`
+        }
+        confirmLabel={
+          confirmAction?.type === 'suspend'
+            ? 'Suspend user'
+            : confirmAction?.type === 'delete'
+            ? 'Yes, delete user'
+            : 'Activate user'
+        }
+        variant={confirmAction?.type === 'delete' ? 'destructive' : 'default'}
         busy={busy}
         onCancel={() => setConfirmAction(null)}
         onConfirm={runAction}
