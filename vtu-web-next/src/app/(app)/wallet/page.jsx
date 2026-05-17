@@ -101,7 +101,7 @@ export default function WalletPage() {
         isPlaceholder: true,
         bank_name: 'Sterling Bank',
         account_number: 'PENDING',
-        account_name: `MMTECHGLOBE/${profile?.full_name || 'Customer'}`.toUpperCase(),
+        account_name: `AxisVTU/${profile?.full_name || 'Customer'}`.toUpperCase(),
       });
     }
     return list;
@@ -111,11 +111,22 @@ export default function WalletPage() {
 
   const accountHolderName = useMemo(() => {
     const baseName = profile?.full_name || activeAccount?.account_name || 'Customer';
-    const cleanName = String(baseName).trim().toUpperCase();
-    if (cleanName.startsWith('MMTECHGLOBE')) {
-      return cleanName.replace('MMTECHGLOBE/', 'MMTECHGLOBE / ');
+    let cleanName = String(baseName).trim().toUpperCase();
+    
+    // Clean up any existing prefixes from database or API response
+    if (cleanName.startsWith('MMTECHGLOBE/')) {
+      cleanName = cleanName.substring('MMTECHGLOBE/'.length);
+    } else if (cleanName.startsWith('MMTECHGLOBE')) {
+      cleanName = cleanName.substring('MMTECHGLOBE'.length);
     }
-    return `MMTECHGLOBE / ${cleanName}`;
+    
+    if (cleanName.startsWith('AXISVTU/')) {
+      cleanName = cleanName.substring('AXISVTU/'.length);
+    } else if (cleanName.startsWith('AXISVTU')) {
+      cleanName = cleanName.substring('AXISVTU'.length);
+    }
+    
+    return `AxisVTU / ${cleanName.trim()}`;
   }, [profile?.full_name, activeAccount?.account_name]);
 
   const hasMonnify = accountsList.some(acc => {
