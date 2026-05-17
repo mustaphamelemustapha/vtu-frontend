@@ -335,19 +335,19 @@ export default function ElectricityPage() {
       <PageHeader
         eyebrow="Services"
         title="Electricity"
-        description="Pay electricity bills with meter details, amount, and a clean wallet-funded checkout flow."
+        description="Purchase electricity tokens instantly for all major distribution companies."
       />
 
       <div className="grid gap-4">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
-            <CardTitle>Pay electricity bill</CardTitle>
-            <CardDescription>Select disco, meter details, then confirm.</CardDescription>
+            <CardTitle>Electricity Token</CardTitle>
+            <CardDescription>Select a distribution company, input meter details, and generate a recharge token.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Disco / Provider</div>
+                <div className="axis-label">Distribution Company (Disco)</div>
                 <select
                   value={disco}
                   onChange={(e) => setDisco(e.target.value)}
@@ -363,7 +363,7 @@ export default function ElectricityPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="axis-label">Meter type</div>
+                <div className="axis-label">Meter Type</div>
                 <div className="grid grid-cols-2 gap-2">
                   {meterTypes.map((item) => {
                     const active = meterType === item;
@@ -395,27 +395,27 @@ export default function ElectricityPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Meter number</div>
+                <div className="axis-label">Meter Number</div>
                 <Input value={meterNumber} onChange={(e) => setMeterNumber(e.target.value)} placeholder="e.g. 1234567890" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', meterError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {meterError || 'Use the meter number exactly as registered.'}
+                  {meterError || 'Enter your unique meter identification number.'}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <div className="axis-label">Phone number</div>
+                <div className="axis-label">Phone Number</div>
                 <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="e.g. 08012345678" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {phoneError || 'Used for provider notifications.'}
+                  {phoneError || 'Recipient mobile number for token delivery.'}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="axis-label">Amount (NGN)</div>
+              <div className="axis-label">Amount</div>
               <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="e.g. 5000" className="placeholder:italic placeholder:text-muted-foreground/60" />
               <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                {amountError || 'Enter the bill amount to charge your wallet.'}
+                {amountError || 'Specify the token purchase amount.'}
               </p>
             </div>
 
@@ -432,7 +432,7 @@ export default function ElectricityPage() {
                     Verifying…
                   </>
                 ) : (
-                  'Verify Meter'
+                  'Verify Number'
                 )}
               </Button>
               <Button onClick={openConfirm} disabled={!canSubmit}>
@@ -484,8 +484,8 @@ export default function ElectricityPage() {
           <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Order summary</h3>
-                <p className="text-sm text-muted-foreground">Confirm electricity payment details.</p>
+                <h3 className="text-lg font-semibold text-foreground">Confirm Transaction</h3>
+                <p className="text-sm text-muted-foreground">Please double-check meter details and amount before paying.</p>
               </div>
               <button type="button" onClick={() => setSummaryOpen(false)} className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
                 Close
@@ -494,7 +494,7 @@ export default function ElectricityPage() {
             <div className="space-y-4 px-5 py-5">
               <div className="rounded-2xl border border-border bg-secondary p-4">
                 <div className="text-sm font-semibold text-foreground">{summaryDisco} Electricity</div>
-                <div className="text-xs text-muted-foreground">Wallet-funded bill payment</div>
+                <div className="text-xs text-muted-foreground">Instant utility recharge</div>
               </div>
               <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
                 {[
@@ -516,7 +516,7 @@ export default function ElectricityPage() {
                 Cancel
               </Button>
               <Button className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={async () => { setSummaryOpen(false); await submit(); }} disabled={!canSubmit}>
-                Pay Electricity
+                Pay Now
               </Button>
             </div>
           </div>

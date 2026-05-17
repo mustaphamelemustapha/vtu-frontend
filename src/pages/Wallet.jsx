@@ -336,16 +336,16 @@ export default function Wallet() {
 
             {!transferBusy && transferNeedsKyc && !transferAccounts.some(acc => {
               const name = String(acc.bank_name || '').toLowerCase();
-              return name.includes('wema') || name.includes('sterling') || name.includes('monnify');
+              return name.includes('moniepoint') || name.includes('monnify') || name.includes('wema') || name.includes('sterling');
             }) && (
               <Card style={{ marginTop: 12 }}>
-                <div className="label" style={{ fontWeight: 600, color: 'var(--text-foreground)' }}>Monnify reserved accounts</div>
+                <div className="label" style={{ fontWeight: 600, color: 'var(--text-foreground)' }}>Activate Moniepoint Account</div>
                 <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-                  Provide your BVN or NIN below to activate dedicated Wema Bank and Sterling Bank virtual accounts.
+                  Provide your BVN or NIN below to activate your dedicated Moniepoint funding account.
                 </div>
                 <form onSubmit={createTransfer} className="form-grid" style={{ marginTop: 12 }}>
                   <label>
-                    BVN (optional)
+                    BVN
                     <input
                       value={transferForm.bvn}
                       onChange={(e) => setTransferForm({ ...transferForm, bvn: e.target.value })}
@@ -353,7 +353,7 @@ export default function Wallet() {
                     />
                   </label>
                   <label>
-                    NIN (optional)
+                    NIN
                     <input
                       value={transferForm.nin}
                       onChange={(e) => setTransferForm({ ...transferForm, nin: e.target.value })}
@@ -361,7 +361,7 @@ export default function Wallet() {
                     />
                   </label>
                   <Button type="submit" disabled={transferBusy}>
-                    {transferBusy ? "Generating..." : "Generate Monnify Accounts"}
+                    {transferBusy ? "Generating..." : "Activate Moniepoint Account"}
                   </Button>
                 </form>
               </Card>

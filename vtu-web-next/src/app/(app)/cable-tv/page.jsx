@@ -392,14 +392,14 @@ export default function CableTvPage() {
       <PageHeader
         eyebrow="Services"
         title="Cable TV"
-        description="Renew DSTV, GOtv, or StarTimes subscriptions through the wallet with clean transaction records."
+        description="Instant TV subscription renewal for DStv, GOtv, and StarTimes."
       />
 
       <div className="grid gap-4">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
-            <CardTitle>Pay Cable TV</CardTitle>
-            <CardDescription>Choose provider, enter smartcard details, select package, then confirm.</CardDescription>
+            <CardTitle>Cable Subscription</CardTitle>
+            <CardDescription>Select a television provider, enter your smartcard or IUC number, choose a package, and proceed to payment.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -455,7 +455,7 @@ export default function CableTvPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Smartcard / IUC number</div>
+                <div className="axis-label">Smartcard / IUC Number</div>
                 <Input value={smartcardNumber} onChange={(e) => setSmartcardNumber(e.target.value)} placeholder="e.g. 1234567890" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
@@ -465,7 +465,7 @@ export default function CableTvPage() {
                     disabled={!provider || cleanCard.length < 5 || verifyBusy || busy}
                     className="h-9 border-border bg-card px-3 text-xs text-muted-foreground hover:bg-secondary"
                   >
-                    {verifyBusy ? 'Verifying...' : 'Verify smartcard'}
+                    {verifyBusy ? 'Verifying...' : 'Verify Number'}
                   </Button>
                   {verifyResult.ok ? (
                     <Badge tone="success" className="text-xs">
@@ -478,21 +478,21 @@ export default function CableTvPage() {
                   ) : null}
                 </div>
                 <p className={cn('text-xs', smartCardError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {smartCardError || 'Use the registered smartcard or IUC number.'}
+                  {smartCardError || 'Enter the registered smartcard/IUC number.'}
                 </p>
               </div>
               <div className="space-y-2">
-                <div className="axis-label">Phone number</div>
+                <div className="axis-label">Phone Number</div>
                 <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="e.g. 08012345678" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {phoneError || 'Used by provider for transaction updates.'}
+                  {phoneError || 'Recipient mobile number for provider updates.'}
                 </p>
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Cable plan</div>
+                <div className="axis-label">Package</div>
                 <select
                   value={packageCode}
                   onChange={(e) => setPackageCode(e.target.value)}
@@ -505,8 +505,8 @@ export default function CableTvPage() {
                       : !provider
                         ? 'Select provider first'
                         : packageChoices.length
-                          ? 'Select a plan'
-                          : 'No plans available for this provider'}
+                          ? 'Select a package'
+                          : 'No packages available for this provider'}
                   </option>
                   {packageChoices.map((item) => {
                     const code = String(item?.code || item?.id || '').trim();
@@ -523,19 +523,19 @@ export default function CableTvPage() {
                   })}
                 </select>
                 <p className={cn('text-xs', packageError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {packageError || (packageChoices.length ? 'Plan list updates automatically for selected provider.' : 'No plans found yet for this provider.')}
+                  {packageError || (packageChoices.length ? 'Select from available packages.' : 'No packages found yet for this provider.')}
                 </p>
-                {packageLoading ? <p className="text-xs text-muted-foreground">Loading live package list…</p> : null}
+                {packageLoading ? <p className="text-xs text-muted-foreground">Loading packages…</p> : null}
                 {packageLoadError ? <p className="text-xs text-amber-600 dark:text-amber-300">{packageLoadError}</p> : null}
               </div>
 
               <div className="space-y-2">
-                <div className="axis-label">Plan amount</div>
+                <div className="axis-label">Amount</div>
                 <div className="flex h-11 w-full items-center rounded-2xl border border-border bg-secondary px-4 text-sm font-medium text-foreground">
-                  {Number.isFinite(parsedAmount) && parsedAmount > 0 ? `₦${formatMoney(parsedAmount)}` : 'Select a cable plan'}
+                  {Number.isFinite(parsedAmount) && parsedAmount > 0 ? `₦${formatMoney(parsedAmount)}` : 'Select a package'}
                 </div>
                 <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {amountError || 'No manual amount entry needed. Price is attached to your selected package.'}
+                  {amountError || 'The amount is automatically set based on the package selected.'}
                 </p>
               </div>
             </div>
@@ -556,8 +556,8 @@ export default function CableTvPage() {
           <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Order summary</h3>
-                <p className="text-sm text-muted-foreground">Confirm cable subscription details.</p>
+                <h3 className="text-lg font-semibold text-foreground">Confirm Transaction</h3>
+                <p className="text-sm text-muted-foreground">Please double-check subscription details before making payment.</p>
               </div>
               <button type="button" onClick={() => setSummaryOpen(false)} className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
                 Close
@@ -566,7 +566,7 @@ export default function CableTvPage() {
             <div className="space-y-4 px-5 py-5">
               <div className="rounded-2xl border border-border bg-secondary p-4">
                 <div className="text-sm font-semibold text-foreground">{selectedProvider?.name || '—'} Cable TV</div>
-                <div className="text-xs text-muted-foreground">Wallet-funded subscription</div>
+                <div className="text-xs text-muted-foreground">Instant subscription recharge</div>
               </div>
               <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
                 {[
@@ -589,7 +589,7 @@ export default function CableTvPage() {
                 Cancel
               </Button>
               <Button className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={async () => { setSummaryOpen(false); await submit(); }} disabled={!canSubmit}>
-                Pay Cable
+                Pay Now
               </Button>
             </div>
           </div>

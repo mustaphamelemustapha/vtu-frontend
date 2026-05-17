@@ -383,8 +383,8 @@ export default function BuyDataPage() {
         <div className="axis-label text-muted-foreground">Services</div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-1.5">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Buy Data</h1>
-            <p className="text-sm text-muted-foreground">Fast purchase flow with live plans and instant confirmation.</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Data Bundles</h1>
+            <p className="text-sm text-muted-foreground">Purchase premium high-speed mobile data bundles with instant delivery.</p>
           </div>
         </div>
       </div>
@@ -434,7 +434,7 @@ export default function BuyDataPage() {
             <section className="space-y-3.5 md:space-y-4">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
-                <div className="mt-2 text-sm text-muted-foreground">Enter recipient number.</div>
+                <div className="mt-2 text-sm text-muted-foreground">Enter the recipient phone number.</div>
               </div>
               <div className="rounded-2xl border border-border bg-secondary/70 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
                 <Input
@@ -464,11 +464,11 @@ export default function BuyDataPage() {
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select plan</div>
                   <div className="mt-2 text-sm text-muted-foreground">
-                    {activeNetwork === 'all' ? 'Choose from all live bundles.' : `${networkLabel(activeNetwork)} bundles ready for purchase.`}
+                    {activeNetwork === 'all' ? 'Choose from our available premium bundles.' : `${networkLabel(activeNetwork)} bundles ready for purchase.`}
                   </div>
                 </div>
                 <Badge className="h-8 rounded-full border-border bg-secondary px-3 text-muted-foreground">
-                  {activeNetwork === 'all' ? totalCuratedPlans : activeGroup?.plans.length || 0} plan{activeNetwork === 'all' ? (totalCuratedPlans === 1 ? '' : 's') : (activeGroup?.plans.length === 1 ? '' : 's')}
+                  {activeNetwork === 'all' ? totalCuratedPlans : activeGroup?.plans.length || 0} bundle{activeNetwork === 'all' ? (totalCuratedPlans === 1 ? '' : 's') : (activeGroup?.plans.length === 1 ? '' : 's')}
                 </Badge>
               </div>
 
@@ -481,8 +481,8 @@ export default function BuyDataPage() {
               ) : null}
 
               {!loading && !visiblePlans.length ? (
-                <div className="rounded-[22px] border border-dashed border-border bg-secondary px-4 py-5 text-sm text-muted-foreground">
-                  No bundles are available for this network right now.
+                <div className="rounded-[22px] border border-dashed border-border bg-secondary px-4 py-5 text-sm text-muted-foreground text-center">
+                  No active bundles found for this network at the moment.
                 </div>
               ) : null}
 
@@ -609,8 +609,8 @@ export default function BuyDataPage() {
           <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Order summary</h3>
-                <p className="text-sm text-muted-foreground">Confirm your purchase details.</p>
+                <h3 className="text-lg font-semibold text-foreground">Confirm Transaction</h3>
+                <p className="text-sm text-muted-foreground">Double-check your purchase details before proceeding.</p>
               </div>
               <button
                 type="button"
@@ -671,7 +671,7 @@ export default function BuyDataPage() {
                 }}
                 disabled={!canSubmit}
               >
-                Buy Data
+                Pay Now
               </Button>
             </div>
           </div>

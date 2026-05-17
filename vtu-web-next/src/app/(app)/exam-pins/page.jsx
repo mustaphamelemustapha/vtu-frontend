@@ -281,19 +281,19 @@ export default function ExamPinsPage() {
       <PageHeader
         eyebrow="Services"
         title="Exam PINs"
-        description="Buy WAEC and JAMB PINs from your wallet with live package codes."
+        description="Generate WAEC and JAMB result checker PINs instantly."
       />
 
       <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
-            <CardTitle>Buy Exam PIN</CardTitle>
-            <CardDescription>Choose exam body, package, quantity, and optional phone reference.</CardDescription>
+            <CardTitle>Purchase PINs</CardTitle>
+            <CardDescription>Select exam body, package, quantity, and optional reference number.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Exam body</div>
+                <div className="axis-label">Exam Body</div>
                 <select
                   value={exam}
                   onChange={(e) => setExam(e.target.value)}
@@ -312,7 +312,7 @@ export default function ExamPinsPage() {
                 <div className="axis-label">Quantity</div>
                 <Input value={quantity} onChange={(e) => setQuantity(e.target.value)} inputMode="numeric" placeholder="e.g. 1" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', quantityError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {quantityError || 'Allowed quantity: 1 to 10 PINs.'}
+                  {quantityError || 'Purchase up to 10 PINs per transaction.'}
                 </p>
               </div>
             </div>
@@ -346,10 +346,10 @@ export default function ExamPinsPage() {
             ) : null}
 
             <div className="space-y-2">
-              <div className="axis-label">Phone number (optional)</div>
+              <div className="axis-label">Phone Number (Optional)</div>
               <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="e.g. 08012345678" className="placeholder:italic placeholder:text-muted-foreground/60" />
               <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                {phoneError || 'Optional, used as a customer reference.'}
+                {phoneError || 'Recipient mobile number for exam PIN delivery.'}
               </p>
             </div>
 
@@ -359,7 +359,7 @@ export default function ExamPinsPage() {
 
             <Button onClick={submit} disabled={!canSubmit} className="w-full sm:w-auto">
               <GraduationCap className="h-4 w-4" />
-              {busy ? 'Processing...' : 'Buy PIN'}
+              {busy ? 'Processing...' : 'Pay Now'}
             </Button>
 
           </CardContent>
@@ -367,8 +367,8 @@ export default function ExamPinsPage() {
 
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
-            <CardTitle>Order summary</CardTitle>
-            <CardDescription>Review quantity and payable amount.</CardDescription>
+            <CardTitle>Transaction Summary</CardTitle>
+            <CardDescription>Verify your purchase details before payment.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-2xl border border-border bg-secondary p-4">
@@ -377,8 +377,8 @@ export default function ExamPinsPage() {
                   <ReceiptText className="h-4 w-4" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-foreground">Exam PIN purchase</div>
-                  <div className="text-xs text-muted-foreground">Unit price from backend rules</div>
+                  <div className="text-sm font-semibold text-foreground">Result Checker PIN</div>
+                  <div className="text-xs text-muted-foreground">Instant electronic PIN delivery</div>
                 </div>
               </div>
             </div>

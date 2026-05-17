@@ -260,15 +260,15 @@ export default function AirtimePage() {
       <div className="space-y-6 pb-10">
       <PageHeader
         eyebrow="Services"
-        title="Airtime"
-        description="Top up supported Nigerian networks from a clean airtime workspace."
+        title="Mobile Top-up"
+        description="Send instant airtime to any phone number across Nigerian networks."
       />
 
       <div className="grid gap-4">
         <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
           <CardHeader>
-            <CardTitle>Buy Airtime</CardTitle>
-            <CardDescription>Pick network, enter recipient, and confirm amount.</CardDescription>
+            <CardTitle>Purchase Airtime</CardTitle>
+            <CardDescription>Select network, input mobile number, and enter amount.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -329,15 +329,15 @@ export default function AirtimePage() {
                   className="placeholder:italic placeholder:text-muted-foreground/60"
                 />
                 <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {phoneError || 'Nigerian mobile format.'}
+                  {phoneError || 'Enter recipient mobile number.'}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <div className="axis-label">Amount (NGN)</div>
+                <div className="axis-label">Amount</div>
                 <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="e.g. 500" className="placeholder:italic placeholder:text-muted-foreground/60" />
                 <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {amountError || 'Amount to charge wallet.'}
+                  {amountError || 'Specify the airtime amount.'}
                 </p>
               </div>
             </div>
@@ -372,8 +372,8 @@ export default function AirtimePage() {
           <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Order summary</h3>
-                <p className="text-sm text-muted-foreground">Confirm your airtime purchase details.</p>
+                <h3 className="text-lg font-semibold text-foreground">Confirm Transaction</h3>
+                <p className="text-sm text-muted-foreground">Confirm purchase details before making payment.</p>
               </div>
               <button type="button" onClick={() => setSummaryOpen(false)} className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
                 Close
@@ -387,7 +387,7 @@ export default function AirtimePage() {
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-foreground">{networkLabel(network)} Airtime</div>
-                    <div className="text-xs text-muted-foreground">Wallet-funded transaction</div>
+                    <div className="text-xs text-muted-foreground">Instant mobile recharge</div>
                   </div>
                 </div>
               </div>
@@ -410,7 +410,7 @@ export default function AirtimePage() {
                 Cancel
               </Button>
               <Button className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={async () => { setSummaryOpen(false); await submit(); }} disabled={!canSubmit}>
-                Buy Airtime
+                Pay Now
               </Button>
             </div>
           </div>

@@ -155,9 +155,9 @@ export default function DashboardPage() {
   return (
     <div className="min-w-0 space-y-6 overflow-x-hidden pb-8">
       <PageHeader
-        eyebrow="Dashboard"
-        title={`Good to see you, ${String(profile?.full_name || profile?.email || 'User').split(' ')[0]}`}
-        description="A calm command center for AxisVTU operations, balances, and referral activity."
+        eyebrow="Overview"
+        title={`Welcome, ${String(profile?.full_name || profile?.email || 'User').split(' ')[0]}`}
+        description="Your dashboard to add money, purchase mobile services, and track transaction history."
         actions={(
           <>
             <Button variant="secondary" onClick={() => load(true)} className="border-border bg-card text-muted-foreground hover:bg-secondary">
@@ -166,7 +166,7 @@ export default function DashboardPage() {
             </Button>
             <Button onClick={() => router.push('/buy-data')}>
               <Package2 className="h-4 w-4" />
-              Buy Data
+              Data Bundles
             </Button>
           </>
         )}
@@ -183,17 +183,17 @@ export default function DashboardPage() {
           <CardContent className="p-5 sm:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="min-w-0">
-                <div className="axis-label text-primary">Start here</div>
-                <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">3 quick steps to use AxisVTU smoothly</div>
+                <div className="axis-label text-primary">Get Started</div>
+                <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">Three simple steps to start using Axis</div>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">1. Add Credit</span>
-                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">2. Buy Data</span>
-                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">3. View Receipt in History</span>
+                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">1. Add Money</span>
+                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">2. Purchase Data</span>
+                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">3. Track Transaction</span>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" onClick={() => router.push('/wallet')}>Add credit</Button>
-                <Button onClick={() => router.push('/buy-data')}>Buy data</Button>
+                <Button variant="secondary" onClick={() => router.push('/wallet')}>Add money</Button>
+                <Button onClick={() => router.push('/buy-data')}>Purchase data</Button>
                 <Button
                   variant="ghost"
                   onClick={() => {
@@ -222,10 +222,10 @@ export default function DashboardPage() {
               <Landmark className="h-7 w-7" />
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80">Account Top-up</div>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">Your Top-up Details</h2>
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80">Add Money</div>
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">Your Funding Accounts</h2>
               <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-                Instantly add credit to your AxisVTU account by transferring to your dedicated details below. Most top-ups reflect in <span className="font-semibold text-foreground">under 60 seconds</span>.
+                Transfer funds to your dedicated accounts below to top up your balance. Your account will be funded automatically.
               </p>
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">AxisVTU Utility Services</div>
+                  <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">MMTECHGLOBE Payments</div>
                 )}
               </div>
 
@@ -292,15 +292,15 @@ export default function DashboardPage() {
 
               <div className="relative mt-10 grid gap-6 border-t border-border/60 pt-6 sm:grid-cols-2 sm:items-center">
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Service Provider</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bank Name</div>
                   <div className="mt-1 text-lg font-black tracking-tight text-foreground">
-                    {primaryFundingAccount.bank_name || 'Top-up Provider'}
+                    {primaryFundingAccount.bank_name || 'Funding Partner'}
                   </div>
                 </div>
                 <div className="sm:text-right">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Account Holder</div>
                   <div className="mt-1 break-words text-sm font-bold text-foreground">
-                    {primaryFundingAccount.account_name || 'AxisVTU User'}
+                    {primaryFundingAccount.account_name || 'Customer'}
                   </div>
                 </div>
               </div>
@@ -317,7 +317,7 @@ export default function DashboardPage() {
             <div className="min-w-0 rounded-[32px] border border-dashed border-border/60 bg-card/50 p-8 text-center transition-all hover:bg-card">
               <Landmark className="mx-auto h-10 w-10 text-muted-foreground/30" />
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                {bankTransfer?.message || 'We are generating your dedicated top-up details. This usually takes a few minutes.'}
+                {bankTransfer?.message || 'We are generating your dedicated funding accounts. This will take just a moment.'}
               </p>
               <Button variant="outline" className="mt-6 w-full rounded-2xl border-primary/20 text-primary" onClick={() => router.push('/wallet')}>
                 Check Progress
@@ -333,10 +333,10 @@ export default function DashboardPage() {
             <div>
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
-                Action board
+                Quick Services
               </div>
-              <CardTitle>Quick actions</CardTitle>
-              <CardDescription>Start the common tasks without searching around the dashboard.</CardDescription>
+              <CardTitle>Services</CardTitle>
+              <CardDescription>Access your primary mobile services and account tools.</CardDescription>
             </div>
             <Badge tone="neutral" className="hidden sm:inline-flex">Responsive</Badge>
           </CardHeader>
@@ -377,14 +377,14 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Referral position</CardTitle>
-            <CardDescription>Invite-first top-up rewards, surfaced directly on the dashboard.</CardDescription>
+            <CardTitle>Invite & Earn</CardTitle>
+            <CardDescription>Earn rewards when your friends register and add money.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-3xl border border-border bg-secondary p-4">
               <div className="axis-label">Your code</div>
               <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{referralCode}</div>
-              <div className="mt-2 text-sm text-muted-foreground">Share this code with new users to earn rewards after their first top-up.</div>
+              <div className="mt-2 text-sm text-muted-foreground">Share your code with friends. You both get rewarded upon their first fund deposit.</div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Button variant="secondary" onClick={() => router.push('/profile')} className="border-border bg-card text-muted-foreground hover:bg-secondary">
@@ -400,8 +400,8 @@ export default function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Recent activity</CardTitle>
-            <CardDescription>Latest credit and service movements.</CardDescription>
+            <CardTitle>Transaction History</CardTitle>
+            <CardDescription>Your most recent transactions and payments.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
@@ -413,9 +413,9 @@ export default function DashboardPage() {
             ) : null}
             {txs.length === 0 && !loading ? (
               <div className="rounded-2xl border border-dashed border-border bg-secondary p-4 text-sm text-muted-foreground">
-                No recent activity yet.
+                No transactions recorded yet.
                 <div className="mt-3">
-                  <Button size="sm" onClick={() => router.push('/buy-data')}>Buy data now</Button>
+                  <Button size="sm" onClick={() => router.push('/buy-data')}>Purchase Data</Button>
                 </div>
               </div>
             ) : null}

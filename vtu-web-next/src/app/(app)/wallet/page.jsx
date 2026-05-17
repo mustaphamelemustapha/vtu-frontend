@@ -164,8 +164,8 @@ export default function WalletPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div>
-              <CardTitle>Top-up details</CardTitle>
-              <CardDescription>Dedicated details for adding credit.</CardDescription>
+              <CardTitle>Dedicated Accounts</CardTitle>
+              <CardDescription>Transfer funds directly to any of your accounts below.</CardDescription>
             </div>
             {accounts.length > 1 && (
               <div className="flex items-center gap-1.5 rounded-full border border-border bg-background p-1">
@@ -203,7 +203,7 @@ export default function WalletPage() {
                   </span>
                 </div>
                 <div className="mt-3 text-2xl font-semibold tracking-[0.15em] text-foreground font-mono">{activeAccount.account_number}</div>
-                <div className="mt-2 text-sm text-muted-foreground">{activeAccount.account_name || 'AxisVTU Account'}</div>
+                <div className="mt-2 text-sm text-muted-foreground">{activeAccount.account_name || 'MMTECHGLOBE Account'}</div>
                 <Button variant="secondary" className="mt-4 w-full rounded-2xl" onClick={() => copy(activeAccount.account_number)}>
                   <Copy className="h-4 w-4 mr-2" />
                   Copy Account Number
@@ -211,22 +211,22 @@ export default function WalletPage() {
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground text-center">
-                Top-up details will appear here once generated.
+                Dedicated funding accounts will appear here.
               </div>
             )}
 
             {!hasMonnify && (
               <div className="rounded-3xl border border-dashed border-border bg-card p-4 mt-2">
-                <div className="text-sm font-semibold tracking-wide text-foreground">Monnify reserved accounts</div>
+                <div className="text-sm font-semibold tracking-wide text-foreground">Activate Moniepoint Account</div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Provide your BVN or NIN below to activate dedicated Wema Bank and Sterling Bank virtual accounts.
+                  Provide your BVN or NIN below to activate your dedicated Moniepoint funding account.
                 </p>
                 <form onSubmit={handleKycSubmit} className="mt-3 space-y-3">
                   <div>
                     <input
                       type="text"
                       className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="BVN (optional)"
+                      placeholder="BVN"
                       value={bvn}
                       onChange={(e) => setBvn(e.target.value)}
                     />
@@ -235,13 +235,13 @@ export default function WalletPage() {
                     <input
                       type="text"
                       className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="NIN (optional)"
+                      placeholder="NIN"
                       value={nin}
                       onChange={(e) => setNin(e.target.value)}
                     />
                   </div>
                   <Button type="submit" size="sm" className="w-full rounded-xl" disabled={verifying}>
-                    {verifying ? 'Generating...' : 'Activate Monnify Accounts'}
+                    {verifying ? 'Generating...' : 'Activate Moniepoint Account'}
                   </Button>
                 </form>
               </div>
@@ -258,19 +258,19 @@ export default function WalletPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Credit History</CardTitle>
-          <CardDescription>Credit movements in clean chronological order.</CardDescription>
+          <CardTitle>Transaction History</CardTitle>
+          <CardDescription>A record of your balance updates and fund flows.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {filteredLedger.length === 0 ? (
             <div className="text-sm text-muted-foreground">
-              {pageQuery ? 'No credit records matched your search.' : 'No history yet.'}
+              {pageQuery ? 'No transactions matched your search.' : 'No history yet.'}
             </div>
           ) : null}
           {filteredLedger.map((item) => (
             <div key={item.id || item.reference} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
               <div>
-                <div className="text-sm font-medium text-foreground">{item.description || item.reference || 'Credit entry'}</div>
+                <div className="text-sm font-medium text-foreground">{item.description || item.reference || 'Transaction'}</div>
                 <div className="text-xs text-muted-foreground">{formatDateTime(item.created_at)}</div>
               </div>
               <div className={`text-sm font-semibold ${String(item.entry_type || '').toLowerCase() === 'credit' ? 'text-emerald-700' : 'text-rose-700'}`}>
