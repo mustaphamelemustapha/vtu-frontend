@@ -23,6 +23,7 @@ export default function WalletPage() {
   const [bvn, setBvn] = useState('');
   const [nin, setNin] = useState('');
   const [verifying, setVerifying] = useState(false);
+  const [activationOption, setActivationOption] = useState('bvn');
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -95,17 +96,8 @@ export default function WalletPage() {
   };
 
   const accountsList = useMemo(() => {
-    const list = Array.isArray(accounts) ? [...accounts] : [];
-    if (list.length === 1) {
-      list.push({
-        isPlaceholder: true,
-        bank_name: 'Sterling Bank',
-        account_number: 'PENDING',
-        account_name: `MMTECHGLOBE/${profile?.full_name || 'Customer'}`.toUpperCase(),
-      });
-    }
-    return list;
-  }, [accounts, profile?.full_name]);
+    return Array.isArray(accounts) ? [...accounts] : [];
+  }, [accounts]);
 
   const activeAccount = accountsList[activeIndex] || accountsList[0];
 
@@ -223,61 +215,82 @@ export default function WalletPage() {
             )}
           </CardHeader>
           <CardContent className="space-y-4">
-            {activeAccount ? (
-              <div className="rounded-3xl border border-border bg-secondary p-4 transition-all duration-300 hover:scale-[1.01]">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold tracking-wide text-foreground uppercase">{activeAccount.bank_name}</div>
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${activeAccount.isPlaceholder ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                    {activeAccount.isPlaceholder ? 'Pending' : 'Active'}
-                  </span>
-                </div>
-                <div className="mt-3 text-2xl font-semibold tracking-[0.15em] text-foreground font-mono">{activeAccount.account_number}</div>
-                <div className="mt-2 text-sm text-muted-foreground">{accountHolderName}</div>
-                
-                {activeAccount.isPlaceholder ? (
-                  <div className="mt-4 rounded-2xl border border-dashed border-primary/25 bg-primary/5 p-3 text-center text-xs leading-relaxed text-muted-foreground">
-                    Activation in progress. Your second virtual account will appear here automatically.
+            {accountsList.length > 0 ? (
+              <>
+                {activeAccount && (
+                  <div className="rounded-3xl border border-border bg-secondary p-4 transition-all duration-300 hover:scale-[1.01]">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-semibold tracking-wide text-foreground uppercase">{activeAccount.bank_name}</div>
+                      <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700">
+                        Active
+                      </span>
+                    </div>
+                    <div className="mt-3 text-2xl font-semibold tracking-[0.15em] text-foreground font-mono">{activeAccount.account_number}</div>
+                    <div className="mt-2 text-sm text-muted-foreground">{accountHolderName}</div>
+                    
+                    <Button variant="secondary" className="mt-4 w-full rounded-2xl" onClick={() => copy(activeAccount.account_number)}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Account Number
+                    </Button>
                   </div>
-                ) : (
-                  <Button variant="secondary" className="mt-4 w-full rounded-2xl" onClick={() => copy(activeAccount.account_number)}>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Account Number
-                  </Button>
                 )}
-              </div>
+              </>
             ) : (
-              <div className="rounded-2xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground text-center">
-                Dedicated funding accounts will appear here.
-              </div>
-            )}
+              <div className="rounded-3xl border border-dashed border-border bg-card p-5 space-y-4">
+                <div className="text-center space-y-1">
+                  <h4 className="text-sm font-semibold text-foreground">Activate Dedicated Funding Accounts</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Link your BVN or NIN to instantly generate your personal Wema, Sterling, or Moniepoint funding accounts.
+                  </p>
+                </div>
+                
+                {/* Premium Tab Selection */}
+                <div className="grid grid-cols-2 gap-1 rounded-xl bg-secondary p-1">
+                  <button
+                    type="button"
+                    onClick={() => { setActivationOption('bvn'); setBvn(''); setNin(''); }}
+                    className={`rounded-lg py-1.5 text-xs font-medium transition-all ${activationOption === 'bvn' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    BVN Option
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setActivationOption('nin'); setBvn(''); setNin(''); }}
+                    className={`rounded-lg py-1.5 text-xs font-medium transition-all ${activationOption === 'nin' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    NIN Option
+                  </button>
+                </div>
 
-            {!hasMonnify && (
-              <div className="rounded-3xl border border-dashed border-border bg-card p-4 mt-2">
-                <div className="text-sm font-semibold tracking-wide text-foreground">Activate Moniepoint Account</div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Provide your BVN or NIN below to activate your dedicated Moniepoint funding account.
-                </p>
-                <form onSubmit={handleKycSubmit} className="mt-3 space-y-3">
-                  <div>
-                    <input
-                      type="text"
-                      className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="BVN"
-                      value={bvn}
-                      onChange={(e) => setBvn(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="NIN"
-                      value={nin}
-                      onChange={(e) => setNin(e.target.value)}
-                    />
-                  </div>
-                  <Button type="submit" size="sm" className="w-full rounded-xl" disabled={verifying}>
-                    {verifying ? 'Generating...' : 'Activate Moniepoint Account'}
+                <form onSubmit={handleKycSubmit} className="space-y-4">
+                  {activationOption === 'bvn' ? (
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Bank Verification Number</label>
+                      <input
+                        type="text"
+                        maxLength={11}
+                        className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        placeholder="Enter 11-digit BVN"
+                        value={bvn}
+                        onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">National Identification Number</label>
+                      <input
+                        type="text"
+                        maxLength={11}
+                        className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        placeholder="Enter 11-digit NIN"
+                        value={nin}
+                        onChange={(e) => setNin(e.target.value.replace(/\D/g, ''))}
+                      />
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full rounded-xl py-5" disabled={verifying}>
+                    {verifying ? 'Generating Accounts...' : 'Generate Dedicated Accounts'}
                   </Button>
                 </form>
               </div>
