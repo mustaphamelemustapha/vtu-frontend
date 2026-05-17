@@ -139,7 +139,7 @@ export default function DashboardPage() {
         isPlaceholder: true,
         bank_name: 'Sterling Bank',
         account_number: 'PENDING',
-        account_name: `AxisVTU/${profile?.full_name || 'Customer'}`.toUpperCase(),
+        account_name: `MMTECHGLOBE/${profile?.full_name || 'Customer'}`.toUpperCase(),
       });
     }
     return list;
@@ -148,23 +148,17 @@ export default function DashboardPage() {
   const primaryFundingAccount = bankAccounts[activeIndex] || bankAccounts[0] || null;
 
   const accountHolderName = useMemo(() => {
-    const baseName = profile?.full_name || primaryFundingAccount?.account_name || 'Customer';
-    let cleanName = String(baseName).trim().toUpperCase();
+    const baseName = primaryFundingAccount?.account_name || profile?.full_name || 'Customer';
+    const rawName = String(baseName).trim();
     
-    // Clean up any existing prefixes from database or API response
-    if (cleanName.startsWith('MMTECHGLOBE/')) {
-      cleanName = cleanName.substring('MMTECHGLOBE/'.length);
-    } else if (cleanName.startsWith('MMTECHGLOBE')) {
-      cleanName = cleanName.substring('MMTECHGLOBE'.length);
+    // Clean up legacy merchant/business prefixes beautifully using regex (e.g. MMTECHGLOBE, AXISVTU, AXISVTU/, MMTECHGLOBE -, etc.)
+    const prefixPattern = /^(?:MMTECHGLOBE|AXISVTU)(?:\s*[-\/:]\s*|\s+)?/i;
+    let cleanName = rawName.replace(prefixPattern, '').trim();
+    if (!cleanName) {
+      cleanName = rawName;
     }
     
-    if (cleanName.startsWith('AXISVTU/')) {
-      cleanName = cleanName.substring('AXISVTU/'.length);
-    } else if (cleanName.startsWith('AXISVTU')) {
-      cleanName = cleanName.substring('AXISVTU'.length);
-    }
-    
-    return `AxisVTU / ${cleanName.trim()}`;
+    return `MMTECHGLOBE / ${cleanName}`;
   }, [profile?.full_name, primaryFundingAccount?.account_name]);
 
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
