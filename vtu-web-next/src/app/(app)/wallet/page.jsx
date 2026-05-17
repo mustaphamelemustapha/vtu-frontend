@@ -101,7 +101,7 @@ export default function WalletPage() {
         isPlaceholder: true,
         bank_name: 'Sterling Bank',
         account_number: 'PENDING',
-        account_name: `AxisVTU/${profile?.full_name || 'Customer'}`.toUpperCase(),
+        account_name: `MMTECHGLOBE/${profile?.full_name || 'Customer'}`.toUpperCase(),
       });
     }
     return list;
