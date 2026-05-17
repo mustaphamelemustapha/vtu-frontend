@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Copy, RefreshCw, Wallet2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { apiFetch, readScopedCache, writeScopedCache } from '@/lib/api';
+import { apiFetch, getProfile, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/page-header';
 
 export default function WalletPage() {
   const searchParams = useSearchParams();
+  const profile = getProfile();
   const pageQuery = String(searchParams.get('q') || '').trim().toLowerCase();
   const [wallet, setWallet] = useState(() => readScopedCache('wallet_me', { maxAgeMs: 5 * 60 * 1000 }));
   const [ledger, setLedger] = useState(() => readScopedCache('wallet_ledger', { maxAgeMs: 5 * 60 * 1000 }) || []);
@@ -93,8 +94,31 @@ export default function WalletPage() {
     }
   };
 
-  const activeAccount = accounts[activeIndex] || accounts[0];
-  const hasMonnify = accounts.some(acc => {
+  const accountsList = useMemo(() => {
+    const list = Array.isArray(accounts) ? [...accounts] : [];
+    if (list.length === 1) {
+      list.push({
+        isPlaceholder: true,
+        bank_name: 'Sterling Bank',
+        account_number: 'PENDING',
+        account_name: `MMTECHGLOBE/${profile?.full_name || 'Customer'}`.toUpperCase(),
+      });
+    }
+    return list;
+  }, [accounts, profile?.full_name]);
+
+  const activeAccount = accountsList[activeIndex] || accountsList[0];
+
+  const accountHolderName = useMemo(() => {
+    const baseName = profile?.full_name || activeAccount?.account_name || 'Customer';
+    const cleanName = String(baseName).trim().toUpperCase();
+    if (cleanName.startsWith('MMTECHGLOBE')) {
+      return cleanName.replace('MMTECHGLOBE/', 'MMTECHGLOBE / ');
+    }
+    return `MMTECHGLOBE / ${cleanName}`;
+  }, [profile?.full_name, activeAccount?.account_name]);
+
+  const hasMonnify = accountsList.some(acc => {
     const name = String(acc.bank_name || '').toLowerCase();
     return name.includes('wema') || name.includes('sterling') || name.includes('monnify');
   });
@@ -167,7 +191,7 @@ export default function WalletPage() {
               <CardTitle>Dedicated Accounts</CardTitle>
               <CardDescription>Transfer funds directly to any of your accounts below.</CardDescription>
             </div>
-            {accounts.length > 1 && (
+            {accountsList.length > 1 && (
               <div className="flex items-center gap-1.5 rounded-full border border-border bg-background p-1">
                 <Button
                   variant="ghost"
@@ -179,14 +203,14 @@ export default function WalletPage() {
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-xs font-semibold px-1 select-none">
-                  {activeIndex + 1}/{accounts.length}
+                  {activeIndex + 1}/{accountsList.length}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 rounded-full"
-                  disabled={activeIndex === accounts.length - 1}
-                  onClick={() => setActiveIndex((prev) => Math.min(accounts.length - 1, prev + 1))}
+                  disabled={activeIndex === accountsList.length - 1}
+                  onClick={() => setActiveIndex((prev) => Math.min(accountsList.length - 1, prev + 1))}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -198,16 +222,23 @@ export default function WalletPage() {
               <div className="rounded-3xl border border-border bg-secondary p-4 transition-all duration-300 hover:scale-[1.01]">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold tracking-wide text-foreground uppercase">{activeAccount.bank_name}</div>
-                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                    Active
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${activeAccount.isPlaceholder ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                    {activeAccount.isPlaceholder ? 'Pending' : 'Active'}
                   </span>
                 </div>
                 <div className="mt-3 text-2xl font-semibold tracking-[0.15em] text-foreground font-mono">{activeAccount.account_number}</div>
-                <div className="mt-2 text-sm text-muted-foreground">{activeAccount.account_name || 'MMTECHGLOBE Account'}</div>
-                <Button variant="secondary" className="mt-4 w-full rounded-2xl" onClick={() => copy(activeAccount.account_number)}>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy Account Number
-                </Button>
+                <div className="mt-2 text-sm text-muted-foreground">{accountHolderName}</div>
+                
+                {activeAccount.isPlaceholder ? (
+                  <div className="mt-4 rounded-2xl border border-dashed border-primary/25 bg-primary/5 p-3 text-center text-xs leading-relaxed text-muted-foreground">
+                    Activation in progress. Your second virtual account will appear here automatically.
+                  </div>
+                ) : (
+                  <Button variant="secondary" className="mt-4 w-full rounded-2xl" onClick={() => copy(activeAccount.account_number)}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Account Number
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground text-center">

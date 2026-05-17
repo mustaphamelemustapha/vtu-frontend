@@ -131,8 +131,31 @@ export default function DashboardPage() {
   const txs = emptyOrRows(summary?.transactions).slice(0, 6);
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
   const bankTransfer = summary?.bank_transfer_accounts || {};
-  const bankAccounts = bankTransfer?.accounts || [];
+  
+  const bankAccounts = useMemo(() => {
+    const list = Array.isArray(bankTransfer?.accounts) ? [...bankTransfer.accounts] : [];
+    if (list.length === 1) {
+      list.push({
+        isPlaceholder: true,
+        bank_name: 'Sterling Bank',
+        account_number: 'PENDING',
+        account_name: `MMTECHGLOBE/${profile?.full_name || 'Customer'}`.toUpperCase(),
+      });
+    }
+    return list;
+  }, [bankTransfer?.accounts, profile?.full_name]);
+
   const primaryFundingAccount = bankAccounts[activeIndex] || bankAccounts[0] || null;
+
+  const accountHolderName = useMemo(() => {
+    const baseName = profile?.full_name || primaryFundingAccount?.account_name || 'Customer';
+    const cleanName = String(baseName).trim().toUpperCase();
+    if (cleanName.startsWith('MMTECHGLOBE')) {
+      return cleanName.replace('MMTECHGLOBE/', 'MMTECHGLOBE / ');
+    }
+    return `MMTECHGLOBE / ${cleanName}`;
+  }, [profile?.full_name, primaryFundingAccount?.account_name]);
+
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
   const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
@@ -142,7 +165,7 @@ export default function DashboardPage() {
 
   const copyFundingAccount = useCallback(async () => {
     const accountNumber = primaryFundingAccount?.account_number;
-    if (!accountNumber) return;
+    if (!accountNumber || primaryFundingAccount?.isPlaceholder) return;
     try {
       await navigator.clipboard.writeText(String(accountNumber));
       setCopiedAccount(true);
@@ -150,7 +173,7 @@ export default function DashboardPage() {
     } catch {
       setCopiedAccount(false);
     }
-  }, [primaryFundingAccount?.account_number]);
+  }, [primaryFundingAccount?.account_number, primaryFundingAccount?.isPlaceholder]);
 
   return (
     <div className="min-w-0 space-y-6 overflow-x-hidden pb-8">
@@ -274,19 +297,21 @@ export default function DashboardPage() {
                   <div className="font-mono text-3xl font-bold tracking-[0.12em] text-foreground sm:text-4xl">
                     {primaryFundingAccount.account_number}
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className={cn(
-                      "h-12 w-12 shrink-0 rounded-2xl border transition-all duration-300",
-                      copiedAccount 
-                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600" 
-                        : "border-primary/20 bg-primary/10 text-primary hover:scale-110 hover:bg-primary/20"
-                    )}
-                    onClick={copyFundingAccount}
-                  >
-                    {copiedAccount ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-                  </Button>
+                  {!primaryFundingAccount?.isPlaceholder && (
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className={cn(
+                        "h-12 w-12 shrink-0 rounded-2xl border transition-all duration-300",
+                        copiedAccount 
+                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600" 
+                          : "border-primary/20 bg-primary/10 text-primary hover:scale-110 hover:bg-primary/20"
+                      )}
+                      onClick={copyFundingAccount}
+                    >
+                      {copiedAccount ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -300,12 +325,18 @@ export default function DashboardPage() {
                 <div className="sm:text-right">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Account Holder</div>
                   <div className="mt-1 break-words text-sm font-bold text-foreground">
-                    {primaryFundingAccount.account_name || 'Customer'}
+                    {accountHolderName}
                   </div>
                 </div>
               </div>
 
-              {copiedAccount && (
+              {primaryFundingAccount?.isPlaceholder && (
+                <div className="mt-4 rounded-2xl border border-dashed border-primary/25 bg-primary/5 p-3 text-center text-xs leading-relaxed text-muted-foreground">
+                  Activation in progress. Your second virtual account will appear here automatically.
+                </div>
+              )}
+
+              {copiedAccount && !primaryFundingAccount?.isPlaceholder && (
                 <div className="absolute inset-x-0 bottom-0 flex justify-center pb-2">
                   <div className="rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold text-white shadow-lg">
                     Copied to clipboard
