@@ -334,10 +334,14 @@ export default function Wallet() {
 
             {transferBusy && <div className="notice">Loading...</div>}
 
-            {!transferBusy && transferNeedsKyc && transferAccounts.length === 0 && transferProvider !== "paystack" && (
-              <Card>
-                <div className="muted">
-                  Complete one-time verification details to generate your dedicated funding account.
+            {!transferBusy && transferNeedsKyc && !transferAccounts.some(acc => {
+              const name = String(acc.bank_name || '').toLowerCase();
+              return name.includes('wema') || name.includes('sterling') || name.includes('monnify');
+            }) && (
+              <Card style={{ marginTop: 12 }}>
+                <div className="label" style={{ fontWeight: 600, color: 'var(--text-foreground)' }}>Monnify reserved accounts</div>
+                <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
+                  Provide your BVN or NIN below to activate dedicated Wema Bank and Sterling Bank virtual accounts.
                 </div>
                 <form onSubmit={createTransfer} className="form-grid" style={{ marginTop: 12 }}>
                   <label>
@@ -357,7 +361,7 @@ export default function Wallet() {
                     />
                   </label>
                   <Button type="submit" disabled={transferBusy}>
-                    {transferBusy ? "Generating..." : "Generate Account Numbers"}
+                    {transferBusy ? "Generating..." : "Generate Monnify Accounts"}
                   </Button>
                 </form>
               </Card>

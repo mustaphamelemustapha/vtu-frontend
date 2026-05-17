@@ -19,6 +19,9 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(() => !(readScopedCache('wallet_me', { maxAgeMs: 5 * 60 * 1000 }) || (readScopedCache('wallet_ledger', { maxAgeMs: 5 * 60 * 1000 }) || []).length));
   const [loadError, setLoadError] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [bvn, setBvn] = useState('');
+  const [nin, setNin] = useState('');
+  const [verifying, setVerifying] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -60,7 +63,41 @@ export default function WalletPage() {
     await navigator.clipboard.writeText(String(value || ''));
   };
 
+  const handleKycSubmit = async (e) => {
+    e.preventDefault();
+    if (!bvn.trim() && !nin.trim()) {
+      alert('Please enter your BVN or NIN.');
+      return;
+    }
+    setVerifying(true);
+    try {
+      const res = await apiFetch('/wallet/bank-transfer-accounts', {
+        method: 'POST',
+        body: JSON.stringify({
+          bvn: bvn.trim() || null,
+          nin: nin.trim() || null,
+        }),
+      });
+      if (Array.isArray(res?.accounts)) {
+        setAccounts(res.accounts);
+        writeScopedCache('wallet_accounts', res.accounts);
+        setActiveIndex(0);
+        setBvn('');
+        setNin('');
+        alert('Monnify accounts generated successfully!');
+      }
+    } catch (err) {
+      alert(err.message || 'Unable to generate Monnify accounts.');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   const activeAccount = accounts[activeIndex] || accounts[0];
+  const hasMonnify = accounts.some(acc => {
+    const name = String(acc.bank_name || '').toLowerCase();
+    return name.includes('wema') || name.includes('sterling') || name.includes('monnify');
+  });
   const filteredLedger = useMemo(() => {
     if (!pageQuery) return ledger;
     return ledger.filter((item) => {
@@ -175,6 +212,38 @@ export default function WalletPage() {
             ) : (
               <div className="rounded-2xl border border-dashed border-border bg-card p-4 text-sm text-muted-foreground text-center">
                 Top-up details will appear here once generated.
+              </div>
+            )}
+
+            {!hasMonnify && (
+              <div className="rounded-3xl border border-dashed border-border bg-card p-4 mt-2">
+                <div className="text-sm font-semibold tracking-wide text-foreground">Monnify reserved accounts</div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Provide your BVN or NIN below to activate dedicated Wema Bank and Sterling Bank virtual accounts.
+                </p>
+                <form onSubmit={handleKycSubmit} className="mt-3 space-y-3">
+                  <div>
+                    <input
+                      type="text"
+                      className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="BVN (optional)"
+                      value={bvn}
+                      onChange={(e) => setBvn(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="NIN (optional)"
+                      value={nin}
+                      onChange={(e) => setNin(e.target.value)}
+                    />
+                  </div>
+                  <Button type="submit" size="sm" className="w-full rounded-xl" disabled={verifying}>
+                    {verifying ? 'Generating...' : 'Activate Monnify Accounts'}
+                  </Button>
+                </form>
               </div>
             )}
           </CardContent>
