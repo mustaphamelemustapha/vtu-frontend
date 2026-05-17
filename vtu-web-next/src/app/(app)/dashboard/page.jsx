@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Check, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowRight, Check, ChevronLeft, ChevronRight, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles } from 'lucide-react';
 import { apiFetch, getProfile, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { quickActions } from '@/lib/nav';
@@ -86,6 +86,7 @@ export default function DashboardPage() {
   const [loadError, setLoadError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [showStartHere, setShowStartHere] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
@@ -130,7 +131,8 @@ export default function DashboardPage() {
   const txs = emptyOrRows(summary?.transactions).slice(0, 6);
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
   const bankTransfer = summary?.bank_transfer_accounts || {};
-  const primaryFundingAccount = bankTransfer?.accounts?.[0] || null;
+  const bankAccounts = bankTransfer?.accounts || [];
+  const primaryFundingAccount = bankAccounts[activeIndex] || bankAccounts[0] || null;
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
   const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
@@ -237,7 +239,33 @@ export default function DashboardPage() {
                   <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active & Ready</span>
                 </div>
-                <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">AxisVTU Utility Services</div>
+                {bankAccounts.length > 1 ? (
+                  <div className="flex items-center gap-1 rounded-full border border-border/80 bg-background/90 p-0.5 scale-90">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 rounded-full hover:bg-secondary"
+                      disabled={activeIndex === 0}
+                      onClick={() => setActiveIndex((prev) => Math.max(0, prev - 1))}
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </Button>
+                    <span className="text-[9px] font-extrabold px-1 select-none">
+                      {activeIndex + 1}/{bankAccounts.length}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 rounded-full hover:bg-secondary"
+                      disabled={activeIndex === bankAccounts.length - 1}
+                      onClick={() => setActiveIndex((prev) => Math.min(bankAccounts.length - 1, prev + 1))}
+                    >
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">AxisVTU Utility Services</div>
+                )}
               </div>
 
               <div className="relative mt-8">
