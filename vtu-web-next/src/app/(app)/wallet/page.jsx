@@ -120,7 +120,7 @@ export default function WalletPage() {
       cleanName = rawName;
     }
     
-    return `AxisVTU / ${cleanName}`;
+    return `MMTECHGLOBE / ${cleanName}`;
   }, [profile?.full_name, activeAccount?.account_name]);
 
   const hasMonnify = accountsList.some(acc => {
