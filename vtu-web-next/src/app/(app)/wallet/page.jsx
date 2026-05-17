@@ -110,23 +110,17 @@ export default function WalletPage() {
   const activeAccount = accountsList[activeIndex] || accountsList[0];
 
   const accountHolderName = useMemo(() => {
-    const baseName = profile?.full_name || activeAccount?.account_name || 'Customer';
-    let cleanName = String(baseName).trim().toUpperCase();
+    const baseName = activeAccount?.account_name || profile?.full_name || 'Customer';
+    const rawName = String(baseName).trim();
     
-    // Clean up any existing prefixes from database or API response
-    if (cleanName.startsWith('MMTECHGLOBE/')) {
-      cleanName = cleanName.substring('MMTECHGLOBE/'.length);
-    } else if (cleanName.startsWith('MMTECHGLOBE')) {
-      cleanName = cleanName.substring('MMTECHGLOBE'.length);
+    // Clean up legacy merchant/business prefixes beautifully using regex (e.g. MMTECHGLOBE, AXISVTU, AXISVTU/, MMTECHGLOBE -, etc.)
+    const prefixPattern = /^(?:MMTECHGLOBE|AXISVTU)(?:\s*[-\/:]\s*|\s+)?/i;
+    let cleanName = rawName.replace(prefixPattern, '').trim();
+    if (!cleanName) {
+      cleanName = rawName;
     }
     
-    if (cleanName.startsWith('AXISVTU/')) {
-      cleanName = cleanName.substring('AXISVTU/'.length);
-    } else if (cleanName.startsWith('AXISVTU')) {
-      cleanName = cleanName.substring('AXISVTU'.length);
-    }
-    
-    return `AxisVTU / ${cleanName.trim()}`;
+    return `AxisVTU / ${cleanName}`;
   }, [profile?.full_name, activeAccount?.account_name]);
 
   const hasMonnify = accountsList.some(acc => {
