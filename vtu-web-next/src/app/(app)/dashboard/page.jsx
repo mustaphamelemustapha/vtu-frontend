@@ -88,6 +88,10 @@ export default function DashboardPage() {
   const [copiedAccount, setCopiedAccount] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [showStartHere, setShowStartHere] = useState(false);
+  const [bvn, setBvn] = useState('');
+  const [nin, setNin] = useState('');
+  const [activationOption, setActivationOption] = useState('bvn');
+  const [verifying, setVerifying] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
@@ -134,16 +138,15 @@ export default function DashboardPage() {
   
   const bankAccounts = useMemo(() => {
     const list = Array.isArray(bankTransfer?.accounts) ? [...bankTransfer.accounts] : [];
-    if (list.length === 1) {
-      list.push({
-        isPlaceholder: true,
-        bank_name: 'Sterling Bank',
-        account_number: 'PENDING',
-        account_name: `MMTECHGLOBE/${profile?.full_name || 'Customer'}`.toUpperCase(),
-      });
-    }
+    list.sort((a, b) => {
+      const aName = String(a.bank_name || '').toLowerCase();
+      const bName = String(b.bank_name || '').toLowerCase();
+      if (aName.includes('moniepoint') && !bName.includes('moniepoint')) return -1;
+      if (!aName.includes('moniepoint') && bName.includes('moniepoint')) return 1;
+      return 0;
+    });
     return list;
-  }, [bankTransfer?.accounts, profile?.full_name]);
+  }, [bankTransfer?.accounts]);
 
   const primaryFundingAccount = bankAccounts[activeIndex] || bankAccounts[0] || null;
 
@@ -179,6 +182,84 @@ export default function DashboardPage() {
       setCopiedAccount(false);
     }
   }, [primaryFundingAccount?.account_number, primaryFundingAccount?.isPlaceholder]);
+
+  const hasMoniepoint = useMemo(() => {
+    return bankAccounts.some(acc => {
+      const name = String(acc.bank_name || '').toLowerCase();
+      return name.includes('moniepoint');
+    });
+  }, [bankAccounts]);
+
+  const handleKycSubmit = async (e) => {
+    e.preventDefault();
+    if (!bvn.trim() && !nin.trim()) {
+      alert('Please enter your BVN or NIN.');
+      return;
+    }
+    setVerifying(true);
+    try {
+      const res = await apiFetch('/wallet/bank-transfer-accounts', {
+        method: 'POST',
+        body: JSON.stringify({
+          bvn: bvn.trim() || null,
+          nin: nin.trim() || null,
+        }),
+      });
+      if (Array.isArray(res?.accounts)) {
+        setBvn('');
+        setNin('');
+        alert('Funding accounts generated successfully!');
+        await load(true);
+      }
+    } catch (err) {
+      alert(err.message || 'Unable to generate dedicated accounts.');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const getBankTheme = (bankName) => {
+    const name = String(bankName || '').toLowerCase();
+    if (name.includes('moniepoint')) {
+      return {
+        cardBg: "from-slate-950 via-blue-950/80 to-blue-900/60 border-blue-500/30",
+        glow: "bg-blue-500/10",
+        accentColor: "text-blue-400",
+        iconColor: "text-blue-400",
+        badge: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
+        brandName: "MONIEPOINT AUTOMATED ROUTE",
+      };
+    } else if (name.includes('wema')) {
+      return {
+        cardBg: "from-slate-950 via-purple-950/80 to-purple-900/60 border-purple-500/30",
+        glow: "bg-purple-500/10",
+        accentColor: "text-purple-400",
+        iconColor: "text-purple-400",
+        badge: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+        brandName: "WEMA BANK ROUTE",
+      };
+    } else if (name.includes('sterling')) {
+      return {
+        cardBg: "from-slate-950 via-red-950/80 to-red-900/60 border-red-500/30",
+        glow: "bg-red-500/10",
+        accentColor: "text-red-400",
+        iconColor: "text-red-400",
+        badge: "bg-red-500/10 text-red-400 border border-red-500/20",
+        brandName: "STERLING BANK ROUTE",
+      };
+    } else {
+      return {
+        cardBg: "from-slate-950 via-slate-900 to-slate-950 border-primary/20",
+        glow: "bg-primary/10",
+        accentColor: "text-primary",
+        iconColor: "text-primary",
+        badge: "bg-primary/10 text-primary border border-primary/20",
+        brandName: "STANDARD PAYMENTS",
+      };
+    }
+  };
+
+  const activeTheme = getBankTheme(primaryFundingAccount?.bank_name);
 
   return (
     <div className="min-w-0 space-y-6 overflow-x-hidden pb-8">
@@ -255,111 +336,191 @@ export default function DashboardPage() {
               <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
                 Transfer funds to your dedicated accounts below to top up your balance. Your account will be funded automatically.
               </p>
+              
+              {/* Premium Bank Tab Selector (Shuffle/Selection Area) */}
+              {bankAccounts.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-6 overflow-x-auto py-1 scrollbar-none">
+                  {bankAccounts.map((acc, index) => {
+                    const isMonie = String(acc.bank_name || '').toLowerCase().includes('moniepoint');
+                    return (
+                      <button
+                        key={acc.bank_name + index}
+                        onClick={() => setActiveIndex(index)}
+                        className={cn(
+                          "px-4 py-2 text-xs font-bold rounded-2xl border transition-all shrink-0 flex items-center gap-1.5",
+                          activeIndex === index
+                            ? (isMonie 
+                                ? "border-blue-500 bg-blue-500/10 text-blue-500 shadow-sm" 
+                                : "border-primary bg-primary/10 text-primary shadow-sm")
+                            : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        )}
+                      >
+                        {isMonie && <Sparkles className="h-3 w-3 text-blue-500 animate-pulse" />}
+                        {acc.bank_name || 'Bank'}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
           {primaryFundingAccount ? (
-            <div className="group relative min-w-0 overflow-hidden rounded-[32px] border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 shadow-2xl shadow-primary/5">
-              <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/10 blur-3xl transition-all duration-500 group-hover:scale-150" />
-              
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active & Ready</span>
-                </div>
-                {bankAccounts.length > 1 ? (
-                  <div className="flex items-center gap-1 rounded-full border border-border/80 bg-background/90 p-0.5 scale-90">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 rounded-full hover:bg-secondary"
-                      disabled={activeIndex === 0}
-                      onClick={() => setActiveIndex((prev) => Math.max(0, prev - 1))}
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" />
-                    </Button>
-                    <span className="text-[9px] font-extrabold px-1 select-none">
-                      {activeIndex + 1}/{bankAccounts.length}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 rounded-full hover:bg-secondary"
-                      disabled={activeIndex === bankAccounts.length - 1}
-                      onClick={() => setActiveIndex((prev) => Math.min(bankAccounts.length - 1, prev + 1))}
-                    >
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </Button>
+            <div className="flex flex-col w-full">
+              <div className={cn(
+                "group relative min-w-0 overflow-hidden rounded-[32px] border p-6 shadow-2xl shadow-primary/5 transition-all duration-500",
+                activeTheme.cardBg
+              )}>
+                <div className={cn("absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl transition-all duration-500 group-hover:scale-150", activeTheme.glow)} />
+                
+                <div className="relative flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active & Ready</span>
                   </div>
-                ) : (
-                  <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary">MMTECHGLOBE Payments</div>
+                  <span className={cn("text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider", activeTheme.badge)}>
+                    {activeTheme.brandName}
+                  </span>
+                </div>
+
+                <div className="relative mt-8">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">Account Number</div>
+                  <div className="mt-1 flex items-center justify-between gap-4">
+                    <div className="font-mono text-3xl font-bold tracking-[0.12em] text-foreground sm:text-4xl">
+                      {primaryFundingAccount.account_number}
+                    </div>
+                    {!primaryFundingAccount?.isPlaceholder && (
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className={cn(
+                          "h-12 w-12 shrink-0 rounded-2xl border transition-all duration-300",
+                          copiedAccount 
+                            ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600" 
+                            : "border-primary/20 bg-primary/10 text-primary hover:scale-110 hover:bg-primary/20"
+                        )}
+                        onClick={copyFundingAccount}
+                      >
+                        {copiedAccount ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="relative mt-10 grid gap-6 border-t border-border/60 pt-6 sm:grid-cols-2 sm:items-center">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bank Name</div>
+                    <div className="mt-1 text-lg font-black tracking-tight text-foreground">
+                      {primaryFundingAccount.bank_name || 'Funding Partner'}
+                    </div>
+                  </div>
+                  <div className="sm:text-right">
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Account Holder</div>
+                    <div className="mt-1 break-words text-sm font-bold text-foreground">
+                      {accountHolderName}
+                    </div>
+                  </div>
+                </div>
+
+                {copiedAccount && !primaryFundingAccount?.isPlaceholder && (
+                  <div className="absolute inset-x-0 bottom-0 flex justify-center pb-2">
+                    <div className="rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold text-white shadow-lg">
+                      Copied to clipboard
+                    </div>
+                  </div>
                 )}
               </div>
 
-              <div className="relative mt-8">
-                <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">Account Number</div>
-                <div className="mt-1 flex items-center justify-between gap-4">
-                  <div className="font-mono text-3xl font-bold tracking-[0.12em] text-foreground sm:text-4xl">
-                    {primaryFundingAccount.account_number}
+              {/* Moniepoint Active Upsell Promo Banner if they don't have Moniepoint yet */}
+              {!hasMoniepoint && (
+                <div className="mt-4 rounded-2xl border border-dashed border-blue-500/35 bg-blue-500/5 p-4 flex items-center justify-between gap-3 text-xs leading-relaxed text-muted-foreground">
+                  <div>
+                    <span className="font-extrabold text-blue-500 flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-blue-500 animate-pulse" /> MONIEPOINT ROUTE AVAILABLE</span>
+                    <p className="mt-1 text-[11px]">Unlock lightning-fast deposits with zero delay. Toggle link to generate your Moniepoint account.</p>
                   </div>
-                  {!primaryFundingAccount?.isPlaceholder && (
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className={cn(
-                        "h-12 w-12 shrink-0 rounded-2xl border transition-all duration-300",
-                        copiedAccount 
-                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600" 
-                          : "border-primary/20 bg-primary/10 text-primary hover:scale-110 hover:bg-primary/20"
-                      )}
-                      onClick={copyFundingAccount}
-                    >
-                      {copiedAccount ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              <div className="relative mt-10 grid gap-6 border-t border-border/60 pt-6 sm:grid-cols-2 sm:items-center">
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bank Name</div>
-                  <div className="mt-1 text-lg font-black tracking-tight text-foreground">
-                    {primaryFundingAccount.bank_name || 'Funding Partner'}
-                  </div>
-                </div>
-                <div className="sm:text-right">
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Account Holder</div>
-                  <div className="mt-1 break-words text-sm font-bold text-foreground">
-                    {accountHolderName}
-                  </div>
-                </div>
-              </div>
-
-              {primaryFundingAccount?.isPlaceholder && (
-                <div className="mt-4 rounded-2xl border border-dashed border-primary/25 bg-primary/5 p-3 text-center text-xs leading-relaxed text-muted-foreground">
-                  Activation in progress. Your second virtual account will appear here automatically.
-                </div>
-              )}
-
-              {copiedAccount && !primaryFundingAccount?.isPlaceholder && (
-                <div className="absolute inset-x-0 bottom-0 flex justify-center pb-2">
-                  <div className="rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold text-white shadow-lg">
-                    Copied to clipboard
-                  </div>
+                  <Button variant="outline" size="sm" className="rounded-xl border-blue-500/35 text-blue-500 shrink-0 hover:bg-blue-500/10" onClick={() => router.push('/wallet')}>
+                    Activate
+                  </Button>
                 </div>
               )}
             </div>
           ) : (
-            <div className="min-w-0 rounded-[32px] border border-dashed border-border/60 bg-card/50 p-8 text-center transition-all hover:bg-card">
-              <Landmark className="mx-auto h-10 w-10 text-muted-foreground/30" />
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                {bankTransfer?.message || 'We are generating your dedicated funding accounts. This will take just a moment.'}
-              </p>
-              <Button variant="outline" className="mt-6 w-full rounded-2xl border-primary/20 text-primary" onClick={() => router.push('/wallet')}>
-                Check Progress
-              </Button>
+            <div className="w-full rounded-[32px] border border-dashed border-border bg-card/60 p-6 sm:p-8 space-y-6 lg:col-span-2">
+              <div className="text-center max-w-md mx-auto space-y-2">
+                <div className="mx-auto h-12 w-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shadow-inner">
+                  <Sparkles className="h-6 w-6 text-blue-500 animate-pulse" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground">Activate Your Moniepoint Account ⚡</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Complete a quick, secure 1-click verification to instantly generate your Moniepoint, Wema, and Sterling dedicated funding bank accounts.
+                </p>
+              </div>
+
+              <div className="max-w-md mx-auto rounded-3xl border border-border bg-secondary/80 p-5 space-y-4 shadow-xl">
+                {/* Option Segments */}
+                <div className="grid grid-cols-2 gap-1 rounded-xl bg-secondary p-1">
+                  <button
+                    type="button"
+                    onClick={() => { setActivationOption('bvn'); setBvn(''); setNin(''); }}
+                    className={cn(
+                      "rounded-lg py-1.5 text-xs font-medium transition-all",
+                      activationOption === 'bvn' 
+                        ? "bg-background text-foreground shadow-sm font-bold" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    BVN Verification
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setActivationOption('nin'); setBvn(''); setNin(''); }}
+                    className={cn(
+                      "rounded-lg py-1.5 text-xs font-medium transition-all",
+                      activationOption === 'nin' 
+                        ? "bg-background text-foreground shadow-sm font-bold" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    NIN Verification
+                  </button>
+                </div>
+
+                <form onSubmit={handleKycSubmit} className="space-y-4">
+                  {activationOption === 'bvn' ? (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Bank Verification Number</label>
+                      <input
+                        type="text"
+                        maxLength={11}
+                        className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        placeholder="Enter 11-digit BVN"
+                        value={bvn}
+                        onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">National Identification Number</label>
+                      <input
+                        type="text"
+                        maxLength={11}
+                        className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        placeholder="Enter 11-digit NIN"
+                        value={nin}
+                        onChange={(e) => setNin(e.target.value.replace(/\D/g, ''))}
+                      />
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full rounded-xl h-11 text-xs font-bold" disabled={verifying}>
+                    {verifying ? 'Generating Personal Bank Accounts...' : 'Generate Dedicated Bank Accounts'}
+                  </Button>
+                </form>
+              </div>
             </div>
           )}
+        </CardContent>
+      </Card>
         </CardContent>
       </Card>
 

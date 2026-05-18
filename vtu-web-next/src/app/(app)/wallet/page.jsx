@@ -96,7 +96,15 @@ export default function WalletPage() {
   };
 
   const accountsList = useMemo(() => {
-    return Array.isArray(accounts) ? [...accounts] : [];
+    const list = Array.isArray(accounts) ? [...accounts] : [];
+    list.sort((a, b) => {
+      const aName = String(a.bank_name || '').toLowerCase();
+      const bName = String(b.bank_name || '').toLowerCase();
+      if (aName.includes('moniepoint') && !bName.includes('moniepoint')) return -1;
+      if (!aName.includes('moniepoint') && bName.includes('moniepoint')) return 1;
+      return 0;
+    });
+    return list;
   }, [accounts]);
 
   const activeAccount = accountsList[activeIndex] || accountsList[0];
