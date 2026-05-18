@@ -3282,6 +3282,7 @@ body:has(.onboard-overlay) {
 .wallet-hero.wallet-hero-premium {
   background: linear-gradient(180deg, #f7faff, #eef3fb);
   border-color: #d7e2ef;
+  box-shadow: 0 16px 36px rgba(37, 99, 235, 0.16), 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .wallet-hero-actions-premium .primary {
@@ -3295,14 +3296,15 @@ body:has(.onboard-overlay) {
 }
 
 .wallet-primary-account {
-  border: 1px solid var(--stroke);
-  background: var(--panel-light);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  background: linear-gradient(135deg, var(--panel-light), var(--panel));
   border-radius: 16px;
-  padding: 14px;
+  padding: 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
 }
 
 .wallet-primary-account-number {
@@ -3336,9 +3338,9 @@ body:has(.onboard-overlay) {
 
 .dark .hero-card,
 .dark .wallet-hero.wallet-hero-premium {
-  border-color: #2a3547;
-  background: linear-gradient(180deg, #151f30, #131c2a);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.34);
+  border-color: rgba(37, 99, 235, 0.24);
+  background: linear-gradient(180deg, #0e1726, #090e1a);
+  box-shadow: 0 20px 48px rgba(37, 99, 235, 0.22), 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 
 .dark .dashboard-welcome-card {
@@ -3363,6 +3365,12 @@ body:has(.onboard-overlay) {
 .dark .wallet-primary-account,
 .dark .wallet-account-card {
   border-color: rgba(255, 255, 255, 0.14);
+}
+
+.dark .wallet-primary-account {
+  border-color: rgba(37, 99, 235, 0.3);
+  background: linear-gradient(135deg, #101a2d, #0d1424);
+  box-shadow: 0 16px 36px rgba(37, 99, 235, 0.18);
 }
 
 .dark .dashboard-funding-rail {

@@ -234,9 +234,11 @@ export default function Wallet() {
           {primaryAccount ? (
             <div className="wallet-primary-account">
               <div>
-                <div className="label">{primaryAccount.bank_name}</div>
+                <div className="label" style={{ fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", fontSize: "12px" }}>{primaryAccount.bank_name}</div>
                 <div className="wallet-primary-account-number">{primaryAccount.account_number}</div>
-                <div className="muted">{primaryAccount.account_name || "AxisVTU Wallet"}</div>
+                <div className="muted" style={{ fontWeight: 900, color: "var(--text-foreground)", fontSize: "14px", marginTop: "4px" }}>
+                  ACCOUNT NAME: {String(primaryAccount.account_name || "AxisVTU Wallet").toUpperCase()}
+                </div>
               </div>
               <Button variant="ghost"
                 className="account-copy-btn"
@@ -338,10 +340,14 @@ export default function Wallet() {
               const name = String(acc.bank_name || '').toLowerCase();
               return name.includes('moniepoint') || name.includes('monnify') || name.includes('wema') || name.includes('sterling');
             }) && (
-              <Card style={{ marginTop: 12 }}>
-                <div className="label" style={{ fontWeight: 600, color: 'var(--text-foreground)' }}>Activate Moniepoint Account</div>
+              <Card style={{ marginTop: 12, padding: "18px" }}>
+                <div className="label" style={{ fontWeight: 800, color: 'var(--text-foreground)', fontSize: "16px" }}>Activate Moniepoint Account</div>
                 <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
                   Provide your BVN or NIN below to activate your dedicated Moniepoint funding account.
+                </div>
+                <div className="notice-box" style={{ marginTop: 12, padding: "12px", border: "1px solid rgba(37, 99, 235, 0.2)", borderRadius: "12px", background: "rgba(37, 99, 235, 0.05)", fontSize: "12px", lineHeight: "1.4", color: "var(--text-foreground)", display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                  <span style={{ fontSize: "16px" }}>🔒</span>
+                  <span><strong>Privacy Guarantee:</strong> AxisVTU does <strong>NOT</strong> store or keep your BVN or NIN. This identity verification is securely routed directly to our central CBN-licensed payment partner (Monnify) to automatically generate your personalized funding accounts.</span>
                 </div>
                 <form onSubmit={createTransfer} className="form-grid" style={{ marginTop: 12 }}>
                   <label>
@@ -396,10 +402,10 @@ export default function Wallet() {
             {!transferBusy && transferAccounts.length> 0 && (
               <div className="receipt-grid">
                 {transferAccounts.map((acc, idx) => (
-                  <div key={`${acc.bank_name}-${acc.account_number}-${idx}`}>
-                    <div className="label">{acc.bank_name}</div>
-                    <div className="value" style={{ fontSize: 18 }}>{acc.account_number}</div>
-                    <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
+                  <div key={`${acc.bank_name}-${acc.account_number}-${idx}`} style={{ padding: "12px", border: "1px solid var(--stroke)", borderRadius: "12px", background: "var(--panel-light)" }}>
+                    <div className="label" style={{ fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", fontSize: "11px" }}>{acc.bank_name}</div>
+                    <div className="value" style={{ fontSize: 20, fontFamily: "monospace", letterSpacing: "0.05em", margin: "4px 0" }}>{acc.account_number}</div>
+                    <div className="muted" style={{ fontWeight: 900, color: "var(--text-foreground)", fontSize: "13px" }}>ACCOUNT NAME: {String(acc.account_name || "AxisVTU Wallet").toUpperCase()}</div>
                     <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <Button variant="ghost" type="button" onClick={() => copyText(acc.account_number)}>
                         Copy Account
