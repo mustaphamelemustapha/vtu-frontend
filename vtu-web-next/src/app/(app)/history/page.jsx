@@ -11,17 +11,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { PageHeader } from '@/components/page-header';
 import { TransactionReceiptModal } from '@/components/transaction-receipt-modal';
 import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
+import { cn } from '@/lib/utils';
 
 function txRecipientLabel(tx) {
   const recipient =
     tx?.meta?.recipient_phone ||
     tx?.meta?.phone_number ||
+    tx?.meta?.phone ||
+    tx?.meta?.recipient ||
+    tx?.meta?.destination ||
+    tx?.meta?.target ||
     tx?.meta?.customer ||
     tx?.meta?.meter_no ||
     tx?.meta?.meter_number ||
     tx?.meta?.smartcard_no ||
     tx?.meta?.smartcard ||
-    tx?.meta?.iuc;
+    tx?.meta?.iuc ||
+    tx?.recipient ||
+    tx?.phone_number ||
+    tx?.phone ||
+    tx?.destination;
   return recipient ? String(recipient) : '';
 }
 
@@ -170,27 +179,69 @@ export default function HistoryPage() {
               </div>
             </div>
           ) : null}
-          {filteredTransactions.map((tx) => (
-            <div 
-              key={tx.reference || tx.id} 
-              onClick={() => handleTxClick(tx)}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-2xl border border-border bg-secondary p-4 cursor-pointer hover:bg-secondary/80 active:bg-secondary/60 transition-colors min-w-0"
-            >
-              <div className="min-w-0 flex-1 w-full sm:w-auto">
-                <div className="text-sm font-medium text-foreground capitalize truncate">{String(tx.tx_type || 'Order').replace(/_/g, ' ')}</div>
-                <div className="mt-1 text-xs text-muted-foreground truncate">
-                  {txRecipientLabel(tx) ? `${txRecipientLabel(tx)} • ` : ''}{formatDateTime(tx.created_at)}
+          {filteredTransactions.map((tx) => {
+            const recipient = txRecipientLabel(tx);
+            const status = String(tx.status || 'pending').toLowerCase();
+            const typeLower = String(tx.tx_type || '').toLowerCase();
+            return (
+              <div 
+                key={tx.reference || tx.id} 
+                onClick={() => handleTxClick(tx)}
+                className="flex items-center justify-between gap-4 rounded-[20px] border border-border bg-card p-4 cursor-pointer hover:bg-secondary/40 transition-all min-w-0"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Circle Icon showing type prefix */}
+                  <div className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold font-mono",
+                    typeLower.includes('data') ? "bg-blue-500/10 text-blue-500" :
+                    typeLower.includes('airtime') ? "bg-green-500/10 text-green-500" :
+                    typeLower.includes('funding') || typeLower.includes('deposit') || typeLower.includes('wallet') ? "bg-emerald-500/10 text-emerald-500" :
+                    "bg-indigo-500/10 text-indigo-500"
+                  )}>
+                    {String(tx.tx_type || 'TX').slice(0, 2).toUpperCase()}
+                  </div>
+                  
+                  <div className="space-y-0.5 min-w-0">
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                      {String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}
+                    </div>
+                    <div className="text-sm font-extrabold text-foreground truncate">
+                      {recipient ? `To ${recipient}` : String(tx.reference || '—')}
+                    </div>
+                    {recipient && (
+                      <div className="text-[11px] text-muted-foreground/80 font-mono truncate">
+                        Ref: {String(tx.reference || '—')}
+                      </div>
+                    )}
+                    <div className="text-[10px] text-muted-foreground">
+                      {formatDateTime(tx.created_at)}
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground/80 truncate">
-                   {tx.reference ? `Ref: ${tx.reference.length > 18 ? tx.reference.slice(0, 18) + '...' : tx.reference}` : 'View receipt'}
+                
+                <div className="text-right space-y-1.5 shrink-0">
+                  <div className="text-sm font-black text-foreground">
+                    ₦{formatMoney(tx.amount || 0)}
+                  </div>
+                  <div>
+                    {status === 'success' || status === 'completed' ? (
+                      <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-500 border border-emerald-500/20">
+                        Success
+                      </span>
+                    ) : status === 'failed' || status === 'reversed' || status === 'cancelled' ? (
+                      <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-rose-500 border border-rose-500/20">
+                        Failed
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-500 border border-amber-500/20">
+                        Pending
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto mt-1 sm:mt-0">
-                <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
-                <Badge tone={String(tx.status || '').toLowerCase() === 'success' ? 'success' : String(tx.status || '').toLowerCase() === 'failed' ? 'danger' : 'warning'}>{tx.status || 'pending'}</Badge>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
 

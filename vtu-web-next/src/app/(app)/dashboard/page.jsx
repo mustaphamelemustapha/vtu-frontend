@@ -23,12 +23,20 @@ function txRecipientLabel(tx) {
   const recipient =
     tx?.meta?.recipient_phone ||
     tx?.meta?.phone_number ||
+    tx?.meta?.phone ||
+    tx?.meta?.recipient ||
+    tx?.meta?.destination ||
+    tx?.meta?.target ||
     tx?.meta?.customer ||
     tx?.meta?.meter_no ||
     tx?.meta?.meter_number ||
     tx?.meta?.smartcard_no ||
     tx?.meta?.smartcard ||
-    tx?.meta?.iuc;
+    tx?.meta?.iuc ||
+    tx?.recipient ||
+    tx?.phone_number ||
+    tx?.phone ||
+    tx?.destination;
   return recipient ? String(recipient) : '';
 }
 
@@ -562,22 +570,65 @@ export default function DashboardPage() {
                 </div>
               </div>
             ) : null}
-            {txs.map((tx) => (
-              <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
-                <div>
-                  <div className="text-sm font-medium text-foreground">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {txRecipientLabel(tx) ? `To ${txRecipientLabel(tx)}` : String(tx.reference || '—')}
+            {txs.map((tx) => {
+              const recipient = txRecipientLabel(tx);
+              const status = String(tx.status || 'pending').toLowerCase();
+              const typeLower = String(tx.tx_type || '').toLowerCase();
+              return (
+                <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-[20px] border border-border bg-card p-4 transition-all hover:bg-secondary/40">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Circle Icon showing type prefix */}
+                    <div className={cn(
+                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold font-mono",
+                      typeLower.includes('data') ? "bg-blue-500/10 text-blue-500" :
+                      typeLower.includes('airtime') ? "bg-green-500/10 text-green-500" :
+                      typeLower.includes('funding') || typeLower.includes('deposit') || typeLower.includes('wallet') ? "bg-emerald-500/10 text-emerald-500" :
+                      "bg-indigo-500/10 text-indigo-500"
+                    )}>
+                      {String(tx.tx_type || 'TX').slice(0, 2).toUpperCase()}
+                    </div>
+                    
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                        {String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}
+                      </div>
+                      <div className="text-sm font-extrabold text-foreground truncate">
+                        {recipient ? `To ${recipient}` : String(tx.reference || '—')}
+                      </div>
+                      {recipient && (
+                        <div className="text-[11px] text-muted-foreground/80 font-mono truncate">
+                          Ref: {String(tx.reference || '—')}
+                        </div>
+                      )}
+                      <div className="text-[10px] text-muted-foreground">
+                        {formatDateTime(tx.created_at)}
+                      </div>
+                    </div>
                   </div>
-                  {txRecipientLabel(tx) ? <div className="text-xs text-muted-foreground/80">Ref: {String(tx.reference || '—')}</div> : null}
-                  <div className="text-xs text-muted-foreground">{formatDateTime(tx.created_at)}</div>
+                  
+                  <div className="text-right space-y-1.5 shrink-0">
+                    <div className="text-sm font-black text-foreground">
+                      ₦{formatMoney(tx.amount || 0)}
+                    </div>
+                    <div>
+                      {status === 'success' || status === 'completed' ? (
+                        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-500 border border-emerald-500/20">
+                          Success
+                        </span>
+                      ) : status === 'failed' || status === 'reversed' || status === 'cancelled' ? (
+                        <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-rose-500 border border-rose-500/20">
+                          Failed
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-500 border border-amber-500/20">
+                          Pending
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{String(tx.status || 'pending')}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
 
