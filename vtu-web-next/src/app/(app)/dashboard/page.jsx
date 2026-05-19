@@ -576,7 +576,7 @@ export default function DashboardPage() {
               const typeLower = String(tx.tx_type || '').toLowerCase();
               return (
                 <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-[20px] border border-border bg-card p-4 transition-all hover:bg-secondary/40">
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     {/* Circle Icon showing type prefix */}
                     <div className={cn(
                       "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold font-mono",
@@ -588,7 +588,7 @@ export default function DashboardPage() {
                       {String(tx.tx_type || 'TX').slice(0, 2).toUpperCase()}
                     </div>
                     
-                    <div className="space-y-0.5 min-w-0">
+                    <div className="space-y-0.5 min-w-0 flex-1">
                       <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
                         {String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}
                       </div>
