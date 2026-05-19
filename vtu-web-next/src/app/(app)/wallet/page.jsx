@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Copy, RefreshCw, Wallet2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Copy, RefreshCw, Wallet2, ChevronLeft, ChevronRight, Sparkles, Landmark } from 'lucide-react';
 import { apiFetch, getProfile, readScopedCache, writeScopedCache } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/page-header';
+import { cn } from '@/lib/utils';
 
 export default function WalletPage() {
   const searchParams = useSearchParams();
@@ -24,6 +25,7 @@ export default function WalletPage() {
   const [nin, setNin] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [activationOption, setActivationOption] = useState('bvn');
+  const [kycModalOpen, setKycModalOpen] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -86,7 +88,9 @@ export default function WalletPage() {
         setActiveIndex(0);
         setBvn('');
         setNin('');
-        alert('Monnify accounts generated successfully!');
+        setKycModalOpen(false);
+        alert('Dedicated accounts generated successfully!');
+        await load(true);
       }
     } catch (err) {
       alert(err.message || 'Unable to generate Monnify accounts.');
@@ -127,6 +131,12 @@ export default function WalletPage() {
     const name = String(acc.bank_name || '').toLowerCase();
     return name.includes('wema') || name.includes('sterling') || name.includes('monnify');
   });
+  const hasMoniepoint = useMemo(() => {
+    return accountsList.some(acc => {
+      const name = String(acc.bank_name || '').toLowerCase();
+      return name.includes('moniepoint');
+    });
+  }, [accountsList]);
   const filteredLedger = useMemo(() => {
     if (!pageQuery) return ledger;
     return ledger.filter((item) => {
@@ -224,7 +234,7 @@ export default function WalletPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {accountsList.length > 0 ? (
-              <>
+              <div className="space-y-4">
                 {activeAccount && (
                   <div className="rounded-3xl border border-border bg-secondary p-4 transition-all duration-300 hover:scale-[1.01]">
                     <div className="flex items-center justify-between">
@@ -242,65 +252,34 @@ export default function WalletPage() {
                     </Button>
                   </div>
                 )}
-              </>
+                {!hasMoniepoint && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full rounded-2xl border-blue-500/35 text-blue-500 hover:bg-blue-500/10 flex items-center justify-center gap-1.5 py-5 text-xs font-bold"
+                    onClick={() => setKycModalOpen(true)}
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-blue-500 animate-pulse" />
+                    Activate Moniepoint Route
+                  </Button>
+                )}
+              </div>
             ) : (
-              <div className="rounded-3xl border border-dashed border-border bg-card p-5 space-y-4">
-                <div className="text-center space-y-1">
+              <div className="rounded-3xl border border-dashed border-border bg-card p-5 space-y-4 text-center">
+                <div className="h-10 w-10 rounded-2xl bg-orange-500/10 text-primary flex items-center justify-center mx-auto">
+                  <Sparkles className="h-5 w-5 animate-pulse" />
+                </div>
+                <div className="space-y-1">
                   <h4 className="text-sm font-semibold text-foreground">Activate Dedicated Funding Accounts</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Link your BVN or NIN to instantly generate your personal Wema, Sterling, or Moniepoint funding accounts.
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Link your BVN or NIN to instantly generate Wema, Sterling, and Moniepoint automated funding routes.
                   </p>
                 </div>
-                
-                {/* Premium Tab Selection */}
-                <div className="grid grid-cols-2 gap-1 rounded-xl bg-secondary p-1">
-                  <button
-                    type="button"
-                    onClick={() => { setActivationOption('bvn'); setBvn(''); setNin(''); }}
-                    className={`rounded-lg py-1.5 text-xs font-medium transition-all ${activationOption === 'bvn' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    BVN Option
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setActivationOption('nin'); setBvn(''); setNin(''); }}
-                    className={`rounded-lg py-1.5 text-xs font-medium transition-all ${activationOption === 'nin' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                  >
-                    NIN Option
-                  </button>
-                </div>
-
-                <form onSubmit={handleKycSubmit} className="space-y-4">
-                  {activationOption === 'bvn' ? (
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Bank Verification Number</label>
-                      <input
-                        type="text"
-                        maxLength={11}
-                        className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        placeholder="Enter 11-digit BVN"
-                        value={bvn}
-                        onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">National Identification Number</label>
-                      <input
-                        type="text"
-                        maxLength={11}
-                        className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        placeholder="Enter 11-digit NIN"
-                        value={nin}
-                        onChange={(e) => setNin(e.target.value.replace(/\D/g, ''))}
-                      />
-                    </div>
-                  )}
-
-                  <Button type="submit" className="w-full rounded-xl py-5" disabled={verifying}>
-                    {verifying ? 'Generating Accounts...' : 'Generate Dedicated Accounts'}
-                  </Button>
-                </form>
+                <Button 
+                  onClick={() => setKycModalOpen(true)}
+                  className="w-full rounded-2xl h-11 text-xs font-bold mt-2"
+                >
+                  Activate Accounts
+                </Button>
               </div>
             )}
           </CardContent>
@@ -337,6 +316,125 @@ export default function WalletPage() {
           ))}
         </CardContent>
       </Card>
+
+      {kycModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-[32px] border border-border bg-card p-6 md:p-8 shadow-2xl transition-all duration-300 my-auto">
+            {/* Glowing Accent */}
+            <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+            
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Landmark className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground font-black">Generate Dedicated Account</h3>
+                  <p className="text-xs text-muted-foreground">Verification required by CBN regulations</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setKycModalOpen(false)}
+                className="h-8 w-8 rounded-full border border-border bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Privacy & Regulatory Trust Disclosure */}
+            <div className="mt-6 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs leading-relaxed text-muted-foreground space-y-2.5">
+              <div className="flex items-center gap-2 text-blue-500 font-extrabold tracking-wide uppercase">
+                <Sparkles className="h-4 w-4" />
+                Zero-Storage Privacy Policy
+              </div>
+              <p>
+                To generate automated funding accounts, the <strong>Central Bank of Nigeria (CBN)</strong> requires identity validation matching your credentials.
+              </p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li><strong>AxisVTU does NOT store or save your BVN/NIN.</strong> It is instantly encrypted and sent directly to Moniepoint/Monnify.</li>
+                <li>This process strictly validates your legal name to secure your dedicated virtual bank accounts.</li>
+                <li>Your data remains 100% private and protected.</li>
+              </ul>
+            </div>
+
+            {/* Selector */}
+            <div className="grid grid-cols-2 gap-1 rounded-xl bg-secondary p-1 mt-6">
+              <button
+                type="button"
+                onClick={() => { setActivationOption('bvn'); setBvn(''); setNin(''); }}
+                className={cn(
+                  "rounded-lg py-2 text-xs font-semibold transition-all",
+                  activationOption === 'bvn' 
+                    ? "bg-background text-foreground shadow-sm font-bold" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                BVN Option
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActivationOption('nin'); setBvn(''); setNin(''); }}
+                className={cn(
+                  "rounded-lg py-2 text-xs font-semibold transition-all",
+                  activationOption === 'nin' 
+                    ? "bg-background text-foreground shadow-sm font-bold" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                NIN Option
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleKycSubmit} className="space-y-4 mt-6">
+              {activationOption === 'bvn' ? (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Bank Verification Number (11 Digits)</label>
+                  <input
+                    type="text"
+                    maxLength={11}
+                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    placeholder="Enter 11-digit BVN"
+                    value={bvn}
+                    onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">National Identification Number (11 Digits)</label>
+                  <input
+                    type="text"
+                    maxLength={11}
+                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    placeholder="Enter 11-digit NIN"
+                    value={nin}
+                    onChange={(e) => setNin(e.target.value.replace(/\D/g, ''))}
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  type="button" 
+                  variant="secondary" 
+                  onClick={() => setKycModalOpen(false)}
+                  className="flex-1 rounded-xl h-11 text-xs font-bold border border-border"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="flex-1 rounded-xl h-11 text-xs font-bold" 
+                  disabled={verifying}
+                >
+                  {verifying ? 'Activating...' : 'Activate Route'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
