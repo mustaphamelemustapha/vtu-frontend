@@ -80,9 +80,9 @@ const actionDetails = {
 export default function DashboardPage() {
   const router = useRouter();
   const profile = getProfile();
-  const [summary, setSummary] = useState(() => readScopedCache('dashboard_summary', { maxAgeMs: 4 * 60 * 1000 }));
-  const [referrals, setReferrals] = useState(() => readScopedCache('dashboard_referrals', { maxAgeMs: 4 * 60 * 1000 }));
-  const [loading, setLoading] = useState(() => !(readScopedCache('dashboard_summary', { maxAgeMs: 4 * 60 * 1000 }) || readScopedCache('dashboard_referrals', { maxAgeMs: 4 * 60 * 1000 })));
+  const [summary, setSummary] = useState(() => readScopedCache('dashboard_summary', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }));
+  const [referrals, setReferrals] = useState(() => readScopedCache('dashboard_referrals', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }));
+  const [loading, setLoading] = useState(() => !(readScopedCache('dashboard_summary', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || readScopedCache('dashboard_referrals', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 })));
   const [loadError, setLoadError] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
@@ -519,8 +519,6 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
         </CardContent>
       </Card>
 

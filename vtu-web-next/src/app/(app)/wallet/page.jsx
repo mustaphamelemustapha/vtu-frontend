@@ -14,10 +14,10 @@ export default function WalletPage() {
   const searchParams = useSearchParams();
   const profile = getProfile();
   const pageQuery = String(searchParams.get('q') || '').trim().toLowerCase();
-  const [wallet, setWallet] = useState(() => readScopedCache('wallet_me', { maxAgeMs: 5 * 60 * 1000 }));
-  const [ledger, setLedger] = useState(() => readScopedCache('wallet_ledger', { maxAgeMs: 5 * 60 * 1000 }) || []);
-  const [accounts, setAccounts] = useState(() => readScopedCache('wallet_accounts', { maxAgeMs: 5 * 60 * 1000 }) || []);
-  const [loading, setLoading] = useState(() => !(readScopedCache('wallet_me', { maxAgeMs: 5 * 60 * 1000 }) || (readScopedCache('wallet_ledger', { maxAgeMs: 5 * 60 * 1000 }) || []).length));
+  const [wallet, setWallet] = useState(() => readScopedCache('wallet_me', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }));
+  const [ledger, setLedger] = useState(() => readScopedCache('wallet_ledger', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || []);
+  const [accounts, setAccounts] = useState(() => readScopedCache('wallet_accounts', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || []);
+  const [loading, setLoading] = useState(() => !(readScopedCache('wallet_me', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || (readScopedCache('wallet_ledger', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || []).length));
   const [loadError, setLoadError] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const [bvn, setBvn] = useState('');

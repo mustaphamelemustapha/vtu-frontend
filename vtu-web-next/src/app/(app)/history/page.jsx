@@ -29,9 +29,9 @@ export default function HistoryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pageQuery = String(searchParams.get('q') || '').trim().toLowerCase();
-  const [transactions, setTransactions] = useState(() => readScopedCache('history_transactions', { maxAgeMs: 5 * 60 * 1000 }) || []);
-  const [reports, setReports] = useState(() => readScopedCache('history_reports', { maxAgeMs: 5 * 60 * 1000 }) || []);
-  const [loading, setLoading] = useState(() => !(readScopedCache('history_transactions', { maxAgeMs: 5 * 60 * 1000 }) || []).length);
+  const [transactions, setTransactions] = useState(() => readScopedCache('history_transactions', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || []);
+  const [reports, setReports] = useState(() => readScopedCache('history_reports', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || []);
+  const [loading, setLoading] = useState(() => !(readScopedCache('history_transactions', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || []).length);
   const [loadError, setLoadError] = useState('');
 
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
