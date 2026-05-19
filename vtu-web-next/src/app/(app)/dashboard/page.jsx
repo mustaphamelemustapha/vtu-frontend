@@ -548,13 +548,13 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
-        <Card>
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr] min-w-0 w-full">
+        <Card className="min-w-0 w-full overflow-hidden">
           <CardHeader>
             <CardTitle>Transaction History</CardTitle>
             <CardDescription>Your most recent transactions and payments.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 min-w-0 w-full">
             {loading ? (
               <div className="space-y-3">
                 <div className="h-20 animate-pulse rounded-2xl border border-border bg-secondary" />

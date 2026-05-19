@@ -157,12 +157,12 @@ export default function HistoryPage() {
         ))}
       </div>
 
-      <Card>
+      <Card className="min-w-0 w-full overflow-hidden">
         <CardHeader>
           <CardTitle>Service Orders</CardTitle>
           <CardDescription>Latest activity from the backend timeline.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 min-w-0 w-full">
           {loading ? <div className="text-sm text-muted-foreground">Loading history...</div> : null}
           {loadError ? (
             <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
