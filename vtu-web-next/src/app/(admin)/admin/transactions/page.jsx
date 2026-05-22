@@ -73,34 +73,7 @@ export default function AdminTransactionsPage() {
         allTransactions.push(...pageItems);
       }
 
-      const latestAuditByReference = new Map();
-      try {
-        const auditFirstPage = await adminGetAuditLogs({ page: 1, page_size: ADMIN_PAGE_SIZE });
-        const allAuditLogs = Array.isArray(auditFirstPage?.items) ? [...auditFirstPage.items] : [];
-        const expectedAuditTotal = Number(auditFirstPage?.total || allAuditLogs.length || 0);
-        let auditPage = 1;
-        while (allAuditLogs.length < expectedAuditTotal) {
-          auditPage += 1;
-          const pageResult = await adminGetAuditLogs({ page: auditPage, page_size: ADMIN_PAGE_SIZE });
-          const pageItems = Array.isArray(pageResult?.items) ? pageResult.items : [];
-          if (!pageItems.length) break;
-          allAuditLogs.push(...pageItems);
-        }
-        for (const log of allAuditLogs) {
-          const target = String(log?.target || '').trim();
-          if (!target || latestAuditByReference.has(target)) continue;
-          latestAuditByReference.set(target, log);
-        }
-      } catch {
-        // Keep transactions visible even if audit logs endpoint is unavailable.
-      }
-
-      const mergedRows = allTransactions.map((row) => ({
-        ...row,
-        audit: latestAuditByReference.get(String(row.reference || '').trim()) || null,
-      }));
-
-      setRows(mergedRows);
+      setRows(allTransactions);
       setTotalRows(expectedTotal);
     } catch (err) {
       setRows([]);
@@ -122,19 +95,6 @@ export default function AdminTransactionsPage() {
     { key: 'network', label: 'Provider/Network', render: (row) => row.network || '—' },
     { key: 'amount', label: 'Amount', render: (row) => `₦${formatMoney(row.amount || 0)}` },
     { key: 'status', label: 'Status', render: (row) => <StatusBadge status={row.status} /> },
-    {
-      key: 'audit',
-      label: 'Audit',
-      render: (row) => {
-        if (!row.audit) return '—';
-        return (
-          <div className="space-y-0.5">
-            <div className="text-xs font-semibold text-foreground">{startCase(row.audit.action || 'updated')}</div>
-            <div className="text-[11px] text-muted-foreground">{formatDateTime(row.audit.created_at)}</div>
-          </div>
-        );
-      },
-    },
     { key: 'created_at', label: 'Date/time', render: (row) => formatDateTime(row.created_at) },
     {
       key: 'actions',
@@ -149,8 +109,18 @@ export default function AdminTransactionsPage() {
             setSelectedDetailsError('');
             setSelectedDetailsLoading(true);
             try {
-              const details = await adminGetTransactionDetails(row.reference);
-              setSelectedDetails(details || null);
+              const [details, auditRes] = await Promise.allSettled([
+                adminGetTransactionDetails(row.reference),
+                adminGetAuditLogs({ reference: row.reference, page_size: 5 }),
+              ]);
+              const detailsData = details.status === 'fulfilled' ? (details.value || null) : null;
+              const latestAudit = auditRes.status === 'fulfilled'
+                ? (Array.isArray(auditRes.value?.items) ? auditRes.value.items[0] || null : null)
+                : null;
+              setSelectedDetails(detailsData ? { ...detailsData, audit: latestAudit } : null);
+              if (details.status === 'rejected') {
+                setSelectedDetailsError(details.reason?.message || 'Unable to load provider details.');
+              }
             } catch (err) {
               setSelectedDetailsError(err?.message || 'Unable to load provider details.');
             } finally {
@@ -339,19 +309,21 @@ export default function AdminTransactionsPage() {
           </div>
           <div className="mt-3 rounded-2xl border border-border bg-secondary p-3">
             <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Latest audit</div>
-            {selected?.audit ? (
+            {selectedDetailsLoading ? (
+              <div className="mt-2 text-sm text-muted-foreground">Loading audit...</div>
+            ) : selectedDetails?.audit ? (
               <div className="mt-2 grid gap-2 md:grid-cols-2">
                 <div className="text-sm text-foreground">
                   <span className="text-muted-foreground">Action: </span>
-                  {startCase(selected.audit.action || 'updated')}
+                  {startCase(selectedDetails.audit.action || 'updated')}
                 </div>
                 <div className="text-sm text-foreground">
                   <span className="text-muted-foreground">Time: </span>
-                  {formatDateTime(selected.audit.created_at)}
+                  {formatDateTime(selectedDetails.audit.created_at)}
                 </div>
                 <div className="text-sm text-foreground md:col-span-2 break-all">
                   <span className="text-muted-foreground">Admin: </span>
-                  {selected.audit.admin_email || '—'}
+                  {selectedDetails.audit.admin_email || '—'}
                 </div>
               </div>
             ) : (
