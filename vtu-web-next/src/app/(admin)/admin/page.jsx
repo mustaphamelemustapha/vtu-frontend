@@ -54,22 +54,49 @@ export default function AdminOverviewPage() {
 
   const metrics = [
     { label: 'Total users', value: Number(analytics?.total_users || 0).toLocaleString('en-NG'), detail: 'Registered accounts', icon: Users, tone: 'brand' },
-    { label: 'Active users', value: Number(analytics?.total_users || 0).toLocaleString('en-NG'), detail: 'Active-state estimate', icon: UserCheck, tone: 'success' },
-    { label: 'Today transactions', value: Number(analytics?.daily_transactions || 0).toLocaleString('en-NG'), detail: 'Operational volume', icon: ReceiptText, tone: 'warning' },
-    { label: 'Total revenue', value: `₦${formatMoney(analytics?.total_revenue || 0)}`, detail: `Margin ${percent(analytics?.gross_margin_pct)}`, icon: CircleDollarSign, tone: 'brand' },
-    { label: 'Successful tx', value: String(statusCounts.success), detail: 'From latest transaction window', icon: CreditCard, tone: 'success' },
-    { label: 'Failed tx', value: String(statusCounts.failed), detail: 'Needs operational review', icon: ShieldAlert, tone: 'danger' },
-    { label: 'Pending tx', value: String(statusCounts.pending), detail: 'Awaiting provider callback', icon: TrendingUp, tone: 'warning' },
-    { label: 'Support issues', value: String(analytics?.reports_open ?? reports.length), detail: 'Open disputes and reports', icon: Gift, tone: 'danger' },
     {
-      label: 'MTN 1GB promo',
-      value: `${Number(analytics?.promo_mtn_1gb_users_used || 0)}/${Number(analytics?.promo_mtn_1gb_limit || 50)}`,
-      detail: Number(analytics?.promo_mtn_1gb_remaining || 0) > 0
-        ? `${Number(analytics?.promo_mtn_1gb_remaining || 0)} slots left`
-        : 'Promo exhausted',
-      icon: TrendingUp,
-      tone: Number(analytics?.promo_mtn_1gb_remaining || 0) > 0 ? 'brand' : 'warning',
+      label: 'Active users',
+      value: Number(analytics?.active_users !== undefined ? analytics.active_users : (analytics?.total_users || 0)).toLocaleString('en-NG'),
+      detail: analytics?.active_users !== undefined ? 'Active accounts' : 'Active-state estimate',
+      icon: UserCheck,
+      tone: 'success'
     },
+    { label: 'Today transactions', value: Number(analytics?.daily_transactions || 0).toLocaleString('en-NG'), detail: 'Attempts today', icon: ReceiptText, tone: 'warning' },
+    { label: 'Total revenue', value: `₦${formatMoney(analytics?.total_revenue || 0)}`, detail: `Margin ${percent(analytics?.gross_margin_pct)}`, icon: CircleDollarSign, tone: 'brand' },
+    {
+      label: 'Successful tx',
+      value: analytics?.today_successful_tx !== undefined
+        ? Number(analytics.today_successful_tx).toLocaleString('en-NG')
+        : String(statusCounts.success),
+      detail: analytics?.today_successful_tx !== undefined
+        ? 'Successful transactions today'
+        : 'From latest transaction window',
+      icon: CreditCard,
+      tone: 'success'
+    },
+    {
+      label: 'Failed tx',
+      value: analytics?.today_failed_tx !== undefined
+        ? Number(analytics.today_failed_tx).toLocaleString('en-NG')
+        : String(statusCounts.failed),
+      detail: analytics?.today_failed_tx !== undefined
+        ? 'Failed transactions today'
+        : 'Needs operational review',
+      icon: ShieldAlert,
+      tone: 'danger'
+    },
+    {
+      label: 'Pending tx',
+      value: analytics?.today_pending_tx !== undefined
+        ? Number(analytics.today_pending_tx).toLocaleString('en-NG')
+        : String(statusCounts.pending),
+      detail: analytics?.today_pending_tx !== undefined
+        ? 'Pending transactions today'
+        : 'Awaiting provider callback',
+      icon: TrendingUp,
+      tone: 'warning'
+    },
+    { label: 'Support issues', value: String(analytics?.reports_open ?? reports.length), detail: 'Open disputes and reports', icon: Gift, tone: 'danger' },
   ];
 
   const periodCards = analytics?.profit_period_estimates || {};
