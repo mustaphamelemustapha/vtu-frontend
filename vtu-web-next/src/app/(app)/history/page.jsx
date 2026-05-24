@@ -208,7 +208,7 @@ export default function HistoryPage() {
                       {String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}
                     </div>
                     <div className="text-sm font-extrabold text-foreground truncate">
-                      {recipient ? `To ${recipient}` : (tx?.meta?.ledger_description || String(tx.reference || '—'))}
+                      {recipient ? `To ${recipient}` : (tx?.meta?.ledger_description || (typeLower.includes('admin_') ? String(tx?.failure_reason || 'Admin Adjustment') : String(tx.reference || '—')))}
                     </div>
                     {recipient && (
                       <div className="text-[11px] text-muted-foreground/80 font-mono truncate">
