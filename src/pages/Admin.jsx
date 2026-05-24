@@ -102,7 +102,7 @@ export default function Admin() {
   const [analytics, setAnalytics] = useState(null);
 
   // Pricing
-  const [pricingForm, setPricingForm] = useState({ tx_type: "data", provider: "mtn", margin: 0 });
+  const [pricingForm, setPricingForm] = useState({ tx_type: "data", provider: "mtn", margin: 0, role: "user" });
   const [pricingBusy, setPricingBusy] = useState(false);
   const [pricingRules, setPricingRules] = useState([]);
   const [pricingLoadBusy, setPricingLoadBusy] = useState(false);
@@ -406,7 +406,7 @@ export default function Admin() {
           tx_type: txType,
           provider,
           network: provider,
-          role: "user",
+          role: pricingForm.role || "user",
           margin: Number(pricingForm.margin),
         }),
       });
@@ -483,6 +483,26 @@ export default function Admin() {
       setFundBusy(false);
     }
   };
+  const updateUserRole = async (user, newRole) => {
+    if (!window.confirm(`Change role to ${newRole.toUpperCase()} for ${user.email}?`)) return;
+    try {
+      await apiFetch("/admin/users/update-role", {
+        method: "POST",
+        body: JSON.stringify({
+          email: user.email,
+          role: newRole,
+        }),
+      });
+      showToast("Role updated successfully.", "success");
+      await fetchUsers({ page: userState.page || 1 });
+      if (Number(userDetailData?.user?.id) === Number(user.id)) {
+        await fetchUserDetails(user.id, { silent: true });
+      }
+    } catch (err) {
+      showToast(err?.message || "Role update failed.", "error");
+    }
+  };
+
 
   const txPages = useMemo(() => {
     const total = Number(txState.total || 0);
@@ -1099,6 +1119,15 @@ export default function Admin() {
                 )}
               </label>
               <label>
+                Target Role
+                <select
+                  value={pricingForm.role}
+                  onChange={(e) => setPricingForm({ ...pricingForm, role: e.target.value })}>
+                  <option value="user">Normal User</option>
+                  <option value="reseller">Agent / Reseller</option>
+                </select>
+              </label>
+              <label>
                 Margin (₦)
                 <input
                   type="number"
@@ -1110,8 +1139,8 @@ export default function Admin() {
                 {pricingBusy ? "Updating..." : "Update"}
               </button>
             </form>
-            <div className="muted">
-              Tip: margin applies to user charge amount (base amount + margin). Reseller pricing stays disabled.
+            <div className="muted" style={{ marginTop: 12 }}>
+              Tip: margin applies to charge amount (base amount + margin). You can now configure different margins for Normal Users and Agents.
             </div>
             <div className="section-head" style={{ marginTop: 16 }}>
               <h3>Configured Rules</h3>
@@ -1132,18 +1161,21 @@ export default function Admin() {
                 </thead>
                 <tbody>
                   {pricingRules
-                    .filter((r) => String(r.role || "").toLowerCase() === "user")
                     .map((rule) => (
                       <tr key={rule.id}>
                         <td>{typeLabel(rule.tx_type)}</td>
                         <td>{rule.provider || rule.network}</td>
-                        <td>{String(rule.role || "").toUpperCase()}</td>
+                        <td>
+                          <span className={`pill ${String(rule.role || "").toLowerCase() === "reseller" ? "success" : ""}`}>
+                            {String(rule.role || "USER").toUpperCase()}
+                          </span>
+                        </td>
                         <td className="mono">₦ {formatMoney(rule.margin)}</td>
                         <td className="mono">{rule.network}</td>
                       </tr>
                     ))}
                   {!pricingLoadBusy &&
-                    pricingRules.filter((r) => String(r.role || "").toLowerCase() === "user").length === 0 && (
+                    pricingRules.length === 0 && (
                       <tr>
                         <td colSpan={5}>
                           <div className="empty">No pricing rules yet.</div>
@@ -1365,13 +1397,31 @@ export default function Admin() {
                       <div className="muted">
                         Joined {formatDate(userDetailData?.user?.created_at || selectedUser.created_at)}
                       </div>
-                      <div className="admin-actions">
+                      <div className="admin-actions" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <span className={`pill ${userDetailData?.user?.is_active ? "success" : "failed"}`}>
                           {userDetailData?.user?.is_active ? "Active" : "Suspended"}
                         </span>
                         <span className={`pill ${userDetailData?.user?.is_verified ? "success" : "warning"}`}>
                           {userDetailData?.user?.is_verified ? "Verified" : "Not Verified"}
                         </span>
+                        
+                        <div style={{ width: '100%' }}></div>
+
+                        {String(userDetailData?.user?.role || selectedUser.role).toLowerCase() !== "reseller" ? (
+                          <button 
+                            className="ghost success" 
+                            type="button" 
+                            onClick={() => updateUserRole(selectedUser, 'reseller')}>
+                            Upgrade to Agent
+                          </button>
+                        ) : (
+                          <button 
+                            className="ghost warning" 
+                            type="button" 
+                            onClick={() => updateUserRole(selectedUser, 'user')}>
+                            Downgrade to User
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="card admin-user-summary-card">
