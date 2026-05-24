@@ -110,6 +110,7 @@ export default function HistoryPage() {
       if (tx.meta.customer_name) metaArr.push({ label: 'Customer Name', value: tx.meta.customer_name });
       if (tx.meta.provider_ref) metaArr.push({ label: 'Provider Ref', value: tx.meta.provider_ref });
       if (tx.meta.units) metaArr.push({ label: 'Units', value: tx.meta.units });
+      if (tx.meta.ledger_description) metaArr.push({ label: 'Description', value: tx.meta.ledger_description });
     }
 
     const receiptData = buildTransactionReceipt({
@@ -195,10 +196,11 @@ export default function HistoryPage() {
                     "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold font-mono",
                     typeLower.includes('data') ? "bg-blue-500/10 text-blue-500" :
                     typeLower.includes('airtime') ? "bg-green-500/10 text-green-500" :
-                    typeLower.includes('funding') || typeLower.includes('deposit') || typeLower.includes('wallet') ? "bg-emerald-500/10 text-emerald-500" :
+                    typeLower.includes('funding') || typeLower.includes('deposit') || typeLower.includes('wallet') || typeLower.includes('credit') ? "bg-emerald-500/10 text-emerald-500" :
+                    typeLower.includes('debit') ? "bg-rose-500/10 text-rose-500" :
                     "bg-indigo-500/10 text-indigo-500"
                   )}>
-                    {String(tx.tx_type || 'TX').slice(0, 2).toUpperCase()}
+                    {String(tx.tx_type || 'TX').replace('admin_', '').slice(0, 2).toUpperCase()}
                   </div>
                   
                   <div className="space-y-0.5 min-w-0 flex-1">
@@ -206,7 +208,7 @@ export default function HistoryPage() {
                       {String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}
                     </div>
                     <div className="text-sm font-extrabold text-foreground truncate">
-                      {recipient ? `To ${recipient}` : String(tx.reference || '—')}
+                      {recipient ? `To ${recipient}` : (tx?.meta?.ledger_description || String(tx.reference || '—'))}
                     </div>
                     {recipient && (
                       <div className="text-[11px] text-muted-foreground/80 font-mono truncate">
