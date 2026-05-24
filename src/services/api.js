@@ -22,8 +22,8 @@ function resolveApiBase() {
       host === "www.axisvtu.com" ||
       host === "axisvtu.vercel.app" ||
       host === "vtu-frontend-beta.vercel.app" ||
-      host === "meledata.com" ||
-      host === "www.meledata.com" ||
+      host === "meledata.ng" ||
+      host === "www.meledata.ng" ||
       host === "meledata.vercel.app";
     if (isAxisDomain) return "/api/v1";
   }

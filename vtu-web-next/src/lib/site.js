@@ -2,7 +2,7 @@ function normalizeBase(raw) {
   return String(raw || '').trim().replace(/\/+$/, '');
 }
 
-const AXISVTU_CANONICAL_ORIGIN = 'https://axisvtu.com';
+const AXISVTU_CANONICAL_ORIGIN = 'https://meledata.ng';
 
 function isVercelHost(origin) {
   try {
