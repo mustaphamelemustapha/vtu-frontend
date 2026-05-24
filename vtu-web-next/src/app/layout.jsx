@@ -1,5 +1,6 @@
 import './globals.css';
 import { LegacyCacheCleanup } from '@/components/legacy-cache-cleanup';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata = {
   title: {
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
       <body className="antialiased">
         <LegacyCacheCleanup />
         {children}
+        <Analytics />
       </body>
     </html>
   );
