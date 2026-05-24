@@ -67,7 +67,7 @@ export default function AdminUsersPage() {
         await adminDeleteUser(confirmAction.user.id);
       } else if (confirmAction.type === 'upgrade_reseller' || confirmAction.type === 'downgrade_user') {
         await adminUpdateUserRole({ 
-          email: confirmAction.user.email, 
+          user_id: confirmAction.user.id, 
           role: confirmAction.type === 'upgrade_reseller' ? 'reseller' : 'user' 
         });
       } else {
