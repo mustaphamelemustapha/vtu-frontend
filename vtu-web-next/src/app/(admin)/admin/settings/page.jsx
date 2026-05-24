@@ -59,7 +59,7 @@ export default function AdminSettingsPage() {
     setIsSavingMargin(true);
     try {
       const val = parseFloat(marginInput);
-      if (isNaN(val) || val < 0) throw new Error('Invalid margin value');
+      if (isNaN(val)) throw new Error('Invalid margin value');
       
       const payload = {
         network: editingMarginFor.network,
