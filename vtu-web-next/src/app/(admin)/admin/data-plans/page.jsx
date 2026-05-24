@@ -36,6 +36,7 @@ export default function AdminDataPlansPage() {
   // Modal State
   const [editingPlan, setEditingPlan] = useState(null);
   const [displayPriceInput, setDisplayPriceInput] = useState('');
+  const [agentPriceInput, setAgentPriceInput] = useState('');
   const [planNameInput, setPlanNameInput] = useState('');
   const [costPriceInput, setCostPriceInput] = useState('');
   const [dataSizeInput, setDataSizeInput] = useState('');
@@ -165,6 +166,7 @@ export default function AdminDataPlansPage() {
     setDataSizeInput(plan.data_size || '');
     setValidityInput(plan.validity || '');
     setDisplayPriceInput(plan.display_price !== null ? String(plan.display_price) : '');
+    setAgentPriceInput(plan.agent_price !== null && plan.agent_price !== undefined ? String(plan.agent_price) : '');
   };
 
   const handleSavePlan = async () => {
@@ -183,9 +185,20 @@ export default function AdminDataPlansPage() {
       } else {
         payload.display_price = parseFloat(val);
         if (isNaN(payload.display_price) || payload.display_price < 0) {
-          throw new Error('Invalid price value');
+          throw new Error('Invalid User price value');
         }
       }
+      
+      const agentVal = agentPriceInput.trim();
+      if (agentVal === '') {
+        payload.clear_agent_price = true;
+      } else {
+        payload.agent_price = parseFloat(agentVal);
+        if (isNaN(payload.agent_price) || payload.agent_price < 0) {
+          throw new Error('Invalid Agent price value');
+        }
+      }
+      
       await adminUpdateDataPlan(editingPlan.id, payload);
       await load();
       setEditingPlan(null);
@@ -276,7 +289,7 @@ export default function AdminDataPlansPage() {
           { key: 'plan_name', label: 'Plan size/name', render: (row) => row.plan_name || row.data_size || '—' },
           { key: 'validity', label: 'Validity', render: (row) => row.validity || '—' },
           { key: 'base_price', label: 'Cost price', render: (row) => `₦${formatMoney(row.base_price ?? 0)}` },
-          { key: 'price', label: 'Selling price', render: (row) => {
+          { key: 'price', label: 'User Selling Price', render: (row) => {
             const effective = calculateEffectivePrice(row);
             return (
               <div className="flex flex-col">
@@ -285,6 +298,23 @@ export default function AdminDataPlansPage() {
                   <span className="text-[10px] text-orange-500 font-medium tracking-wider uppercase">Override</span>
                 ) : (
                   <span className="text-[10px] text-muted-foreground tracking-wider uppercase">Auto Margin</span>
+                )}
+              </div>
+            );
+          }},
+          { key: 'agent_price', label: 'Agent Price', render: (row) => {
+            return (
+              <div className="flex flex-col">
+                {row.agent_price !== null && row.agent_price !== undefined ? (
+                  <>
+                    <span className="font-medium text-orange-500">₦{formatMoney(row.agent_price)}</span>
+                    <span className="text-[10px] text-orange-500 font-medium tracking-wider uppercase">Explicit</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-medium text-muted-foreground">—</span>
+                    <span className="text-[10px] text-muted-foreground tracking-wider uppercase">Margin</span>
+                  </>
                 )}
               </div>
             );
@@ -397,19 +427,33 @@ export default function AdminDataPlansPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Explicit Selling Price (₦)</label>
-                <Input
-                  type="number"
-                  placeholder="Leave empty to use automatic margin"
-                  value={displayPriceInput}
-                  onChange={(e) => setDisplayPriceInput(e.target.value)}
-                  disabled={isSavingPlan}
-                />
-                <p className="text-xs text-muted-foreground">
-                  If set, this exact price will be charged to users, ignoring network margins.
-                  Clear the input to revert to automatic margin calculation.
-                </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">User Price (₦)</label>
+                  <Input
+                    type="number"
+                    placeholder="Auto margin if empty"
+                    value={displayPriceInput}
+                    onChange={(e) => setDisplayPriceInput(e.target.value)}
+                    disabled={isSavingPlan}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Explicit price for Normal Users.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Agent Price (₦)</label>
+                  <Input
+                    type="number"
+                    placeholder="Auto margin if empty"
+                    value={agentPriceInput}
+                    onChange={(e) => setAgentPriceInput(e.target.value)}
+                    disabled={isSavingPlan}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Explicit price for Agents/Resellers.
+                  </p>
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
