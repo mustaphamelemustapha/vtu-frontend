@@ -159,9 +159,22 @@ export default function AdminSettingsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Service Margins</CardTitle>
-          <CardDescription>Configure profit margins for transactions. Margins can be fixed amounts or percentages.</CardDescription>
+        <CardHeader className="flex flex-row items-start justify-between">
+          <div className="space-y-1.5">
+            <CardTitle>Service Margins</CardTitle>
+            <CardDescription>Configure profit margins for transactions. Margins can be fixed amounts or percentages.</CardDescription>
+          </div>
+          <Button 
+            variant="secondary" 
+            size="sm"
+            onClick={() => {
+              setEditingMarginFor({ network: 'mtn', role: 'user', margin: 0, margin_type: 'fixed', isNewRule: true });
+              setMarginInput('0');
+              setMarginTypeInput('fixed');
+            }}
+          >
+            + Add Margin Rule
+          </Button>
         </CardHeader>
         <CardContent>
           <AdminTable
@@ -266,16 +279,52 @@ export default function AdminSettingsPage() {
               </Button>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
-              <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Service/Network:</span>
-                  <span className="font-medium text-foreground">{String(editingMarginFor.network).toUpperCase()}</span>
+              {editingMarginFor.isNewRule ? (
+                <div className="space-y-4 p-3 rounded-lg bg-muted/50">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Service / Network</label>
+                    <select
+                      value={editingMarginFor.network}
+                      onChange={(e) => setEditingMarginFor({ ...editingMarginFor, network: e.target.value })}
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      disabled={isSavingMargin}
+                    >
+                      <option value="mtn">MTN</option>
+                      <option value="airtel">Airtel</option>
+                      <option value="glo">Glo</option>
+                      <option value="9mobile">9mobile</option>
+                      <option value="data">General Data</option>
+                      <option value="airtime">General Airtime</option>
+                      <option value="electricity">Electricity</option>
+                      <option value="cable">Cable TV</option>
+                      <option value="exam">Exam PINs</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Target Role</label>
+                    <select
+                      value={editingMarginFor.role}
+                      onChange={(e) => setEditingMarginFor({ ...editingMarginFor, role: e.target.value })}
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      disabled={isSavingMargin}
+                    >
+                      <option value="user">Normal User</option>
+                      <option value="reseller">Agent / Reseller</option>
+                    </select>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">User Role:</span>
-                  <span className="font-medium text-foreground capitalize">{editingMarginFor.role}</span>
+              ) : (
+                <div className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Service/Network:</span>
+                    <span className="font-medium text-foreground">{String(editingMarginFor.network).toUpperCase()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">User Role:</span>
+                    <span className="font-medium text-foreground capitalize">{editingMarginFor.role}</span>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-4">
                 <div className="space-y-2">

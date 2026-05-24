@@ -8,6 +8,7 @@ import {
   adminGetUserDetails,
   adminGetUsers,
   adminSuspendUser,
+  adminUpdateUserRole,
 } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -64,6 +65,11 @@ export default function AdminUsersPage() {
         await adminSuspendUser(confirmAction.user.id);
       } else if (confirmAction.type === 'delete') {
         await adminDeleteUser(confirmAction.user.id);
+      } else if (confirmAction.type === 'upgrade_reseller' || confirmAction.type === 'downgrade_user') {
+        await adminUpdateUserRole({ 
+          email: confirmAction.user.email, 
+          role: confirmAction.type === 'upgrade_reseller' ? 'reseller' : 'user' 
+        });
       } else {
         await adminActivateUser(confirmAction.user.id);
       }
@@ -167,6 +173,26 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="text-right space-y-2">
                   <div><StatusBadge status={selectedUser.is_active ? 'active' : 'suspended'} /></div>
+                  <div className="pt-2">
+                    {String(selectedDetails?.user?.role || selectedUser?.role).toLowerCase() !== 'reseller' ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => setConfirmAction({ type: 'upgrade_reseller', user: selectedUser })}
+                      >
+                        Upgrade to Agent
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setConfirmAction({ type: 'downgrade_user', user: selectedUser })}
+                      >
+                        Downgrade to User
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 

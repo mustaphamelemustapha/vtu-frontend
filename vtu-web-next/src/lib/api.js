@@ -283,6 +283,13 @@ export async function adminActivateUser(userId) {
   return apiFetch(`/admin/users/${userId}/activate`, { method: 'POST' });
 }
 
+export async function adminUpdateUserRole(payload) {
+  return apiFetch(`/admin/users/update-role`, {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
 export async function adminDeleteUser(userId) {
   return apiFetch(`/admin/users/${userId}`, { method: 'DELETE' });
 }
