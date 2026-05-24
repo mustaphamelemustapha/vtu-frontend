@@ -1,0 +1,45 @@
+# Vercel Web Analytics Implementation
+
+Successfully installed and configured Vercel Web Analytics for the AxisVTU Next.js application.
+
+## Changes Made
+
+### 1. Package Installation
+- Installed `@vercel/analytics` version 2.0.1
+- The package was already listed as a dependency but needed to be installed via npm
+
+### 2. Analytics Integration
+Modified `src/app/layout.jsx`:
+- Added import: `import { Analytics } from '@vercel/analytics/next';`
+- Placed `<Analytics />` component at the end of the `<body>` tag, after the main content
+- This follows the official Vercel documentation for Next.js App Router projects
+
+### 3. Files Modified
+- `package.json` - Already had @vercel/analytics in dependencies
+- `package-lock.json` - Updated with new package installation
+- `src/app/layout.jsx` - Added Analytics component import and rendering
+
+## Implementation Details
+
+The Analytics component was added to the root layout file (`src/app/layout.jsx`) which ensures it runs on every page of the application. This is the recommended approach for Next.js App Router applications according to the official Vercel documentation.
+
+The component is placed at the end of the body tag to:
+1. Ensure it doesn't block page rendering
+2. Allow it to collect analytics data for all pages
+3. Follow Vercel's recommended best practices
+
+## Verification
+
+- Build completed successfully with no errors
+- All 33 pages were generated successfully
+- The Analytics component will automatically start collecting data when deployed to Vercel
+
+## Next Steps
+
+To enable analytics data collection:
+1. Deploy the application to Vercel
+2. Navigate to the Vercel Dashboard → Analytics
+3. Enable Web Analytics for the project
+4. Analytics data will start appearing in the dashboard after deployment
+
+Note: Analytics will only collect data in production environments by default. For local testing, you can use the debug mode: `<Analytics debug={true} />`
