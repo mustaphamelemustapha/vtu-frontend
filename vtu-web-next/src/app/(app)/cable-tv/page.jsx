@@ -274,6 +274,7 @@ export default function CableTvPage() {
             phone_number: cleanPhone,
             package_code: cleanPackage,
             amount: parsedAmount,
+            ...(verifyResult.ok && verifyResult.customerName ? { customer_name: verifyResult.customerName } : {}),
           }),
         }),
         new Promise((_, reject) => {
@@ -314,6 +315,7 @@ export default function CableTvPage() {
           meta: [
             { label: 'Provider', value: selectedProvider?.name || '—' },
             { label: 'Smartcard / IUC', value: cleanCard || '—' },
+            ...(verifyResult.ok && verifyResult.customerName ? [{ label: 'Customer Name', value: verifyResult.customerName }] : []),
             { label: 'Package', value: cleanPackage || '—' },
           ],
         });
@@ -328,6 +330,7 @@ export default function CableTvPage() {
           meta: [
             { label: 'Provider', value: selectedProvider?.name || '—' },
             { label: 'Smartcard / IUC', value: cleanCard || '—' },
+            ...(verifyResult.ok && verifyResult.customerName ? [{ label: 'Customer Name', value: verifyResult.customerName }] : []),
             { label: 'Package', value: cleanPackage || '—' },
           ],
         });
@@ -571,6 +574,7 @@ export default function CableTvPage() {
               <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
                 {[
                   { label: 'Smartcard / IUC', value: cleanCard || '—' },
+                  ...(verifyResult.ok && verifyResult.customerName ? [{ label: 'Customer name', value: verifyResult.customerName }] : []),
                   { label: 'Provider', value: selectedProvider?.name || '—' },
                   { label: 'Package', value: selectedPackage?.name || cleanPackage || '—' },
                   { label: 'Phone', value: cleanPhone || '—' },
