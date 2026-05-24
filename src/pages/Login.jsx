@@ -399,7 +399,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
               <>
                 <div className="auth-brand auth-brand-simple">
                   <div className="auth-mark auth-mark-simple">
-                    <img src="/pwa/pwa-192.png" alt="AxisVTU" />
+                    <img src="/pwa/pwa-192.png" alt="MELE DATA" />
                   </div>
                 </div>
                 <div className="auth-simple-copy">
@@ -411,11 +411,11 @@ export default function Login({ onAuth, modeRoute = "login" }) {
               <>
                 <div className="auth-brand">
                   <div className="auth-mark">
-                    <img src="/pwa/pwa-192.png" alt="AxisVTU" />
+                    <img src="/pwa/pwa-192.png" alt="MELE DATA" />
                   </div>
                 </div>
                 <h2 className="auth-pitch">Hi, Welcome Back</h2>
-                <p className="muted">Sign in to continue with your AxisVTU account.</p>
+                <p className="muted">Sign in to continue with your MELE DATA account.</p>
               </>
             )}
             </div>
@@ -500,7 +500,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                 : forgotMode
                   ? "Reset password"
                   : mode === "login"
-                    ? "Sign in to AxisVTU"
+                    ? "Sign in to MELE DATA"
                     : "Create account"}
             </h1>
             <p className="muted">
@@ -510,7 +510,7 @@ export default function Login({ onAuth, modeRoute = "login" }) {
                   ? "Enter your email to receive a reset link."
                   : mode === "login"
                     ? "Enter your details below."
-                    : "Create your account to start using AxisVTU."}
+                    : "Create your account to start using MELE DATA."}
             </p>
         {resetMode ? (
           <form onSubmit={submitReset} className="auth-wide auth-form-compact auth-form-reset">

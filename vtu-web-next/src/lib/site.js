@@ -22,7 +22,7 @@ export function getSiteOrigin() {
     const host = String(window.location.hostname || '').toLowerCase();
     const isLocalHost = host === 'localhost' || host === '127.0.0.1';
     if (isLocalHost) return window.location.origin;
-    // Production must always share the canonical AxisVTU domain.
+    // Production must always share the canonical MELE DATA domain.
     return canonical;
   }
 

@@ -35,7 +35,7 @@ const navLinks = [
   { label: 'FAQ', href: '#faq' },
 ];
 
-const heroPoints = ['Instant services', 'Easy top-up', 'Clear receipts'];
+const heroPoints = ['Instant purchases', 'Wallet funding', 'Clear receipts'];
 
 const services = [
   {
@@ -50,13 +50,13 @@ const services = [
   },
   {
     icon: Wallet,
-    title: 'Top Up Account',
-    text: 'Add credit to your account and use the balance for everyday utility services.',
+    title: 'Fund Wallet',
+    text: 'Transfer money to your dedicated account and use the balance for everyday services.',
   },
   {
     icon: CreditCard,
-    title: 'Order History',
-    text: 'Review service purchases, receipts, and account activity from one organised view.',
+    title: 'Transaction History',
+    text: 'Review purchases, receipts, and wallet activity from one organised view.',
   },
   {
     icon: Zap,
@@ -75,16 +75,16 @@ const services = [
   },
   {
     icon: Banknote,
-    title: 'Account Credit',
-    text: 'Use your dedicated account number to add credit and keep your records clear.',
+    title: 'Account Funding',
+    text: 'Use your dedicated virtual account to fund your wallet and keep the record clear.',
   },
 ];
 
 const trustPoints = [
   {
     icon: ShieldCheck,
-    title: 'Secure credit system',
-    text: 'Account activity stays structured and easy to review.',
+    title: 'Secure wallet system',
+    text: 'Wallet activity stays structured and easy to review.',
   },
   {
     icon: BadgeCheck,
@@ -111,8 +111,8 @@ const aboutBullets = [
 
 const faqs = [
   {
-    q: 'How do I add credit to my account?',
-    a: 'Transfer to your dedicated account number, then wait for confirmation before purchasing services.',
+    q: 'How do I fund my wallet?',
+    a: 'Transfer money to your dedicated account, then wait for confirmation before making purchases.',
   },
   {
     q: 'How fast are data purchases?',
@@ -124,7 +124,7 @@ const faqs = [
   },
   {
     q: 'How secure is my account?',
-    a: 'AxisVTU uses a transaction PIN flow for sensitive actions and keeps records organized for review.',
+    a: 'MELE DATA uses a transaction PIN flow for sensitive actions and keeps records organized for review.',
   },
   {
     q: 'Can I view receipts?',
@@ -144,8 +144,8 @@ const motionFadeUp = {
 function BrandLogo({ className = '' }) {
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`.trim()}>
-      <img src="/brand/axisvtu-logo.png" alt="AxisVTU logo" className="h-10 w-10 rounded-2xl object-contain" />
-      <span className="text-lg font-semibold tracking-tight text-foreground">AxisVTU</span>
+      <img src="/brand/axisvtu-logo.png" alt="MELE DATA logo" className="h-10 w-10 rounded-2xl object-contain" />
+      <span className="text-lg font-semibold tracking-tight text-foreground">MELE DATA</span>
     </span>
   );
 }
@@ -205,7 +205,7 @@ function MobileMenu({ open, onClose }) {
             </div>
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card text-foreground dark:text-white">
+              <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card text-muted-foreground">
                 <Link href="/login" onClick={onClose}>
                   Sign In
                 </Link>
@@ -226,7 +226,6 @@ function MobileMenu({ open, onClose }) {
 function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -234,19 +233,6 @@ function Header() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  useEffect(() => {
-    const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    setTheme(current);
-  }, []);
-
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(next);
-    window.localStorage.setItem('axis-theme', next);
-    setTheme(next);
-  };
 
   return (
     <>
@@ -260,7 +246,7 @@ function Header() {
             <BrandLogo className="[&_img]:h-9 [&_img]:w-9 sm:[&_img]:h-10 sm:[&_img]:w-10" />
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium text-foreground/85 lg:flex">
+          <nav className="hidden items-center gap-8 text-sm font-medium text-muted-foreground lg:flex">
             {navLinks.map((item) => (
               <a key={item.label} href={item.href} className="transition hover:text-foreground">
                 {item.label}
@@ -269,10 +255,7 @@ function Header() {
           </nav>
 
           <div className="hidden items-center gap-3 sm:flex">
-            <Button variant="secondary" size="icon" className="h-11 w-11 rounded-full" onClick={toggleTheme} title="Toggle theme" aria-label="Toggle theme">
-              <Sparkles className="h-4 w-4" />
-            </Button>
-            <Button asChild variant="secondary" className="h-11 rounded-full border-border/90 bg-secondary px-5 text-foreground hover:bg-secondary/85 dark:border-white/25 dark:bg-white/16 dark:text-white dark:hover:bg-white/22">
+            <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card px-5 text-muted-foreground hover:bg-secondary">
               <Link href="/login">Sign In</Link>
             </Button>
             <Button asChild className="h-11 rounded-full bg-primary px-5 text-primary-foreground shadow-sm shadow-orange-200 hover:bg-primary/90">
@@ -283,7 +266,7 @@ function Header() {
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border text-foreground lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border text-muted-foreground lg:hidden"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
@@ -308,7 +291,7 @@ function Hero() {
             className="inline-flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-card px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary shadow-sm"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            AxisVTU for everyday utility services
+            MELE DATA for everyday payments
           </motion.div>
 
           <motion.h1
@@ -328,7 +311,7 @@ function Hero() {
             custom={0.16}
             className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl"
           >
-            Top up any network, add account credit, and manage everyday utility services with a simple, reliable AxisVTU account.
+            Top up any network, fund your wallet, and manage everyday payments with a simple, reliable MELE DATA account.
           </motion.p>
 
           <motion.div
@@ -344,7 +327,7 @@ function Hero() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="secondary" className="h-12 rounded-full border-border bg-card px-6 text-base text-foreground hover:bg-secondary dark:text-white">
+            <Button asChild variant="secondary" className="h-12 rounded-full border-border bg-card px-6 text-base text-muted-foreground hover:bg-secondary">
               <Link href="/login">Log in</Link>
             </Button>
           </motion.div>
@@ -381,7 +364,7 @@ function Hero() {
                   </div>
                   <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">Clean dashboard preview</h2>
                   <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-                    The interface is designed for quick top-ups, adding account credit, and clear service records on desktop.
+                    The interface is designed for quick top-ups, wallet funding, and clear transaction records on desktop.
                   </p>
                 </div>
                   <div className="rounded-2xl bg-orange-50 p-3 text-primary">
@@ -391,9 +374,9 @@ function Hero() {
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-3xl border border-border bg-secondary p-4">
-                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Account Credit</div>
-                  <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Available for services</div>
-                  <div className="mt-2 text-sm text-muted-foreground">Add credit through the dedicated account route.</div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Wallet balance</div>
+                  <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Available for purchases</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Funded through the dedicated account route.</div>
                 </div>
                 <div className="rounded-3xl border border-border bg-secondary p-4">
                   <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Receipts</div>
@@ -408,8 +391,8 @@ function Hero() {
                   <div className="mt-4 space-y-3">
                     {[
                       ['Data purchase', 'MTN 2GB - ₦1,500', 'Completed'],
-                      ['Account credit', 'Bank transfer', 'Confirmed'],
-                      ['Airtime recharge', 'Glo - ₦2,000', 'Completed'],
+                      ['Wallet funding', 'Virtual account transfer', 'Confirmed'],
+                      ['Airtime top-up', 'Glo - ₦2,000', 'Completed'],
                     ].map(([title, detail, status]) => (
                       <div key={title} className="flex items-center justify-between rounded-2xl border border-border bg-secondary px-3 py-3">
                         <div>
@@ -426,7 +409,7 @@ function Hero() {
                   <div className="rounded-3xl border border-border bg-card p-4">
                     <div className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Quick actions</div>
                     <div className="mt-4 grid gap-2">
-                      {['Buy Data', 'Buy Airtime', 'Add Credit', 'View History'].map((item) => (
+                      {['Buy Data', 'Buy Airtime', 'Fund Wallet', 'View History'].map((item) => (
                         <div key={item} className="rounded-2xl border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground">
                           {item}
                         </div>
@@ -455,7 +438,7 @@ function ServicesSection() {
     <section id="services" className="bg-card px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <PageSection
-          eyebrow="What you can do with AxisVTU"
+          eyebrow="What you can do with MELE DATA"
           title="The actions are clear, familiar, and easy to scan"
           description="A visitor should understand the product in a few seconds and know exactly where to begin."
         />
@@ -501,7 +484,7 @@ function TrustSection() {
             <PageSection
               eyebrow="Why choose us"
               title="A calmer VTU experience for everyday use"
-              description="AxisVTU is built for people who want speed without confusion, and structure without a crowded interface."
+              description="MELE DATA is built for people who want speed without confusion, and structure without a crowded interface."
             />
             <div className="mt-6 grid gap-3">
               {aboutBullets.map((bullet) => (
@@ -550,12 +533,12 @@ function AboutSection() {
     <section id="about" className="bg-card px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
         <motion.div variants={motionFadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} custom={0}>
-          <div className="axis-label text-primary">About AxisVTU</div>
+          <div className="axis-label text-primary">About MELE DATA</div>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            A simple platform for airtime, data, account top-up, and utility services
+            A simple platform for airtime, data, wallet funding, and utility payments
           </h2>
           <p className="mt-5 text-lg leading-8 text-muted-foreground">
-            AxisVTU is a Nigerian digital services platform designed to help people handle ordinary utility tasks without friction. It brings top-ups, account credit, receipts, and order history into one clear web experience.
+            MELE DATA is a Nigerian VTU and payments platform designed to help people handle ordinary account tasks without friction. It brings top-ups, wallet funding, receipts, and transaction history into one clear web experience.
           </p>
           <p className="mt-5 text-lg leading-8 text-muted-foreground">
             The goal is straightforward: keep the interface human, the flow reliable, and the account details easy to understand.
@@ -603,7 +586,7 @@ function FaqSection() {
         <PageSection
           eyebrow="FAQ / Support"
           title="Helpful answers before you get started"
-          description="A few common questions users usually ask before opening an account or adding credit."
+          description="A few common questions users usually ask before opening an account or funding their wallet."
           align="center"
         />
 
@@ -682,7 +665,7 @@ function Footer() {
           <div>
             <BrandLogo className="[&_span]:text-white" />
             <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300">
-              AxisVTU helps users buy airtime, data, and everyday utility services while keeping account credit and service records clear.
+              MELE DATA helps users buy airtime, data, and everyday utility services while keeping wallet funding and transaction records clear.
             </p>
             <div className="mt-5 flex items-center gap-3 text-sm text-slate-200">
               <span className="h-2 w-2 rounded-full bg-primary" />
@@ -692,7 +675,7 @@ function Footer() {
 
           <div className="grid gap-8 sm:grid-cols-2">
             <div>
-              <div className="text-sm font-semibold text-white">AxisVTU</div>
+              <div className="text-sm font-semibold text-white">MELE DATA</div>
               <div className="mt-4 space-y-3 text-sm">
                 <div><a href="#services" className="hover:text-white">What you can do</a></div>
                 <div><a href="#trust" className="hover:text-white">Why choose us</a></div>
@@ -704,14 +687,14 @@ function Footer() {
               <div className="text-sm font-semibold text-white">Policies</div>
               <div className="mt-4 space-y-3 text-sm">
                 <div><a href="#" className="hover:text-white">Terms &amp; Conditions</a></div>
-                <div><Link href="/privacy" className="hover:text-white">Privacy Policy</Link></div>
+                <div><a href="#" className="hover:text-white">Privacy Policy</a></div>
               </div>
             </div>
           </div>
         </div>
         <Separator className="my-10 bg-white/10" />
         <div className="flex flex-col gap-4 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
-          <div>© 2026 AxisVTU. All rights reserved.</div>
+          <div>© 2026 MELE DATA. Powered by MMTECHGLOBE.</div>
           <div className="flex gap-4">
             <span>Official web platform</span>
             <span>Nigerian VTU services</span>

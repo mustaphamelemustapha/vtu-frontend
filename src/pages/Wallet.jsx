@@ -237,7 +237,7 @@ export default function Wallet() {
                 <div className="label" style={{ fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", fontSize: "12px" }}>{primaryAccount.bank_name}</div>
                 <div className="wallet-primary-account-number">{primaryAccount.account_number}</div>
                 <div className="muted" style={{ fontWeight: 900, color: "var(--text-foreground)", fontSize: "14px", marginTop: "4px" }}>
-                  ACCOUNT NAME: {String(primaryAccount.account_name || "AxisVTU Wallet").toUpperCase()}
+                  ACCOUNT NAME: {String(primaryAccount.account_name || "MELE DATA Wallet").toUpperCase()}
                 </div>
               </div>
               <Button variant="ghost"
@@ -266,7 +266,7 @@ export default function Wallet() {
                 <div className="wallet-account-card" key={`${acc.bank_name}-${acc.account_number}-${idx}`}>
                   <div className="label">{acc.bank_name}</div>
                   <div className="wallet-account-number">{acc.account_number}</div>
-                  <div className="muted">{acc.account_name || "AxisVTU Wallet"}</div>
+                  <div className="muted">{acc.account_name || "MELE DATA Wallet"}</div>
                   <Button variant="ghost"
                     className="beneficiary-save-btn"
                     onClick={() => copyText(acc.account_number)}>
@@ -347,7 +347,7 @@ export default function Wallet() {
                 </div>
                 <div className="notice-box" style={{ marginTop: 12, padding: "12px", border: "1px solid rgba(37, 99, 235, 0.2)", borderRadius: "12px", background: "rgba(37, 99, 235, 0.05)", fontSize: "12px", lineHeight: "1.4", color: "var(--text-foreground)", display: "flex", gap: "8px", alignItems: "flex-start" }}>
                   <span style={{ fontSize: "16px" }}>🔒</span>
-                  <span><strong>Privacy Guarantee:</strong> AxisVTU does <strong>NOT</strong> store or keep your BVN or NIN. This identity verification is securely routed directly to our central CBN-licensed payment partner (Monnify) to automatically generate your personalized funding accounts.</span>
+                  <span><strong>Privacy Guarantee:</strong> MELE DATA does <strong>NOT</strong> store or keep your BVN or NIN. This identity verification is securely routed directly to our central CBN-licensed payment partner (Monnify) to automatically generate your personalized funding accounts.</span>
                 </div>
                 <form onSubmit={createTransfer} className="form-grid" style={{ marginTop: 12 }}>
                   <label>
@@ -405,7 +405,7 @@ export default function Wallet() {
                   <div key={`${acc.bank_name}-${acc.account_number}-${idx}`} style={{ padding: "12px", border: "1px solid var(--stroke)", borderRadius: "12px", background: "var(--panel-light)" }}>
                     <div className="label" style={{ fontWeight: 800, color: "var(--accent)", textTransform: "uppercase", fontSize: "11px" }}>{acc.bank_name}</div>
                     <div className="value" style={{ fontSize: 20, fontFamily: "monospace", letterSpacing: "0.05em", margin: "4px 0" }}>{acc.account_number}</div>
-                    <div className="muted" style={{ fontWeight: 900, color: "var(--text-foreground)", fontSize: "13px" }}>ACCOUNT NAME: {String(acc.account_name || "AxisVTU Wallet").toUpperCase()}</div>
+                    <div className="muted" style={{ fontWeight: 900, color: "var(--text-foreground)", fontSize: "13px" }}>ACCOUNT NAME: {String(acc.account_name || "MELE DATA Wallet").toUpperCase()}</div>
                     <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
                       <Button variant="ghost" type="button" onClick={() => copyText(acc.account_number)}>
                         Copy Account

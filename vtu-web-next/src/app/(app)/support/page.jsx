@@ -15,7 +15,7 @@ export default function SupportPage() {
       <PageHeader
         eyebrow="Personal settings"
         title="Support"
-        description="Reach AxisVTU support through email or WhatsApp."
+        description="Reach MELE DATA support through email or WhatsApp."
       />
 
       <div className="grid gap-4 md:grid-cols-2">

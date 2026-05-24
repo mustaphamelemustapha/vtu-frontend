@@ -117,8 +117,8 @@ export default function WalletPage() {
     const baseName = activeAccount?.account_name || profile?.full_name || 'Customer';
     const rawName = String(baseName).trim();
     
-    // Clean up legacy merchant/business prefixes beautifully using regex (e.g. MMTECHGLOBE, AXISVTU, AXISVTU/, MMTECHGLOBE -, etc.)
-    const prefixPattern = /^(?:MMTECHGLOBE|AXISVTU)(?:\s*[-\/:]\s*|\s+)?/i;
+    // Clean up legacy merchant/business prefixes beautifully using regex (e.g. MMTECHGLOBE, MELE DATA, MELE DATA/, MMTECHGLOBE -, etc.)
+    const prefixPattern = /^(?:MMTECHGLOBE|MELE DATA)(?:\s*[-\/:]\s*|\s+)?/i;
     let cleanName = rawName.replace(prefixPattern, '').trim();
     if (!cleanName) {
       cleanName = rawName;
@@ -352,7 +352,7 @@ export default function WalletPage() {
                 To generate automated funding accounts, the <strong>Central Bank of Nigeria (CBN)</strong> requires identity validation matching your credentials.
               </p>
               <ul className="list-disc pl-4 space-y-1">
-                <li><strong>AxisVTU does NOT store or save your BVN/NIN.</strong> It is instantly encrypted and sent directly to Moniepoint/Monnify.</li>
+                <li><strong>MELE DATA does NOT store or save your BVN/NIN.</strong> It is instantly encrypted and sent directly to Moniepoint/Monnify.</li>
                 <li>This process strictly validates your legal name to secure your dedicated virtual bank accounts.</li>
                 <li>Your data remains 100% private and protected.</li>
               </ul>

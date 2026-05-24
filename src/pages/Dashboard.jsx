@@ -508,7 +508,7 @@ export default function Dashboard() {
                     <div className="funding-account-number">{primaryFundingAccount.account_number}</div>
                     <div className="funding-account-number-note">Tap copy to share your funding account</div>
                   </div>
-                  <div className="muted">{primaryFundingAccount.account_name || "AxisVTU Wallet"}</div>
+                  <div className="muted">{primaryFundingAccount.account_name || "MELE DATA Wallet"}</div>
                   <div className="dashboard-wallet-mini">
                     <div className="dashboard-wallet-mini-head">
                       <span className="label">Wallet Balance</span>

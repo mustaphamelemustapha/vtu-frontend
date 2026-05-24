@@ -223,10 +223,10 @@ export function AppShell({ children }) {
       <aside className="hidden border-r border-border bg-card p-5 text-card-foreground lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-[280px] lg:flex-col lg:overflow-y-auto">
         <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl border border-border bg-secondary px-4 py-3">
           <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-            <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
+            <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-foreground">AxisVTU</div>
+            <div className="text-sm font-semibold text-foreground">MELE DATA</div>
             <div className="text-xs text-muted-foreground">Fintech dashboard</div>
           </div>
         </Link>
@@ -287,10 +287,10 @@ export function AppShell({ children }) {
             </Button>
             <div className="min-w-0 flex-1 md:hidden">
               <div className="truncate text-sm font-semibold text-foreground">
-                {activePage?.label || 'AxisVTU'}
+                {activePage?.label || 'MELE DATA'}
               </div>
               <div className="truncate text-[11px] text-muted-foreground">
-                AxisVTU
+                MELE DATA
               </div>
             </div>
             <form
@@ -426,10 +426,10 @@ export function AppShell({ children }) {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-card ring-1 ring-border">
-                        <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
+                        <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold tracking-tight text-foreground">AxisVTU</div>
+                        <div className="truncate text-sm font-semibold tracking-tight text-foreground">MELE DATA</div>
                         <div className="truncate text-[11px] text-muted-foreground">Wallet workspace</div>
                       </div>
                     </div>

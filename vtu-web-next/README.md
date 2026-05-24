@@ -1,6 +1,6 @@
-# AxisVTU Web
+# MELE DATA Web
 
-Premium Next.js rebuild of the AxisVTU web dashboard.
+Premium Next.js rebuild of the MELE DATA web dashboard.
 
 ## Stack
 
@@ -33,7 +33,7 @@ If your environment uses a different package manager, use the equivalent command
 
 ## API
 
-The frontend points to the existing AxisVTU backend API. Override the default base URL with:
+The frontend points to the existing MELE DATA backend API. Override the default base URL with:
 
 ```bash
 NEXT_PUBLIC_API_BASE=

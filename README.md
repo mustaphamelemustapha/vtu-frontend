@@ -12,7 +12,7 @@
 ## Mobile Apps (Play Store + App Store)
 Capacitor has been initialized for this project with:
 - App ID: `com.mmtechglobe.axisvtu`
-- App name: `AxisVTU`
+- App name: `MELE DATA`
 - Native folders: `android/`, `ios/`
 
 ### Commands

@@ -330,22 +330,22 @@ export default function App() {
   useEffect(() => {
     if (authenticated) {
       const appPageTitleMap = {
-        "/": "Dashboard | AxisVTU",
-        "/wallet": "Wallet | AxisVTU",
-        "/data": "Buy Data | AxisVTU",
-        "/airtime": "Buy Airtime | AxisVTU",
-        "/cable": "Cable TV Subscription | AxisVTU",
-        "/electricity": "Electricity Bills | AxisVTU",
-        "/exam": "Exam PINs | AxisVTU",
-        "/transactions": "Transaction History | AxisVTU",
-        "/profile": "Profile | AxisVTU",
-        "/support": "Help & Support | AxisVTU",
-        "/admin": "Admin Dashboard | AxisVTU",
+        "/": "Dashboard | MELE DATA",
+        "/wallet": "Wallet | MELE DATA",
+        "/data": "Buy Data | MELE DATA",
+        "/airtime": "Buy Airtime | MELE DATA",
+        "/cable": "Cable TV Subscription | MELE DATA",
+        "/electricity": "Electricity Bills | MELE DATA",
+        "/exam": "Exam PINs | MELE DATA",
+        "/transactions": "Transaction History | MELE DATA",
+        "/profile": "Profile | MELE DATA",
+        "/support": "Help & Support | MELE DATA",
+        "/admin": "Admin Dashboard | MELE DATA",
       };
-      const title = appPageTitleMap[location.pathname] || "AxisVTU App";
+      const title = appPageTitleMap[location.pathname] || "MELE DATA App";
       applySeo({
         title,
-        description: "AxisVTU dashboard for instant data, airtime, cable TV and electricity payments with clear wallet and receipt tracking.",
+        description: "MELE DATA dashboard for instant data, airtime, cable TV and electricity payments with clear wallet and receipt tracking.",
         path: `/app${location.pathname === "/" ? "" : location.pathname}`,
         noindex: true,
       });
@@ -355,8 +355,8 @@ export default function App() {
     const path = location.pathname || "/";
     if (path === "/register") {
       applySeo({
-        title: "Create AxisVTU Account | AxisVTU",
-        description: "Create your AxisVTU account in minutes and start buying data, airtime, cable TV and electricity with a premium user flow.",
+        title: "Create MELE DATA Account | MELE DATA",
+        description: "Create your MELE DATA account in minutes and start buying data, airtime, cable TV and electricity with a premium user flow.",
         path: "/app/register",
         keywords: "register axisvtu, create vtu account, nigeria data airtime app",
       });
@@ -364,8 +364,8 @@ export default function App() {
     }
     if (path === "/reset-password") {
       applySeo({
-        title: "Reset Password | AxisVTU",
-        description: "Securely reset your AxisVTU password and continue transactions without losing account access.",
+        title: "Reset Password | MELE DATA",
+        description: "Securely reset your MELE DATA password and continue transactions without losing account access.",
         path: "/app/reset-password",
         keywords: "axisvtu reset password, forgot password axisvtu",
       });
@@ -373,8 +373,8 @@ export default function App() {
     }
     if (path === "/reset-pin") {
       applySeo({
-        title: "Reset Transaction PIN | AxisVTU",
-        description: "Securely reset your AxisVTU transaction PIN and continue approving wallet debits.",
+        title: "Reset Transaction PIN | MELE DATA",
+        description: "Securely reset your MELE DATA transaction PIN and continue approving wallet debits.",
         path: "/app/reset-pin",
         keywords: "axisvtu reset transaction pin, pin reset axisvtu",
       });
@@ -382,16 +382,16 @@ export default function App() {
     }
     if (path === "/admin-login") {
       applySeo({
-        title: "Admin Login | AxisVTU",
-        description: "AxisVTU admin sign-in portal.",
+        title: "Admin Login | MELE DATA",
+        description: "MELE DATA admin sign-in portal.",
         path: "/app/admin-login",
         noindex: true,
       });
       return;
     }
     applySeo({
-      title: "Login to AxisVTU | AxisVTU",
-      description: "Sign in to AxisVTU and manage wallet funding, data purchases, airtime topups and bill payments in one polished dashboard.",
+      title: "Login to MELE DATA | MELE DATA",
+      description: "Sign in to MELE DATA and manage wallet funding, data purchases, airtime topups and bill payments in one polished dashboard.",
       path: "/app/login",
       keywords: "axisvtu login, vtu dashboard login nigeria",
     });
@@ -678,7 +678,7 @@ export default function App() {
             {
               id: "welcome",
               type: "info",
-              title: "Welcome to AxisVTU",
+              title: "Welcome to MELE DATA",
               text: "Notifications are now active. We will alert you on wallet and purchase updates.",
               seen: false,
               created_at: now,
@@ -960,7 +960,7 @@ export default function App() {
           {showOnboarding && (
             <div className="onboard-overlay" role="dialog" aria-live="polite">
               <div className="onboard-card">
-                <div className="onboard-title">Welcome to AxisVTU</div>
+                <div className="onboard-title">Welcome to MELE DATA</div>
                 <div className="onboard-sub">Your quick start checklist.</div>
                 <div className="onboard-list">
                   <div className="onboard-item">
@@ -1125,8 +1125,8 @@ export default function App() {
                   <aside className="mobile-side-menu open" role="menu" aria-label="Main menu">
                     <div className="mobile-side-menu-head">
                       <div className="mobile-side-menu-brand">
-                        <img src="/brand/axisvtu-icon.png" alt="AxisVTU" />
-                        <span>AxisVTU</span>
+                        <img src="/brand/axisvtu-icon.png" alt="MELE DATA" />
+                        <span>MELE DATA</span>
                       </div>
                       <button
                         className="mobile-side-menu-close"

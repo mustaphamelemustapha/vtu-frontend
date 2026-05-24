@@ -62,15 +62,15 @@ export function applySeo({
   description,
   path = "/",
   noindex = false,
-  keywords = "AxisVTU, VTU Nigeria, buy data, buy airtime, cable TV, electricity bill payment",
+  keywords = "MELE DATA, VTU Nigeria, buy data, buy airtime, cable TV, electricity bill payment",
 }) {
   if (typeof document === "undefined") return;
 
   const origin = resolveOrigin();
   const normalizedPath = normalizePath(path);
   const url = `${origin}${normalizedPath}`;
-  const finalTitle = String(title || "AxisVTU");
-  const finalDescription = String(description || "AxisVTU");
+  const finalTitle = String(title || "MELE DATA");
+  const finalDescription = String(description || "MELE DATA");
   const finalKeywords = String(keywords || "");
   const robotsValue = noindex ? "noindex, nofollow" : "index, follow";
 
@@ -79,7 +79,7 @@ export function applySeo({
   upsertMetaByName("keywords", finalKeywords);
   upsertMetaByName("robots", robotsValue);
   upsertMetaByProperty("og:type", "website");
-  upsertMetaByProperty("og:site_name", "AxisVTU");
+  upsertMetaByProperty("og:site_name", "MELE DATA");
   upsertMetaByProperty("og:title", finalTitle);
   upsertMetaByProperty("og:description", finalDescription);
   upsertMetaByProperty("og:url", url);
@@ -91,7 +91,7 @@ export function applySeo({
   upsertMetaByName("twitter:image", `${origin}/pwa/pwa-512-primary.png`);
   upsertCanonical(url);
   upsertMetaById(
-    "axisvtu-seo-webpage",
+    "meledata-seo-webpage",
     "application/ld+json",
     JSON.stringify(
       {

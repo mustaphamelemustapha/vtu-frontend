@@ -3,11 +3,11 @@ import { LegacyCacheCleanup } from '@/components/legacy-cache-cleanup';
 
 export const metadata = {
   title: {
-    default: 'AxisVTU',
-    template: '%s | AxisVTU',
+    default: 'MELE DATA',
+    template: '%s | MELE DATA',
   },
-  description: 'Premium utility services dashboard for AxisVTU',
-  applicationName: 'AxisVTU',
+  description: 'Premium utility services dashboard for MELE DATA',
+  applicationName: 'MELE DATA',
   metadataBase: new URL('https://axisvtu.com'),
   icons: {
     icon: '/brand/axisvtu-icon.png',

@@ -55,11 +55,11 @@ export function AuthPage({ initialMode = 'login' }) {
   }, [ref]);
 
   const isRegister = mode === 'register';
-  const heading = useMemo(() => (isRegister ? 'Create Account' : 'Sign in to AxisVTU'), [isRegister]);
+  const heading = useMemo(() => (isRegister ? 'Create Account' : 'Sign in to MELE DATA'), [isRegister]);
   const subtitle = useMemo(
     () =>
       isRegister
-        ? 'Join AxisVTU'
+        ? 'Join MELE DATA'
         : 'Access your wallet, purchases, and transaction history.',
     [isRegister]
   );
@@ -121,7 +121,7 @@ export function AuthPage({ initialMode = 'login' }) {
         <Card className="w-full max-w-[420px] border border-border bg-card shadow-[0_8px_20px_rgba(0,0,0,0.14)] backdrop-blur-sm">
           <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
             <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-              <img src="/brand/axisvtu-icon.png" alt="AxisVTU logo" className="h-full w-full object-contain" />
+              <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
             </div>
             <CardTitle className="text-[1.6rem] font-semibold tracking-[-0.025em] text-foreground">
               {heading}

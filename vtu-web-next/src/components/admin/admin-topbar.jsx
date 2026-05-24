@@ -17,7 +17,7 @@ export function AdminTopbar({ title = 'Admin', onOpenMenu, theme = 'light', onTo
             <ShieldCheck className="h-4 w-4 text-primary" />
             <span className="truncate">{title}</span>
           </div>
-          <div className="hidden text-xs text-muted-foreground md:block">AxisVTU internal operations dashboard</div>
+          <div className="hidden text-xs text-muted-foreground md:block">MELE DATA internal operations dashboard</div>
         </div>
 
         <label className="relative hidden w-full max-w-xl items-center md:flex">

@@ -50,7 +50,7 @@ const actionDetails = {
   },
   '/services': {
     kicker: 'Catalog',
-    description: 'Browse available AxisVTU services from one organized page.',
+    description: 'Browse available MELE DATA services from one organized page.',
     cta: 'Open services',
     tone: 'from-sky-500/14 via-sky-500/7 to-transparent border-sky-300/70',
     iconTone: 'bg-sky-500 text-white shadow-sky-500/20',
@@ -163,8 +163,8 @@ export default function DashboardPage() {
     const baseName = primaryFundingAccount?.account_name || profile?.full_name || 'Customer';
     const rawName = String(baseName).trim();
     
-    // Clean up legacy merchant/business prefixes beautifully using regex (e.g. MMTECHGLOBE, AXISVTU, AXISVTU/, MMTECHGLOBE -, etc.)
-    const prefixPattern = /^(?:MMTECHGLOBE|AXISVTU)(?:\s*[-\/:]\s*|\s+)?/i;
+    // Clean up legacy merchant/business prefixes beautifully using regex (e.g. MMTECHGLOBE, MELE DATA, MELE DATA/, MMTECHGLOBE -, etc.)
+    const prefixPattern = /^(?:MMTECHGLOBE|MELE DATA)(?:\s*[-\/:]\s*|\s+)?/i;
     let cleanName = rawName.replace(prefixPattern, '').trim();
     if (!cleanName) {
       cleanName = rawName;
@@ -686,7 +686,7 @@ export default function DashboardPage() {
                 To generate automated funding accounts, the <strong>Central Bank of Nigeria (CBN)</strong> requires identity validation matching your credentials.
               </p>
               <ul className="list-disc pl-4 space-y-1">
-                <li><strong>AxisVTU does NOT store or save your BVN/NIN.</strong> It is instantly encrypted and sent directly to Moniepoint/Monnify.</li>
+                <li><strong>MELE DATA does NOT store or save your BVN/NIN.</strong> It is instantly encrypted and sent directly to Moniepoint/Monnify.</li>
                 <li>This process strictly validates your legal name to secure your dedicated virtual bank accounts.</li>
                 <li>Your data remains 100% private and protected.</li>
               </ul>

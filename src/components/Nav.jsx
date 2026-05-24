@@ -61,7 +61,7 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
   const install = async () => {
     const res = await onInstall?.();
     if (res?.outcome === "accepted") {
-      showToast("AxisVTU installed.", "success");
+      showToast("MELE DATA installed.", "success");
     } else if (res?.outcome === "dismissed") {
       showToast("Install dismissed.", "info");
     }
@@ -72,10 +72,10 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
     <aside className="nav">
       <div className="brand">
         <div className="brand-mark">
-          <img src="/pwa/pwa-192.png" alt="AxisVTU" />
+          <img src="/pwa/pwa-192.png" alt="MELE DATA" />
         </div>
         <div>
-          <div className="brand-title">AxisVTU</div>
+          <div className="brand-title">MELE DATA</div>
           <div className="brand-sub">VTU Platform</div>
         </div>
       </div>
@@ -103,7 +103,7 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
       <div className="nav-footer">
         {canInstall && (
           <button className="ghost nav-action" type="button" onClick={install}>
-            Install AxisVTU
+            Install MELE DATA
           </button>
         )}
         <button className="ghost nav-action nav-logout" type="button" onClick={onLogout}>Logout</button>

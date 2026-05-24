@@ -14,8 +14,8 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /^\/landing(?:\/|$)/],
       },
       manifest: {
-        name: "AxisVTU",
-        short_name: "AxisVTU",
+        name: "MELE DATA",
+        short_name: "MELE DATA",
         description: "Wallet-first VTU platform with clean receipts.",
         start_url: "/app/",
         scope: "/app/",

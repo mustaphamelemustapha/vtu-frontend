@@ -81,7 +81,7 @@ export function buildReceiptShareText({
   fields = [],
 } = {}) {
   const lines = [
-    `AxisVTU ${title}`,
+    `MELE DATA ${title}`,
     reference ? `Reference: ${reference}` : "",
     status ? `Status: ${status}` : "",
     amount !== "" ? `Amount: ₦ ${formatAmount(amount)}` : "",
@@ -100,7 +100,7 @@ export function buildReceiptShareText({
 export async function shareReceiptText({ title, text }) {
   if (!isBrowser()) return { ok: false, mode: "unavailable" };
   const payload = {
-    title: String(title || "AxisVTU Receipt"),
+    title: String(title || "MELE DATA Receipt"),
     text: String(text || ""),
   };
 
@@ -135,9 +135,9 @@ export function shareReceiptOnWhatsApp(text) {
 
 export async function shareReceiptCapture({
   sourceNode,
-  title = "AxisVTU Receipt",
+  title = "MELE DATA Receipt",
   text = "",
-  fileName = `axisvtu-receipt-${Date.now()}.png`,
+  fileName = `meledata-receipt-${Date.now()}.png`,
   backgroundColor = "#f4f7fb",
   scale = 2,
 } = {}) {
@@ -170,7 +170,7 @@ export async function shareReceiptCapture({
               : true;
           if (canFileShare) {
             await navigator.share({
-              title: String(title || "AxisVTU Receipt"),
+              title: String(title || "MELE DATA Receipt"),
               text: String(text || ""),
               files: [file],
             });
@@ -193,9 +193,9 @@ export async function shareReceiptCapture({
 
 export async function shareReceiptCaptureOnWhatsApp({
   sourceNode,
-  title = "AxisVTU Receipt",
+  title = "MELE DATA Receipt",
   text = "",
-  fileName = `axisvtu-receipt-${Date.now()}.png`,
+  fileName = `meledata-receipt-${Date.now()}.png`,
   backgroundColor = "#f4f7fb",
   scale = 2,
 } = {}) {

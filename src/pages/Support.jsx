@@ -13,7 +13,7 @@ const SUPPORT_CONTACTS = {
 };
 
 const WHATSAPP_PREFILL =
-  "Welcome to AXIS X VTU Support. Please share your issue and transaction reference so we can help you quickly.";
+  "Welcome to MELE DATA Support. Please share your issue and transaction reference so we can help you quickly.";
 
 const FAQ_ITEMS = [
   {
@@ -174,7 +174,7 @@ export default function Support() {
           <a className="card support-contact-card" href={SUPPORT_CONTACTS.website} target="_blank" rel="noreferrer">
             <div className="label">Website</div>
             <div className="value">Visit Website</div>
-            <div className="muted">AxisVTU Official Site</div>
+            <div className="muted">MELE DATA Official Site</div>
           </a>
           <a
             className="card support-contact-card whatsapp"

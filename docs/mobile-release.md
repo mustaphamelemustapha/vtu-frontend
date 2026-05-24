@@ -1,4 +1,4 @@
-# AxisVTU Mobile Release Checklist
+# MELE DATA Mobile Release Checklist
 
 ## 1) Accounts you need
 - Google Play Console developer account.

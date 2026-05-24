@@ -345,7 +345,7 @@ export default function ServicesPage() {
     <div className="space-y-8 pb-10">
       <PageHeader
         eyebrow="Services"
-        title="AxisVTU Services"
+        title="MELE DATA Services"
         description="Everything you need for data, airtime, bills, wallet funding, and transaction tracking in one simple platform."
         actions={(
           <>
@@ -375,7 +375,7 @@ export default function ServicesPage() {
                   Live catalog
                 </div>
                 <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                  A clearer view of the AxisVTU service stack
+                  A clearer view of the MELE DATA service stack
                 </h2>
                 <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
                   The web app now reflects the same product surface used in Flutter:
@@ -424,7 +424,7 @@ export default function ServicesPage() {
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="axis-label">Service overview</div>
-            <h2 className="text-xl font-semibold tracking-tight text-foreground">Real AxisVTU services</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">Real MELE DATA services</h2>
             <p className="text-sm leading-6 text-muted-foreground">A clean catalog of the modules available in the Flutter app.</p>
           </div>
           <Badge tone="neutral" className="w-fit border-border bg-card text-muted-foreground">
