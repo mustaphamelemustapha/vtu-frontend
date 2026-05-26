@@ -1,4 +1,4 @@
-const FALLBACK_ORIGIN = "https://axisvtu.com";
+const FALLBACK_ORIGIN = "https://meledata.ng";
 
 function resolveOrigin() {
   if (typeof window !== "undefined" && window.location?.origin) {

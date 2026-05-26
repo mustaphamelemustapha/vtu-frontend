@@ -65,7 +65,7 @@ export default function PrivacyPolicy() {
       <section className="mb-8">
         <h2 className="text-2xl font-bold mb-4">6. Contact Us</h2>
         <p className="mb-4 leading-relaxed">
-          If you have any questions about this Privacy Policy, please contact us at support@axisvtu.com.
+          If you have any questions about this Privacy Policy, please contact us at support@meledata.ng.
         </p>
       </section>
 

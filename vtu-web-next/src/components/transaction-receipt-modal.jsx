@@ -117,7 +117,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
             <div className="bg-gradient-to-br from-[#2563eb] via-[#2f6ceb] to-[#3b82f6] px-6 pb-7 pt-8">
               <div className="mx-auto flex w-fit flex-col items-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg">
-                  <Image src="/brand/axisvtu-icon.png" alt="MELE DATA" width={44} height={44} className="h-11 w-11 object-contain" />
+                  <Image src="/brand/meledata-icon-clean.png" alt="MELE DATA" width={44} height={44} className="h-11 w-11 object-contain" />
                 </div>
                 <div className="mt-3 text-4xl font-semibold tracking-tight text-white">MELE DATA</div>
                 <div className="mt-1 text-lg text-blue-100">Order Receipt</div>
@@ -181,7 +181,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
                 </div>
                 {actionNote ? <p className="mt-2 text-xs text-slate-500">{actionNote}</p> : null}
               </div>
-              <div className="pb-1 text-center text-xs font-medium text-slate-400">axisvtu.com</div>
+              <div className="pb-1 text-center text-xs font-medium text-slate-400">meledata.ng</div>
             </div>
           </motion.div>
 
@@ -190,7 +190,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
               <div className="bg-gradient-to-br from-[#2563eb] via-[#2f6ceb] to-[#3b82f6] px-12 pb-12 pt-14">
                 <div className="mx-auto flex w-fit flex-col items-center">
                   <div className="rounded-2xl bg-white px-5 py-4 shadow-lg">
-                    <Image src="/brand/axisvtu-logo.png" alt="MELE DATA" width={220} height={56} className="h-12 w-auto object-contain" />
+                    <Image src="/brand/meledata-logo.png" alt="MELE DATA" width={220} height={56} className="h-12 w-auto object-contain" />
                   </div>
                   <div className="mt-5 text-[46px] font-semibold tracking-tight text-white">Order Receipt</div>
                 </div>
@@ -222,7 +222,7 @@ export function TransactionReceiptModal({ open, receipt, onClose, onDownload, on
                   ) : null}
                 </div>
 
-                <div className="mt-6 text-center text-[22px] font-medium text-slate-500">www.axisvtu.com</div>
+                <div className="mt-6 text-center text-[22px] font-medium text-slate-500">www.meledata.ng</div>
               </div>
             </div>
           </div>
