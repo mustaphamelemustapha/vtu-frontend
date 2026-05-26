@@ -42,6 +42,9 @@ export default function AdminDataPlansPage() {
   const [dataSizeInput, setDataSizeInput] = useState('');
   const [validityInput, setValidityInput] = useState('');
   const [isSavingPlan, setIsSavingPlan] = useState(false);
+  const [promoActiveInput, setPromoActiveInput] = useState(false);
+  const [promoOldPriceInput, setPromoOldPriceInput] = useState('');
+  const [promoLabelInput, setPromoLabelInput] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -167,6 +170,9 @@ export default function AdminDataPlansPage() {
     setValidityInput(plan.validity || '');
     setDisplayPriceInput(plan.display_price !== null ? String(plan.display_price) : '');
     setAgentPriceInput(plan.agent_price !== null && plan.agent_price !== undefined ? String(plan.agent_price) : '');
+    setPromoActiveInput(plan.promo_active ?? false);
+    setPromoOldPriceInput(plan.promo_old_price !== null ? String(plan.promo_old_price) : '');
+    setPromoLabelInput(plan.promo_label || '');
   };
 
   const handleSavePlan = async () => {
@@ -177,7 +183,8 @@ export default function AdminDataPlansPage() {
         plan_name: planNameInput.trim(),
         base_price: parseFloat(costPriceInput) || 0,
         data_size: dataSizeInput.trim(),
-        validity: validityInput.trim()
+        validity: validityInput.trim(),
+        promo_active: promoActiveInput
       };
       const val = displayPriceInput.trim();
       if (val === '') {
@@ -197,6 +204,23 @@ export default function AdminDataPlansPage() {
         if (isNaN(payload.agent_price) || payload.agent_price < 0) {
           throw new Error('Invalid Agent price value');
         }
+      }
+
+      const promoOldPriceVal = promoOldPriceInput.trim();
+      if (promoOldPriceVal === '') {
+        payload.clear_promo_old_price = true;
+      } else {
+        payload.promo_old_price = parseFloat(promoOldPriceVal);
+        if (isNaN(payload.promo_old_price) || payload.promo_old_price < 0) {
+          throw new Error('Invalid Promo Old Price value');
+        }
+      }
+
+      const promoLabelVal = promoLabelInput.trim();
+      if (promoLabelVal === '') {
+        payload.clear_promo_label = true;
+      } else {
+        payload.promo_label = promoLabelVal;
       }
       
       await adminUpdateDataPlan(editingPlan.id, payload);
@@ -293,7 +317,19 @@ export default function AdminDataPlansPage() {
             const effective = calculateEffectivePrice(row);
             return (
               <div className="flex flex-col">
-                <span className="font-medium text-foreground">₦{formatMoney(effective)}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium text-foreground">₦{formatMoney(effective)}</span>
+                  {row.promo_active && (
+                    <span className="inline-flex items-center rounded-full bg-green-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-green-600 ring-1 ring-inset ring-green-500/20">
+                      Promo
+                    </span>
+                  )}
+                </div>
+                {row.promo_active && row.promo_old_price && (
+                  <span className="text-[10px] text-muted-foreground line-through">
+                    ₦{formatMoney(row.promo_old_price)}
+                  </span>
+                )}
                 {row.display_price !== null && row.display_price !== undefined ? (
                   <span className="text-[10px] text-orange-500 font-medium tracking-wider uppercase">Override</span>
                 ) : (
@@ -454,6 +490,52 @@ export default function AdminDataPlansPage() {
                     Explicit price for Agents/Resellers.
                   </p>
                 </div>
+              </div>
+
+              <div className="border-t border-border/50 pt-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <label className="text-sm font-medium text-foreground">Promo Active</label>
+                    <p className="text-xs text-muted-foreground font-light">Activate strike-through pricing for this plan</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={promoActiveInput}
+                    onChange={(e) => setPromoActiveInput(e.target.checked)}
+                    disabled={isSavingPlan}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                </div>
+
+                {promoActiveInput && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Previous Price (₦)</label>
+                      <Input
+                        type="number"
+                        placeholder="e.g. 500"
+                        value={promoOldPriceInput}
+                        onChange={(e) => setPromoOldPriceInput(e.target.value)}
+                        disabled={isSavingPlan}
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        Strikethrough price. Uses standard calculation if empty.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Promo Label</label>
+                      <Input
+                        placeholder="e.g. 20% off"
+                        value={promoLabelInput}
+                        onChange={(e) => setPromoLabelInput(e.target.value)}
+                        disabled={isSavingPlan}
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        Badge label text. Calculated automatically if empty.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-4">
