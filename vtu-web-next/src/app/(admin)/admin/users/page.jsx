@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X } from 'lucide-react';
 import {
   adminActivateUser,
@@ -24,26 +24,38 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await adminGetUsers({ q: query, page: 1, page_size: 60 });
-      setUsers(Array.isArray(response?.items) ? response.items : []);
-    } finally {
-      setLoading(false);
-    }
-  }, [query]);
+  const activeRequestRef = useRef(0);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadUsers().catch(() => setLoading(false));
-    }, 220);
+      setDebouncedQuery(query);
+    }, 300);
     return () => clearTimeout(timer);
+  }, [query]);
+
+  const loadUsers = useCallback(async () => {
+    const requestId = Date.now();
+    activeRequestRef.current = requestId;
+    setLoading(true);
+    try {
+      const response = await adminGetUsers({ q: debouncedQuery || undefined, page: 1, page_size: 60 });
+      if (activeRequestRef.current !== requestId) return;
+      setUsers(Array.isArray(response?.items) ? response.items : []);
+    } finally {
+      if (activeRequestRef.current === requestId) {
+        setLoading(false);
+      }
+    }
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    loadUsers().catch(() => setLoading(false));
   }, [loadUsers]);
 
   const openUser = useCallback(async (user) => {

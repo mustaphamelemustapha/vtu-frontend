@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertTriangle, RefreshCw, Wallet2 } from 'lucide-react';
 import { adminGetTransactions, adminGetWallets, adminReconcileDelivered } from '@/lib/api';
 import { ADMIN_NOTES } from '@/lib/admin-placeholders';
@@ -16,6 +16,7 @@ import { StatusBadge } from '@/components/admin/status-badge';
 
 export default function AdminWalletsPage() {
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [walletRows, setWalletRows] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
   const [ledgerTotal, setLedgerTotal] = useState(0);
@@ -38,7 +39,18 @@ export default function AdminWalletsPage() {
     success: '',
   });
 
+  const activeRequestRef = useRef(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   const load = useCallback(async () => {
+    const requestId = Date.now();
+    activeRequestRef.current = requestId;
     setLoading(true);
     try {
       const pageSize = 100;
@@ -48,7 +60,8 @@ export default function AdminWalletsPage() {
       let aggregate = 0;
 
       while (page <= maxPages) {
-        const wallets = await adminGetWallets({ page, page_size: pageSize, q: query || undefined });
+        const wallets = await adminGetWallets({ page, page_size: pageSize, q: debouncedQuery || undefined });
+        if (activeRequestRef.current !== requestId) return;
         const rows = Array.isArray(wallets?.items) ? wallets.items : [];
         if (Number(wallets?.aggregate_balance || 0)) aggregate = Number(wallets.aggregate_balance);
         allRows.push(...rows);
@@ -62,7 +75,7 @@ export default function AdminWalletsPage() {
         page += 1;
       }
 
-      const normalizedQuery = String(query || '').trim().toLowerCase();
+      const normalizedQuery = String(debouncedQuery || '').trim().toLowerCase();
       const visibleRows = normalizedQuery
         ? allRows.filter((item) => {
             const text = `${item?.full_name || ''} ${item?.email || ''} ${item?.phone_number || ''} ${item?.user_id || ''}`.toLowerCase();
@@ -90,6 +103,7 @@ export default function AdminWalletsPage() {
       let ledgerExpectedTotal = 0;
       while (ledgerPage <= 200) {
         const ledger = await adminGetTransactions({ page: ledgerPage, page_size: ledgerPageSize });
+        if (activeRequestRef.current !== requestId) return;
         const ledgerItems = Array.isArray(ledger?.items) ? ledger.items : [];
         ledgerExpectedTotal = Number(ledger?.total || ledgerExpectedTotal || 0);
         if (!ledgerItems.length) break;
@@ -100,15 +114,14 @@ export default function AdminWalletsPage() {
       setLedgerRows(ledgerAllRows);
       setLedgerTotal(ledgerExpectedTotal || ledgerAllRows.length);
     } finally {
-      setLoading(false);
+      if (activeRequestRef.current === requestId) {
+        setLoading(false);
+      }
     }
-  }, [query]);
+  }, [debouncedQuery]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      load().catch(() => setLoading(false));
-    }, 220);
-    return () => clearTimeout(timer);
+    load().catch(() => setLoading(false));
   }, [load]);
 
   const totalBalance = useMemo(

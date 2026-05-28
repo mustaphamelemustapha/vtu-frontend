@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, RefreshCw } from 'lucide-react';
 import { adminFailAndRefundPending, adminFailAndRefundPendingBulk, adminGetAuditLogs, adminGetTransactionDetails, adminGetTransactions, adminReconcileDelivered, adminReconcileDeliveredBulk } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
@@ -22,6 +22,7 @@ export default function AdminTransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [totalRows, setTotalRows] = useState(0);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [status, setStatus] = useState('');
   const [type, setType] = useState('');
   const [fromDate, setFromDate] = useState('');
@@ -48,11 +49,22 @@ export default function AdminTransactionsPage() {
   const [failRefundError, setFailRefundError] = useState('');
   const [failRefundSuccess, setFailRefundSuccess] = useState('');
 
+  const activeRequestRef = useRef(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   const load = useCallback(async () => {
+    const requestId = Date.now();
+    activeRequestRef.current = requestId;
     setLoading(true);
     try {
       const txParams = {
-        q: query,
+        q: debouncedQuery || undefined,
         status: status || undefined,
         tx_type: type || undefined,
         from: fromDate || undefined,
@@ -61,6 +73,8 @@ export default function AdminTransactionsPage() {
         page_size: ADMIN_PAGE_SIZE,
       };
       const firstPage = await adminGetTransactions(txParams);
+      if (activeRequestRef.current !== requestId) return;
+
       const allTransactions = Array.isArray(firstPage?.items) ? [...firstPage.items] : [];
       const expectedTotal = Number(firstPage?.total || allTransactions.length || 0);
       let currentPage = 1;
@@ -68,6 +82,7 @@ export default function AdminTransactionsPage() {
       while (allTransactions.length < expectedTotal) {
         currentPage += 1;
         const pageResult = await adminGetTransactions({ ...txParams, page: currentPage });
+        if (activeRequestRef.current !== requestId) return;
         const pageItems = Array.isArray(pageResult?.items) ? pageResult.items : [];
         if (!pageItems.length) break;
         allTransactions.push(...pageItems);
@@ -76,13 +91,17 @@ export default function AdminTransactionsPage() {
       setRows(allTransactions);
       setTotalRows(expectedTotal);
     } catch (err) {
-      setRows([]);
-      setTotalRows(0);
+      if (activeRequestRef.current === requestId) {
+        setRows([]);
+        setTotalRows(0);
+      }
       console.error('Admin transactions load failed:', err);
     } finally {
-      setLoading(false);
+      if (activeRequestRef.current === requestId) {
+        setLoading(false);
+      }
     }
-  }, [fromDate, query, status, toDate, type]);
+  }, [debouncedQuery, fromDate, status, toDate, type]);
 
   useEffect(() => {
     load().catch(() => setLoading(false));

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCw, X } from 'lucide-react';
 import { 
   adminGetBroadcasts, 
@@ -28,6 +28,7 @@ export default function AdminSupportPage() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [status, setStatus] = useState('');
 
   // Create Announcement Modal State
@@ -40,26 +41,38 @@ export default function AdminSupportPage() {
   const [newEndsAt, setNewEndsAt] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const activeRequestRef = useRef(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   const load = useCallback(async () => {
+    const requestId = Date.now();
+    activeRequestRef.current = requestId;
     setLoading(true);
     try {
       const [reportsRes, broadcastsRes] = await Promise.allSettled([
-        adminGetReports({ q: query, status: status || undefined, page: 1, page_size: 80 }),
+        adminGetReports({ q: debouncedQuery || undefined, status: status || undefined, page: 1, page_size: 80 }),
         adminGetBroadcasts(),
       ]);
+
+      if (activeRequestRef.current !== requestId) return;
 
       if (reportsRes.status === 'fulfilled') setReports(Array.isArray(reportsRes.value?.items) ? reportsRes.value.items : []);
       if (broadcastsRes.status === 'fulfilled') setBroadcasts(Array.isArray(broadcastsRes.value) ? broadcastsRes.value : []);
     } finally {
-      setLoading(false);
+      if (activeRequestRef.current === requestId) {
+        setLoading(false);
+      }
     }
-  }, [query, status]);
+  }, [debouncedQuery, status]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      load().catch(() => setLoading(false));
-    }, 220);
-    return () => clearTimeout(timer);
+    load().catch(() => setLoading(false));
   }, [load]);
 
   const markStatus = useCallback(async (report, nextStatus) => {
