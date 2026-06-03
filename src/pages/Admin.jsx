@@ -659,6 +659,11 @@ export default function Admin() {
                   <div className="value">Broadcast Alerts</div>
                   <div className="muted">Send promo, outage, and maintenance notices</div>
                 </button>
+                <a className="card action-card" href="https://chat.whatsapp.com/JvmyGaCuxeeAPBjKAKZJhk?s=cl&p=i&mlu=3&amv=0" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div className="label">Join</div>
+                  <div className="value">Admin WhatsApp Chat</div>
+                  <div className="muted">Connect with the admin team</div>
+                </a>
               </div>
             </div>
             <div className="card">
