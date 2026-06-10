@@ -372,7 +372,7 @@ function Hero() {
           <div className="absolute inset-x-16 top-20 h-44 rounded-full bg-orange-100/40 blur-3xl" />
           <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-2 shadow-[0_24px_70px_rgba(15,23,42,0.08)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_30px_80px_rgba(15,23,42,0.12)]">
             <img 
-              src="/brand/mele_data_final_campaign.png" 
+              src="/brand/mele_data_final_campaign.jpg" 
               alt="MELE DATA Mobile App Mockup" 
               className="max-h-[520px] w-auto rounded-2xl object-contain"
             />
