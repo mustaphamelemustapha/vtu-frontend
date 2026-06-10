@@ -116,7 +116,7 @@ const faqs = [
   },
   {
     q: 'How fast is mobile data delivery?',
-    a: 'Almost instant! As soon as you confirm your purchase with your transaction PIN, we process it and the data plan is delivered to your phone line within seconds.',
+    a: 'Almost instant! As soon as you confirm your purchase, we process it and the data plan is delivered to your phone line within seconds.',
   },
   {
     q: 'What happens if a transaction fails?',
@@ -124,7 +124,7 @@ const faqs = [
   },
   {
     q: 'Is my wallet balance safe?',
-    a: 'Absolutely. We take security very seriously. All sensitive actions—including payments and data purchases—are protected by your personal 4-digit transaction PIN, ensuring only you can spend your funds.',
+    a: 'Absolutely. We take security very seriously. Your account and wallet transactions are protected by industry-standard encryption, secure passwords, and active session tokens, ensuring only you can access and spend your funds.',
   },
   {
     q: 'Can I view receipts?',
@@ -420,7 +420,7 @@ function Hero() {
                     <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-700 dark:text-orange-400">Protection</div>
                     <div className="mt-2 flex items-center gap-3 text-sm text-orange-950 dark:text-orange-200 font-medium">
                       <BadgeCheck className="h-5 w-5 shrink-0 text-orange-600 dark:text-orange-400" />
-                      Sensitive actions stay protected with a transaction PIN.
+                      All transactions and details are fully secured.
                     </div>
                   </div>
                 </div>
