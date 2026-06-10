@@ -1465,6 +1465,32 @@ export default function Admin() {
                       <div className="empty">No recent transactions found for this user.</div>
                     )}
                   </div>
+
+                  <div className="section-head" style={{ marginTop: "24px" }}>
+                    <h3>Referred Users</h3>
+                    <span className="muted">
+                      {(userDetailData?.referred_users || []).length} users referred
+                    </span>
+                  </div>
+                  <div className="admin-user-recent-list">
+                    {(userDetailData?.referred_users || []).map((ref) => (
+                      <div className="list-card" key={`ref-${ref.id}`}>
+                        <div>
+                          <div className="list-title">{ref.referred_name || "No Name"}</div>
+                          <div className="muted">{ref.referred_email}</div>
+                          {ref.referred_phone && <div className="muted">{ref.referred_phone}</div>}
+                          <div className="muted">Joined {formatDate(ref.created_at)}</div>
+                        </div>
+                        <div className="list-meta">
+                          <div className="value">{formatCurrency(ref.reward_amount)} earned</div>
+                          <span className={`pill ${statusKey(ref.status)}`}>{statusLabel(ref.status)}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {(userDetailData?.referred_users || []).length === 0 && (
+                      <div className="empty">No users referred by this user.</div>
+                    )}
+                  </div>
                 </>
               )}
             </div>
