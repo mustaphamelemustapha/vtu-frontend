@@ -553,39 +553,31 @@ export default function Dashboard() {
       )}
 
       <section className="section">
-        <h3>Services</h3>
-        <div className="grid-3 dashboard-services-grid">
-          <Link className="card action-card dashboard-service-card service-primary-card" to={quickBuyLink}>
+        <h3>Quick Services</h3>
+        <div className="dashboard-services-grid">
+          <Link className="dashboard-service-card data" to={quickBuyLink}>
             <div className="service-icon-wrap"><ServiceIcon type="data" /></div>
-            <div className="service-title">Buy Data</div>
-            <div className="service-subtitle">
-              {lastRecipient?.phone ? `Quick buy ${maskPhone(lastRecipient.phone)}` : "All networks"}
-            </div>
+            <span className="service-title">Data</span>
           </Link>
-          <Link className="card action-card dashboard-service-card service-primary-card" to="/airtime">
+          <Link className="dashboard-service-card airtime" to="/airtime">
             <div className="service-icon-wrap"><ServiceIcon type="airtime" /></div>
-            <div className="service-title">Buy Airtime</div>
-            <div className="service-subtitle">Instant topup</div>
+            <span className="service-title">Airtime</span>
           </Link>
-          <Link className="card action-card dashboard-service-card service-primary-card" to="/electricity">
-            <div className="service-icon-wrap"><ServiceIcon type="electricity" /></div>
-            <div className="service-title">Electricity Bill</div>
-            <div className="service-subtitle">Prepaid & postpaid</div>
-          </Link>
-          <Link className="card action-card dashboard-service-card service-primary-card" to="/cable">
+          <Link className="dashboard-service-card cable" to="/cable">
             <div className="service-icon-wrap"><ServiceIcon type="cable" /></div>
-            <div className="service-title">Cable Subscription</div>
-            <div className="service-subtitle">DStv, GOtv, Startimes</div>
+            <span className="service-title">Cable TV</span>
           </Link>
-          <Link className="card action-card dashboard-service-card service-primary-card" to="/exam">
+          <Link className="dashboard-service-card electricity" to="/electricity">
+            <div className="service-icon-wrap"><ServiceIcon type="electricity" /></div>
+            <span className="service-title">Electricity</span>
+          </Link>
+          <Link className="dashboard-service-card exam" to="/exam">
             <div className="service-icon-wrap"><ServiceIcon type="exam" /></div>
-            <div className="service-title">Result Checker</div>
-            <div className="service-subtitle">WAEC, NECO, JAMB</div>
+            <span className="service-title">Exam Pins</span>
           </Link>
-          <Link className="card action-card dashboard-service-card service-primary-card" to="/support">
+          <Link className="dashboard-service-card support" to="/support">
             <div className="service-icon-wrap"><ServiceIcon type="support" /></div>
-            <div className="service-title">Support Center</div>
-            <div className="service-subtitle">Get help quickly</div>
+            <span className="service-title">Support</span>
           </Link>
         </div>
       </section>
