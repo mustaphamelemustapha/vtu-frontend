@@ -990,6 +990,7 @@ export default function Admin() {
                     <th>Phone</th>
                     <th>Name</th>
                     <th>Role</th>
+                    <th>Referrals</th>
                     <th>Status</th>
                     <th>Verified</th>
                     <th>Actions</th>
@@ -1004,6 +1005,9 @@ export default function Admin() {
                       <td>{u.full_name}</td>
                       <td>
                         <span className="pill">{String(u.role || "user")}</span>
+                      </td>
+                      <td className="mono font-semibold" style={{ textAlign: "center" }}>
+                        {u.referral_count || 0}
                       </td>
                       <td>
                         <span className={`pill ${u.is_active ? "success" : "failed"}`}>
@@ -1032,7 +1036,7 @@ export default function Admin() {
                   ))}
                   {!userBusy && userState.items.length === 0 && (
                     <tr>
-                      <td colSpan={8}>
+                      <td colSpan={9}>
                         <div className="empty">No users found.</div>
                       </td>
                     </tr>
@@ -1047,7 +1051,7 @@ export default function Admin() {
                       <div className="list-title">{u.full_name}</div>
                       <div className="muted">{u.email}</div>
                       <div className="muted">{u.phone_number || "No phone number"}</div>
-                      <div className="muted">{String(u.role || "user")}</div>
+                      <div className="muted">{String(u.role || "user")} • {u.referral_count || 0} referral(s)</div>
                     </div>
                     <div className="list-meta">
                       <span className={`pill ${u.is_active ? "success" : "failed"}`}>
