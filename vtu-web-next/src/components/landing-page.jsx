@@ -112,23 +112,23 @@ const aboutBullets = [
 const faqs = [
   {
     q: 'How do I fund my wallet?',
-    a: 'Transfer money to your dedicated account, then wait for confirmation before making purchases.',
+    a: "It's super easy! Just transfer money to the dedicated virtual account displayed on your dashboard. Once the transfer is done, your wallet balance will fund automatically and instantly.",
   },
   {
-    q: 'How fast are data purchases?',
-    a: 'Data purchases are designed to complete quickly once the transaction is approved.',
+    q: 'How fast is mobile data delivery?',
+    a: 'Almost instant! As soon as you confirm your purchase with your transaction PIN, we process it and the data plan is delivered to your phone line within seconds.',
   },
   {
     q: 'What happens if a transaction fails?',
-    a: 'Failed transactions are kept in the history so you can review the status and follow up if needed.',
+    a: 'No need to worry. If a transaction fails for any reason (like provider downtime), your money is automatically and instantly refunded back to your wallet balance. You can see the full refund record in your transaction history.',
   },
   {
-    q: 'How secure is my account?',
-    a: 'MELE DATA uses a transaction PIN flow for sensitive actions and keeps records organized for review.',
+    q: 'Is my wallet balance safe?',
+    a: 'Absolutely. We take security very seriously. All sensitive actions—including payments and data purchases—are protected by your personal 4-digit transaction PIN, ensuring only you can spend your funds.',
   },
   {
     q: 'Can I view receipts?',
-    a: 'Yes. Receipts and transaction history are kept together so they are easy to find later.',
+    a: 'Yes! Every single purchase generates a clean, downloadable receipt detailing your transaction. You can view, download, or share your receipts directly from your transaction history page at any time.',
   },
 ];
 
@@ -416,10 +416,10 @@ function Hero() {
                       ))}
                     </div>
                   </div>
-                  <div className="rounded-3xl border border-orange-200 bg-orange-50 p-4">
-                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Protection</div>
-                    <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
-                      <BadgeCheck className="h-5 w-5 shrink-0 text-primary" />
+                  <div className="rounded-3xl border border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-950/40 p-4">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-700 dark:text-orange-400">Protection</div>
+                    <div className="mt-2 flex items-center gap-3 text-sm text-orange-950 dark:text-orange-200 font-medium">
+                      <BadgeCheck className="h-5 w-5 shrink-0 text-orange-600 dark:text-orange-400" />
                       Sensitive actions stay protected with a transaction PIN.
                     </div>
                   </div>
@@ -686,8 +686,8 @@ function Footer() {
             <div>
               <div className="text-sm font-semibold text-white">Policies</div>
               <div className="mt-4 space-y-3 text-sm">
-                <div><a href="#" className="hover:text-white">Terms &amp; Conditions</a></div>
-                <div><a href="#" className="hover:text-white">Privacy Policy</a></div>
+                <div><Link href="/terms" className="hover:text-white">Terms &amp; Conditions</Link></div>
+                <div><Link href="/privacy" className="hover:text-white">Privacy Policy</Link></div>
               </div>
             </div>
           </div>
