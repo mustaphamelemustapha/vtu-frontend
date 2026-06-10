@@ -105,6 +105,11 @@ export default function AdminUsersPage() {
       label: 'Wallet balance',
       render: (row) => <span className="font-medium">{selectedDetails?.user?.id === row.id ? `₦${formatMoney(selectedDetails?.wallet?.balance || 0)}` : 'Open user'}</span>,
     },
+    {
+      key: 'referral_count',
+      label: 'Referrals',
+      render: (row) => <span className="font-semibold">{row.referral_count || 0} referred</span>,
+    },
     { key: 'is_active', label: 'Status', render: (row) => <StatusBadge status={row.is_active ? 'active' : 'suspended'} /> },
     { key: 'created_at', label: 'Joined', render: (row) => <span className="text-muted-foreground">{formatDateTime(row.created_at)}</span> },
     {
@@ -215,7 +220,7 @@ export default function AdminUsersPage() {
                 </div>
               ) : (
                 <>
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
                     <div className="rounded-xl border bg-card p-4 shadow-sm">
                       <div className="text-xs font-medium text-muted-foreground">Wallet Balance</div>
                       <div className="mt-1 text-2xl font-semibold text-foreground">₦{formatMoney(selectedDetails?.wallet?.balance || 0)}</div>
@@ -227,6 +232,10 @@ export default function AdminUsersPage() {
                     <div className="rounded-xl border bg-card p-4 shadow-sm">
                       <div className="text-xs font-medium text-muted-foreground">Recent Transactions</div>
                       <div className="mt-1 text-2xl font-semibold text-foreground">{(selectedDetails?.recent_transactions || []).length}</div>
+                    </div>
+                    <div className="rounded-xl border bg-card p-4 shadow-sm">
+                      <div className="text-xs font-medium text-muted-foreground">Total Referred</div>
+                      <div className="mt-1 text-2xl font-semibold text-foreground">{(selectedDetails?.referred_users || []).length}</div>
                     </div>
                   </div>
 
@@ -244,6 +253,36 @@ export default function AdminUsersPage() {
                             <div className="text-right">
                               <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
                               <div className="mt-1"><StatusBadge status={tx.status} /></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedDetails?.referred_users?.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm">Referred Users ({(selectedDetails?.referred_users || []).length})</h4>
+                      <div className="space-y-2 rounded-xl border bg-secondary/20 p-3">
+                        {selectedDetails.referred_users.map((ref) => (
+                          <div key={ref.id} className="flex items-center justify-between gap-3 border-b border-border/70 pb-3 last:border-0 last:pb-0 pt-2 first:pt-0">
+                            <div className="text-sm">
+                              <div className="font-medium text-foreground">{ref.referred_name || 'No Name'}</div>
+                              <div className="text-xs text-muted-foreground">{ref.referred_email}</div>
+                              {ref.referred_phone && <div className="text-xs text-muted-foreground">{ref.referred_phone}</div>}
+                              <div className="text-[10px] text-muted-foreground mt-0.5">Joined {formatDateTime(ref.created_at)}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-semibold text-foreground">₦{formatMoney(ref.reward_amount || 0)}</div>
+                              <div className="mt-1">
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                                  ref.status === 'rewarded' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                  ref.status === 'qualified' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                }`}>
+                                  {ref.status}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         ))}
