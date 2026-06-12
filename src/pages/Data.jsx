@@ -691,7 +691,6 @@ export default function Data() {
       title: "Data Purchase Receipt",
       reference: purchaseResult?.reference,
       status: resultStatusLabel(purchaseResult?.status),
-      amount: purchaseResult?.amount,
       fields: receiptFields(purchaseResult).slice(0, 8),
     });
 
@@ -1092,10 +1091,7 @@ export default function Data() {
                   <span>Receiver Phone</span>
                   <strong>{purchaseResult.recipient || "—"}</strong>
                 </div>
-                <div className="data-result-row">
-                  <span>Amount</span>
-                  <strong>₦ {formatAmount(purchaseResult.amount)}</strong>
-                </div>
+
                 <div className="data-result-row">
                   <span>Reference</span>
                   <strong>{purchaseResult.reference || "—"}</strong>
@@ -1153,10 +1149,7 @@ export default function Data() {
                 </span>
               </div>
 
-              <div className="receipt-sheet-total">
-                <div className="label">Amount</div>
-                <div className="value">₦ {formatAmount(purchaseResult.amount)}</div>
-              </div>
+
 
               <div className="receipt-sheet-grid">
                 <div>

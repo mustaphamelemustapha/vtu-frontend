@@ -204,10 +204,11 @@ export default function Transactions() {
   };
 
   const transactionReceiptRows = (tx) => {
+    const isData = typeKey(tx?.tx_type) === "data";
     const rows = [
       { label: "Time", value: formatDateTime(tx?.created_at) },
       { label: "Reference", value: tx?.reference || "—" },
-      { label: "Amount", value: `₦ ${formatAmount(tx?.amount)}` },
+      ...(isData ? [] : [{ label: "Amount", value: `₦ ${formatAmount(tx?.amount)}` }]),
     ];
     const extras = receiptFields(tx).filter((item) => {
       const label = String(item?.label || "");
