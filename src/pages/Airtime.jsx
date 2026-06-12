@@ -562,7 +562,11 @@ export default function Airtime() {
               <Button variant="ghost" type="button" onClick={shareReceipt}>Share Receipt</Button>
               <Button variant="ghost" type="button" onClick={shareReceiptWhatsApp}>WhatsApp</Button>
               <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</Button>
-              <Button variant="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</Button>
+              <Button variant="ghost" type="button" onClick={() => {
+                const ok = purchaseResult?.ok;
+                setPurchaseResult(null);
+                if (ok) navigate("/");
+              }}>Done</Button>
             </div>
           </div>
           {renderReceiptSheet && (

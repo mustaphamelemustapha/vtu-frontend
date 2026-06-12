@@ -519,7 +519,11 @@ export default function Exam() {
                 <Button variant="ghost" type="button" onClick={copyPins}>Copy Pins</Button>
               )}
               <Button variant="ghost" type="button" onClick={() => navigate("/transactions")}>View Receipt</Button>
-              <Button variant="ghost" type="button" onClick={() => setPurchaseResult(null)}>Done</Button>
+              <Button variant="ghost" type="button" onClick={() => {
+                const ok = purchaseResult?.ok;
+                setPurchaseResult(null);
+                if (ok) navigate("/");
+              }}>Done</Button>
             </div>
           </div>
           {renderReceiptSheet && (

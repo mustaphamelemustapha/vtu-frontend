@@ -1132,7 +1132,11 @@ export default function Data() {
               </Button>
               <Button variant="ghost" onClick={shareReceipt}>Share</Button>
               <Button variant="ghost" onClick={shareReceiptWhatsApp}>WhatsApp</Button>
-              <Button data-testid="data-result-dismiss" onClick={() => setPurchaseResult(null)}>Dismiss</Button>
+              <Button data-testid="data-result-dismiss" onClick={() => {
+                const ok = purchaseResult?.ok;
+                setPurchaseResult(null);
+                if (ok) navigate("/");
+              }}>Dismiss</Button>
             </div>
           </div>
 
