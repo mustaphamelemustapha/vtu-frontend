@@ -101,6 +101,73 @@ export default function Admin() {
   const [tab, setTab] = useState("overview"); // overview|transactions|reports|users|pricing
   const [analytics, setAnalytics] = useState(null);
 
+  const chartData = useMemo(() => {
+    const monthlyTrends = analytics?.monthly_trends || [];
+    const hasTrends = monthlyTrends.length > 0;
+
+    const svgW = 600;
+    const svgH = 240;
+    const paddingX = 50;
+    const paddingY = 30;
+    const chartW = svgW - paddingX * 2;
+    const chartH = svgH - paddingY * 2;
+
+    const maxVal = Math.max(...monthlyTrends.map(d => d.revenue), 1000);
+    const pointsRevenue = monthlyTrends.map((d, i) => {
+      const x = paddingX + (i * chartW) / Math.max(1, monthlyTrends.length - 1);
+      const y = svgH - paddingY - (d.revenue / maxVal) * chartH;
+      return { x, y, val: d.revenue, label: d.label };
+    });
+
+    const pointsProfit = monthlyTrends.map((d, i) => {
+      const x = paddingX + (i * chartW) / Math.max(1, monthlyTrends.length - 1);
+      const y = svgH - paddingY - (d.profit_estimate / maxVal) * chartH;
+      return { x, y, val: d.profit_estimate, label: d.label };
+    });
+
+    const revenuePath = pointsRevenue.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+    const profitPath = pointsProfit.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+
+    const revenueAreaPath = hasTrends ? `${revenuePath} L ${pointsRevenue[pointsRevenue.length - 1].x} ${svgH - paddingY} L ${pointsRevenue[0].x} ${svgH - paddingY} Z` : "";
+    const profitAreaPath = hasTrends ? `${profitPath} L ${pointsProfit[pointsProfit.length - 1].x} ${svgH - paddingY} L ${pointsProfit[0].x} ${svgH - paddingY} Z` : "";
+
+    // Health and splits calculations
+    const todaySucc = Number(analytics?.today_successful_tx || 0);
+    const todayFail = Number(analytics?.today_failed_tx || 0);
+    const todayPend = Number(analytics?.today_pending_tx || 0);
+    const totalTx = todaySucc + todayFail + todayPend;
+    const successPct = totalTx > 0 ? (todaySucc / totalTx) * 100 : 0;
+    const failedPct = totalTx > 0 ? (todayFail / totalTx) * 100 : 0;
+    const pendingPct = totalTx > 0 ? (todayPend / totalTx) * 100 : 0;
+
+    const dataRev = Number(analytics?.data_revenue || 0);
+    const servRev = Number(analytics?.service_revenue || 0);
+    const totalRevSplit = dataRev + servRev;
+    const dataPct = totalRevSplit > 0 ? (dataRev / totalRevSplit) * 100 : 0;
+    const servPct = totalRevSplit > 0 ? (servRev / totalRevSplit) * 100 : 0;
+
+    return {
+      monthlyTrends,
+      pointsRevenue,
+      pointsProfit,
+      revenuePath,
+      profitPath,
+      revenueAreaPath,
+      profitAreaPath,
+      maxVal,
+      hasTrends,
+      totalTx,
+      successPct,
+      failedPct,
+      pendingPct,
+      totalRevSplit,
+      dataPct,
+      servPct,
+      dataRev,
+      servRev
+    };
+  }, [analytics]);
+
   // Pricing
   const [pricingForm, setPricingForm] = useState({ tx_type: "data", provider: "mtn", margin: 0, role: "user" });
   const [pricingBusy, setPricingBusy] = useState(false);
@@ -610,6 +677,151 @@ export default function Admin() {
               <div className="label">Open Reports</div>
               <div className="value">{analytics?.reports_open || 0}</div>
               <div className="muted">Unresolved transaction issues</div>
+            </div>
+          </div>
+          <div className="grid-2" style={{ marginTop: 16 }}>
+            <div className="card" style={{ padding: "20px" }}>
+              <div className="section-head" style={{ marginBottom: "16px" }}>
+                <h3>6-Month Performance Trend</h3>
+                <span className="muted">Chronological monthly revenue vs estimated profit</span>
+              </div>
+              {chartData.hasTrends ? (
+                <div style={{ position: "relative", width: "100%" }}>
+                  <svg viewBox="0 0 600 240" width="100%" height="auto" style={{ overflow: "visible" }}>
+                    <defs>
+                      <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2"/>
+                        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0"/>
+                      </linearGradient>
+                      <linearGradient id="profGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" stopOpacity="0.2"/>
+                        <stop offset="100%" stopColor="#10b981" stopOpacity="0.0"/>
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Horizontal grid lines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map((pct, idx) => {
+                      const y = 30 + (1 - pct) * 180;
+                      const val = (pct * chartData.maxVal).toLocaleString("en-NG", { maximumFractionDigits: 0 });
+                      return (
+                        <g key={idx}>
+                          <line x1="50" y1={y} x2="550" y2={y} stroke="#e5e7eb" strokeDasharray="4 4" />
+                          <text x="45" y={y + 4} textAnchor="end" fontSize="10" fill="#9ca3af">₦{val}</text>
+                        </g>
+                      );
+                    })}
+
+                    {/* Area charts */}
+                    <path d={chartData.revenueAreaPath} fill="url(#revGrad)" />
+                    <path d={chartData.profitAreaPath} fill="url(#profGrad)" />
+
+                    {/* Line charts */}
+                    <path d={chartData.revenuePath} fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d={chartData.profitPath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+                    {/* Interactive dots and labels */}
+                    {chartData.pointsRevenue.map((p, i) => (
+                      <g key={`rev-dot-${i}`}>
+                        <circle cx={p.x} cy={p.y} r="4" fill="#3b82f6" stroke="#ffffff" strokeWidth="1.5" />
+                        <title>{p.label}: Revenue ₦{p.val.toLocaleString()}</title>
+                      </g>
+                    ))}
+                    {chartData.pointsProfit.map((p, i) => (
+                      <g key={`prof-dot-${i}`}>
+                        <circle cx={p.x} cy={p.y} r="4" fill="#10b981" stroke="#ffffff" strokeWidth="1.5" />
+                        <title>{p.label}: Profit ₦{p.val.toLocaleString()}</title>
+                      </g>
+                    ))}
+
+                    {/* X-axis labels */}
+                    {chartData.pointsRevenue.map((p, i) => (
+                      <text key={`label-${i}`} x={p.x} y="225" textAnchor="middle" fontSize="10" fill="#6b7280" fontWeight="500">
+                        {p.label}
+                      </text>
+                    ))}
+                  </svg>
+                  <div style={{ display: "flex", gap: "16px", justifyContent: "center", marginTop: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ display: "inline-block", width: "12px", height: "12px", borderRadius: "3px", backgroundColor: "#3b82f6" }}></span>
+                      <span className="muted" style={{ fontSize: "12px" }}>Revenue</span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ display: "inline-block", width: "12px", height: "12px", borderRadius: "3px", backgroundColor: "#10b981" }}></span>
+                      <span className="muted" style={{ fontSize: "12px" }}>Profit</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="empty" style={{ height: "200px", display: "flex", alignItems: "center", justifyContent: "center" }}>No trend data available</div>
+              )}
+            </div>
+
+            <div className="card" style={{ padding: "20px" }}>
+              <div className="section-head" style={{ marginBottom: "16px" }}>
+                <h3>Platform Splits & Health</h3>
+                <span className="muted">Today's transaction success rates and service distribution</span>
+              </div>
+              
+              {/* Today's Transactions Split */}
+              <div style={{ marginBottom: "24px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
+                  <span style={{ fontWeight: "600" }}>Today's Transaction Health</span>
+                  <span className="muted">{chartData.totalTx} transactions</span>
+                </div>
+                <div style={{ display: "flex", height: "12px", borderRadius: "6px", overflow: "hidden", backgroundColor: "#f3f4f6", margin: "8px 0" }}>
+                  {chartData.totalTx > 0 ? (
+                    <>
+                      {chartData.successPct > 0 && <div style={{ width: `${chartData.successPct}%`, backgroundColor: "#10b981" }} title={`Success: ${chartData.successPct.toFixed(1)}%`} />}
+                      {chartData.pendingPct > 0 && <div style={{ width: `${chartData.pendingPct}%`, backgroundColor: "#f59e0b" }} title={`Pending: ${chartData.pendingPct.toFixed(1)}%`} />}
+                      {chartData.failedPct > 0 && <div style={{ width: `${chartData.failedPct}%`, backgroundColor: "#ef4444" }} title={`Failed/Refunded: ${chartData.failedPct.toFixed(1)}%`} />}
+                    </>
+                  ) : (
+                    <div style={{ width: "100%", backgroundColor: "#e5e7eb" }} />
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10b981" }}></span>
+                    <span>Success: {analytics?.today_successful_tx || 0} ({chartData.successPct.toFixed(0)}%)</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#f59e0b" }}></span>
+                    <span>Pending: {analytics?.today_pending_tx || 0} ({chartData.pendingPct.toFixed(0)}%)</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#ef4444" }}></span>
+                    <span>Failed: {analytics?.today_failed_tx || 0} ({chartData.failedPct.toFixed(0)}%)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Data vs Service Revenue Split */}
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px", fontSize: "13px" }}>
+                  <span style={{ fontWeight: "600" }}>Revenue Distribution Split</span>
+                  <span className="muted">{formatCurrency(chartData.totalRevSplit)} total</span>
+                </div>
+                <div style={{ display: "flex", height: "12px", borderRadius: "6px", overflow: "hidden", backgroundColor: "#f3f4f6", margin: "8px 0" }}>
+                  {chartData.totalRevSplit > 0 ? (
+                    <>
+                      {chartData.dataPct > 0 && <div style={{ width: `${chartData.dataPct}%`, backgroundColor: "#3b82f6" }} title={`Data: ${chartData.dataPct.toFixed(1)}%`} />}
+                      {chartData.servPct > 0 && <div style={{ width: `${chartData.servPct}%`, backgroundColor: "#8b5cf6" }} title={`Services: ${chartData.servPct.toFixed(1)}%`} />}
+                    </>
+                  ) : (
+                    <div style={{ width: "100%", backgroundColor: "#e5e7eb" }} />
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", marginTop: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#3b82f6" }}></span>
+                    <span>Data: {formatCurrency(chartData.dataRev)} ({chartData.dataPct.toFixed(0)}%)</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}>
+                    <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#8b5cf6" }}></span>
+                    <span>Services: {formatCurrency(chartData.servRev)} ({chartData.servPct.toFixed(0)}%)</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div className="card admin-earnings-card">
