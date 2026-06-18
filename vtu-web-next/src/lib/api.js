@@ -430,6 +430,12 @@ export async function adminCreateDataPlan(payload) {
   });
 }
 
+export async function adminDeleteDataPlan(planId) {
+  return apiFetch(`/admin/data-plans/${encodeURIComponent(planId)}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function adminGetReferrals(params = {}) {
   return apiFetch(`/admin/referrals${toQuery(params)}`);
 }

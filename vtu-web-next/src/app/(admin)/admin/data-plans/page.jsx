@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Database, RefreshCw, X, Plus } from 'lucide-react';
-import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan } from '@/lib/api';
+import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan, adminDeleteDataPlan } from '@/lib/api';
 import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -390,6 +390,25 @@ export default function AdminDataPlansPage() {
                 </Button>
                 <Button variant="secondary" size="sm" onClick={() => handleOpenEditModal(row)}>
                   Edit plan
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  disabled={toggling === row.id || toggling === 'all'}
+                  onClick={async () => {
+                    if (!confirm(`Are you sure you want to permanently delete: ${row.plan_name || row.plan_code}?`)) return;
+                    setToggling(row.id);
+                    try {
+                      await adminDeleteDataPlan(row.id);
+                      await load();
+                    } catch (err) {
+                      alert(err.message || 'Failed to delete data plan');
+                    } finally {
+                      setToggling(null);
+                    }
+                  }}
+                >
+                  Delete
                 </Button>
                 <Button variant="secondary" size="sm" title={JSON.stringify(row)}>
                   <Database className="h-3.5 w-3.5" />
