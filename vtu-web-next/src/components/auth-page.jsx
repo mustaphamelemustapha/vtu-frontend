@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,6 +31,7 @@ export function AuthPage({ initialMode = 'login' }) {
   const [persist, setPersist] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showReferralField, setShowReferralField] = useState(false);
   const [form, setForm] = useState({
     full_name: '',
     first_name: '',
@@ -51,7 +52,10 @@ export function AuthPage({ initialMode = 'login' }) {
   }, []);
 
   useEffect(() => {
-    if (ref) setForm((prev) => ({ ...prev, referral_code: ref }));
+    if (ref) {
+      setForm((prev) => ({ ...prev, referral_code: ref }));
+      setShowReferralField(true);
+    }
   }, [ref]);
 
   const isRegister = mode === 'register';
@@ -197,14 +201,24 @@ export function AuthPage({ initialMode = 'login' }) {
                     </div>
                   </Field>
 
-                  <Field label="Referral code" helper="Optional">
-                    <Input
-                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                      value={form.referral_code}
-                      onChange={(e) => setForm((prev) => ({ ...prev, referral_code: e.target.value }))}
-                      placeholder="Enter a friend's code"
-                    />
-                  </Field>
+                  {showReferralField ? (
+                    <Field label="Referral code" helper="Optional">
+                      <Input
+                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                        value={form.referral_code}
+                        onChange={(e) => setForm((prev) => ({ ...prev, referral_code: e.target.value }))}
+                        placeholder="Enter a friend's code"
+                      />
+                    </Field>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowReferralField(true)}
+                      className="text-xs text-primary font-medium hover:underline self-start mt-2 inline-flex items-center gap-1 focus:outline-none"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Have a referral code?
+                    </button>
+                  )}
                 </>
               ) : (
                 <>
