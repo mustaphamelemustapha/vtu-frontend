@@ -139,6 +139,23 @@ export default function Dashboard() {
   const [walletAnimSeq, setWalletAnimSeq] = useState(0);
   const [animatedWalletBalance, setAnimatedWalletBalance] = useState(parseMoney(cached.wallet?.balance || 0));
   const [balanceCounting, setBalanceCounting] = useState(false);
+  const [dismissedAnnouncements, setDismissedAnnouncements] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("dismissed_announcements") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const dismissAnnouncement = (id) => {
+    const updated = [...dismissedAnnouncements, id];
+    setDismissedAnnouncements(updated);
+    try {
+      localStorage.setItem("dismissed_announcements", JSON.stringify(updated));
+    } catch (e) {
+      console.warn("Could not save dismissed announcements", e);
+    }
+  };
   const retryTimerRef = useRef(null);
   const mountedRef = useRef(true);
   const walletRef = useRef(cached.wallet);
@@ -417,6 +434,7 @@ export default function Dashboard() {
 
   const announcementFeed = useMemo(() => {
     const chunks = announcements
+      .filter((item) => !item.button_label || !item.button_link)
       .map((item) => {
         const title = String(item?.title || "").trim();
         const message = String(item?.message || "").trim();
@@ -523,6 +541,62 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+
+      {announcements.filter(item => item.button_label && item.button_link && !dismissedAnnouncements.includes(item.id)).map(item => (
+        <section className="section" key={item.id}>
+          <div className="dashboard-announcement card" style={{
+            background: "linear-gradient(135deg, #FFC107 0%, #FF9800 100%)",
+            color: "#0F172A",
+            border: "none",
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "16px 20px",
+            borderRadius: "16px",
+            boxShadow: "0 10px 25px -5px rgba(251, 191, 36, 0.3)",
+            marginBottom: "16px",
+            gap: "16px",
+          }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+              <h4 style={{ margin: 0, fontWeight: "bold", fontSize: "15px", color: "#0F172A" }}>{item.title}</h4>
+              <p style={{ margin: 0, fontSize: "13px", opacity: 0.9, lineHeight: "1.4", color: "#0F172A" }}>{item.message}</p>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+              <a href={item.button_link} target="_blank" rel="noopener noreferrer" className="btn" style={{
+                background: "#0F172A",
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "24px",
+                padding: "8px 18px",
+                fontWeight: "bold",
+                fontSize: "13px",
+                textDecoration: "none",
+                transition: "transform 0.2s ease",
+                display: "inline-block",
+              }} onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}>
+                {item.button_label}
+              </a>
+              <button onClick={() => dismissAnnouncement(item.id)} style={{
+                background: "transparent",
+                border: "none",
+                color: "#0F172A",
+                cursor: "pointer",
+                padding: "4px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: 0.7,
+              }} onMouseOver={e => e.currentTarget.style.opacity = '1'} onMouseOut={e => e.currentTarget.style.opacity = '0.7'}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+      ))}
 
       {announcementFeed && (
         <section className="section">

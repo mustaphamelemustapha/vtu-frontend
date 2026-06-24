@@ -185,6 +185,8 @@ export default function Admin() {
     is_active: true,
     starts_at: "",
     ends_at: "",
+    button_label: "",
+    button_link: "",
   });
 
   // Transactions
@@ -362,6 +364,8 @@ export default function Admin() {
       is_active: true,
       starts_at: "",
       ends_at: "",
+      button_label: "",
+      button_link: "",
     });
   };
 
@@ -392,6 +396,8 @@ export default function Admin() {
       is_active: !!announceForm.is_active,
       starts_at: startsAt,
       ends_at: endsAt,
+      button_label: String(announceForm.button_label || "").trim() || null,
+      button_link: String(announceForm.button_link || "").trim() || null,
     };
     if (!payload.title || !payload.message) {
       showToast("Title and message are required.", "error");
@@ -430,6 +436,8 @@ export default function Admin() {
       is_active: !!item.is_active,
       starts_at: formatDateInput(item.starts_at),
       ends_at: formatDateInput(item.ends_at),
+      button_label: item.button_label || "",
+      button_link: item.button_link || "",
     });
   };
 
@@ -1465,6 +1473,24 @@ export default function Admin() {
                   type="datetime-local"
                   value={announceForm.ends_at}
                   onChange={(e) => setAnnounceForm({ ...announceForm, ends_at: e.target.value })}
+                />
+              </label>
+              <label className="admin-field-span-2">
+                Button Label (Optional)
+                <input
+                  maxLength={50}
+                  value={announceForm.button_label}
+                  onChange={(e) => setAnnounceForm({ ...announceForm, button_label: e.target.value })}
+                  placeholder="e.g. Join Telegram"
+                />
+              </label>
+              <label className="admin-field-span-2">
+                Button Link (Optional)
+                <input
+                  maxLength={255}
+                  value={announceForm.button_link}
+                  onChange={(e) => setAnnounceForm({ ...announceForm, button_link: e.target.value })}
+                  placeholder="e.g. https://t.me/yourchannel"
                 />
               </label>
               <label className="admin-checkbox-field">
