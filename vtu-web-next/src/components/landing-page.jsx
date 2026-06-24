@@ -672,47 +672,8 @@ function Footer() {
 }
 
 export function LandingPage() {
-  const [showBanner, setShowBanner] = useState(true);
-
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {showBanner && (
-        <div className="relative z-50 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 py-2.5 px-4 text-center text-xs font-medium text-white sm:text-sm shadow-sm">
-          <div className="mx-auto flex max-w-7xl items-center justify-center gap-2 px-8 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-              App
-            </span>
-            <span>MELE DATA is now on Google Play & App Store!</span>
-            <div className="flex items-center gap-2 flex-wrap">
-              <a 
-                href="https://apps.apple.com/ng/app/mele-data/id6779367547" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-1 font-semibold underline hover:text-white/95"
-              >
-                App Store <ArrowRight className="h-3 w-3" />
-              </a>
-              <span>•</span>
-              <a 
-                href="https://play.google.com/store/apps/details?id=com.mmtech.axisvtu&pcampaignid=web_share" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="inline-flex items-center gap-1 font-semibold underline hover:text-white/95"
-              >
-                Google Play <ArrowRight className="h-3.5 w-3.5" />
-              </a>
-            </div>
-          </div>
-          <button 
-            type="button" 
-            onClick={() => setShowBanner(false)} 
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white focus:outline-none"
-            aria-label="Close banner"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
       <Header />
       <Hero />
       <ServicesSection />
