@@ -319,7 +319,7 @@ function Hero() {
             initial="hidden"
             animate="show"
             custom={0.24}
-            className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
+            className="mt-8 flex flex-wrap gap-3 items-center"
           >
             <Button asChild className="h-12 rounded-full bg-primary px-6 text-base text-primary-foreground shadow-sm shadow-orange-200 hover:bg-primary/90">
               <Link href="/register">
@@ -343,6 +343,22 @@ function Hero() {
                 <div>
                   <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">Get it on</div>
                   <div className="text-xs font-bold text-foreground leading-tight mt-0.5">Google Play</div>
+                </div>
+              </div>
+            </a>
+            <a 
+              href="https://apps.apple.com/ng/app/mele-data/id6779367547" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-card px-5 hover:border-orange-300 hover:bg-secondary/40 transition duration-200"
+            >
+              <div className="flex items-center gap-2.5 text-left">
+                <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z"/>
+                </svg>
+                <div>
+                  <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">Download on the</div>
+                  <div className="text-xs font-bold text-foreground leading-tight mt-0.5">App Store</div>
                 </div>
               </div>
             </a>
@@ -666,15 +682,26 @@ export function LandingPage() {
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
               App
             </span>
-            <span>MELE DATA is now on Google Play Store!</span>
-            <a 
-              href="https://play.google.com/store/apps/details?id=com.mmtech.axisvtu&pcampaignid=web_share" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="inline-flex items-center gap-1 font-semibold underline hover:text-white/95"
-            >
-              Download now <ArrowRight className="h-3.5 w-3.5" />
-            </a>
+            <span>MELE DATA is now on Google Play & App Store!</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <a 
+                href="https://apps.apple.com/ng/app/mele-data/id6779367547" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-1 font-semibold underline hover:text-white/95"
+              >
+                App Store <ArrowRight className="h-3 w-3" />
+              </a>
+              <span>•</span>
+              <a 
+                href="https://play.google.com/store/apps/details?id=com.mmtech.axisvtu&pcampaignid=web_share" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="inline-flex items-center gap-1 font-semibold underline hover:text-white/95"
+              >
+                Google Play <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
           </div>
           <button 
             type="button" 
