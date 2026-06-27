@@ -245,6 +245,12 @@ export function AppShell({ children }) {
           </div>
           <Badge tone="neutral" className="w-fit">Premium workspace</Badge>
           <div className="grid gap-2">
+            {profile?.role === 'admin' && (
+              <Button variant="secondary" className="w-full bg-primary/10 text-primary hover:bg-primary/20 border-primary/20" onClick={() => router.push('/admin')}>
+                <Settings2 className="mr-2 h-4 w-4" />
+                Admin Dashboard
+              </Button>
+            )}
             <Button variant="secondary" className="w-full" onClick={() => router.push('/profile')}>
               Profile
             </Button>
@@ -414,6 +420,9 @@ export function AppShell({ children }) {
                 <div className="mt-5 border-t border-border pt-4">
                   <div className="axis-label mb-2">Personal settings</div>
                   <nav className="space-y-1">
+                    {profile?.role === 'admin' && (
+                      <MobileMenuLink key="Admin Dashboard" item={{ label: 'Admin Dashboard', href: '/admin', icon: Settings2 }} activePath={activePath} />
+                    )}
                     {mobileSettingsMenu.map((item) => (
                       <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                     ))}
