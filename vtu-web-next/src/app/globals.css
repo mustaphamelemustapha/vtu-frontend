@@ -11,11 +11,11 @@
   --muted-foreground: 215 22% 32%;
   --border: 214 24% 82%;
   --input: 0 0% 100%;
-  --primary: 24 95% 53%;
+  --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
   --secondary: 36 35% 94%;
   --secondary-foreground: 222 47% 14%;
-  --accent: 24 95% 53%;
+  --accent: 217 91% 60%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
@@ -31,14 +31,14 @@
   --card: 218 28% 11%;
   --card-foreground: 210 40% 96%;
   --muted: 218 22% 16%;
-  --muted-foreground: 214 22% 84%;
+  --muted-foreground: 214 20% 76%;
   --border: 218 17% 24%;
   --input: 218 25% 13%;
-  --primary: 24 95% 53%;
+  --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
   --secondary: 218 22% 15%;
   --secondary-foreground: 210 40% 96%;
-  --accent: 24 95% 53%;
+  --accent: 217 91% 60%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 63% 46%;
   --destructive-foreground: 0 0% 100%;
@@ -74,7 +74,7 @@ a {
 }
 
 ::selection {
-  background: rgba(234, 115, 69, 0.18);
+  background: rgba(59, 130, 246, 0.18);
 }
 
 @keyframes axis-fade-up {

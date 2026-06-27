@@ -2,34 +2,22 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, RefreshCw } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
-import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
-import { getDataPlansFast, prefetchDataPlans } from '@/lib/data-plans-cache';
-import {
-  normalizeTransactionStatus,
-  sanitizeProviderMessage,
-  waitForTransactionFinalStatus,
-} from '@/lib/transaction-status';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { TransactionProcessingModal } from '@/components/transaction-processing-modal';
-import { TransactionReceiptModal } from '@/components/transaction-receipt-modal';
 import { cn } from '@/lib/utils';
 
 const NETWORK_ORDER = ['mtn', 'airtel', 'glo', '9mobile'];
 const NETWORK_TABS = [
-  { key: 'all', label: 'All networks' },
   { key: 'mtn', label: 'MTN' },
   { key: 'airtel', label: 'Airtel' },
   { key: 'glo', label: 'Glo' },
   { key: '9mobile', label: '9mobile' },
 ];
-
-const BLOCK_KEYWORDS = [];
 
 function normalizeNetwork(value) {
   const raw = String(value || '').trim().toLowerCase();
@@ -78,55 +66,16 @@ function sanitizePlanText(value) {
     .trim();
 }
 
-function promoConfigForPlan(plan) {
-  if (!plan || !plan.promo_active) return null;
-  return {
-    oldPrice: Number(plan.promo_old_price || 0) || null,
-    discountLabel: plan.promo_label || 'Promo',
-  };
-}
-
 function planPrice(plan) {
   const value = Number.parseFloat(plan?.price ?? '');
   return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
 }
-
-function capacityKey(value) {
-  const text = String(value ?? '').toUpperCase().replace(/\s+/g, '');
-  if (!text) return '';
-  const match = text.match(/(\d+(?:\.\d+)?)(GB|MB)/);
-  return match ? `${match[1]}${match[2]}` : text;
-}
-
-function validityDays(value) {
-  const text = String(value ?? '').toLowerCase();
-  if (!text) return null;
-  const match = text.match(/(\d+)\s*(d|day|days|month|months|week|weeks)/);
-  if (!match) return null;
-  const amount = Number.parseInt(match[1] || '', 10);
-  if (!Number.isFinite(amount)) return null;
-  const unit = match[2] || '';
-  if (unit.startsWith('month')) return amount * 30;
-  if (unit.startsWith('week')) return amount * 7;
-  return amount;
-}
-
-
 
 function normalizePlan(raw) {
   const plan = { ...(raw || {}) };
   plan.plan_name = sanitizePlanText(plan.plan_name);
   plan.data_size = sanitizePlanText(plan.data_size);
   plan.network = normalizeNetwork(plan.network || plan.provider || plan.plan_code || '');
-
-  if (!plan.network) {
-    const networkHint = String(plan.plan_name || plan.data_size || '').toLowerCase();
-    if (networkHint.includes('mtn')) plan.network = 'mtn';
-    else if (networkHint.includes('airtel')) plan.network = 'airtel';
-    else if (networkHint.includes('glo')) plan.network = 'glo';
-    else if (networkHint.includes('9mobile') || networkHint.includes('etisalat')) plan.network = '9mobile';
-  }
-
   return plan;
 }
 
@@ -135,20 +84,18 @@ function curatePlans(rows) {
   for (const row of rows) {
     if (!row || typeof row !== 'object') continue;
     const normalized = normalizePlan(row);
-    if (!normalized) continue;
     const key = normalized.network || 'other';
     if (!grouped.has(key)) grouped.set(key, []);
     grouped.get(key).push(normalized);
   }
 
   const curatedGroups = [];
-  const networks = [...NETWORK_ORDER, ...Array.from(grouped.keys()).filter((key) => !NETWORK_ORDER.includes(key) && key !== 'other'), 'other'];
+  const keys = [...NETWORK_ORDER, ...Array.from(grouped.keys()).filter((key) => !NETWORK_ORDER.includes(key) && key !== 'other'), 'other'];
   
-  for (const networkKey of networks) {
+  for (const networkKey of keys) {
     const items = grouped.get(networkKey);
     if (!items || !items.length) continue;
     
-    // Sort by price and show all plans the backend sent us
     curatedGroups.push({
       network: networkKey,
       plans: [...items].sort((a, b) => planPrice(a) - planPrice(b)),
@@ -161,44 +108,31 @@ export default function BuyDataPage() {
   const [plans, setPlans] = useState([]);
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
   const [activeNetwork, setActiveNetwork] = useState('mtn');
   const [phone, setPhone] = useState('');
   const [selected, setSelected] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [receipt, setReceipt] = useState(null);
-  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [message, setMessage] = useState('');
 
-  const load = useCallback(async ({ silent = false } = {}) => {
-    if (!silent) setLoading(true);
-    setLoadError('');
+  const load = useCallback(async () => {
+    setLoading(true);
     try {
-      const [plansRes, walletRes] = await Promise.allSettled([getDataPlansFast(apiFetch), apiFetch('/wallet/me')]);
-
+      const [plansRes, walletRes] = await Promise.allSettled([
+        apiFetch('/data/plans'),
+        apiFetch('/wallet/me'),
+      ]);
+      
       if (plansRes.status === 'fulfilled') {
         const val = plansRes.value;
-        let list = [];
-        if (Array.isArray(val)) {
-          list = val;
-        } else if (Array.isArray(val?.plans)) {
-          list = val.plans;
-        } else if (val && typeof val === 'object') {
-          list = val.data ?? val.items ?? val.results ?? [];
-        }
-
+        const list = Array.isArray(val) ? val : (val?.items || val?.data || val?.plans || []);
         setPlans(Array.isArray(list) ? list : []);
-        if (!Array.isArray(list) || !list.length) {
-          setLoadError('No data plans were found. Please check back later.');
-        }
-      } else if (!silent) {
-        setPlans([]);
-        const reason = plansRes.reason?.message || 'Unknown error';
-        setLoadError(`Unable to load data plans (${reason}). Please refresh.`);
       }
-
+      
       if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
+    } catch (err) {
+      console.error('Failed to load data:', err);
     } finally {
-      if (!silent) setLoading(false);
+      setLoading(false);
     }
   }, []);
 
@@ -207,34 +141,26 @@ export default function BuyDataPage() {
   }, [load]);
 
   const planGroups = useMemo(() => curatePlans(plans), [plans]);
-  const totalCuratedPlans = useMemo(
+  const totalPlansCount = useMemo(
     () => planGroups.reduce((total, group) => total + group.plans.length, 0),
     [planGroups]
   );
 
   useEffect(() => {
     if (activeNetwork !== 'all' && !planGroups.some((group) => group.network === activeNetwork)) {
-      setActiveNetwork('all');
+      if (planGroups.length > 0) {
+        // Only switch if the currently active network has no plans but others do
+      }
     }
   }, [activeNetwork, planGroups]);
 
   const activeGroup = useMemo(() => {
-    if (activeNetwork === 'all') return null;
     return planGroups.find((group) => group.network === activeNetwork) || null;
   }, [activeNetwork, planGroups]);
 
   const visiblePlans = useMemo(() => {
-    if (activeNetwork === 'all') {
-      return planGroups.flatMap((group) => group.plans.map((plan) => ({ ...plan, __group: group.network })));
-    }
     return activeGroup?.plans || [];
-  }, [activeGroup, activeNetwork, planGroups]);
-
-  useEffect(() => {
-    if (!selected) return;
-    const exists = visiblePlans.some((plan) => plan.plan_code === selected.plan_code);
-    if (!exists) setSelected(null);
-  }, [selected, visiblePlans]);
+  }, [activeGroup]);
 
   const summaryNetwork = selected?.network || activeNetwork;
   const summaryPlanName = selected?.plan_name || selected?.plan_code || '—';
@@ -243,175 +169,92 @@ export default function BuyDataPage() {
   const normalizedPhone = phoneDigits(phone);
   const phoneError = normalizedPhone && !isValidNigerianPhone(phone) ? 'Enter a valid Nigerian phone number.' : '';
   const canSubmit = Boolean(selected && normalizedPhone && !phoneError && !busy);
-  const openConfirm = () => {
-    if (!canSubmit) return;
-    setSummaryOpen(true);
-  };
 
   const purchase = async () => {
     if (!selected || !normalizedPhone || phoneError) return;
-    if (process.env.NODE_ENV !== 'production') console.info('[BuyData] buy button clicked');
     setBusy(true);
-    if (process.env.NODE_ENV !== 'production') console.info('[BuyData] processing modal opened');
-    setReceipt(null);
+    setMessage('');
     try {
       const payload = {
-        client_request_id: `web-data-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         plan_code: selected.plan_code,
         phone_number: normalizedPhone,
         network: selected.network,
-        ported_number: true,
       };
-      const timeoutMs = 30000;
-      const res = await Promise.race([
-        apiFetch('/data/purchase', {
-          method: 'POST',
-          body: JSON.stringify(payload),
-        }),
-        new Promise((_, reject) => {
-          setTimeout(() => {
-            const timeoutError = new Error('Transaction timed out. Please try again.');
-            timeoutError.code = 'REQUEST_TIMEOUT';
-            reject(timeoutError);
-          }, timeoutMs);
-        }),
-      ]);
-      if (process.env.NODE_ENV !== 'production') console.info('[BuyData] API response received', res);
-      const status = String(res?.status || '').toLowerCase();
-      const pendingVerification = status === 'pending';
-      const displayStatus =
-        status === 'success'
-          ? 'success'
-          : status === 'pending'
-            ? 'pending'
-            : status === 'refunded'
-              ? 'refunded'
-              : 'failed';
-      setReceipt(
-        buildTransactionReceipt({
-          service: 'Data Purchase',
-          status: displayStatus,
-          pendingVerification,
-          message:
-            sanitizeProviderMessage(res?.message) ||
-            (status === 'success'
-              ? 'Purchase delivered successfully.'
-              : pendingVerification
-                ? 'Purchase submitted successfully. We are confirming provider status in the background.'
-                : status === 'refunded'
-                  ? 'Transaction was reversed and your wallet was refunded.'
-                  : 'Purchase failed.'),
-          amount: Number(selected?.price || 0),
-          reference: res?.reference || '—',
-          phone: normalizedPhone,
-          meta: [
-            { label: 'Network', value: networkLabel(selected?.network || summaryNetwork) },
-            { label: 'Plan', value: selected?.plan_name || selected?.plan_code || '—' },
-            { label: 'Bundle code', value: selected?.plan_code || '—' },
-          ],
-        })
-      );
-      if (process.env.NODE_ENV !== 'production') console.info('[BuyData] receipt modal opened', status || 'pending');
+      const res = await apiFetch('/data/purchase', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      setMessage(`${res?.message || 'Purchase submitted.'} Ref: ${res?.reference || '—'}`);
     } catch (err) {
-      setReceipt(
-        buildTransactionReceipt({
-          service: 'Data Purchase',
-          status: 'failed',
-          message: sanitizeProviderMessage(err?.message) || 'Purchase failed.',
-          amount: Number(selected?.price || 0),
-          phone: normalizedPhone,
-          meta: [
-            { label: 'Network', value: networkLabel(selected?.network || summaryNetwork) },
-            { label: 'Plan', value: selected?.plan_name || selected?.plan_code || '—' },
-            { label: 'Bundle code', value: selected?.plan_code || '—' },
-          ],
-        })
-      );
-      if (process.env.NODE_ENV !== 'production') console.info('[BuyData] API failed', err);
-      if (process.env.NODE_ENV !== 'production') console.info('[BuyData] receipt modal opened', 'failed');
+      setMessage(err?.message || 'Purchase failed.');
     } finally {
       setBusy(false);
     }
   };
 
-  useEffect(() => {
-    if (!receipt || !receipt.pendingVerification) return undefined;
-    const reference = String(receipt.reference || '').trim();
-    if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
-
-    let cancelled = false;
-    (async () => {
-      const result = await waitForTransactionFinalStatus(apiFetch, reference, {
-        timeoutMs: 90000,
-        intervalMs: 2500,
-      });
-      if (cancelled || !result?.final) return;
-      const finalStatus = normalizeTransactionStatus(result.status);
-      const tx = result.transaction || {};
-
-      setReceipt((prev) => {
-        if (!prev) return prev;
-        const mappedStatus = finalStatus === 'success' ? 'success' : finalStatus === 'refunded' ? 'refunded' : 'failed';
-        const nextMessage =
-          mappedStatus === 'success'
-            ? 'Transaction confirmed successfully.'
-            : mappedStatus === 'refunded'
-              ? 'Transaction was reversed and wallet refunded.'
-              : 'Transaction failed.';
-        return {
-          ...prev,
-          pendingVerification: false,
-          status: mappedStatus,
-          message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
-          createdAt: tx?.created_at || prev.createdAt,
-        };
-      });
-
-      load({ silent: true }).catch(() => {});
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [receipt, load]);
-
   return (
-    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
-
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
       <div className="space-y-6 pb-28 md:pb-8">
         <div className="space-y-2">
         <div className="axis-label text-muted-foreground">Services</div>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-1.5">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Data Bundles</h1>
-            <p className="text-sm text-muted-foreground">Purchase premium high-speed mobile data bundles with instant delivery.</p>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Buy Data</h1>
+            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+              Affordable data bundles for MTN, Airtel, Glo, and 9mobile. All plans are synced in real-time from our providers.
+            </p>
           </div>
+          <Button
+            variant="secondary"
+            onClick={() => load()}
+            className="border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground"
+          >
+            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
+            Refresh plans
+          </Button>
         </div>
       </div>
 
-        <div className="grid gap-3 md:gap-4">
-        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
-          <CardContent className="space-y-5 p-3.5 md:space-y-7 md:p-7">
-            <section className="space-y-3.5 md:space-y-4">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <Card className="overflow-hidden border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+          <CardContent className="space-y-6 p-4 md:space-y-8 md:p-7">
+            <section className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Choose your network to see all active plans.</div>
+                </div>
+                <Badge className="border-border bg-secondary text-muted-foreground">Live catalog</Badge>
+              </div>
 
-              <div className="grid grid-cols-2 gap-2.5 md:gap-3 xl:grid-cols-4">
-                {NETWORK_TABS.filter((tab) => tab.key !== 'all').map((tab) => {
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                {NETWORK_TABS.map((tab) => {
+                  const group = planGroups.find((item) => item.network === tab.key);
+                  const count = group?.plans.length || 0;
                   const isActive = activeNetwork === tab.key;
+                  const networkTone =
+                    tab.key === 'mtn'
+                      ? 'bg-amber-400 text-slate-950'
+                      : tab.key === 'glo'
+                        ? 'bg-emerald-500 text-foreground'
+                        : tab.key === 'airtel'
+                          ? 'bg-rose-500 text-foreground'
+                          : 'bg-blue-500 text-foreground';
+
                   return (
                     <button
                       key={tab.key}
                       type="button"
                       onClick={() => setActiveNetwork(tab.key)}
                       className={cn(
-                        'group min-h-[120px] rounded-2xl border px-3 py-3.5 text-center transition md:min-h-[140px] md:px-4 md:py-5',
+                        'group rounded-[20px] border px-3 py-4 text-left transition md:rounded-[22px] md:px-4 md:py-5',
                         isActive
-                          ? 'border-primary/45 bg-primary/10 shadow-[0_0_0_1px_rgba(249,115,22,0.16),0_10px_20px_rgba(249,115,22,0.08)]'
-                          : 'border-border bg-secondary hover:border-border hover:bg-secondary/90'
+                          ? 'border-primary/45 bg-primary/12 shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
+                          : 'border-border bg-secondary hover:border-border hover:bg-secondary'
                       )}
                       >
-                      <div className="flex justify-center">
-                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden md:h-12 md:w-12">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className={cn('flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-secondary p-1 ring-1 ring-border md:h-12 md:w-12', networkTone)}>
                           <Image
                             src={networkLogoSrc(tab.key)}
                             alt={`${tab.label} logo`}
@@ -421,9 +264,15 @@ export default function BuyDataPage() {
                             unoptimized
                           />
                         </div>
+                        <Badge className="border-border bg-secondary text-muted-foreground">
+                          {count}
+                        </Badge>
                       </div>
-                      <div className="mt-3 text-[15px] font-semibold tracking-tight text-foreground md:mt-4 md:text-base">
+                      <div className="mt-4 text-sm font-semibold tracking-wide text-foreground">
                         {tab.label}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {count ? 'Available now' : 'No plans enabled'}
                       </div>
                     </button>
                   );
@@ -431,142 +280,97 @@ export default function BuyDataPage() {
               </div>
             </section>
 
-            <section className="space-y-3.5 md:space-y-4">
+            <section className="space-y-4">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
                 <div className="mt-2 text-sm text-muted-foreground">Enter the recipient phone number.</div>
               </div>
-              <div className="rounded-2xl border border-border bg-secondary/70 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]">
-                <Input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="e.g. 08012345678"
-                  className="h-[50px] rounded-xl border-border bg-background text-base text-foreground placeholder:italic placeholder:font-medium placeholder:text-muted-foreground/50 focus:border-primary/45 focus:ring-amber-500/20 md:h-12"
-                />
-              </div>
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="08012345678"
+                className="h-[52px] rounded-2xl border-border bg-input text-base text-foreground placeholder:text-muted-foreground focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
+              />
               {phoneError ? (
                 <p className="text-xs font-medium text-rose-300">{phoneError}</p>
-              ) : null}
-              <Button
-                className="hidden h-12 w-full rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.2)] transition hover:bg-primary/90 active:scale-[0.98] md:inline-flex"
-                onClick={openConfirm}
-                disabled={!canSubmit}
-              >
-                {busy ? 'Processing...' : 'Confirm'}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+              ) : (
+                <p className="text-xs text-muted-foreground">Format: 080... or 234...</p>
+              )}
             </section>
 
-            <section className="space-y-3.5 md:space-y-4">
+            <section className="space-y-4">
               <div className="flex items-end justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select plan</div>
                   <div className="mt-2 text-sm text-muted-foreground">
-                    {activeNetwork === 'all' ? 'Choose from our available premium bundles.' : `${networkLabel(activeNetwork)} bundles ready for purchase.`}
+                    All plans are managed via the Admin Dashboard.
                   </div>
                 </div>
-                <Badge className="h-8 rounded-full border-border bg-secondary px-3 text-muted-foreground">
-                  {activeNetwork === 'all' ? totalCuratedPlans : activeGroup?.plans.length || 0} bundle{activeNetwork === 'all' ? (totalCuratedPlans === 1 ? '' : 's') : (activeGroup?.plans.length === 1 ? '' : 's')}
+                <Badge className="border-border bg-secondary text-muted-foreground">
+                  {visiblePlans.length} plan{visiblePlans.length === 1 ? '' : 's'}
                 </Badge>
               </div>
 
               {loading ? (
-                <div className="grid gap-2.5 md:gap-3 md:grid-cols-2">
+                <div className="grid gap-3 md:grid-cols-2">
                   {Array.from({ length: 4 }).map((_, idx) => (
-                    <div key={idx} className="h-[136px] animate-pulse rounded-2xl border border-border bg-secondary" />
+                    <div key={idx} className="h-32 animate-pulse rounded-[22px] border border-border bg-secondary" />
                   ))}
                 </div>
               ) : null}
 
               {!loading && !visiblePlans.length ? (
-                <div className="rounded-[22px] border border-dashed border-border bg-secondary px-4 py-5 text-sm text-muted-foreground text-center">
-                  No active bundles found for this network at the moment.
-                </div>
-              ) : null}
-
-              {!loading && loadError ? (
-                <div className="rounded-[22px] border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
-                  {loadError}
+                <div className="rounded-[22px] border border-dashed border-border bg-secondary px-4 py-10 text-center text-sm text-muted-foreground">
+                  No bundles are enabled for {networkLabel(activeNetwork)} right now.
                 </div>
               ) : null}
 
               {!loading && visiblePlans.length ? (
-                <div className="grid gap-2.5 md:gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3.5 md:gap-4 lg:grid-cols-3">
                   {visiblePlans.map((plan) => {
                     const isActive = selected?.plan_code === plan.plan_code;
-                    const promo = promoConfigForPlan(plan);
+                    const isPromo = plan.promo_active;
                     return (
                       <button
                         key={plan.plan_code}
                         type="button"
                         onClick={() => setSelected(plan)}
                         className={cn(
-                          'group relative flex min-w-0 flex-col overflow-hidden rounded-[26px] border px-5 py-5 transition-all duration-300',
+                          'group relative flex flex-col items-center justify-center rounded-[28px] border px-4 py-6 text-center transition-all duration-300 min-h-[160px]',
                           isActive
-                            ? 'border-primary/50 bg-primary/5 shadow-[0_12px_28px_rgba(249,115,22,0.12),0_4px_10px_rgba(249,115,22,0.06)]'
-                            : 'border-border/60 bg-card hover:border-primary/20 hover:bg-secondary/40'
+                            ? 'border-primary/50 bg-primary/10 shadow-[0_12px_28px_rgba(249,115,22,0.12)] ring-1 ring-primary/30'
+                            : 'border-border/60 bg-card hover:border-primary/30 hover:bg-secondary/40'
                         )}
                       >
-                        <div className="flex w-full items-start justify-between gap-4">
-                          <div className="flex min-w-0 items-center gap-4">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-white p-1 shadow-sm ring-1 ring-black/5">
-                              <Image
-                                src={networkLogoSrc(plan.network)}
-                                alt={`${networkLabel(plan.network)} logo`}
-                                width={44}
-                                height={44}
-                                className="h-full w-full object-contain"
-                                unoptimized
-                              />
-                            </div>
-                            <div className="min-w-0 flex-1 text-left">
-                              <div className="text-[17px] font-bold tracking-tight text-foreground md:text-lg">
-                                {plan.plan_name || plan.data_size}
-                              </div>
-                              <div className="mt-0.5 flex items-center gap-2">
-                                <span className="text-[12px] font-medium text-muted-foreground uppercase tracking-wider">
-                                  {plan.validity || '30 Days'}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {isActive && (
-                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
-                              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3.5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                              </svg>
-                            </div>
+                        {/* 1. Capacity / Name */}
+                        <div className="text-lg font-black tracking-tight text-foreground md:text-xl">
+                          {plan.plan_name || plan.data_size}
+                        </div>
+
+                        {/* 2. Price (current + previous line-through) */}
+                        <div className="mt-2 flex items-center justify-center gap-2">
+                          <span className={cn("text-base font-extrabold text-foreground", isActive ? "text-primary" : "")}>
+                            ₦{formatMoney(plan.price || 0)}
+                          </span>
+                          {isPromo && plan.promo_old_price && (
+                            <span className="text-xs text-muted-foreground line-through decoration-muted-foreground/60">
+                              ₦{formatMoney(plan.promo_old_price)}
+                            </span>
                           )}
                         </div>
 
-                        <div className="mt-6 flex items-end justify-between border-t border-border/40 pt-4">
-                          <div className="space-y-0.5 text-left">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70">Amount</div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl font-extrabold tracking-tighter text-foreground">
-                                ₦{formatMoney(plan.price || 0)}
-                              </span>
-                              {promo?.oldPrice && (
-                                <span className="text-sm text-muted-foreground line-through decoration-muted-foreground/40">
-                                  ₦{formatMoney(promo.oldPrice)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col items-end gap-1.5">
-                             {promo?.discountLabel && (
-                              <div className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400">
-                                {promo.discountLabel}
-                              </div>
-                            )}
-                            <div className="rounded-full bg-secondary/80 px-3 py-1 text-[11px] font-bold text-foreground ring-1 ring-border/50 shadow-sm">
-                              {plan.data_size || 'Data'}
-                            </div>
-                          </div>
+                        {/* 3. Validity & Promo Label row */}
+                        <div className="mt-3.5 flex items-center justify-center gap-1.5 flex-wrap">
+                          <span className="rounded-full border border-border bg-secondary/30 px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                            {plan.validity || '30 days'}
+                          </span>
+                          {isPromo && plan.promo_label && (
+                            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/5 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500">
+                              {plan.promo_label}
+                            </span>
+                          )}
                         </div>
                       </button>
                     );
@@ -577,115 +381,99 @@ export default function BuyDataPage() {
           </CardContent>
         </Card>
 
+        <Card className="h-fit border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
+          <CardHeader>
+            <CardTitle className="text-foreground">Order Summary</CardTitle>
+            <CardDescription className="text-muted-foreground">Confirm details before purchase</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <div className="rounded-[22px] border border-border bg-secondary p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
+                  <Image
+                    src={networkLogoSrc(summaryNetwork)}
+                    alt={`${networkLabel(summaryNetwork)} logo`}
+                    width={44}
+                    height={44}
+                    className="h-full w-full object-contain"
+                    unoptimized
+                  />
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-foreground">{networkLabel(summaryNetwork)} Data</div>
+                  <div className="text-xs text-muted-foreground">Bundle delivery</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 rounded-[22px] border border-border bg-secondary p-4">
+              {[
+                { label: 'Network', value: networkLabel(summaryNetwork) },
+                { label: 'Plan', value: summaryPlanName },
+                { label: 'Recipient', value: phone.trim() || '—' },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0">
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <span className="text-sm font-medium text-foreground">{item.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-end justify-between gap-4 rounded-[22px] border border-border bg-secondary p-4">
+              <div>
+                <div className="text-sm text-muted-foreground">Total Cost</div>
+                <div className="mt-1 text-2xl font-semibold tracking-tight text-primary">
+                  ₦{formatMoney(summaryPrice || 0)}
+                </div>
+              </div>
+            </div>
+
+            <Button
+              className="h-12 w-full rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98]"
+              onClick={purchase}
+              disabled={!canSubmit}
+            >
+              {busy ? 'Processing...' : 'Confirm & Purchase'}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+
+            {message ? (
+              <div className="rounded-[18px] border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground break-all">
+                {message}
+              </div>
+            ) : null}
+
+            <div className="text-xs leading-6 text-muted-foreground">
+              All plans are synced directly from our providers. Ensure the recipient number is correct.
+            </div>
+          </CardContent>
+        </Card>
         </div>
       </div>
 
       <div
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-3 pt-2.5 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 pt-3 shadow-[0_-18px_40px_rgba(0,0,0,0.35)] backdrop-blur md:hidden"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}
       >
-        <div className="mx-auto flex max-w-md items-center gap-2.5">
+        <div className="mx-auto flex max-w-md items-center gap-3">
           <div className="min-w-0 flex-1">
             <div className="truncate text-xs text-muted-foreground">
-              {selected ? summaryPlanName : 'Select a plan to continue'}
+              {selected ? summaryPlanName : 'Select a plan'}
             </div>
-            <div className="mt-1 text-base font-semibold tracking-tight text-foreground">
+            <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">
               ₦{formatMoney(summaryPrice || 0)}
             </div>
           </div>
           <Button
-            className="h-11 shrink-0 rounded-xl bg-primary px-4 text-primary-foreground shadow-[0_10px_22px_rgba(249,115,22,0.22)] transition hover:bg-primary/90 active:scale-[0.98]"
-            onClick={openConfirm}
+            className="h-12 shrink-0 rounded-xl bg-primary px-5 text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98]"
+            onClick={purchase}
             disabled={!canSubmit}
           >
-            {busy ? 'Processing...' : 'Confirm'}
+            {busy ? 'Processing...' : 'Buy Data'}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
-
-      {summaryOpen ? (
-        <div className="fixed inset-0 z-[210] flex items-end justify-center bg-black/50 p-0 md:items-center md:p-6">
-          <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">Confirm Transaction</h3>
-                <p className="text-sm text-muted-foreground">Double-check your purchase details before proceeding.</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSummaryOpen(false)}
-                className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground"
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="space-y-4 px-5 py-5">
-              <div className="rounded-2xl border border-border bg-secondary p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
-                    <Image
-                      src={networkLogoSrc(summaryNetwork)}
-                      alt={`${networkLabel(summaryNetwork)} logo`}
-                      width={36}
-                      height={36}
-                      className="h-full w-full object-contain"
-                      unoptimized
-                    />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{networkLabel(summaryNetwork)} Data</div>
-                    <div className="text-xs text-muted-foreground">{summaryPlanName}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
-                {[
-                  { label: 'Phone', value: phone.trim() || '—' },
-                  { label: 'Amount', value: `₦${formatMoney(summaryPrice || 0)}` },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
-                    <span className="text-sm text-muted-foreground">{item.label}</span>
-                    <span className="text-sm font-medium text-foreground">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
-              <Button
-                variant="secondary"
-                className="h-11 rounded-xl"
-                onClick={() => setSummaryOpen(false)}
-                disabled={busy}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={async () => {
-                  setSummaryOpen(false);
-                  await purchase();
-                }}
-                disabled={!canSubmit}
-              >
-                Pay Now
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <TransactionProcessingModal open={busy} />
-      <TransactionReceiptModal
-        open={Boolean(receipt)}
-        receipt={receipt}
-        onClose={() => setReceipt(null)}
-        onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
-        onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
-      />
     </div>
   );
 }

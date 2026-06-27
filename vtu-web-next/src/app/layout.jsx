@@ -6,16 +6,13 @@ export const metadata = {
     default: 'MELE DATA',
     template: '%s | MELE DATA',
   },
-  description: 'Premium utility services dashboard for MELE DATA',
+  description: 'Premium fintech dashboard for MELE DATA',
   applicationName: 'MELE DATA',
-  metadataBase: new URL('https://meledata.ng'),
+  metadataBase: new URL('https://axisvtu.com'),
   icons: {
-    icon: '/brand/meledata-icon-clean.png',
-    shortcut: '/brand/meledata-icon-clean.png',
-    apple: '/brand/meledata-icon-clean.png',
-  },
-  verification: {
-    google: 'BYzwpVMC9af2r91Y5yd5lR5FBQJEOk7cwx45Hl9iU9c',
+    icon: '/brand/axisvtu-icon.png',
+    shortcut: '/brand/axisvtu-icon.png',
+    apple: '/brand/axisvtu-icon.png',
   },
 };
 
@@ -37,10 +34,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta
-          name="google-site-verification"
-          content="BYzwpVMC9af2r91Y5yd5lR5FBQJEOk7cwx45Hl9iU9c"
-        />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="antialiased">

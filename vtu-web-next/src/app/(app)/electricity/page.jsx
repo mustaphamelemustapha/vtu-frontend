@@ -1,19 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Lightbulb, Loader2, XCircle } from 'lucide-react';
+import { Lightbulb, RefreshCw } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
-import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
-import { normalizeTransactionStatus, sanitizeProviderMessage, waitForTransactionFinalStatus } from '@/lib/transaction-status';
-import { readViewCache, writeViewCache } from '@/lib/view-cache';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
-import { TransactionProcessingModal } from '@/components/transaction-processing-modal';
-import { TransactionReceiptModal } from '@/components/transaction-receipt-modal';
 import { cn } from '@/lib/utils';
 
 function stringifyList(items) {
@@ -34,20 +29,13 @@ function meterLabel(value) {
 }
 
 const meterTypes = ['prepaid', 'postpaid'];
-const CACHE_KEY = 'electricity:v1';
 
 export default function ElectricityPage() {
   const [catalog, setCatalog] = useState(null);
-  const [providerDiscos, setProviderDiscos] = useState([]);
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [processingOpen, setProcessingOpen] = useState(false);
-  const [receipt, setReceipt] = useState(null);
-  const [summaryOpen, setSummaryOpen] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-  const [verification, setVerification] = useState({ checked: false, ok: false, customerName: '', message: '' });
+  const [message, setMessage] = useState('');
 
   const [disco, setDisco] = useState('');
   const [meterType, setMeterType] = useState('prepaid');
@@ -56,59 +44,11 @@ export default function ElectricityPage() {
   const [amount, setAmount] = useState('');
 
   const load = useCallback(async () => {
-    const cached = readViewCache(CACHE_KEY, 10 * 60 * 1000);
-    if (cached) {
-      if (cached.catalog) setCatalog(cached.catalog);
-      if (cached.wallet) setWallet(cached.wallet);
-      if (Array.isArray(cached.providerDiscos)) setProviderDiscos(cached.providerDiscos);
-      setLoading(false);
-    } else {
-      setLoading(true);
-    }
-    setLoadError('');
+    setLoading(true);
     try {
-      const [catalogRes, walletRes, discosRes] = await Promise.allSettled([
-        apiFetch('/services/catalog'),
-        apiFetch('/wallet/me'),
-        apiFetch('/services/electricity/discos'),
-      ]);
-      let nextCatalog = cached?.catalog || null;
-      let nextWallet = cached?.wallet || null;
-      let nextDiscos = Array.isArray(cached?.providerDiscos) ? cached.providerDiscos : [];
-      if (catalogRes.status === 'fulfilled') {
-        nextCatalog = catalogRes.value;
-        setCatalog(nextCatalog);
-      } else {
-        if (!cached?.catalog) {
-          setCatalog(null);
-          setLoadError('Electricity provider catalog is unavailable right now. Please try again shortly.');
-        }
-      }
-      if (walletRes.status === 'fulfilled') {
-        nextWallet = walletRes.value;
-        setWallet(nextWallet);
-      }
-      if (discosRes.status === 'fulfilled') {
-        const rows = Array.isArray(discosRes.value?.discos) ? discosRes.value.discos : [];
-        nextDiscos =
-          rows
-            .map((row) => ({
-              id: String(row?.id || '').trim().toLowerCase(),
-              name: String(row?.name || '').trim(),
-              code: String(row?.code || '').trim(),
-            }))
-            .filter((row) => row.id)
-        setProviderDiscos(nextDiscos);
-      } else {
-        if (!cached?.providerDiscos) setProviderDiscos([]);
-      }
-      if (nextCatalog || nextWallet || nextDiscos.length) {
-        writeViewCache(CACHE_KEY, {
-          catalog: nextCatalog,
-          wallet: nextWallet,
-          providerDiscos: nextDiscos,
-        });
-      }
+      const [catalogRes, walletRes] = await Promise.allSettled([apiFetch('/services/catalog'), apiFetch('/wallet/me')]);
+      if (catalogRes.status === 'fulfilled') setCatalog(catalogRes.value);
+      if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
     } finally {
       setLoading(false);
     }
@@ -118,22 +58,11 @@ export default function ElectricityPage() {
     load().catch(() => {});
   }, [load]);
 
-  const discos = useMemo(() => {
-    if (providerDiscos.length) return providerDiscos;
-    return stringifyList(catalog?.electricity_discos).map((id) => ({
-      id: String(id || '').trim().toLowerCase(),
-      name: meterLabel(id),
-      code: '',
-    }));
-  }, [providerDiscos, catalog]);
+  const discos = stringifyList(catalog?.electricity_discos);
 
   useEffect(() => {
-    if (!disco && discos.length) setDisco(discos[0].id);
+    if (!disco && discos.length) setDisco(discos[0]);
   }, [disco, discos]);
-
-  useEffect(() => {
-    setVerification({ checked: false, ok: false, customerName: '', message: '' });
-  }, [disco, meterType, meterNumber]);
 
   const parsedAmount = Number.parseFloat(amount || '0');
   const cleanPhone = normalizePhone(phone);
@@ -143,211 +72,62 @@ export default function ElectricityPage() {
   const meterError = meterNumber && cleanMeter.length < 5 ? 'Enter a valid meter number.' : '';
   const amountError = amount && (!Number.isFinite(parsedAmount) || parsedAmount <= 0) ? 'Enter a valid amount.' : '';
   const canSubmit = Boolean(
-    disco && meterType && cleanMeter && cleanPhone && !phoneError && !meterError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy && verification.ok
+    disco && meterType && cleanMeter && cleanPhone && !phoneError && !meterError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy
   );
-  const openConfirm = () => {
-    if (!canSubmit) return;
-    setSummaryOpen(true);
-  };
-  const selectedDisco = useMemo(() => discos.find((item) => item.id === disco), [discos, disco]);
-  const summaryDisco = selectedDisco?.name || meterLabel(disco) || '—';
-  const lookupReady = Boolean(disco && meterType && cleanMeter.length >= 5 && !verifying);
 
-  const verifyMeter = async () => {
-    if (!lookupReady) return;
-    setVerifying(true);
-    setVerification({ checked: false, ok: false, customerName: '', message: '' });
+  const lookupReady = false;
+
+  const submit = async () => {
+    if (!canSubmit) return;
+    setBusy(true);
+    setMessage('');
     try {
-      const res = await apiFetch('/services/electricity/verify-meter', {
+      const res = await apiFetch('/services/electricity/purchase', {
         method: 'POST',
         body: JSON.stringify({
           disco,
           meter_type: meterType,
           meter_number: cleanMeter,
-        }),
-      });
-      const ok = Boolean(res?.ok);
-      setVerification({
-        checked: true,
-        ok,
-        customerName: ok ? String(res?.customer_name || '').trim() : '',
-        message: ok ? 'Meter verified successfully.' : String(res?.message || 'Unable to verify meter number.'),
-      });
-    } catch (err) {
-      setVerification({
-        checked: true,
-        ok: false,
-        customerName: '',
-        message: err?.message || 'Unable to verify meter number right now.',
-      });
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  const submit = async () => {
-    if (!canSubmit) return;
-    const startedAt = Date.now();
-    setBusy(true);
-    setProcessingOpen(true);
-    setReceipt(null);
-    let nextReceipt = null;
-    try {
-      const timeoutMs = 30000;
-      const res = await Promise.race([
-        apiFetch('/services/electricity/purchase', {
-          method: 'POST',
-          body: JSON.stringify({
-            client_request_id: `web-electricity-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-            disco,
-            meter_type: meterType,
-            meter_number: cleanMeter,
-            phone_number: cleanPhone,
-            amount: parsedAmount,
-          }),
-        }),
-        new Promise((_, reject) => {
-          setTimeout(() => {
-            const timeoutError = new Error('Transaction timed out. Please try again.');
-            timeoutError.code = 'REQUEST_TIMEOUT';
-            reject(timeoutError);
-          }, timeoutMs);
-        }),
-      ]);
-      const tokenLine = res?.token ? ` Token: ${res.token}` : '';
-      const status = String(res?.status || '').toLowerCase();
-      const pendingVerification = status === 'pending';
-      const displayStatus =
-        status === 'success'
-          ? 'success'
-          : status === 'pending'
-            ? 'pending'
-            : status === 'refunded'
-              ? 'refunded'
-              : 'failed';
-      const baseMessage =
-        status === 'success'
-          ? 'Electricity payment completed.'
-          : status === 'pending'
-            ? 'Electricity payment is pending provider confirmation.'
-            : status === 'refunded'
-              ? 'Transaction was reversed and wallet refunded.'
-              : 'Electricity payment failed.';
-      nextReceipt =
-        buildTransactionReceipt({
-          service: 'Electricity Payment',
-          status: displayStatus,
-          pendingVerification,
-          message: sanitizeProviderMessage(`${res?.message || ''} ${baseMessage}${tokenLine}`.trim()) || `${baseMessage}${tokenLine}`.trim(),
+          phone_number: cleanPhone,
           amount: parsedAmount,
-          reference: res?.reference || '—',
-          phone: cleanPhone,
-          meta: [
-            { label: 'Provider', value: summaryDisco },
-            { label: 'Meter type', value: meterLabel(meterType) },
-            { label: 'Meter number', value: cleanMeter || '—' },
-            ...(verification.customerName ? [{ label: 'Customer name', value: verification.customerName }] : []),
-          ],
-        });
+        }),
+      });
+      const tokenLine = res?.token ? ` Token: ${res.token}` : '';
+      setMessage(`Electricity payment submitted. Reference: ${res?.reference || '—'}.${tokenLine}`);
       setAmount('');
     } catch (err) {
-      nextReceipt =
-        buildTransactionReceipt({
-          service: 'Electricity Payment',
-          status: 'failed',
-          message: sanitizeProviderMessage(err?.message) || 'Unable to process electricity payment right now.',
-          amount: parsedAmount,
-          phone: cleanPhone,
-          meta: [
-            { label: 'Provider', value: summaryDisco },
-            { label: 'Meter type', value: meterLabel(meterType) },
-            { label: 'Meter number', value: cleanMeter || '—' },
-            ...(verification.customerName ? [{ label: 'Customer name', value: verification.customerName }] : []),
-          ],
-        });
+      setMessage(err?.message || 'Unable to process electricity payment right now.');
     } finally {
-      const elapsed = Date.now() - startedAt;
-      const minimumProcessingMs = 700;
-      if (elapsed < minimumProcessingMs) {
-        await new Promise((resolve) => setTimeout(resolve, minimumProcessingMs - elapsed));
-      }
       setBusy(false);
-      setProcessingOpen(false);
-      if (nextReceipt) {
-        setTimeout(() => {
-          setReceipt(nextReceipt);
-        }, 120);
-      }
     }
   };
 
-  useEffect(() => {
-    if (!receipt || !receipt.pendingVerification) return undefined;
-    const reference = String(receipt.reference || '').trim();
-    if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
+  const summaryDisco = meterLabel(disco) || '—';
 
-    let cancelled = false;
-    (async () => {
-      const result = await waitForTransactionFinalStatus(apiFetch, reference, {
-        timeoutMs: 90000,
-        intervalMs: 2500,
-      });
-      if (cancelled || !result?.final) return;
-      const finalStatus = normalizeTransactionStatus(result.status);
-      const tx = result.transaction || {};
-      setReceipt((prev) => {
-        if (!prev) return prev;
-        const mappedStatus = finalStatus === 'success' ? 'success' : finalStatus === 'refunded' ? 'refunded' : 'failed';
-        const nextMessage =
-          mappedStatus === 'success'
-            ? 'Transaction confirmed successfully.'
-            : mappedStatus === 'refunded'
-              ? 'Transaction was reversed and wallet refunded.'
-              : 'Transaction failed.';
-        
-        const txMeta = tx?.meta || {};
-        const retrievedToken = String(txMeta.token || txMeta.Token || txMeta.metertoken || '').trim();
-        const retrievedName = String(txMeta.customer_name || txMeta.CustomerName || '').trim();
-        
-        return {
-          ...prev,
-          pendingVerification: false,
-          status: mappedStatus,
-          message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
-          createdAt: tx?.created_at || prev.createdAt,
-          meta: [
-            ...prev.meta.filter(m => !['Token', 'Customer Name', 'Customer name'].includes(m.label)),
-            ...(retrievedToken ? [{ label: 'Token', value: retrievedToken }] : []),
-            ...(retrievedName ? [{ label: 'Customer Name', value: retrievedName }] : []),
-          ]
-        };
-      });
-      load().catch(() => {});
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [receipt, load]);
   return (
-    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
-      <div className="space-y-6 pb-10">
+    <div className="space-y-6 pb-10">
       <PageHeader
         eyebrow="Services"
         title="Electricity"
-        description="Purchase electricity tokens instantly for all major distribution companies."
+        description="Pay electricity bills with meter details, amount, and a clean wallet-funded checkout flow."
+        actions={
+          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
+            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
+            Refresh
+          </Button>
+        }
       />
 
-      <div className="grid gap-4">
-        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
+      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
+        <Card>
           <CardHeader>
-            <CardTitle>Electricity Token</CardTitle>
-            <CardDescription>Select a distribution company, input meter details, and generate a recharge token.</CardDescription>
+            <CardTitle>Pay electricity bill</CardTitle>
+            <CardDescription>Select disco, meter type, and payment details before checkout.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Distribution Company (Disco)</div>
+                <div className="axis-label">Disco / Provider</div>
                 <select
                   value={disco}
                   onChange={(e) => setDisco(e.target.value)}
@@ -355,15 +135,15 @@ export default function ElectricityPage() {
                 >
                   {!discos.length ? <option value="">Loading providers...</option> : null}
                   {discos.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name || meterLabel(item.id)}
+                    <option key={item} value={item}>
+                      {meterLabel(item)}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div className="space-y-2">
-                <div className="axis-label">Meter Type</div>
+                <div className="axis-label">Meter type</div>
                 <div className="grid grid-cols-2 gap-2">
                   {meterTypes.map((item) => {
                     const active = meterType === item;
@@ -387,150 +167,87 @@ export default function ElectricityPage() {
               </div>
             </div>
 
-            {loadError ? (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
-                {loadError}
-              </div>
-            ) : null}
-
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Meter Number</div>
-                <Input value={meterNumber} onChange={(e) => setMeterNumber(e.target.value)} placeholder="e.g. 1234567890" className="placeholder:italic placeholder:text-muted-foreground/60" />
+                <div className="axis-label">Meter number</div>
+                <Input value={meterNumber} onChange={(e) => setMeterNumber(e.target.value)} placeholder="Enter meter number" />
                 <p className={cn('text-xs', meterError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {meterError || 'Enter your unique meter identification number.'}
+                  {meterError || 'Use the meter number exactly as registered.'}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <div className="axis-label">Phone Number</div>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="e.g. 08012345678" className="placeholder:italic placeholder:text-muted-foreground/60" />
+                <div className="axis-label">Phone number</div>
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="08012345678" />
                 <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {phoneError || 'Recipient mobile number for token delivery.'}
+                  {phoneError || 'Used for provider notifications.'}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="axis-label">Amount</div>
-              <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="e.g. 5000" className="placeholder:italic placeholder:text-muted-foreground/60" />
+              <div className="axis-label">Amount (NGN)</div>
+              <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="5000" />
               <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                {amountError || 'Specify the token purchase amount.'}
+                {amountError || 'Enter the bill amount to charge your wallet.'}
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button
-                variant="secondary"
-                disabled={!lookupReady || verifying}
-                onClick={verifyMeter}
-                className="min-w-[140px] border-border bg-card font-medium text-foreground hover:bg-secondary disabled:opacity-50"
-              >
-                {verifying ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Verifying…
-                  </>
-                ) : (
-                  'Verify Number'
-                )}
+              <Button variant="secondary" disabled={!lookupReady} className="border-border bg-card text-muted-foreground">
+                Customer lookup (coming soon)
               </Button>
-              <Button onClick={openConfirm} disabled={!canSubmit}>
+              <Button onClick={submit} disabled={!canSubmit}>
                 <Lightbulb className="h-4 w-4" />
-                {busy ? 'Processing...' : 'Confirm'}
+                {busy ? 'Processing...' : 'Pay Electricity'}
               </Button>
             </div>
 
-            {verification.checked ? (
-              verification.ok ? (
-                /* ── SUCCESS CARD ─────────────────────────────────────────── */
-                <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/8 p-4 dark:bg-emerald-950/40">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-widest text-emerald-500">Verified</span>
-                      </div>
-                      <p className="text-xs text-zinc-500 dark:text-zinc-400">Customer Name</p>
-                      <p className="break-words text-lg font-bold tracking-wide text-zinc-900 dark:text-white">
-                        {verification.customerName || 'Verified Customer'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* ── ERROR CARD ───────────────────────────────────────────── */
-                <div className="rounded-2xl border border-rose-500/25 bg-rose-500/8 p-4 dark:bg-rose-950/40">
-                  <div className="flex items-start gap-3">
-                    <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-rose-500 dark:text-rose-400">Verification Failed</p>
-                      <p className="mt-0.5 break-words text-sm text-rose-700 dark:text-rose-300">
-                        {verification.message || 'Unable to verify meter number.'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )
+            {message ? (
+              <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">{message}</div>
             ) : null}
-
           </CardContent>
         </Card>
 
-      </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Order summary</CardTitle>
+            <CardDescription>Review details before payment.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-2xl border border-border bg-secondary p-4">
+              <div className="text-sm font-semibold text-foreground">Electricity bill payment</div>
+              <div className="mt-1 text-xs text-muted-foreground">Token receipts are tracked in history.</div>
+            </div>
 
-      {summaryOpen ? (
-        <div className="fixed inset-0 z-[210] flex items-end justify-center bg-black/50 p-0 md:items-center md:p-6">
-          <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">Confirm Transaction</h3>
-                <p className="text-sm text-muted-foreground">Please double-check meter details and amount before paying.</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Disco</span>
+                <span className="font-medium text-foreground">{summaryDisco}</span>
               </div>
-              <button type="button" onClick={() => setSummaryOpen(false)} className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
-                Close
-              </button>
-            </div>
-            <div className="space-y-4 px-5 py-5">
-              <div className="rounded-2xl border border-border bg-secondary p-4">
-                <div className="text-sm font-semibold text-foreground">{summaryDisco} Electricity</div>
-                <div className="text-xs text-muted-foreground">Instant utility recharge</div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Meter type</span>
+                <span className="font-medium text-foreground">{meterLabel(meterType)}</span>
               </div>
-              <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
-                {[
-                  { label: 'Meter number', value: cleanMeter || '—' },
-                  { label: 'Meter type', value: meterLabel(meterType) },
-                  { label: 'Phone', value: cleanPhone || '—' },
-                  { label: 'Amount', value: `₦${Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}` },
-                  { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
-                    <span className="text-sm text-muted-foreground">{item.label}</span>
-                    <span className="text-sm font-medium text-foreground">{item.value}</span>
-                  </div>
-                ))}
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Meter number</span>
+                <span className="font-medium text-foreground">{cleanMeter || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Amount</span>
+                <span className="font-medium text-foreground">₦{Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}</span>
+              </div>
+              <div className="border-t border-border pt-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Wallet balance</span>
+                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
+                    ₦{formatMoney(wallet?.balance || 0)}
+                  </Badge>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
-              <Button variant="secondary" className="h-11 rounded-xl" onClick={() => setSummaryOpen(false)} disabled={busy}>
-                Cancel
-              </Button>
-              <Button className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={async () => { setSummaryOpen(false); await submit(); }} disabled={!canSubmit}>
-                Pay Now
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <TransactionProcessingModal open={busy || processingOpen} />
-      <TransactionReceiptModal
-        open={Boolean(receipt)}
-        receipt={receipt}
-        onClose={() => setReceipt(null)}
-        onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
-        onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
-      />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

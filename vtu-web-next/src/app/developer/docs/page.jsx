@@ -7,7 +7,7 @@ import Link from 'next/link';
 const Badge = ({ method }) => {
   const colors = {
     GET: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    POST: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+    POST: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     NEW: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
   };
   return (
@@ -42,7 +42,7 @@ const FieldTable = ({ fields }) => (
       <tbody className="divide-y divide-slate-800 text-slate-400 text-xs">
         {fields.map((f, i) => (
           <tr key={i}>
-            <td className="px-4 py-2.5 font-mono text-orange-400">{f.field}</td>
+            <td className="px-4 py-2.5 font-mono text-blue-400">{f.field}</td>
             <td className="px-4 py-2.5 text-slate-300">{f.type}</td>
             <td className="px-4 py-2.5">{f.notes}</td>
           </tr>
@@ -53,7 +53,7 @@ const FieldTable = ({ fields }) => (
 );
 
 const SideLink = ({ href, children, isNew }) => (
-  <a href={href} className="group flex items-center gap-2 py-1 text-sm text-slate-400 hover:text-orange-400 transition-colors">
+  <a href={href} className="group flex items-center gap-2 py-1 text-sm text-slate-400 hover:text-blue-400 transition-colors">
     <span>{children}</span>
     {isNew && <span className="text-[9px] font-bold bg-violet-500/15 text-violet-400 px-1.5 py-0.5 rounded-full">New</span>}
   </a>
@@ -66,14 +66,14 @@ export default function DevDocs() {
   const BASE_URL = 'https://meledata.ng/api/v1/developer';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-orange-500 selection:text-white font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-blue-500 selection:text-white font-sans">
 
       {/* ─── Navbar ─── */}
       <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-lg font-bold tracking-tight text-white hover:text-orange-500 transition-colors">
-              MELE DATA <span className="text-orange-500">Developers</span>
+            <Link href="/" className="text-lg font-bold tracking-tight text-white hover:text-blue-500 transition-colors">
+              MELE DATA <span className="text-blue-500">Developers</span>
             </Link>
             <nav className="hidden md:flex items-center gap-4 text-sm text-slate-400">
               <a href="#getting-started" className="hover:text-white transition-colors">Getting started</a>
@@ -85,7 +85,7 @@ export default function DevDocs() {
             <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2 px-3">
               Login
             </Link>
-            <Link href="/register" className="text-sm font-medium bg-orange-600 hover:bg-orange-500 text-white rounded-full py-2 px-4 transition-all">
+            <Link href="/register" className="text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white rounded-full py-2 px-4 transition-all">
               Get started
             </Link>
           </div>
@@ -173,11 +173,11 @@ export default function DevDocs() {
             <ul className="mt-3 space-y-2 text-sm text-slate-400 list-disc list-inside leading-7">
               <li><strong className="text-white">Data API</strong> — buy mobile data on MTN, Glo, Airtel, and 9mobile. Per-plan pricing, idempotent retries.</li>
               <li><strong className="text-white">Airtime API</strong> — send airtime to any Nigerian number. Per-network discounts for resellers.</li>
-              <li><strong className="text-white">Wallet balance</strong> <Badge method="NEW" /> — a lightweight <code className="font-mono text-orange-400">GET /wallet/</code> that returns your current balance, so your backend can check funds before queuing a buy.</li>
-              <li><strong className="text-white">Status requery</strong> <Badge method="NEW" /> — <code className="font-mono text-orange-400">GET /data/status/?ref=…</code> to look up any past purchase.</li>
+              <li><strong className="text-white">Wallet balance</strong> <Badge method="NEW" /> — a lightweight <code className="font-mono text-blue-400">GET /wallet/</code> that returns your current balance, so your backend can check funds before queuing a buy.</li>
+              <li><strong className="text-white">Status requery</strong> <Badge method="NEW" /> — <code className="font-mono text-blue-400">GET /data/status/?ref=…</code> to look up any past purchase.</li>
             </ul>
             <p className="mt-4 text-sm text-slate-400 leading-7">
-              <strong className="text-white">Base URL:</strong> <code className="font-mono text-orange-400">{BASE_URL}</code>. All responses are JSON. Money is Naira (₦) with up to 2 decimal places.
+              <strong className="text-white">Base URL:</strong> <code className="font-mono text-blue-400">{BASE_URL}</code>. All responses are JSON. Money is Naira (₦) with up to 2 decimal places.
             </p>
           </section>
 
@@ -207,7 +207,7 @@ Authorization: Bearer mele_live_xxxxxxxxxxxxxxxxxxxxxxxx`}
 
             {/* Networks */}
             <h3 className="mt-8 text-lg font-bold text-white">Supported Networks</h3>
-            <p className="mt-2 text-sm text-slate-400">Use these exact string values for the <code className="font-mono text-orange-400">network</code> field:</p>
+            <p className="mt-2 text-sm text-slate-400">Use these exact string values for the <code className="font-mono text-blue-400">network</code> field:</p>
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3">
               {['MTN', 'GLO', 'AIRTEL', '9MOBILE'].map((net) => (
                 <div key={net} className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center font-mono text-sm font-bold text-slate-200">
@@ -225,7 +225,7 @@ Authorization: Bearer mele_live_xxxxxxxxxxxxxxxxxxxxxxxx`}
               <Badge method="NEW" />
             </div>
             <p className="mt-4 text-sm text-slate-400 leading-7">
-              Check the balance your token can spend. Useful for showing a low-balance warning in your dashboard, gating a data buy before you call <code className="font-mono text-orange-400">/data/purchase</code>, or reconciling against your own ledger.
+              Check the balance your token can spend. Useful for showing a low-balance warning in your dashboard, gating a data buy before you call <code className="font-mono text-blue-400">/data/purchase</code>, or reconciling against your own ledger.
             </p>
 
             <div className="mt-4 flex items-center gap-3">
@@ -298,7 +298,7 @@ Authorization: Bearer mele_live_xxxxxxxxxxxxxxxxxxxxxxxx`}
                     ['500', 'server_error', 'Unexpected. Logged on our end; retry with backoff.'],
                   ].map(([code, error, when]) => (
                     <tr key={error}>
-                      <td className={`px-4 py-2.5 font-mono ${code.startsWith('2') ? 'text-emerald-400' : code.startsWith('4') ? 'text-orange-400' : 'text-red-400'}`}>{code}</td>
+                      <td className={`px-4 py-2.5 font-mono ${code.startsWith('2') ? 'text-emerald-400' : code.startsWith('4') ? 'text-blue-400' : 'text-red-400'}`}>{code}</td>
                       <td className="px-4 py-2.5 font-mono text-slate-300">{error}</td>
                       <td className="px-4 py-2.5">{when}</td>
                     </tr>
@@ -313,7 +313,7 @@ Authorization: Bearer mele_live_xxxxxxxxxxxxxxxxxxxxxxxx`}
           <section id="idempotency" className="scroll-mt-20">
             <h2 className="text-2xl font-bold text-white border-b border-slate-800 pb-2">Idempotency</h2>
             <p className="mt-4 text-sm text-slate-400 leading-7">
-              Every <code className="font-mono text-orange-400">POST</code> purchase endpoint requires a unique <code className="font-mono text-orange-400">reference</code> string in the request body. Retry with the same reference and you get back the original response — no double-debit, no duplicate work.
+              Every <code className="font-mono text-blue-400">POST</code> purchase endpoint requires a unique <code className="font-mono text-blue-400">reference</code> string in the request body. Retry with the same reference and you get back the original response — no double-debit, no duplicate work.
             </p>
             <CodeBlock title="Example — reference-based idempotency" badge="JSON">
 {`{
@@ -345,7 +345,7 @@ Authorization: Bearer mele_live_xxxxxxxxxxxxxxxxxxxxxxxx`}
           <section id="data-quickstart" className="scroll-mt-20">
             <h2 className="text-2xl font-bold text-white border-b border-slate-800 pb-2">Quickstart</h2>
             <p className="mt-4 text-sm text-slate-400 leading-7">
-              One endpoint: <code className="font-mono text-orange-400">POST /data/purchase</code>. Pick a plan from the live catalog below, send it with the customer&apos;s mobile number, and we route the top-up through the carrier.
+              One endpoint: <code className="font-mono text-blue-400">POST /data/purchase</code>. Pick a plan from the live catalog below, send it with the customer&apos;s mobile number, and we route the top-up through the carrier.
             </p>
 
             {/* Language tabs */}
@@ -356,7 +356,7 @@ Authorization: Bearer mele_live_xxxxxxxxxxxxxxxxxxxxxxxx`}
                   onClick={() => setCodeLang(lang)}
                   className={`px-4 py-2 text-xs font-semibold capitalize transition-all border-b-2 -mb-[2px] ${
                     codeLang === lang
-                      ? 'border-orange-500 text-orange-500'
+                      ? 'border-blue-500 text-blue-500'
                       : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
@@ -427,7 +427,7 @@ echo curl_exec($ch);`}
           <section id="live-plan-catalog" className="scroll-mt-20">
             <h2 className="text-2xl font-bold text-white border-b border-slate-800 pb-2">Live plan catalog</h2>
             <p className="mt-4 text-sm text-slate-400 leading-7">
-              Fetch all available plans programmatically via <code className="font-mono text-orange-400">GET /data/plans</code>. Use the <code className="font-mono text-orange-400">plan_id</code> column when calling <code className="font-mono text-orange-400">POST /data/purchase</code>.
+              Fetch all available plans programmatically via <code className="font-mono text-blue-400">GET /data/plans</code>. Use the <code className="font-mono text-blue-400">plan_id</code> column when calling <code className="font-mono text-blue-400">POST /data/purchase</code>.
             </p>
 
             <div className="mt-4 flex items-center gap-3">
@@ -527,7 +527,7 @@ echo curl_exec($ch);`}
             <div className="mt-4 bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
               <p className="text-xs text-emerald-400 font-semibold">✓ Auto-refund on failure</p>
               <p className="text-xs text-slate-400 mt-1 leading-5">
-                If the carrier rejects the top-up, your wallet is automatically refunded. The response will show <code className="font-mono text-orange-400">status: &quot;failed&quot;</code> with a human-readable message.
+                If the carrier rejects the top-up, your wallet is automatically refunded. The response will show <code className="font-mono text-blue-400">status: &quot;failed&quot;</code> with a human-readable message.
               </p>
             </div>
           </section>
@@ -540,7 +540,7 @@ echo curl_exec($ch);`}
               <Badge method="NEW" />
             </div>
             <p className="mt-4 text-sm text-slate-400 leading-7">
-              Look up the current state of a single data purchase you already made. Use this when the original <code className="font-mono text-orange-400">POST /data/purchase</code> response was delayed or you want to reconcile against your own ledger.
+              Look up the current state of a single data purchase you already made. Use this when the original <code className="font-mono text-blue-400">POST /data/purchase</code> response was delayed or you want to reconcile against your own ledger.
             </p>
 
             <div className="mt-4 flex items-center gap-3">
@@ -645,7 +645,7 @@ echo curl_exec($ch);`}
             <div className="mt-4 bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
               <p className="text-xs text-blue-400 font-semibold">💡 Reseller discounts</p>
               <p className="text-xs text-slate-400 mt-1 leading-5">
-                As a MELE DATA developer, you get reseller-tier pricing on airtime. The <code className="font-mono text-orange-400">amount</code> in the response reflects your discounted charge — not the face value sent to the customer.
+                As a MELE DATA developer, you get reseller-tier pricing on airtime. The <code className="font-mono text-blue-400">amount</code> in the response reflects your discounted charge — not the face value sent to the customer.
               </p>
             </div>
           </section>
@@ -659,9 +659,9 @@ echo curl_exec($ch);`}
                 <p className="text-xs text-slate-500 mt-1">Data, airtime, and wallet APIs for Nigerian builders.</p>
               </div>
               <div className="flex gap-4 text-xs text-slate-400">
-                <Link href="/register" className="hover:text-orange-500 transition-colors">Create account</Link>
-                <Link href="/login" className="hover:text-orange-500 transition-colors">Login</Link>
-                <Link href="/" className="hover:text-orange-500 transition-colors">MELE DATA home</Link>
+                <Link href="/register" className="hover:text-blue-500 transition-colors">Create account</Link>
+                <Link href="/login" className="hover:text-blue-500 transition-colors">Login</Link>
+                <Link href="/" className="hover:text-blue-500 transition-colors">MELE DATA home</Link>
               </div>
             </div>
           </footer>

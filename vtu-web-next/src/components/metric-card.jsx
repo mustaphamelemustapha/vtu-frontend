@@ -9,7 +9,7 @@ export function MetricCard({ label, value, detail, icon: Icon, tone = 'brand', c
       ? 'bg-amber-50 text-amber-800 border-amber-300'
       : tone === 'violet'
       ? 'bg-violet-50 text-violet-800 border-violet-300'
-      : 'bg-orange-50 text-primary border-orange-300';
+      : 'bg-blue-50 text-primary border-blue-300';
 
   return (
     <Card className={cn('border-border bg-card', className)}>

@@ -1,49 +1,18 @@
 'use client';
 
-import Image from 'next/image';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Phone, Smartphone } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Phone, RefreshCw, Smartphone } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
-import { buildTransactionReceipt, downloadReceipt, shareReceipt } from '@/lib/receipt';
-import { normalizeTransactionStatus, sanitizeProviderMessage, waitForTransactionFinalStatus } from '@/lib/transaction-status';
-import { readViewCache, writeViewCache } from '@/lib/view-cache';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
-import { TransactionProcessingModal } from '@/components/transaction-processing-modal';
-import { TransactionReceiptModal } from '@/components/transaction-receipt-modal';
 import { cn } from '@/lib/utils';
 
 function stringifyList(items) {
   return Array.isArray(items) ? items.map((item) => String(item || '').trim()).filter(Boolean) : [];
-}
-
-function normalizeNetwork(value) {
-  const raw = String(value || '').trim().toLowerCase();
-  if (!raw) return '';
-  if (raw.includes('9mobile') || raw.includes('etisalat') || raw === '9' || raw.includes('t2')) return '9mobile';
-  if (raw.includes('mtn')) return 'mtn';
-  if (raw.includes('airtel')) return 'airtel';
-  if (raw.includes('glo')) return 'glo';
-  return raw;
-}
-
-function networkLabel(value) {
-  const key = normalizeNetwork(value);
-  if (key === '9mobile') return '9mobile';
-  return key ? key.toUpperCase() : '—';
-}
-
-function networkLogoSrc(value) {
-  const key = normalizeNetwork(value);
-  if (key === 'mtn') return '/brand/networks/mtn.png';
-  if (key === 'airtel') return '/brand/networks/airtel.png';
-  if (key === 'glo') return '/brand/networks/glo.png';
-  if (key === '9mobile') return '/brand/networks/9mobile.png';
-  return '/brand/networks/mtn.png';
 }
 
 function normalizePhone(value) {
@@ -56,52 +25,23 @@ function validNigerianPhone(value) {
 }
 
 const defaultRecentRecipients = ['08012345678', '08134567890', '09023456789'];
-const CACHE_KEY = 'airtime:v1';
-const AIRTIME_NETWORK_ORDER = ['mtn', 'glo', 'airtel', '9mobile'];
 
 export default function AirtimePage() {
   const [catalog, setCatalog] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [processingOpen, setProcessingOpen] = useState(false);
-  const [receipt, setReceipt] = useState(null);
-  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [message, setMessage] = useState('');
   const [network, setNetwork] = useState('');
   const [phone, setPhone] = useState('');
   const [amount, setAmount] = useState('');
 
   const load = useCallback(async () => {
-    const cached = readViewCache(CACHE_KEY, 10 * 60 * 1000);
-    if (cached) {
-      if (cached.catalog) setCatalog(cached.catalog);
-      if (cached.wallet) setWallet(cached.wallet);
-      setLoading(false);
-    } else {
-      setLoading(true);
-    }
-    setLoadError('');
+    setLoading(true);
     try {
       const [catalogRes, walletRes] = await Promise.allSettled([apiFetch('/services/catalog'), apiFetch('/wallet/me')]);
-      let nextCatalog = cached?.catalog || null;
-      let nextWallet = cached?.wallet || null;
-      if (catalogRes.status === 'fulfilled') {
-        nextCatalog = catalogRes.value;
-        setCatalog(nextCatalog);
-      } else {
-        if (!cached?.catalog) {
-          setCatalog(null);
-          setLoadError('Service catalog is currently unavailable. Please try again shortly.');
-        }
-      }
-      if (walletRes.status === 'fulfilled') {
-        nextWallet = walletRes.value;
-        setWallet(nextWallet);
-      }
-      if (nextCatalog || nextWallet) {
-        writeViewCache(CACHE_KEY, { catalog: nextCatalog, wallet: nextWallet });
-      }
+      if (catalogRes.status === 'fulfilled') setCatalog(catalogRes.value);
+      if (walletRes.status === 'fulfilled') setWallet(walletRes.value);
     } finally {
       setLoading(false);
     }
@@ -111,13 +51,7 @@ export default function AirtimePage() {
     load().catch(() => {});
   }, [load]);
 
-  const networks = stringifyList(catalog?.airtime_networks).map((item) => normalizeNetwork(item));
-  const orderedNetworks = useMemo(() => {
-    const set = new Set(networks.filter(Boolean));
-    const ordered = AIRTIME_NETWORK_ORDER.filter((item) => set.has(item));
-    const extras = [...set].filter((item) => !AIRTIME_NETWORK_ORDER.includes(item));
-    return [...ordered, ...extras];
-  }, [networks]);
+  const networks = stringifyList(catalog?.airtime_networks).map((item) => item.toLowerCase());
 
   useEffect(() => {
     if (!network && networks.length) setNetwork(networks[0]);
@@ -128,153 +62,50 @@ export default function AirtimePage() {
   const phoneError = cleanPhone && !validNigerianPhone(phone) ? 'Enter a valid Nigerian phone number.' : '';
   const amountError = amount && (!Number.isFinite(parsedAmount) || parsedAmount <= 0) ? 'Enter a valid airtime amount.' : '';
   const canSubmit = Boolean(network && cleanPhone && !phoneError && Number.isFinite(parsedAmount) && parsedAmount > 0 && !busy);
-  const openConfirm = () => {
-    if (!canSubmit) return;
-    setSummaryOpen(true);
-  };
 
   const submit = async () => {
     if (!canSubmit) return;
-    const startedAt = Date.now();
     setBusy(true);
-    setProcessingOpen(true);
-    setReceipt(null);
-    let nextReceipt = null;
+    setMessage('');
     try {
-      const timeoutMs = 30000;
-      const res = await Promise.race([
-        apiFetch('/services/airtime/purchase', {
-          method: 'POST',
-          body: JSON.stringify({
-            client_request_id: `web-airtime-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-            network,
-            phone_number: cleanPhone,
-            amount: parsedAmount,
-          }),
-        }),
-        new Promise((_, reject) => {
-          setTimeout(() => {
-            const timeoutError = new Error('Transaction timed out. Please try again.');
-            timeoutError.code = 'REQUEST_TIMEOUT';
-            reject(timeoutError);
-          }, timeoutMs);
-        }),
-      ]);
-      const status = String(res?.status || '').toLowerCase();
-      const pendingVerification = status === 'pending';
-      const displayStatus =
-        status === 'success'
-          ? 'success'
-          : status === 'pending'
-            ? 'pending'
-            : status === 'refunded'
-              ? 'refunded'
-              : 'failed';
-      const baseMessage =
-        status === 'success'
-          ? 'Airtime delivered successfully.'
-          : status === 'pending'
-            ? 'Airtime request submitted and awaiting provider confirmation.'
-            : status === 'refunded'
-              ? 'Transaction was reversed and wallet refunded.'
-              : 'Airtime request failed.';
-      nextReceipt =
-        buildTransactionReceipt({
-          service: 'Airtime Purchase',
-          status: displayStatus,
-          pendingVerification,
-          message: sanitizeProviderMessage(res?.message) || baseMessage,
-          amount: parsedAmount,
-          reference: res?.reference || '—',
-          phone: cleanPhone,
-          meta: [{ label: 'Network', value: network === '9mobile' ? '9mobile' : network.toUpperCase() }],
-        });
+      const res = await apiFetch('/services/airtime/purchase', {
+        method: 'POST',
+        body: JSON.stringify({ network, phone_number: cleanPhone, amount: parsedAmount }),
+      });
+      setMessage(`Airtime request submitted. Reference: ${res?.reference || '—'}`);
       setAmount('');
     } catch (err) {
-      nextReceipt =
-        buildTransactionReceipt({
-          service: 'Airtime Purchase',
-          status: 'failed',
-          message: sanitizeProviderMessage(err?.message) || 'Unable to complete airtime purchase right now.',
-          amount: parsedAmount,
-          phone: cleanPhone,
-          meta: [{ label: 'Network', value: network === '9mobile' ? '9mobile' : network.toUpperCase() }],
-        });
+      setMessage(err?.message || 'Unable to complete airtime purchase right now.');
     } finally {
-      const elapsed = Date.now() - startedAt;
-      const minimumProcessingMs = 700;
-      if (elapsed < minimumProcessingMs) {
-        await new Promise((resolve) => setTimeout(resolve, minimumProcessingMs - elapsed));
-      }
       setBusy(false);
-      setProcessingOpen(false);
-      if (nextReceipt) {
-        setTimeout(() => {
-          setReceipt(nextReceipt);
-        }, 120);
-      }
     }
   };
 
-  useEffect(() => {
-    if (!receipt || !receipt.pendingVerification) return undefined;
-    const reference = String(receipt.reference || '').trim();
-    if (!reference || reference === '—' || reference.toUpperCase() === 'N/A') return undefined;
-
-    let cancelled = false;
-    (async () => {
-      const result = await waitForTransactionFinalStatus(apiFetch, reference, {
-        timeoutMs: 90000,
-        intervalMs: 2500,
-      });
-      if (cancelled || !result?.final) return;
-      const finalStatus = normalizeTransactionStatus(result.status);
-      const tx = result.transaction || {};
-      setReceipt((prev) => {
-        if (!prev) return prev;
-        const mappedStatus = finalStatus === 'success' ? 'success' : finalStatus === 'refunded' ? 'refunded' : 'failed';
-        const nextMessage =
-          mappedStatus === 'success'
-            ? 'Transaction confirmed successfully.'
-            : mappedStatus === 'refunded'
-              ? 'Transaction was reversed and wallet refunded.'
-              : 'Transaction failed.';
-        return {
-          ...prev,
-          pendingVerification: false,
-          status: mappedStatus,
-          message: sanitizeProviderMessage(tx?.failure_reason || tx?.provider_message || tx?.status_message) || nextMessage,
-          createdAt: tx?.created_at || prev.createdAt,
-        };
-      });
-      load().catch(() => {});
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [receipt, load]);
-
   return (
-    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] overflow-x-clip bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
-      <div className="space-y-6 pb-10">
+    <div className="space-y-6 pb-10">
       <PageHeader
         eyebrow="Services"
-        title="Mobile Top-up"
-        description="Send instant airtime to any phone number across Nigerian networks."
+        title="Airtime"
+        description="Top up supported Nigerian networks from a clean airtime workspace."
+        actions={
+          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
+            <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
+            Refresh
+          </Button>
+        }
       />
 
-      <div className="grid gap-4">
-        <Card className="overflow-hidden rounded-[24px] border-border bg-card shadow-[0_16px_42px_rgba(2,6,23,0.12)]">
+      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
+        <Card>
           <CardHeader>
-            <CardTitle>Purchase Airtime</CardTitle>
-            <CardDescription>Select network, input mobile number, and enter amount.</CardDescription>
+            <CardTitle>Buy Airtime</CardTitle>
+            <CardDescription>Select network, enter phone number, set amount, and submit.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
               <div className="axis-label">Network</div>
-              <div className="grid grid-cols-2 gap-3">
-                {orderedNetworks.map((item) => {
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                {networks.map((item) => {
                   const active = network === item;
                   return (
                     <button
@@ -282,41 +113,23 @@ export default function AirtimePage() {
                       type="button"
                       onClick={() => setNetwork(item)}
                       className={cn(
-                        'rounded-2xl border px-4 py-4 text-left text-sm transition',
+                        'rounded-2xl border px-4 py-3 text-left text-sm font-medium transition',
                         active
-                          ? 'border-primary/45 bg-primary/12 text-foreground shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
-                          : 'border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground'
+                          ? 'border-primary/35 bg-primary/10 text-foreground'
+                          : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
                       )}
                     >
-                      <div className="flex items-center justify-center">
-                        <div className="flex h-11 w-11 items-center justify-center overflow-hidden p-0.5">
-                          <Image
-                            src={networkLogoSrc(item)}
-                            alt={`${networkLabel(item)} logo`}
-                            width={42}
-                            height={42}
-                            className="h-full w-full object-contain"
-                            unoptimized
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-3 text-center text-base font-semibold text-foreground">{networkLabel(item)}</div>
+                      {item === '9mobile' ? '9mobile' : item.toUpperCase()}
                     </button>
                   );
                 })}
-                {!orderedNetworks.length ? (
-                  <div className="rounded-2xl border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground col-span-2">
+                {!networks.length ? (
+                  <div className="rounded-2xl border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground sm:col-span-2 lg:col-span-4">
                     Network catalog is still loading.
                   </div>
                 ) : null}
               </div>
             </div>
-
-            {loadError ? (
-              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-400/35 dark:bg-rose-500/12 dark:text-rose-100">
-                {loadError}
-              </div>
-            ) : null}
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
@@ -325,19 +138,18 @@ export default function AirtimePage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   inputMode="tel"
-                  placeholder="e.g. 08012345678"
-                  className="placeholder:italic placeholder:text-muted-foreground/60"
+                  placeholder="08012345678 or 2348012345678"
                 />
                 <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {phoneError || 'Enter recipient mobile number.'}
+                  {phoneError || 'Use 08012345678 or 2348012345678 format.'}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <div className="axis-label">Amount</div>
-                <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="e.g. 500" className="placeholder:italic placeholder:text-muted-foreground/60" />
+                <div className="axis-label">Amount (NGN)</div>
+                <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="500" />
                 <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {amountError || 'Specify the airtime amount.'}
+                  {amountError || 'Enter the airtime amount to charge your wallet.'}
                 </p>
               </div>
             </div>
@@ -358,73 +170,59 @@ export default function AirtimePage() {
               </div>
             </div>
 
-            <Button onClick={openConfirm} disabled={!canSubmit} className="w-full sm:w-auto">
+            <Button onClick={submit} disabled={!canSubmit} className="w-full sm:w-auto">
               <Smartphone className="h-4 w-4" />
-              {busy ? 'Processing...' : 'Confirm'}
+              {busy ? 'Processing...' : 'Buy Airtime'}
             </Button>
 
+            {message ? (
+              <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">{message}</div>
+            ) : null}
           </CardContent>
         </Card>
-      </div>
 
-      {summaryOpen ? (
-        <div className="fixed inset-0 z-[210] flex items-end justify-center bg-black/50 p-0 md:items-center md:p-6">
-          <div className="w-full rounded-t-3xl border border-border bg-card shadow-2xl md:max-w-lg md:rounded-3xl">
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">Confirm Transaction</h3>
-                <p className="text-sm text-muted-foreground">Confirm purchase details before making payment.</p>
-              </div>
-              <button type="button" onClick={() => setSummaryOpen(false)} className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground">
-                Close
-              </button>
-            </div>
-            <div className="space-y-4 px-5 py-5">
-              <div className="rounded-2xl border border-border bg-secondary p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50 text-primary">
-                    <Phone className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-foreground">{networkLabel(network)} Airtime</div>
-                    <div className="text-xs text-muted-foreground">Instant mobile recharge</div>
-                  </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Order summary</CardTitle>
+            <CardDescription>Live preview before purchase.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-2xl border border-border bg-secondary p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-primary">
+                  <Phone className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-foreground">Airtime purchase</div>
+                  <div className="text-xs text-muted-foreground">Wallet-funded transaction</div>
                 </div>
               </div>
-              <div className="space-y-3 rounded-2xl border border-border bg-secondary p-4">
-                {[
-                  { label: 'Phone', value: cleanPhone || '—' },
-                  { label: 'Network', value: networkLabel(network) },
-                  { label: 'Amount', value: `₦${Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}` },
-                  { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-3 border-b border-border pb-2.5 last:border-0 last:pb-0">
-                    <span className="text-sm text-muted-foreground">{item.label}</span>
-                    <span className="text-sm font-medium text-foreground">{item.value}</span>
-                  </div>
-                ))}
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Network</span>
+                <span className="font-medium text-foreground">{network ? (network === '9mobile' ? '9mobile' : network.toUpperCase()) : '—'}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Phone</span>
+                <span className="font-medium text-foreground">{cleanPhone || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Amount</span>
+                <span className="font-medium text-foreground">₦{Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}</span>
+              </div>
+              <div className="border-t border-border pt-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-muted-foreground">Wallet balance</span>
+                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
+                    ₦{formatMoney(wallet?.balance || 0)}
+                  </Badge>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 border-t border-border px-5 py-4">
-              <Button variant="secondary" className="h-11 rounded-xl" onClick={() => setSummaryOpen(false)} disabled={busy}>
-                Cancel
-              </Button>
-              <Button className="h-11 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onClick={async () => { setSummaryOpen(false); await submit(); }} disabled={!canSubmit}>
-                Pay Now
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      <TransactionProcessingModal open={busy || processingOpen} />
-      <TransactionReceiptModal
-        open={Boolean(receipt)}
-        receipt={receipt}
-        onClose={() => setReceipt(null)}
-        onDownload={(node) => (receipt ? downloadReceipt(receipt, node) : null)}
-        onShare={(node) => (receipt ? shareReceipt(receipt, node) : Promise.resolve({ mode: 'none' }))}
-      />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

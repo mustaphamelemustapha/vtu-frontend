@@ -49,7 +49,7 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    load().catch(() => { });
+    load().catch(() => {});
   }, [load]);
 
   const applyForDeveloper = async () => {
@@ -161,10 +161,10 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card id="referrals">
-          <CardHeader>
-            <CardTitle>Referral status</CardTitle>
-            <CardDescription>Invite-first flow with first-deposit rewards already wired on the backend.</CardDescription>
+          <Card id="referrals">
+            <CardHeader>
+              <CardTitle>Referral status</CardTitle>
+              <CardDescription>Invite-first flow with first-deposit rewards already wired on the backend.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-3xl border border-border bg-secondary p-4">
@@ -261,7 +261,7 @@ export default function ProfilePage() {
             )}
 
             {developerState.developer_status === 'applied' && (
-              <div className="rounded-2xl bg-orange-50 border border-orange-200 p-3 text-xs text-orange-800">
+              <div className="rounded-2xl bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800">
                 Your application is currently under review. We will verify and update your status shortly.
               </div>
             )}

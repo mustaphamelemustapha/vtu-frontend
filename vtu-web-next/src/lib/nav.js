@@ -12,6 +12,7 @@ import {
   Tv2,
   UserCircle2,
   Zap,
+  MessageCircle,
 } from 'lucide-react';
 
 export const appNav = [
@@ -22,17 +23,19 @@ export const appNav = [
   { label: 'Electricity', href: '/electricity', icon: Zap },
   { label: 'Cable TV', href: '/cable-tv', icon: Tv2 },
   { label: 'Exam PINs', href: '/exam-pins', icon: GraduationCap },
-  { label: 'Account Credit', href: '/wallet', icon: CircleDollarSign },
+  { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'Referrals', href: '/referrals', icon: Gift },
   { label: 'Notifications', href: '/notifications', icon: Bell },
   { label: 'History', href: '/history', icon: Clock3 },
   { label: 'Profile', href: '/profile', icon: UserCircle2 },
+  { label: 'WhatsApp Channel', href: 'https://whatsapp.com/channel/0029VbCanujEawdvqLAYu83T', icon: MessageCircle, external: true },
+  { label: 'TikTok Page', href: 'https://www.tiktok.com/@meledata_ng', icon: Tv2, external: true },
 ];
 
 export const quickActions = [
   { label: 'Buy Data', href: '/buy-data', icon: Package2 },
   { label: 'Airtime', href: '/airtime', icon: Smartphone },
-  { label: 'Add Credit', href: '/wallet', icon: CircleDollarSign },
+  { label: 'Fund Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'View History', href: '/history', icon: BarChart3 },
   { label: 'Referrals', href: '/referrals', icon: Gift },
   { label: 'Profile', href: '/profile', icon: UserCircle2 },

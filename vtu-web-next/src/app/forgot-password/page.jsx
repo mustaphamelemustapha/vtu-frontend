@@ -1,5 +1,10 @@
-import { AuthForgotPasswordPage } from '@/components/auth-forgot-password-page';
+import { ForgotPasswordPage } from '@/components/forgot-password-page';
 
-export default function ForgotPasswordPage() {
-  return <AuthForgotPasswordPage />;
+export const metadata = {
+  title: 'Forgot Password | MELE DATA',
+  description: 'Reset your MELE DATA password.',
+};
+
+export default function Page() {
+  return <ForgotPasswordPage />;
 }

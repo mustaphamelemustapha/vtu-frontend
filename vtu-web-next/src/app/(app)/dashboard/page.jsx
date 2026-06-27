@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Check, ChevronLeft, ChevronRight, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles } from 'lucide-react';
-import { apiFetch, getProfile, readScopedCache, writeScopedCache } from '@/lib/api';
+import { ArrowRight, Check, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles, Smartphone, Zap, Tv2, GraduationCap } from 'lucide-react';
+import { apiFetch, getProfile } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { quickActions } from '@/lib/nav';
 import { Button } from '@/components/ui/button';
@@ -13,31 +13,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { MetricCard } from '@/components/metric-card';
 import { PageHeader } from '@/components/page-header';
 import { buildReferralUrl } from '@/lib/site';
-import { cn } from '@/lib/utils';
 
 function emptyOrRows(value) {
   return Array.isArray(value) ? value : [];
-}
-
-function txRecipientLabel(tx) {
-  const recipient =
-    tx?.meta?.recipient_phone ||
-    tx?.meta?.phone_number ||
-    tx?.meta?.phone ||
-    tx?.meta?.recipient ||
-    tx?.meta?.destination ||
-    tx?.meta?.target ||
-    tx?.meta?.customer ||
-    tx?.meta?.meter_no ||
-    tx?.meta?.meter_number ||
-    tx?.meta?.smartcard_no ||
-    tx?.meta?.smartcard ||
-    tx?.meta?.iuc ||
-    tx?.recipient ||
-    tx?.phone_number ||
-    tx?.phone ||
-    tx?.destination;
-  return recipient ? String(recipient) : '';
 }
 
 const actionDetails = {
@@ -45,8 +23,8 @@ const actionDetails = {
     kicker: 'Most used',
     description: 'Purchase mobile data with a guided flow and clean confirmation.',
     cta: 'Buy data',
-    tone: 'from-orange-500/16 via-orange-500/8 to-transparent border-orange-300/70',
-    iconTone: 'bg-orange-500 text-white shadow-orange-500/20',
+    tone: 'from-blue-500/16 via-blue-500/8 to-transparent border-blue-300/70',
+    iconTone: 'bg-blue-500 text-white shadow-blue-500/20',
   },
   '/services': {
     kicker: 'Catalog',
@@ -56,9 +34,9 @@ const actionDetails = {
     iconTone: 'bg-sky-500 text-white shadow-sky-500/20',
   },
   '/wallet': {
-    kicker: 'Top-up',
-    description: 'Check balance, view account credit details, and add credit.',
-    cta: 'Open account',
+    kicker: 'Funding',
+    description: 'Check balance, view account details, and fund your wallet.',
+    cta: 'Open wallet',
     tone: 'from-emerald-500/14 via-emerald-500/7 to-transparent border-emerald-300/70',
     iconTone: 'bg-emerald-500 text-white shadow-emerald-500/20',
   },
@@ -88,39 +66,21 @@ const actionDetails = {
 export default function DashboardPage() {
   const router = useRouter();
   const profile = getProfile();
-  const [summary, setSummary] = useState(() => readScopedCache('dashboard_summary', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }));
-  const [referrals, setReferrals] = useState(() => readScopedCache('dashboard_referrals', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }));
-  const [loading, setLoading] = useState(() => !(readScopedCache('dashboard_summary', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 }) || readScopedCache('dashboard_referrals', { maxAgeMs: 30 * 24 * 60 * 60 * 1000 })));
-  const [loadError, setLoadError] = useState('');
+  const [summary, setSummary] = useState(null);
+  const [referrals, setReferrals] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [showStartHere, setShowStartHere] = useState(false);
-  const [bvn, setBvn] = useState('');
-  const [nin, setNin] = useState('');
-  const [activationOption, setActivationOption] = useState('bvn');
-  const [verifying, setVerifying] = useState(false);
-  const [kycModalOpen, setKycModalOpen] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
-    if (!quiet) setLoadError('');
     try {
       const [dash, refs] = await Promise.allSettled([
         apiFetch('/dashboard/summary'),
         apiFetch('/referrals/me'),
       ]);
-      if (dash.status === 'fulfilled') {
-        setSummary(dash.value);
-        writeScopedCache('dashboard_summary', dash.value);
-      }
-      if (refs.status === 'fulfilled') {
-        setReferrals(refs.value);
-        writeScopedCache('dashboard_referrals', refs.value);
-      }
-      if (dash.status !== 'fulfilled' && refs.status !== 'fulfilled') {
-        setLoadError('Unable to refresh dashboard right now. Please try again.');
-      }
+      if (dash.status === 'fulfilled') setSummary(dash.value);
+      if (refs.status === 'fulfilled') setReferrals(refs.value);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -128,61 +88,24 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    load(!!(summary || referrals)).catch(() => {});
+    load().catch(() => {});
   }, [load]);
-
-  useEffect(() => {
-    try {
-      const dismissed = window.localStorage.getItem('axisvtu_start_here_dismissed');
-      setShowStartHere(dismissed !== '1');
-    } catch {
-      setShowStartHere(true);
-    }
-  }, []);
 
   const wallet = summary?.wallet || {};
   const txs = emptyOrRows(summary?.transactions).slice(0, 6);
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
   const bankTransfer = summary?.bank_transfer_accounts || {};
-  
-  const bankAccounts = useMemo(() => {
-    const list = Array.isArray(bankTransfer?.accounts) ? [...bankTransfer.accounts] : [];
-    list.sort((a, b) => {
-      const aName = String(a.bank_name || '').toLowerCase();
-      const bName = String(b.bank_name || '').toLowerCase();
-      if (aName.includes('moniepoint') && !bName.includes('moniepoint')) return -1;
-      if (!aName.includes('moniepoint') && bName.includes('moniepoint')) return 1;
-      return 0;
-    });
-    return list;
-  }, [bankTransfer?.accounts]);
-
-  const primaryFundingAccount = bankAccounts[activeIndex] || bankAccounts[0] || null;
-
-  const accountHolderName = useMemo(() => {
-    const baseName = primaryFundingAccount?.account_name || profile?.full_name || 'Customer';
-    const rawName = String(baseName).trim();
-    
-    // Clean up legacy merchant/business prefixes beautifully using regex (e.g. MMTECHGLOBE, MELE DATA, MELE DATA/, MMTECHGLOBE -, etc.)
-    const prefixPattern = /^(?:MMTECHGLOBE|MELE DATA)(?:\s*[-\/:]\s*|\s+)?/i;
-    let cleanName = rawName.replace(prefixPattern, '').trim();
-    if (!cleanName) {
-      cleanName = rawName;
-    }
-    
-    return `MMTECHGLOBE / ${cleanName}`;
-  }, [profile?.full_name, primaryFundingAccount?.account_name]);
-
+  const primaryFundingAccount = bankTransfer?.accounts?.[0] || null;
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
   const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
-    { label: 'Available credit', value: `₦${formatMoney(wallet.balance || 0)}`, detail: 'Live available balance', icon: CircleDollarSign, tone: 'brand' },
+    { label: 'Wallet balance', value: `₦${formatMoney(wallet.balance || 0)}`, detail: 'Live available balance', icon: CircleDollarSign, tone: 'brand' },
     { label: 'Rewards earned', value: `₦${formatMoney(referrals?.total_earned ?? 0)}`, detail: 'Referral revenue', icon: Gift, tone: 'violet' },
   ], [wallet.balance, referrals?.total_earned]);
 
   const copyFundingAccount = useCallback(async () => {
     const accountNumber = primaryFundingAccount?.account_number;
-    if (!accountNumber || primaryFundingAccount?.isPlaceholder) return;
+    if (!accountNumber) return;
     try {
       await navigator.clipboard.writeText(String(accountNumber));
       setCopiedAccount(true);
@@ -190,93 +113,14 @@ export default function DashboardPage() {
     } catch {
       setCopiedAccount(false);
     }
-  }, [primaryFundingAccount?.account_number, primaryFundingAccount?.isPlaceholder]);
-
-  const hasMoniepoint = useMemo(() => {
-    return bankAccounts.some(acc => {
-      const name = String(acc.bank_name || '').toLowerCase();
-      return name.includes('moniepoint');
-    });
-  }, [bankAccounts]);
-
-  const handleKycSubmit = async (e) => {
-    e.preventDefault();
-    if (!bvn.trim() && !nin.trim()) {
-      alert('Please enter your BVN or NIN.');
-      return;
-    }
-    setVerifying(true);
-    try {
-      const res = await apiFetch('/wallet/bank-transfer-accounts', {
-        method: 'POST',
-        body: JSON.stringify({
-          bvn: bvn.trim() || null,
-          nin: nin.trim() || null,
-        }),
-      });
-      if (Array.isArray(res?.accounts)) {
-        setBvn('');
-        setNin('');
-        setKycModalOpen(false);
-        alert('Funding accounts generated successfully!');
-        await load(true);
-      }
-    } catch (err) {
-      alert(err.message || 'Unable to generate dedicated accounts.');
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  const getBankTheme = (bankName) => {
-    const name = String(bankName || '').toLowerCase();
-    if (name.includes('moniepoint')) {
-      return {
-        cardBg: "from-slate-950 via-blue-950/80 to-blue-900/60 border-blue-500/30",
-        glow: "bg-blue-500/10",
-        accentColor: "text-blue-400",
-        iconColor: "text-blue-400",
-        badge: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-        brandName: "MONIEPOINT AUTOMATED ROUTE",
-      };
-    } else if (name.includes('wema')) {
-      return {
-        cardBg: "from-slate-950 via-purple-950/80 to-purple-900/60 border-purple-500/30",
-        glow: "bg-purple-500/10",
-        accentColor: "text-purple-400",
-        iconColor: "text-purple-400",
-        badge: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-        brandName: "WEMA BANK ROUTE",
-      };
-    } else if (name.includes('sterling')) {
-      return {
-        cardBg: "from-slate-950 via-red-950/80 to-red-900/60 border-red-500/30",
-        glow: "bg-red-500/10",
-        accentColor: "text-red-400",
-        iconColor: "text-red-400",
-        badge: "bg-red-500/10 text-red-400 border border-red-500/20",
-        brandName: "STERLING BANK ROUTE",
-      };
-    } else {
-      return {
-        cardBg: "from-slate-950 via-slate-900 to-slate-950 border-primary/20",
-        glow: "bg-primary/10",
-        accentColor: "text-primary",
-        iconColor: "text-primary",
-        badge: "bg-primary/10 text-primary border border-primary/20",
-        brandName: "STANDARD PAYMENTS",
-      };
-    }
-  };
-
-  const activeTheme = getBankTheme(primaryFundingAccount?.bank_name);
+  }, [primaryFundingAccount?.account_number]);
 
   return (
-    <div className="min-w-0 space-y-6 overflow-x-hidden pb-8">
+    <div className="space-y-6 pb-8">
       <PageHeader
-        eyebrow="Overview"
-        title={`Welcome, ${String(profile?.full_name || profile?.email || 'User').split(' ')[0]}`}
-        description="Your dashboard to add money, purchase mobile services, and track transaction history."
+        eyebrow="Dashboard"
+        title={`Good to see you, ${String(profile?.full_name || profile?.email || 'User').split(' ')[0]}`}
+        description="A calm command center for MELE DATA operations, balances, and referral activity."
         actions={(
           <>
             <Button variant="secondary" onClick={() => load(true)} className="border-border bg-card text-muted-foreground hover:bg-secondary">
@@ -285,48 +129,11 @@ export default function DashboardPage() {
             </Button>
             <Button onClick={() => router.push('/buy-data')}>
               <Package2 className="h-4 w-4" />
-              Data Bundles
+              Buy Data
             </Button>
           </>
         )}
       />
-
-      {loadError ? (
-        <div className="rounded-2xl border border-amber-300/50 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-400/35 dark:bg-amber-500/10 dark:text-amber-100">
-          {loadError}
-        </div>
-      ) : null}
-
-      {showStartHere ? (
-        <Card className="border-primary/25 bg-gradient-to-r from-primary/10 via-card to-card">
-          <CardContent className="p-5 sm:p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="min-w-0">
-                <div className="axis-label text-primary">Get Started</div>
-                <div className="mt-1 text-lg font-semibold tracking-tight text-foreground">Three simple steps to start using Axis</div>
-                <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">1. Add Money</span>
-                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">2. Purchase Data</span>
-                  <span className="rounded-full border border-border bg-secondary px-3 py-1 text-muted-foreground">3. Track Transaction</span>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" onClick={() => router.push('/wallet')}>Add money</Button>
-                <Button onClick={() => router.push('/buy-data')}>Purchase data</Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowStartHere(false);
-                    try { window.localStorage.setItem('axisvtu_start_here_dismissed', '1'); } catch {}
-                  }}
-                >
-                  Dismiss
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
         {quickStats.map((item) => (
@@ -334,191 +141,97 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <Card className="overflow-hidden border-none bg-secondary/30 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] transition-all duration-300 hover:shadow-[0_40px_80px_-16px_rgba(249,115,22,0.08)] dark:bg-slate-900/40">
-        <CardContent className="grid min-w-0 gap-8 p-6 lg:grid-cols-[1fr_420px] lg:items-center sm:p-8">
-          <div className="flex min-w-0 items-start gap-5">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.3)]">
-              <Landmark className="h-7 w-7" />
+      <Card className="overflow-hidden border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card shadow-[0_24px_70px_rgba(234,115,69,0.10)]">
+        <CardContent className="grid gap-5 p-5 md:grid-cols-[1fr_auto] md:items-center sm:p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg shadow-blue-500/20">
+              <Landmark className="h-6 w-6" />
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary/80">Add Money</div>
-              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">Your Funding Accounts</h2>
-              <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
-                Transfer funds to your dedicated accounts below to top up your balance. Your account will be funded automatically.
+              <div className="axis-label text-primary">Fund your wallet</div>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:text-2xl">Dedicated funding account</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Transfer to this account to fund your MELE DATA wallet. Copy the account number and send money from your bank app.
               </p>
-              
-              {/* Premium Bank Tab Selector (Shuffle/Selection Area) */}
-              {bankAccounts.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-6 overflow-x-auto py-1 scrollbar-none">
-                  {bankAccounts.map((acc, index) => {
-                    const isMonie = String(acc.bank_name || '').toLowerCase().includes('moniepoint');
-                    return (
-                      <button
-                        key={acc.bank_name + index}
-                        onClick={() => setActiveIndex(index)}
-                        className={cn(
-                          "px-4 py-2 text-xs font-bold rounded-2xl border transition-all shrink-0 flex items-center gap-1.5",
-                          activeIndex === index
-                            ? (isMonie 
-                                ? "border-blue-500 bg-blue-500/10 text-blue-500 shadow-sm" 
-                                : "border-primary bg-primary/10 text-primary shadow-sm")
-                            : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
-                        )}
-                      >
-                        {isMonie && <Sparkles className="h-3 w-3 text-blue-500 animate-pulse" />}
-                        {acc.bank_name || 'Bank'}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
 
           {primaryFundingAccount ? (
-            <div className="flex flex-col w-full">
-              <div className={cn(
-                "group relative min-w-0 overflow-hidden rounded-[32px] border p-6 shadow-2xl shadow-primary/5 transition-all duration-500",
-                activeTheme.cardBg
-              )}>
-                <div className={cn("absolute -right-12 -top-12 h-32 w-32 rounded-full blur-3xl transition-all duration-500 group-hover:scale-150", activeTheme.glow)} />
-                
-                <div className="relative flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Active & Ready</span>
-                  </div>
-                  <span className={cn("text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wider", activeTheme.badge)}>
-                    {activeTheme.brandName}
-                  </span>
-                </div>
-
-                <div className="relative mt-8">
-                  <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">Account Number</div>
-                  <div className="mt-1 flex items-center justify-between gap-4">
-                    <div className="font-mono text-3xl font-bold tracking-[0.12em] text-foreground sm:text-4xl">
-                      {primaryFundingAccount.account_number}
-                    </div>
-                    {!primaryFundingAccount?.isPlaceholder && (
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className={cn(
-                          "h-12 w-12 shrink-0 rounded-2xl border transition-all duration-300",
-                          copiedAccount 
-                            ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600" 
-                            : "border-primary/20 bg-primary/10 text-primary hover:scale-110 hover:bg-primary/20"
-                        )}
-                        onClick={copyFundingAccount}
-                      >
-                        {copiedAccount ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-                      </Button>
-                    )}
+            <div className="w-full rounded-3xl border border-border bg-card/85 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:min-w-[390px] md:max-w-[520px]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account number</div>
+                  <div className="mt-2 break-all font-mono text-3xl font-semibold tracking-[0.16em] text-foreground sm:text-4xl">
+                    {primaryFundingAccount.account_number}
                   </div>
                 </div>
-
-                <div className="relative mt-10 grid gap-6 border-t border-border/60 pt-6 sm:grid-cols-2 sm:items-center">
-                  <div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bank Name</div>
-                    <div className="mt-1 text-lg font-black tracking-tight text-foreground">
-                      {primaryFundingAccount.bank_name || 'Funding Partner'}
-                    </div>
-                  </div>
-                  <div className="sm:text-right">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Account Holder</div>
-                    <div className="mt-1 break-words text-sm font-bold text-foreground">
-                      {accountHolderName}
-                    </div>
-                  </div>
-                </div>
-
-                {copiedAccount && !primaryFundingAccount?.isPlaceholder && (
-                  <div className="absolute inset-x-0 bottom-0 flex justify-center pb-2">
-                    <div className="rounded-full bg-emerald-500 px-3 py-1 text-[10px] font-bold text-white shadow-lg">
-                      Copied to clipboard
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Moniepoint Active Upsell Promo Banner if they don't have Moniepoint yet */}
-              {!hasMoniepoint && (
-                <div className="mt-4 rounded-2xl border border-dashed border-blue-500/35 bg-blue-500/5 p-4 flex items-center justify-between gap-3 text-xs leading-relaxed text-muted-foreground">
-                  <div>
-                    <span className="font-extrabold text-blue-500 flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-blue-500 animate-pulse" /> MONIEPOINT ROUTE AVAILABLE</span>
-                    <p className="mt-1 text-[11px]">Unlock lightning-fast deposits with zero delay. Generate your Moniepoint account now.</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="rounded-xl border-blue-500/35 text-blue-500 shrink-0 hover:bg-blue-500/10" onClick={() => setKycModalOpen(true)}>
-                    Activate
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="w-full rounded-[32px] border border-dashed border-border bg-card/60 p-6 sm:p-8 space-y-6 lg:col-span-2">
-              <div className="text-center max-w-md mx-auto space-y-4">
-                <div className="mx-auto h-12 w-12 rounded-2xl bg-orange-500/10 text-primary flex items-center justify-center shadow-inner">
-                  <Sparkles className="h-6 w-6 text-primary animate-pulse" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-bold text-foreground font-black">Activate Your Funding Accounts ⚡</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Generate your personal Wema, Sterling, and Moniepoint dedicated virtual bank accounts to start funding your wallet automatically.
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => setKycModalOpen(true)}
-                  className="rounded-xl h-11 text-xs font-bold px-6"
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-11 w-11 shrink-0 border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
+                  onClick={copyFundingAccount}
+                  aria-label="Copy funding account number"
+                  title="Copy account number"
                 >
-                  Activate Accounts
+                  {copiedAccount ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 </Button>
               </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="min-w-0 rounded-2xl border border-border bg-secondary p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Bank</div>
+                  <div className="mt-1 text-sm font-semibold text-foreground">{primaryFundingAccount.bank_name || 'Bank account'}</div>
+                </div>
+                <div className="min-w-0 rounded-2xl border border-border bg-secondary p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Account name</div>
+                  <div className="mt-1 break-words text-sm font-semibold text-foreground">{primaryFundingAccount.account_name || 'MELE DATA Wallet'}</div>
+                </div>
+              </div>
+              <div className="mt-3 text-xs font-medium text-primary">
+                {copiedAccount ? 'Account number copied.' : 'Tap copy, then transfer from your bank app.'}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border bg-card/85 p-5 text-sm leading-6 text-muted-foreground md:min-w-[360px]">
+              {bankTransfer?.message || 'Wallet transfer account will appear here once it is available.'}
+              <Button className="mt-4 w-full" onClick={() => router.push('/wallet')}>
+                Open wallet
+              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-        <Card className="overflow-hidden">
-          <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-border bg-gradient-to-r from-secondary to-card">
-            <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                <Sparkles className="h-3.5 w-3.5" />
-                Quick Services
-              </div>
-              <CardTitle>Services</CardTitle>
-              <CardDescription>Access your primary mobile services and account tools.</CardDescription>
+        <Card className="overflow-hidden border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-secondary/50 to-card/50 py-4 px-5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <CardTitle className="text-lg font-semibold tracking-tight">Quick Services</CardTitle>
             </div>
-            <Badge tone="neutral" className="hidden sm:inline-flex">Responsive</Badge>
           </CardHeader>
-          <CardContent className="p-4 sm:p-5">
-            <div className="grid grid-cols-2 gap-3 2xl:grid-cols-3">
-              {quickActions.map((item) => {
+          <CardContent className="p-5">
+            <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
+              {[
+                { label: 'Data', href: '/buy-data', icon: Package2, color: 'text-blue-500 bg-blue-500/10 dark:bg-blue-500/20' },
+                { label: 'Airtime', href: '/airtime', icon: Smartphone, color: 'text-sky-500 bg-sky-500/10 dark:bg-sky-500/20' },
+                { label: 'Cable TV', href: '/cable-tv', icon: Tv2, color: 'text-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20' },
+                { label: 'Electricity', href: '/electricity', icon: Zap, color: 'text-amber-500 bg-amber-500/10 dark:bg-amber-500/20' },
+                { label: 'Exam PINs', href: '/exam-pins', icon: GraduationCap, color: 'text-violet-500 bg-violet-500/10 dark:bg-violet-500/20' },
+                { label: 'Wallet', href: '/wallet', icon: CircleDollarSign, color: 'text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20' },
+              ].map((item) => {
                 const Icon = item.icon;
-                const detail = actionDetails[item.href] || actionDetails['/profile'];
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`group relative flex min-h-[198px] flex-col overflow-hidden rounded-3xl border bg-gradient-to-br ${detail.tone} p-3.5 text-left ring-1 ring-primary/10 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.08)] focus:outline-none focus:ring-2 focus:ring-primary/25 dark:hover:shadow-[0_18px_45px_rgba(0,0,0,0.22)] sm:min-h-[212px] sm:p-4`}
+                    className="group flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card/40 p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:bg-card hover:shadow-[0_12px_30px_rgba(0,0,0,0.04)] dark:hover:shadow-[0_12px_30px_rgba(0,0,0,0.2)]"
                   >
-                    <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-white/35 blur-2xl dark:bg-white/5" />
-                    <div className="relative flex items-start justify-between gap-4">
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-lg ${detail.iconTone} sm:h-11 sm:w-11`}>
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <span className="rounded-full border border-border bg-card/70 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:px-2.5 sm:text-[10px] sm:tracking-[0.16em]">
-                        {detail.kicker}
-                      </span>
+                    <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110 ${item.color}`}>
+                      <Icon className="h-6 w-6" />
                     </div>
-                    <div className="relative mt-4">
-                      <div className="text-[15px] font-semibold tracking-tight text-foreground sm:text-base">{item.label}</div>
-                      <p className="mt-1.5 min-h-[52px] text-xs leading-5 text-muted-foreground sm:mt-2 sm:text-sm sm:leading-6">{detail.description}</p>
-                      <div className="mt-auto pt-3 inline-flex items-center gap-2 text-xs font-semibold text-primary sm:pt-4 sm:text-sm">
-                        {detail.cta}
-                        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                      </div>
-                    </div>
+                    <span className="text-xs font-semibold tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary">
+                      {item.label}
+                    </span>
                   </Link>
                 );
               })}
@@ -528,14 +241,14 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Invite & Earn</CardTitle>
-            <CardDescription>Earn rewards when your friends register and add money.</CardDescription>
+            <CardTitle>Referral position</CardTitle>
+            <CardDescription>Invite-first deposit rewards, surfaced directly on the dashboard.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-3xl border border-border bg-secondary p-4">
               <div className="axis-label">Your code</div>
               <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{referralCode}</div>
-              <div className="mt-2 text-sm text-muted-foreground">Share your code with friends. You both get rewarded upon their first fund deposit.</div>
+              <div className="mt-2 text-sm text-muted-foreground">Share this code with new users to earn rewards after their first deposit.</div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <Button variant="secondary" onClick={() => router.push('/profile')} className="border-border bg-card text-muted-foreground hover:bg-secondary">
@@ -548,87 +261,28 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr] min-w-0 w-full">
-        <Card className="min-w-0 w-full overflow-hidden">
+      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
+        <Card>
           <CardHeader>
-            <CardTitle>Transaction History</CardTitle>
-            <CardDescription>Your most recent transactions and payments.</CardDescription>
+            <CardTitle>Recent activity</CardTitle>
+            <CardDescription>Latest wallet and service movements.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 min-w-0 w-full">
-            {loading ? (
-              <div className="space-y-3">
-                <div className="h-20 animate-pulse rounded-2xl border border-border bg-secondary" />
-                <div className="h-20 animate-pulse rounded-2xl border border-border bg-secondary" />
-                <div className="h-20 animate-pulse rounded-2xl border border-border bg-secondary" />
-              </div>
-            ) : null}
-            {txs.length === 0 && !loading ? (
-              <div className="rounded-2xl border border-dashed border-border bg-secondary p-4 text-sm text-muted-foreground">
-                No transactions recorded yet.
-                <div className="mt-3">
-                  <Button size="sm" onClick={() => router.push('/buy-data')}>Purchase Data</Button>
+          <CardContent className="space-y-4">
+            {loading ? <div className="text-sm text-muted-foreground">Loading transactions...</div> : null}
+            {txs.length === 0 && !loading ? <div className="text-sm text-muted-foreground">No recent activity yet.</div> : null}
+            {txs.map((tx) => (
+              <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
+                <div>
+                  <div className="text-sm font-medium text-foreground">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
+                  <div className="text-xs text-muted-foreground">{String(tx.reference || '—')}</div>
+                  <div className="text-xs text-muted-foreground">{formatDateTime(tx.created_at)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
+                  <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{String(tx.status || 'pending')}</div>
                 </div>
               </div>
-            ) : null}
-            {txs.map((tx) => {
-              const recipient = txRecipientLabel(tx);
-              const status = String(tx.status || 'pending').toLowerCase();
-              const typeLower = String(tx.tx_type || '').toLowerCase();
-              return (
-                <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-[20px] border border-border bg-card p-4 transition-all hover:bg-secondary/40">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    {/* Circle Icon showing type prefix */}
-                    <div className={cn(
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xs font-bold font-mono",
-                      typeLower.includes('data') ? "bg-blue-500/10 text-blue-500" :
-                      typeLower.includes('airtime') ? "bg-green-500/10 text-green-500" :
-                      typeLower.includes('funding') || typeLower.includes('deposit') || typeLower.includes('wallet') ? "bg-emerald-500/10 text-emerald-500" :
-                      "bg-indigo-500/10 text-indigo-500"
-                    )}>
-                      {String(tx.tx_type || 'TX').slice(0, 2).toUpperCase()}
-                    </div>
-                    
-                    <div className="space-y-0.5 min-w-0 flex-1">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
-                        {String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}
-                      </div>
-                      <div className="text-sm font-extrabold text-foreground truncate">
-                        {recipient ? `To ${recipient}` : String(tx.reference || '—')}
-                      </div>
-                      {recipient && (
-                        <div className="text-[11px] text-muted-foreground/80 font-mono truncate">
-                          Ref: {String(tx.reference || '—')}
-                        </div>
-                      )}
-                      <div className="text-[10px] text-muted-foreground">
-                        {formatDateTime(tx.created_at)}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right space-y-1.5 shrink-0">
-                    <div className="text-sm font-black text-foreground">
-                      ₦{formatMoney(tx.amount || 0)}
-                    </div>
-                    <div>
-                      {status === 'success' || status === 'completed' ? (
-                        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-500 border border-emerald-500/20">
-                          Success
-                        </span>
-                      ) : status === 'failed' || status === 'reversed' || status === 'cancelled' ? (
-                        <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-rose-500 border border-rose-500/20">
-                          Failed
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-500 border border-amber-500/20">
-                          Pending
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            ))}
           </CardContent>
         </Card>
 
@@ -650,125 +304,6 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
-
-      {kycModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200">
-          <div className="relative w-full max-w-lg rounded-[32px] border border-border bg-card p-6 md:p-8 shadow-2xl transition-all duration-300 my-auto">
-            {/* Glowing Accent */}
-            <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-            
-            {/* Header */}
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <Landmark className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground font-black">Generate Dedicated Account</h3>
-                  <p className="text-xs text-muted-foreground">Verification required by CBN regulations</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setKycModalOpen(false)}
-                className="h-8 w-8 rounded-full border border-border bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Privacy & Regulatory Trust Disclosure */}
-            <div className="mt-6 rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs leading-relaxed text-muted-foreground space-y-2.5">
-              <div className="flex items-center gap-2 text-blue-500 font-extrabold tracking-wide uppercase">
-                <Sparkles className="h-4 w-4" />
-                Zero-Storage Privacy Policy
-              </div>
-              <p>
-                To generate automated funding accounts, the <strong>Central Bank of Nigeria (CBN)</strong> requires identity validation matching your credentials.
-              </p>
-              <ul className="list-disc pl-4 space-y-1">
-                <li><strong>MELE DATA does NOT store or save your BVN/NIN.</strong> It is instantly encrypted and sent directly to Moniepoint/Monnify.</li>
-                <li>This process strictly validates your legal name to secure your dedicated virtual bank accounts.</li>
-                <li>Your data remains 100% private and protected.</li>
-              </ul>
-            </div>
-
-            {/* Selector */}
-            <div className="grid grid-cols-2 gap-1 rounded-xl bg-secondary p-1 mt-6">
-              <button
-                type="button"
-                onClick={() => { setActivationOption('bvn'); setBvn(''); setNin(''); }}
-                className={cn(
-                  "rounded-lg py-2 text-xs font-semibold transition-all",
-                  activationOption === 'bvn' 
-                    ? "bg-background text-foreground shadow-sm font-bold" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                BVN Option
-              </button>
-              <button
-                type="button"
-                onClick={() => { setActivationOption('nin'); setBvn(''); setNin(''); }}
-                className={cn(
-                  "rounded-lg py-2 text-xs font-semibold transition-all",
-                  activationOption === 'nin' 
-                    ? "bg-background text-foreground shadow-sm font-bold" 
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                NIN Option
-              </button>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleKycSubmit} className="space-y-4 mt-6">
-              {activationOption === 'bvn' ? (
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Bank Verification Number (11 Digits)</label>
-                  <input
-                    type="text"
-                    maxLength={11}
-                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    placeholder="Enter 11-digit BVN"
-                    value={bvn}
-                    onChange={(e) => setBvn(e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">National Identification Number (11 Digits)</label>
-                  <input
-                    type="text"
-                    maxLength={11}
-                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    placeholder="Enter 11-digit NIN"
-                    value={nin}
-                    onChange={(e) => setNin(e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-2">
-                <Button 
-                  type="button" 
-                  variant="secondary" 
-                  onClick={() => setKycModalOpen(false)}
-                  className="flex-1 rounded-xl h-11 text-xs font-bold border border-border"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="flex-1 rounded-xl h-11 text-xs font-bold" 
-                  disabled={verifying}
-                >
-                  {verifying ? 'Activating...' : 'Activate Route'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

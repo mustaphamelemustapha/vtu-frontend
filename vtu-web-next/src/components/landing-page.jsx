@@ -197,7 +197,7 @@ function MobileMenu({ open, onClose }) {
                   key={item.label}
                   href={item.href}
                   onClick={onClose}
-                  className="rounded-2xl border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-orange-200 hover:bg-orange-50 hover:text-foreground"
+                  className="rounded-2xl border border-border px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-blue-200 hover:bg-blue-50 hover:text-foreground"
                 >
                   {item.label}
                 </a>
@@ -237,9 +237,8 @@ function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 border-b bg-card/85 backdrop-blur-xl transition-shadow ${
-          scrolled ? 'border-border shadow-[0_8px_30px_rgba(15,23,42,0.05)]' : 'border-transparent'
-        }`}
+        className={`sticky top-0 z-40 border-b bg-card/85 backdrop-blur-xl transition-shadow ${scrolled ? 'border-border shadow-[0_8px_30px_rgba(15,23,42,0.05)]' : 'border-transparent'
+          }`}
       >
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
@@ -261,7 +260,7 @@ function Header() {
             <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card px-5 text-muted-foreground hover:bg-secondary">
               <Link href="/login">Sign In</Link>
             </Button>
-            <Button asChild className="h-11 rounded-full bg-primary px-5 text-primary-foreground shadow-sm shadow-orange-200 hover:bg-primary/90">
+            <Button asChild className="h-11 rounded-full bg-primary px-5 text-primary-foreground shadow-sm shadow-blue-200 hover:bg-primary/90">
               <Link href="/register">Get Started</Link>
             </Button>
           </div>
@@ -291,7 +290,7 @@ function Hero() {
             initial="hidden"
             animate="show"
             custom={0}
-            className="inline-flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-card px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary shadow-sm"
+            className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-200 bg-card px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary shadow-sm"
           >
             <Sparkles className="h-3.5 w-3.5" />
             MELE DATA for everyday payments
@@ -324,7 +323,7 @@ function Hero() {
             custom={0.24}
             className="mt-8 flex flex-wrap gap-3 items-center"
           >
-            <Button asChild className="h-12 rounded-full bg-primary px-6 text-base text-primary-foreground shadow-sm shadow-orange-200 hover:bg-primary/90">
+            <Button asChild className="h-12 rounded-full bg-primary px-6 text-base text-primary-foreground shadow-sm shadow-blue-200 hover:bg-primary/90">
               <Link href="/register">
                 Get Started
                 <ArrowRight className="h-4 w-4" />
@@ -333,15 +332,15 @@ function Hero() {
             <Button asChild variant="secondary" className="h-12 rounded-full border-border bg-card px-6 text-base text-muted-foreground hover:bg-secondary">
               <Link href="/login">Log in</Link>
             </Button>
-            <a 
-              href="https://play.google.com/store/apps/details?id=com.mmtech.axisvtu&pcampaignid=web_share" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-card px-5 hover:border-orange-300 hover:bg-secondary/40 transition duration-200"
+            <a
+              href="https://play.google.com/store/apps/details?id=com.mmtech.axisvtu&pcampaignid=web_share"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-card px-5 hover:border-blue-300 hover:bg-secondary/40 transition duration-200"
             >
               <div className="flex items-center gap-2.5 text-left">
                 <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M5.002 3c-.116 0-.23.018-.342.049L13.882 12 4.66 20.951c.112.03.226.049.342.049.278 0 .546-.076.784-.216l12.44-7.108c.556-.317.9-.9.9-1.547 0-.647-.344-1.23-.9-1.547L5.786 3.216a1.564 1.564 0 0 0-.784-.216zm-1.042.825V20.18L13.06 12 3.96 3.825z"/>
+                  <path d="M5.002 3c-.116 0-.23.018-.342.049L13.882 12 4.66 20.951c.112.03.226.049.342.049.278 0 .546-.076.784-.216l12.44-7.108c.556-.317.9-.9.9-1.547 0-.647-.344-1.23-.9-1.547L5.786 3.216a1.564 1.564 0 0 0-.784-.216zm-1.042.825V20.18L13.06 12 3.96 3.825z" />
                 </svg>
                 <div>
                   <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">Get it on</div>
@@ -349,15 +348,15 @@ function Hero() {
                 </div>
               </div>
             </a>
-            <a 
-              href="https://apps.apple.com/ng/app/mele-data/id6779367547" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-card px-5 hover:border-orange-300 hover:bg-secondary/40 transition duration-200"
+            <a
+              href="https://apps.apple.com/ng/app/mele-data/id6779367547"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-card px-5 hover:border-blue-300 hover:bg-secondary/40 transition duration-200"
             >
               <div className="flex items-center gap-2.5 text-left">
                 <svg className="h-5 w-5 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z"/>
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z" />
                 </svg>
                 <div>
                   <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">Download on the</div>
@@ -388,11 +387,11 @@ function Hero() {
           transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
           className="relative flex items-center justify-center"
         >
-          <div className="absolute inset-x-16 top-20 h-44 rounded-full bg-orange-100/40 blur-3xl" />
+          <div className="absolute inset-x-16 top-20 h-44 rounded-full bg-blue-100/40 blur-3xl" />
           <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-2 shadow-[0_24px_70px_rgba(15,23,42,0.08)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_30px_80px_rgba(15,23,42,0.12)]">
-            <img 
-              src="/brand/mele_data_final_campaign.jpg" 
-              alt="MELE DATA Mobile App Mockup" 
+            <img
+              src="/brand/mele_data_final_campaign.jpg"
+              alt="MELE DATA Mobile App Mockup"
               className="max-h-[520px] w-auto rounded-2xl object-contain"
             />
           </div>
@@ -428,7 +427,7 @@ function ServicesSection() {
               >
                 <Card className="h-full border-border bg-card shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                   <CardContent className="p-6">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-primary">
                       <Icon className="h-5 w-5" />
                     </div>
                     <h3 className="mt-5 text-lg font-semibold text-foreground">{item.title}</h3>
@@ -480,7 +479,7 @@ function TrustSection() {
                 >
                   <Card className="h-full border-border bg-card shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
                     <CardContent className="p-6">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-primary">
                         <Icon className="h-5 w-5" />
                       </div>
                       <h3 className="mt-5 text-lg font-semibold text-foreground">{item.title}</h3>
@@ -524,7 +523,7 @@ function AboutSection() {
         >
           <Card className="border-border bg-secondary shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
             <CardContent className="p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-primary">
                 <MessageCircle className="h-5 w-5" />
               </div>
               <h3 className="mt-5 text-lg font-semibold text-foreground">Human support flow</h3>
@@ -533,7 +532,7 @@ function AboutSection() {
           </Card>
           <Card className="border-border bg-secondary shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
             <CardContent className="p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-primary">
                 <Headphones className="h-5 w-5" />
               </div>
               <h3 className="mt-5 text-lg font-semibold text-foreground">Built for trust</h3>
@@ -570,7 +569,7 @@ function FaqSection() {
                   className="flex w-full items-center justify-between gap-4 px-5 py-5 text-left sm:px-6"
                 >
                   <span className="text-base font-semibold text-foreground sm:text-lg">{item.q}</span>
-                  <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-orange-500">
+                  <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="text-blue-500">
                     <ChevronDown className="h-5 w-5" />
                   </motion.span>
                 </button>
@@ -599,7 +598,7 @@ function FaqSection() {
           viewport={{ once: true, amount: 0.2 }}
           className="mt-10"
         >
-          <Card className="border-orange-200 bg-card shadow-[0_12px_35px_rgba(234,115,69,0.05)]">
+          <Card className="border-blue-200 bg-card shadow-[0_12px_35px_rgba(234,115,69,0.05)]">
             <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
               <div>
                 <div className="flex items-center gap-3">
@@ -677,19 +676,19 @@ function Footer() {
 
 function PricingPreviewSection() {
   const mtnPlans = [
-    { id: 5000, size: '500MB', days: '30d', price: '₦150' },
-    { id: 1881, size: '1GB', days: '30d', price: '₦290' },
-    { id: 6666, size: '2GB', days: '30d', price: '₦580' },
-    { id: 3333, size: '3GB', days: '30d', price: '₦870' },
-    { id: 9999, size: '5GB', days: '30d', price: '₦1,450' },
-    { id: 7777, size: '10GB', days: '30d', price: '₦2,900' },
+    { id: 5000, size: '500MB', days: '30d', price: '₦300' },
+    { id: 1881, size: '1GB', days: '30d', price: '₦399' },
+    { id: 6666, size: '2GB', days: '30d', price: '₦800' },
+    { id: 3333, size: '3GB', days: '30d', price: '₦1200' },
+    { id: 9999, size: '5GB', days: '30d', price: '₦1900' },
+
   ];
-  
+
   const gloPlans = [
-    { id: 199, size: '1GB', days: '30d', price: '₦320' },
-    { id: 198, size: '2GB', days: '30d', price: '₦640' },
-    { id: 194, size: '5GB', days: '30d', price: '₦1,600' },
-    { id: 195, size: '10GB', days: '30d', price: '₦3,200' },
+    { id: 199, size: '1GB', days: '30d', price: '₦399' },
+    { id: 198, size: '2GB', days: '30d', price: '₦800' },
+    { id: 194, size: '5GB', days: '30d', price: '₦1,900' },
+    { id: 195, size: '10GB', days: '30d', price: '₦4,000' },
   ];
 
   const airtelPlans = [
@@ -827,7 +826,7 @@ function WorkspaceSection() {
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Everyday Resellers */}
-          <div className="bg-secondary/40 border border-border rounded-3xl p-8 flex flex-col justify-between hover:border-orange-500/20 transition-all duration-300">
+          <div className="bg-secondary/40 border border-border rounded-3xl p-8 flex flex-col justify-between hover:border-blue-500/20 transition-all duration-300">
             <div>
               <span className="text-xs font-semibold tracking-widest text-primary uppercase">For retail resellers</span>
               <h3 className="mt-4 text-2xl font-bold text-foreground">Top up data, send airtime, print receipts</h3>
@@ -846,7 +845,7 @@ function WorkspaceSection() {
           </div>
 
           {/* Developers */}
-          <div className="bg-secondary/40 border border-border rounded-3xl p-8 flex flex-col justify-between hover:border-orange-500/20 transition-all duration-300">
+          <div className="bg-secondary/40 border border-border rounded-3xl p-8 flex flex-col justify-between hover:border-blue-500/20 transition-all duration-300">
             <div>
               <span className="text-xs font-semibold tracking-widest text-primary uppercase">For Developers</span>
               <h3 className="mt-4 text-2xl font-bold text-foreground">Two robust APIs. One token. Sandbox included</h3>

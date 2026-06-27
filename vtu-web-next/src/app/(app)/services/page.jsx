@@ -17,7 +17,6 @@ import {
   ReceiptText,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 import { formatMoney } from '@/lib/format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -113,10 +112,10 @@ function stringifyList(items) {
 }
 
 function parsePlansResponse(raw) {
-  if (Array.isArray(raw)) return filterAllowedAmigoPlans(raw);
+  if (Array.isArray(raw)) return raw;
   if (!raw || typeof raw !== 'object') return [];
   const list = raw.data ?? raw.plans ?? raw.items;
-  return Array.isArray(list) ? filterAllowedAmigoPlans(list) : [];
+  return Array.isArray(list) ? list : [];
 }
 
 function groupPlans(rows) {
@@ -147,7 +146,7 @@ function ServiceCard({ item }) {
     <Card className="h-full border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
       <CardContent className="flex h-full flex-col p-5">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-primary">
             <Icon className="h-5 w-5" />
           </div>
           <Badge tone="neutral" className="border-border bg-secondary text-muted-foreground">
@@ -183,7 +182,7 @@ function CatalogCard({ title, description, items, emptyLabel, accent = false }) 
   const list = stringifyList(items);
 
   return (
-    <Card className={cn('border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.04)]', accent && 'border-orange-200 bg-orange-50/50')}>
+    <Card className={cn('border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.04)]', accent && 'border-blue-200 bg-blue-50/50')}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle>{title}</CardTitle>
@@ -367,7 +366,7 @@ export default function ServicesPage() {
         <Card className="border-border bg-card shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
           <CardContent className="space-y-6 p-6">
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-primary">
                 <Layers3 className="h-5 w-5" />
               </div>
               <div className="space-y-2">
@@ -481,7 +480,7 @@ export default function ServicesPage() {
                   className={cn(
                     'rounded-full border px-4 py-2 text-sm font-medium transition',
                     activeNetwork === 'all'
-                      ? 'border-orange-200 bg-orange-50 text-foreground'
+                      ? 'border-blue-200 bg-blue-50 text-foreground'
                       : 'border-border bg-card text-muted-foreground hover:bg-secondary'
                   )}
                 >
@@ -499,7 +498,7 @@ export default function ServicesPage() {
                       className={cn(
                         'rounded-full border px-4 py-2 text-sm font-medium transition',
                         active
-                          ? 'border-orange-200 bg-orange-50 text-foreground'
+                          ? 'border-blue-200 bg-blue-50 text-foreground'
                           : 'border-border bg-card text-muted-foreground hover:bg-secondary'
                       )}
                     >
@@ -587,7 +586,7 @@ export default function ServicesPage() {
           <Card className="border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-primary">
                   <CircleDollarSign className="h-5 w-5" />
                 </div>
                 <Badge tone="neutral" className="border-border bg-secondary text-muted-foreground">Live</Badge>
@@ -610,7 +609,7 @@ export default function ServicesPage() {
           <Card className="border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-primary">
                   <ReceiptText className="h-5 w-5" />
                 </div>
                 <Badge tone="neutral" className="border-border bg-secondary text-muted-foreground">Live</Badge>
@@ -633,7 +632,7 @@ export default function ServicesPage() {
           <Card className="border-border bg-card shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-50 text-primary">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-primary">
                   <Gift className="h-5 w-5" />
                 </div>
                 <Badge tone="neutral" className="border-border bg-secondary text-muted-foreground">Live</Badge>

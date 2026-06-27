@@ -10,7 +10,7 @@ import {
   Clock3,
   GraduationCap,
   Gauge,
-  LifeBuoy,
+  Headphones,
   LogOut,
   Menu,
   Package2,
@@ -20,18 +20,26 @@ import {
   Smartphone,
   Sparkles,
   Tv2,
+  UserCircle2,
   Users,
   X,
   Zap,
 } from 'lucide-react';
 import { appNav } from '@/lib/nav';
-import { clearAuth, apiFetch, getProfile, getToken, setProfile, warmBackend } from '@/lib/api';
-import { prefetchDataPlans } from '@/lib/data-plans-cache';
+import { clearAuth, apiFetch, getProfile, getToken, setProfile } from '@/lib/api';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+function brandInitials(profile) {
+  const name = String(profile?.full_name || profile?.email || 'MELE DATA').trim();
+  const parts = name.split(/\s+/).filter(Boolean);
+  const letters = parts.slice(0, 2).map((part) => part[0]).join('');
+  return (letters || 'AX').toUpperCase();
+}
+
 const mobilePrimaryMenu = [
-  { label: 'Home', href: '/dashboard', icon: Gauge },
+  { label: 'Dashboard', href: '/dashboard', icon: Gauge },
   { label: 'Data', href: '/buy-data', icon: Package2 },
   { label: 'Airtime', href: '/airtime', icon: Smartphone },
   { label: 'Cable TV', href: '/cable-tv', icon: Tv2 },
@@ -39,8 +47,15 @@ const mobilePrimaryMenu = [
   { label: 'Education', href: '/exam-pins', icon: GraduationCap },
   { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'Referrals', href: '/referrals', icon: Users },
-  { label: 'History', href: '/history', icon: Clock3 },
-  { label: 'Profile', href: '/profile', icon: Settings2 },
+  { label: 'Transaction history', href: '/history', icon: Clock3 },
+];
+
+const mobileSettingsMenu = [
+  { label: 'Profile', href: '/profile', icon: UserCircle2 },
+  { label: 'Security', href: '/profile#security', icon: ShieldCheck },
+  { label: 'Support', href: 'mailto:mmtechglobe@gmail.com', icon: Headphones, external: true },
+  { label: 'WhatsApp Channel', href: 'https://whatsapp.com/channel/0029VbCanujEawdvqLAYu83T', icon: Headphones, external: true },
+  { label: 'TikTok Page', href: 'https://www.tiktok.com/@meledata_ng', icon: Tv2, external: true },
 ];
 
 function MobileMenuLink({ item, activePath }) {
@@ -70,7 +85,7 @@ function MobileMenuLink({ item, activePath }) {
 
   if (item.external) {
     return (
-      <a href={item.href} className={className}>
+      <a href={item.href} className={className} target="_blank" rel="noopener noreferrer">
         {content}
       </a>
     );
@@ -83,28 +98,18 @@ function MobileMenuLink({ item, activePath }) {
   );
 }
 
-function hasAdminRole(profile) {
-  const role = String(profile?.role || '').trim().toLowerCase();
-  return role === 'admin' || role.endsWith('.admin') || role.includes('admin');
-}
-
 export function AppShell({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
   const [profile, setProfileState] = useState(getProfile());
-  const [adminShortcutAllowed, setAdminShortcutAllowed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState('light');
-  const [globalQuery, setGlobalQuery] = useState('');
 
   const handleSignOut = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      console.log('[AppShell] Clearing auth and redirecting to landing...');
-      clearAuth();
-      window.location.href = '/';
-    }
-  }, []);
+    clearAuth();
+    router.replace('/');
+  }, [router]);
 
   useEffect(() => {
     const token = getToken();
@@ -113,33 +118,18 @@ export function AppShell({ children }) {
       return;
     }
 
-    const cachedProfile = getProfile();
-    const hasCachedProfile = !!(cachedProfile && Object.keys(cachedProfile).length);
-    if (hasCachedProfile) {
-      setProfileState(cachedProfile);
-      setAdminShortcutAllowed(hasAdminRole(cachedProfile));
-    }
-    setReady(true);
-
-    // Start backend wake + data-plan cache warm-up immediately after token check.
-    warmBackend().catch(() => {});
-    prefetchDataPlans(apiFetch).catch(() => {});
-
     let mounted = true;
     (async () => {
       try {
-        const me = await apiFetch('/auth/me', { timeoutMs: 10000 });
+        const me = await apiFetch('/auth/me');
         if (!mounted) return;
         setProfile(me);
         setProfileState(me);
-        setAdminShortcutAllowed(hasAdminRole(me));
-      } catch (error) {
-        if (!mounted) return;
-        // Keep cached profile usable on transient network slowness; only force logout when no cache exists.
-        if (!hasCachedProfile || error?.code === 'AUTH_EXPIRED') {
-          clearAuth();
-          router.replace('/');
-        }
+      } catch {
+        clearAuth();
+        router.replace('/');
+      } finally {
+        if (mounted) setReady(true);
       }
     })();
 
@@ -171,19 +161,7 @@ export function AppShell({ children }) {
     () => appNav.find((item) => activePath === item.href || activePath.startsWith(`${item.href}/`)),
     [activePath]
   );
-  const isAdmin = hasAdminRole(profile) || adminShortcutAllowed;
-  const desktopNavItems = useMemo(() => {
-    if (!isAdmin) return appNav;
-    const hasAdminItem = appNav.some((item) => item.href === '/admin');
-    if (hasAdminItem) return appNav;
-    return [{ label: 'Admin Panel', href: '/admin', icon: ShieldCheck }, ...appNav];
-  }, [isAdmin]);
-  const mobilePrimaryItems = useMemo(() => {
-    if (!isAdmin) return mobilePrimaryMenu;
-    const hasAdminItem = mobilePrimaryMenu.some((item) => item.href === '/admin');
-    if (hasAdminItem) return mobilePrimaryMenu;
-    return [{ label: 'Admin Panel', href: '/admin', icon: ShieldCheck }, ...mobilePrimaryMenu];
-  }, [isAdmin]);
+
   const toggleTheme = useCallback(() => {
     setTheme((current) => {
       const next = current === 'dark' ? 'light' : 'dark';
@@ -194,33 +172,21 @@ export function AppShell({ children }) {
     });
   }, []);
 
-  const runGlobalSearch = useCallback(() => {
-    const q = String(globalQuery || '').trim();
-    if (!q) return;
-    const lower = q.toLowerCase();
-    const walletIntent =
-      lower.includes('wallet') ||
-      lower.includes('fund') ||
-      lower.includes('balance') ||
-      lower.includes('ledger');
-    const target = walletIntent ? '/wallet' : '/history';
-    router.push(`${target}?q=${encodeURIComponent(q)}`);
-  }, [globalQuery, router]);
-
   if (!ready) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-6">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
-          <span>Loading dashboard...</span>
+      <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
+        <div className="rounded-3xl border border-border bg-card px-6 py-5 text-sm text-card-foreground shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+          Loading MELE DATA dashboard...
         </div>
       </div>
     );
   }
 
+  const initials = brandInitials(profile);
+
   return (
-    <div className="axis-shell min-h-screen overflow-x-hidden">
-      <aside className="hidden border-r border-border bg-card p-5 text-card-foreground lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-[280px] lg:flex-col lg:overflow-y-auto">
+    <div className="axis-shell grid min-h-screen lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside className="hidden border-r border-border bg-card p-5 text-card-foreground lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-y-auto">
         <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl border border-border bg-secondary px-4 py-3">
           <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
             <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
@@ -232,9 +198,25 @@ export function AppShell({ children }) {
         </Link>
 
         <nav className="mt-8 space-y-2">
-          {desktopNavItems.map((item) => {
+          {appNav.map((item) => {
             const Icon = item.icon;
             const active = activePath === item.href || activePath.startsWith(`${item.href}/`);
+            if (item.external) {
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground'
+                  )}
+                >
+                  <Icon className="h-4 w-4 text-muted-foreground" />
+                  <span>{item.label}</span>
+                </a>
+              );
+            }
             return (
               <Link
                 key={item.href}
@@ -242,7 +224,7 @@ export function AppShell({ children }) {
                 className={cn(
                   'flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition',
                   active
-                    ? 'border-primary/35 bg-primary/12 text-foreground shadow-lg shadow-orange-500/10'
+                    ? 'border-primary/35 bg-primary/12 text-foreground shadow-lg shadow-blue-500/10'
                     : 'border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground'
                 )}
               >
@@ -253,21 +235,28 @@ export function AppShell({ children }) {
           })}
         </nav>
 
-        <div className="mt-auto grid gap-2 rounded-3xl border border-border bg-secondary p-4">
-          {isAdmin ? (
-            <Button variant="secondary" className="w-full" onClick={() => router.push('/admin')}>
-              <ShieldCheck className="h-4 w-4" />
-              Admin Panel
+        <div className="mt-auto space-y-4 rounded-3xl border border-border bg-secondary p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-card text-sm font-semibold text-foreground">{initials}</div>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold text-foreground">{profile.full_name || profile.email || 'MELE DATA User'}</div>
+              <div className="truncate text-xs text-muted-foreground">{profile.email || 'No email attached'}</div>
+            </div>
+          </div>
+          <Badge tone="neutral" className="w-fit">Premium workspace</Badge>
+          <div className="grid gap-2">
+            <Button variant="secondary" className="w-full" onClick={() => router.push('/profile')}>
+              Profile
             </Button>
-          ) : null}
-          <Button variant="danger" className="w-full" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </Button>
+            <Button variant="secondary" className="w-full border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </Button>
+          </div>
         </div>
       </aside>
 
-      <main className="min-w-0 overflow-x-hidden bg-background lg:pl-[280px]">
+      <main className="min-w-0 bg-background">
         <header
           className="sticky top-0 z-30 border-b border-border bg-background/92 backdrop-blur-xl"
         >
@@ -293,22 +282,10 @@ export function AppShell({ children }) {
                 MELE DATA
               </div>
             </div>
-            <form
-              className="hidden h-11 flex-1 items-center gap-3 rounded-2xl border border-border bg-card px-4 md:flex"
-              onSubmit={(event) => {
-                event.preventDefault();
-                runGlobalSearch();
-              }}
-            >
+            <div className="hidden h-11 flex-1 items-center gap-3 rounded-2xl border border-border bg-card px-4 md:flex">
               <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                value={globalQuery}
-                onChange={(event) => setGlobalQuery(event.target.value)}
-                placeholder="Search transactions, wallets, or beneficiaries"
-                className="h-full w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                aria-label="Global search"
-              />
-            </form>
+              <span className="text-sm text-muted-foreground">Search transactions, wallets, or beneficiaries</span>
+            </div>
             <Button
               variant="secondary"
               size="icon"
@@ -332,16 +309,6 @@ export function AppShell({ children }) {
             <Button
               variant="secondary"
               size="icon"
-              className="hidden md:inline-flex"
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-              title="Theme"
-            >
-              <Sparkles className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="secondary"
-              size="icon"
               className={cn(
                 'h-9 w-9 shrink-0 rounded-xl md:hidden',
                 'border-border bg-card text-foreground hover:bg-secondary'
@@ -357,7 +324,7 @@ export function AppShell({ children }) {
               size="icon"
               className={cn(
                 'h-9 w-9 shrink-0 rounded-xl md:hidden',
-                'border-amber-200/80 bg-gradient-to-br from-amber-50 via-orange-50 to-card text-primary shadow-[0_8px_24px_rgba(234,115,69,0.14)] hover:border-primary/40 hover:bg-primary/10 dark:border-orange-400/20 dark:from-orange-500/15 dark:via-amber-500/10 dark:to-card'
+                'border-amber-200/80 bg-gradient-to-br from-amber-50 via-blue-50 to-card text-primary shadow-[0_8px_24px_rgba(234,115,69,0.14)] hover:border-primary/40 hover:bg-primary/10 dark:border-blue-400/20 dark:from-blue-500/15 dark:via-amber-500/10 dark:to-card'
               )}
               onClick={toggleTheme}
               aria-label="Toggle theme"
@@ -367,17 +334,7 @@ export function AppShell({ children }) {
             </Button>
             <Button
               variant="secondary"
-              className="hidden md:inline-flex"
-              onClick={() => router.push('/support')}
-              aria-label="Need help"
-              title="Need help"
-            >
-              <LifeBuoy className="h-4 w-4" />
-              Need help?
-            </Button>
-            <Button
-              variant="danger"
-              className="hidden md:inline-flex"
+              className="hidden border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18 md:inline-flex"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
@@ -385,15 +342,7 @@ export function AppShell({ children }) {
             </Button>
           </div>
         </header>
-        <motion.div
-          key={pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.22, ease: 'easeOut' }}
-          className="min-w-0 overflow-x-hidden px-4 py-5 md:px-6 lg:px-8 xl:px-10"
-        >
-          {children}
-        </motion.div>
+        <div className="px-4 py-5 md:px-6 lg:px-8 xl:px-10">{children}</div>
       </main>
 
       <AnimatePresence>
@@ -430,7 +379,7 @@ export function AppShell({ children }) {
                       </div>
                       <div className="min-w-0">
                         <div className="truncate text-sm font-semibold tracking-tight text-foreground">MELE DATA</div>
-                        <div className="truncate text-[11px] text-muted-foreground">Wallet workspace</div>
+                        <div className="truncate text-[11px] text-muted-foreground">{profile.full_name || profile.email || 'Wallet workspace'}</div>
                       </div>
                     </div>
                     <Button
@@ -457,29 +406,27 @@ export function AppShell({ children }) {
               <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="axis-label mb-2">Menu</div>
                 <nav className="space-y-1">
-                  {mobilePrimaryItems.map((item) => (
+                  {mobilePrimaryMenu.map((item) => (
                     <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                   ))}
                 </nav>
-                <div className="mt-3 border-t border-border pt-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      router.push('/support');
-                    }}
-                    className="flex w-full items-center gap-2.5 rounded-xl border border-border bg-secondary px-2.5 py-2.5 text-left text-[13px] font-medium text-foreground transition hover:bg-card"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground">
-                      <LifeBuoy className="h-3.5 w-3.5" />
-                    </span>
-                    Need help?
-                  </button>
+
+                <div className="mt-5 border-t border-border pt-4">
+                  <div className="axis-label mb-2">Personal settings</div>
+                  <nav className="space-y-1">
+                    {mobileSettingsMenu.map((item) => (
+                      <MobileMenuLink key={item.label} item={item} activePath={activePath} />
+                    ))}
+                  </nav>
                 </div>
               </div>
 
               <div className="shrink-0 border-t border-border bg-card p-3">
-                <Button variant="danger" className="h-11 w-full justify-center" onClick={handleSignOut}>
+                <Button
+                  variant="secondary"
+                  className="h-11 w-full justify-center border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18"
+                  onClick={handleSignOut}
+                >
                   <LogOut className="h-4 w-4" />
                   Logout
                 </Button>
