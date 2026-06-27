@@ -294,6 +294,14 @@ export async function adminDeleteUser(userId) {
   return apiFetch(`/admin/users/${userId}`, { method: 'DELETE' });
 }
 
+export async function adminApproveDeveloper(userId) {
+  return apiFetch(`/admin/developers/${userId}/approve`, { method: 'POST' });
+}
+
+export async function adminSuspendDeveloper(userId) {
+  return apiFetch(`/admin/developers/${userId}/suspend`, { method: 'POST' });
+}
+
 
 export async function adminGetTransactions(params = {}) {
   return apiFetch(`/admin/transactions${toQuery(params)}`);

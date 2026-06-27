@@ -82,6 +82,12 @@ export default function AdminUsersPage() {
           user_id: confirmAction.user.id, 
           role: confirmAction.type === 'upgrade_reseller' ? 'reseller' : 'user' 
         });
+      } else if (confirmAction.type === 'approve_developer') {
+        const { adminApproveDeveloper } = await import('@/lib/api');
+        await adminApproveDeveloper(confirmAction.user.id);
+      } else if (confirmAction.type === 'suspend_developer') {
+        const { adminSuspendDeveloper } = await import('@/lib/api');
+        await adminSuspendDeveloper(confirmAction.user.id);
       } else {
         await adminActivateUser(confirmAction.user.id);
       }
@@ -190,7 +196,7 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="text-right space-y-2">
                   <div><StatusBadge status={selectedUser.is_active ? 'active' : 'suspended'} /></div>
-                  <div className="pt-2">
+                  <div className="pt-2 flex flex-col gap-2 items-end">
                     {String(selectedDetails?.user?.role || selectedUser?.role).toLowerCase() !== 'reseller' ? (
                       <Button
                         variant="default"
@@ -209,6 +215,45 @@ export default function AdminUsersPage() {
                         Downgrade to User
                       </Button>
                     )}
+
+                    <div className="mt-2 pt-2 border-t border-border w-full flex items-center justify-end gap-2">
+                      <div className="text-right">
+                        <span className="text-[10px] text-muted-foreground block leading-none">Developer API</span>
+                        <span className="font-bold text-foreground uppercase text-[9px] tracking-wider leading-none">
+                          {selectedDetails?.user?.developer_status || selectedUser?.developer_status || 'none'}
+                        </span>
+                      </div>
+                      {(selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'applied' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[10px] border-green-600/30 text-green-500 hover:bg-green-500/10 h-7 px-2"
+                          onClick={() => setConfirmAction({ type: 'approve_developer', user: selectedUser })}
+                        >
+                          Approve API
+                        </Button>
+                      )}
+                      {(selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'approved' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[10px] border-red-600/30 text-red-500 hover:bg-red-500/10 h-7 px-2"
+                          onClick={() => setConfirmAction({ type: 'suspend_developer', user: selectedUser })}
+                        >
+                          Suspend API
+                        </Button>
+                      )}
+                      {((selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'none' || (selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'suspended') && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[10px] border-green-600/30 text-green-500 hover:bg-green-500/10 h-7 px-2"
+                          onClick={() => setConfirmAction({ type: 'approve_developer', user: selectedUser })}
+                        >
+                          Enable API
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -298,10 +343,20 @@ export default function AdminUsersPage() {
 
       <ConfirmDialog
         open={Boolean(confirmAction)}
-        title={`${confirmAction?.type === 'suspend' ? 'Suspend' : confirmAction?.type === 'delete' ? 'Permanently Delete' : 'Activate'} user account`}
+        title={`${
+          confirmAction?.type === 'suspend' ? 'Suspend' : 
+          confirmAction?.type === 'delete' ? 'Permanently Delete' : 
+          confirmAction?.type === 'approve_developer' ? 'Approve Developer API' :
+          confirmAction?.type === 'suspend_developer' ? 'Suspend Developer API' :
+          'Activate'
+        } user account`}
         description={
           confirmAction?.type === 'delete'
             ? `Are you absolutely sure you want to delete ${confirmAction?.user?.email}? This will suffix their credentials and they will no longer be able to log in. This action is irreversible.`
+            : confirmAction?.type === 'approve_developer'
+            ? `You are about to approve developer API key access for ${confirmAction?.user?.email}. They will receive reseller privileges.`
+            : confirmAction?.type === 'suspend_developer'
+            ? `You are about to suspend developer API access for ${confirmAction?.user?.email}. This will immediately revoke their active integration keys.`
             : `You are about to ${confirmAction?.type || 'update'} ${confirmAction?.user?.email || 'this account'}. This action is logged for audit.`
         }
         confirmLabel={
@@ -309,9 +364,13 @@ export default function AdminUsersPage() {
             ? 'Suspend user'
             : confirmAction?.type === 'delete'
             ? 'Yes, delete user'
+            : confirmAction?.type === 'approve_developer'
+            ? 'Approve API'
+            : confirmAction?.type === 'suspend_developer'
+            ? 'Suspend API'
             : 'Activate user'
         }
-        variant={confirmAction?.type === 'delete' ? 'destructive' : 'default'}
+        variant={confirmAction?.type === 'delete' || confirmAction?.type === 'suspend_developer' ? 'destructive' : 'default'}
         busy={busy}
         onCancel={() => setConfirmAction(null)}
         onConfirm={runAction}
