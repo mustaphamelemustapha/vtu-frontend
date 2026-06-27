@@ -679,25 +679,25 @@ function PricingPreviewSection() {
   const [activeNetwork, setActiveNetwork] = useState('MTN');
   
   const mtnPlans = [
-    { code: 'MTN_500MB_SME', size: '500MB', days: '30d', price: '₦150' },
-    { code: 'MTN_1GB_SME', size: '1GB', days: '30d', price: '₦290' },
-    { code: 'MTN_2GB_SME', size: '2GB', days: '30d', price: '₦580' },
-    { code: 'MTN_5GB_SME', size: '5GB', days: '30d', price: '₦1,450' },
-    { code: 'MTN_10GB_SME', size: '10GB', days: '30d', price: '₦2,900' },
+    { id: 1, code: 'MTN_500MB_SME', size: '500MB', days: '30d', price: '₦150' },
+    { id: 2, code: 'MTN_1GB_SME', size: '1GB', days: '30d', price: '₦290' },
+    { id: 3, code: 'MTN_2GB_SME', size: '2GB', days: '30d', price: '₦580' },
+    { id: 4, code: 'MTN_5GB_SME', size: '5GB', days: '30d', price: '₦1,450' },
+    { id: 5, code: 'MTN_10GB_SME', size: '10GB', days: '30d', price: '₦2,900' },
   ];
   
   const gloPlans = [
-    { code: 'GLO_1GB', size: '1GB', days: '30d', price: '₦320' },
-    { code: 'GLO_2GB', size: '2GB', days: '30d', price: '₦640' },
-    { code: 'GLO_5GB', size: '5GB', days: '30d', price: '₦1,600' },
-    { code: 'GLO_10GB', size: '10GB', days: '30d', price: '₦3,200' },
+    { id: 6, code: 'GLO_1GB', size: '1GB', days: '30d', price: '₦320' },
+    { id: 7, code: 'GLO_2GB', size: '2GB', days: '30d', price: '₦640' },
+    { id: 8, code: 'GLO_5GB', size: '5GB', days: '30d', price: '₦1,600' },
+    { id: 9, code: 'GLO_10GB', size: '10GB', days: '30d', price: '₦3,200' },
   ];
 
   const airtelPlans = [
-    { code: 'AIRTEL_1GB_SME', size: '1GB', days: '30d', price: '₦280' },
-    { code: 'AIRTEL_2GB_SME', size: '2GB', days: '30d', price: '₦560' },
-    { code: 'AIRTEL_5GB_SME', size: '5GB', days: '30d', price: '₦1,400' },
-    { code: 'AIRTEL_10GB_SME', size: '10GB', days: '30d', price: '₦2,800' },
+    { id: 10, code: 'AIRTEL_1GB_SME', size: '1GB', days: '30d', price: '₦280' },
+    { id: 11, code: 'AIRTEL_2GB_SME', size: '2GB', days: '30d', price: '₦560' },
+    { id: 12, code: 'AIRTEL_5GB_SME', size: '5GB', days: '30d', price: '₦1,400' },
+    { id: 13, code: 'AIRTEL_10GB_SME', size: '10GB', days: '30d', price: '₦2,800' },
   ];
 
   const plans = activeNetwork === 'MTN' ? mtnPlans : activeNetwork === 'GLO' ? gloPlans : airtelPlans;
@@ -736,6 +736,7 @@ function PricingPreviewSection() {
             <table className="min-w-full divide-y divide-border text-sm text-left">
               <thead className="bg-secondary/80 text-xs uppercase tracking-wider text-slate-400">
                 <tr>
+                  <th className="px-6 py-4 font-mono font-normal">Plan ID</th>
                   <th className="px-6 py-4 font-mono font-normal">Plan Code</th>
                   <th className="px-6 py-4 font-semibold">Size</th>
                   <th className="px-6 py-4">Validity</th>
@@ -744,7 +745,8 @@ function PricingPreviewSection() {
               </thead>
               <tbody className="divide-y divide-border text-slate-300 font-medium">
                 {plans.map((p) => (
-                  <tr key={p.code} className="hover:bg-white/5 transition-colors">
+                  <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4 font-mono text-xs text-slate-400 font-bold">{p.id}</td>
                     <td className="px-6 py-4 font-mono text-xs text-orange-400 select-all">{p.code}</td>
                     <td className="px-6 py-4 text-foreground">{p.size}</td>
                     <td className="px-6 py-4 text-slate-400">{p.days}</td>
