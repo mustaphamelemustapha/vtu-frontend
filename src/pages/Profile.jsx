@@ -100,6 +100,85 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
   const [pwLoading, setPwLoading] = useState(false);
   const [pwForm, setPwForm] = useState({ current_password: "", new_password: "" });
 
+  const [developerOpen, setDeveloperOpen] = useState(false);
+  const [developerState, setDeveloperState] = useState({
+    is_developer: false,
+    developer_status: "none",
+    api_public_key: null,
+    has_keys: false
+  });
+  const [devLoading, setDevLoading] = useState(false);
+  const [rawSecretKey, setRawSecretKey] = useState(null);
+
+  const fetchDeveloperStatus = async () => {
+    setDevLoading(true);
+    try {
+      const data = await apiFetch("/developer/status");
+      setDeveloperState(data);
+    } catch (err) {
+      showToast(err?.message || "Failed to load developer status.", "error");
+    } finally {
+      setDevLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (developerOpen) {
+      fetchDeveloperStatus();
+      setRawSecretKey(null);
+    }
+  }, [developerOpen]);
+
+  const applyForDeveloper = async () => {
+    setDevLoading(true);
+    try {
+      const data = await apiFetch("/developer/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ additional_info: "" })
+      });
+      setDeveloperState(data);
+      showToast("Developer application submitted successfully.", "success");
+    } catch (err) {
+      showToast(err?.message || "Application failed.", "error");
+    } finally {
+      setDevLoading(false);
+    }
+  };
+
+  const generateKeys = async () => {
+    setDevLoading(true);
+    try {
+      const data = await apiFetch("/developer/keys/generate", { method: "POST" });
+      setRawSecretKey(data.api_secret_key);
+      setDeveloperState(prev => ({
+        ...prev,
+        api_public_key: data.api_public_key,
+        has_keys: true
+      }));
+      showToast("API keys generated successfully. Copy your Secret Key now, it won't be shown again!", "success");
+    } catch (err) {
+      showToast(err?.message || "Failed to generate keys.", "error");
+    } finally {
+      setDevLoading(false);
+    }
+  };
+
+  const revokeKeys = async () => {
+    if (!window.confirm("Are you sure you want to revoke your API keys? This will immediately break any active integrations!")) return;
+    setDevLoading(true);
+    try {
+      const data = await apiFetch("/developer/keys/revoke", { method: "POST" });
+      setDeveloperState(data);
+      setRawSecretKey(null);
+      showToast("API keys revoked successfully.", "success");
+    } catch (err) {
+      showToast(err?.message || "Failed to revoke keys.", "error");
+    } finally {
+      setDevLoading(false);
+    }
+  };
+
   useEffect(() => {
     apiFetch("/auth/me")
       .then((data) => {
@@ -300,6 +379,21 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
             </span>
             <span className="profile-ux-chevron">›</span>
           </button>
+
+          <button className="card profile-ux-menu-item" type="button" onClick={() => setDeveloperOpen(true)}>
+            <span className="profile-ux-menu-left">
+              <span className="profile-ux-icon">
+                <svg viewBox="0 0 24 24" fill="none" style={{ width: "24px", height: "24px" }}>
+                  <path d="M7 8l-4 4 4 4M17 8l4 4-4 4M13 5l-2 14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                </svg>
+              </span>
+              <span className="profile-ux-menu-text">
+                <span className="profile-ux-menu-title">Developer Portal</span>
+                <span className="profile-ux-menu-subtitle">Apply for API access and manage keys</span>
+              </span>
+            </span>
+            <span className="profile-ux-chevron">›</span>
+          </button>
         </div>
       </section>
 
@@ -475,6 +569,86 @@ export default function Profile({ onLogout, onProfileUpdate, onToggleTheme }) {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {developerOpen && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true">
+          <div className="modal modal-receipt">
+            <div className="modal-head">
+              <h3>Developer Portal</h3>
+              <Button variant="ghost" type="button" onClick={() => setDeveloperOpen(false)}>Close</Button>
+            </div>
+            <div className="form-grid" style={{ gap: "20px" }}>
+              <div className="profile-ux-about-card" style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border-color, #eee)" }}>
+                <span className="label" style={{ fontWeight: "600" }}>Application Status</span>
+                <span className="value" style={{ textTransform: "uppercase", fontWeight: "bold", color: developerState.developer_status === "approved" ? "green" : developerState.developer_status === "applied" ? "orange" : "inherit" }}>
+                  {developerState.developer_status}
+                </span>
+              </div>
+
+              {developerState.developer_status === "none" && (
+                <div style={{ textAlign: "center", padding: "10px 0" }}>
+                  <p style={{ fontSize: "14px", color: "#666", marginBottom: "15px" }}>
+                    Apply for developer API access to distribute airtime, data and pay bills directly from your own web apps.
+                  </p>
+                  <Button type="button" onClick={applyForDeveloper} disabled={devLoading}>
+                    {devLoading ? "Submitting..." : "Apply for API Access"}
+                  </Button>
+                </div>
+              )}
+
+              {developerState.developer_status === "applied" && (
+                <div className="notice" style={{ padding: "12px", background: "#fffdf5", border: "1px solid #ffd0a1", borderRadius: "8px", fontSize: "13px", color: "#b25e00" }}>
+                  Your developer API application is currently under review. We will verify your account shortly.
+                </div>
+              )}
+
+              {developerState.developer_status === "approved" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                  {!developerState.has_keys ? (
+                    <div style={{ textAlign: "center" }}>
+                      <p style={{ fontSize: "13px", color: "#555", marginBottom: "12px" }}>
+                        Your application is approved! Click below to generate your API credentials.
+                      </p>
+                      <Button type="button" onClick={generateKeys} disabled={devLoading}>
+                        {devLoading ? "Generating..." : "Generate API Keys"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                      <div>
+                        <span className="label" style={{ display: "block", fontSize: "12px", fontWeight: "bold", color: "#666", marginBottom: "4px" }}>API Public Key</span>
+                        <div style={{ fontFamily: "monospace", fontSize: "12px", background: "#f8f9fa", padding: "8px", border: "1px solid #ddd", borderRadius: "4px", overflowX: "auto" }}>
+                          {developerState.api_public_key}
+                        </div>
+                      </div>
+
+                      {rawSecretKey && (
+                        <div style={{ padding: "12px", background: "#f5fdf8", border: "1px solid #a3e2bb", borderRadius: "8px" }}>
+                          <span className="label" style={{ display: "block", fontSize: "12px", fontWeight: "bold", color: "#198754", marginBottom: "4px" }}>API Secret Key (Copy Now!)</span>
+                          <div style={{ fontFamily: "monospace", fontSize: "12px", wordBreak: "break-all", background: "#fff", padding: "8px", border: "1px solid #a3e2bb", borderRadius: "4px", marginBottom: "8px" }}>
+                            {rawSecretKey}
+                          </div>
+                          <p style={{ fontSize: "11px", color: "#198754", margin: 0 }}>
+                            Warning: For security reasons, this key will not be shown again. Make sure to copy and save it securely!
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="modal-actions" style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                        <Button type="button" onClick={generateKeys} disabled={devLoading} style={{ background: "#6c757d" }}>
+                          Regenerate Keys
+                        </Button>
+                        <Button variant="ghost" className="danger" type="button" onClick={revokeKeys} disabled={devLoading}>
+                          Revoke Keys
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
