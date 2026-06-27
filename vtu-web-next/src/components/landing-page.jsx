@@ -675,15 +675,186 @@ function Footer() {
   );
 }
 
+function PricingPreviewSection() {
+  const [activeNetwork, setActiveNetwork] = useState('MTN');
+  
+  const mtnPlans = [
+    { code: 'MTN_500MB_SME', size: '500MB', days: '30d', price: '₦150' },
+    { code: 'MTN_1GB_SME', size: '1GB', days: '30d', price: '₦290' },
+    { code: 'MTN_2GB_SME', size: '2GB', days: '30d', price: '₦580' },
+    { code: 'MTN_5GB_SME', size: '5GB', days: '30d', price: '₦1,450' },
+    { code: 'MTN_10GB_SME', size: '10GB', days: '30d', price: '₦2,900' },
+  ];
+  
+  const gloPlans = [
+    { code: 'GLO_1GB', size: '1GB', days: '30d', price: '₦320' },
+    { code: 'GLO_2GB', size: '2GB', days: '30d', price: '₦640' },
+    { code: 'GLO_5GB', size: '5GB', days: '30d', price: '₦1,600' },
+    { code: 'GLO_10GB', size: '10GB', days: '30d', price: '₦3,200' },
+  ];
+
+  const airtelPlans = [
+    { code: 'AIRTEL_1GB_SME', size: '1GB', days: '30d', price: '₦280' },
+    { code: 'AIRTEL_2GB_SME', size: '2GB', days: '30d', price: '₦560' },
+    { code: 'AIRTEL_5GB_SME', size: '5GB', days: '30d', price: '₦1,400' },
+    { code: 'AIRTEL_10GB_SME', size: '10GB', days: '30d', price: '₦2,800' },
+  ];
+
+  const plans = activeNetwork === 'MTN' ? mtnPlans : activeNetwork === 'GLO' ? gloPlans : airtelPlans;
+
+  return (
+    <section id="pricing" className="bg-card px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5">
+      <div className="mx-auto max-w-7xl">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="axis-label text-primary">Live Pricing Preview</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            Mobile data across every Nigerian network
+          </h2>
+          <p className="mt-4 text-slate-400 text-sm leading-6">
+            Check our live pricing catalog. These are the exact plan rates charged both on the dashboard and via our developer integration API.
+          </p>
+          
+          <div className="mt-8 flex justify-center gap-2">
+            {['MTN', 'GLO', 'AIRTEL'].map((net) => (
+              <button
+                key={net}
+                onClick={() => setActiveNetwork(net)}
+                className={`px-6 py-2 rounded-full text-xs font-semibold tracking-wider transition-all border ${
+                  activeNetwork === net
+                    ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-orange-500/10'
+                    : 'bg-secondary border-border text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {net}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto bg-secondary/35 border border-border rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border text-sm text-left">
+              <thead className="bg-secondary/80 text-xs uppercase tracking-wider text-slate-400">
+                <tr>
+                  <th className="px-6 py-4 font-mono font-normal">Plan Code</th>
+                  <th className="px-6 py-4 font-semibold">Size</th>
+                  <th className="px-6 py-4">Validity</th>
+                  <th className="px-6 py-4 text-right">Price</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border text-slate-300 font-medium">
+                {plans.map((p) => (
+                  <tr key={p.code} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4 font-mono text-xs text-orange-400 select-all">{p.code}</td>
+                    <td className="px-6 py-4 text-foreground">{p.size}</td>
+                    <td className="px-6 py-4 text-slate-400">{p.days}</td>
+                    <td className="px-6 py-4 text-right text-foreground font-semibold">{p.price}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WorkspaceSection() {
+  return (
+    <section className="bg-background px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5">
+      <div className="mx-auto max-w-7xl">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="axis-label text-primary font-semibold">Dual Workspace</div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            Whether you are building it or buying it
+          </h2>
+          <p className="mt-4 text-slate-400 text-sm leading-6">
+            MELE DATA serves as both a beautiful web application for everyday Nigerians and a robust infrastructure platform for developers.
+          </p>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-2">
+          {/* Everyday Resellers */}
+          <div className="bg-secondary/40 border border-border rounded-3xl p-8 flex flex-col justify-between hover:border-orange-500/20 transition-all duration-300">
+            <div>
+              <span className="text-xs font-semibold tracking-widest text-primary uppercase">For retail resellers</span>
+              <h3 className="mt-4 text-2xl font-bold text-foreground">Top up data, send airtime, print receipts</h3>
+              <p className="mt-4 text-slate-400 text-sm leading-6">
+                Mobile-friendly dashboard, automated wallets, transaction history filters, and immediate customer service. Built for Nigerians who want to sell or buy VTU services without code.
+              </p>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-4 items-center">
+              <Button asChild className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 px-6 h-11">
+                <Link href="/register">Create Retail Account</Link>
+              </Button>
+              <Button asChild variant="ghost" className="text-slate-300 hover:text-white px-4 h-11">
+                <Link href="/login">Sign In →</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Developers */}
+          <div className="bg-secondary/40 border border-border rounded-3xl p-8 flex flex-col justify-between hover:border-orange-500/20 transition-all duration-300">
+            <div>
+              <span className="text-xs font-semibold tracking-widest text-primary uppercase">For Developers</span>
+              <h3 className="mt-4 text-2xl font-bold text-foreground">Two robust APIs. One token. Sandbox included</h3>
+              <p className="mt-4 text-slate-400 text-sm leading-6">
+                Automate airtime distributions and data bundles directly from your backend. Free sandbox mode with ₦1,000,000 in test wallet credits to validate your API integrations before going live.
+              </p>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-4 items-center">
+              <Button asChild className="rounded-full bg-slate-900 border border-border text-white hover:bg-slate-800 px-6 h-11">
+                <Link href="/developer/docs">Open Developer Docs</Link>
+              </Button>
+              <Button asChild variant="ghost" className="text-slate-300 hover:text-white px-4 h-11">
+                <Link href="/register">Get API Token →</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CtaSloganSection() {
+  return (
+    <section className="bg-card px-4 py-28 sm:px-6 lg:px-8 border-t border-white/5 relative overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-orange-500/5 blur-[120px] pointer-events-none" />
+      <div className="mx-auto max-w-4xl text-center relative z-10">
+        <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl leading-tight">
+          Create an account today.<br />
+          <span className="text-primary font-bold">Ship something</span> tomorrow.
+        </h2>
+        <p className="mt-6 text-slate-400 text-sm leading-7 max-w-xl mx-auto">
+          Sign up takes less than a minute. API tokens are activated immediately. Start testing in seconds with ₦1,000,000 in free test sandbox credits.
+        </p>
+        <div className="mt-10 flex flex-wrap justify-center gap-4">
+          <Button asChild className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 shadow-lg shadow-orange-500/10 font-medium">
+            <Link href="/register">Create Account</Link>
+          </Button>
+          <Button asChild variant="outline" className="rounded-full border-border bg-transparent hover:bg-secondary text-slate-200 px-8 h-12">
+            <Link href="/developer/docs">Read the Docs</Link>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <Hero />
       <ServicesSection />
+      <PricingPreviewSection />
+      <WorkspaceSection />
       <TrustSection />
       <AboutSection />
       <FaqSection />
+      <CtaSloganSection />
       <Footer />
     </div>
   );
