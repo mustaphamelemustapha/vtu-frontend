@@ -182,7 +182,7 @@ export default function DevDocs() {
 {`{
   "phone_number": "08123456789",
   "network": "MTN",
-  "plan_code": "MTN_1GB_SME",
+  "plan_id": 1,
   "reference": "unique_data_ref_001"
 }`}
                     </pre>
