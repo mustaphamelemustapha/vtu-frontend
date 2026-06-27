@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { cn } from '@/lib/utils';
+import { NetworkCard, PremiumReceipt } from '@/components/service-ui';
 
 function stringifyList(items) {
   return Array.isArray(items) ? items.map((item) => String(item || '').trim()).filter(Boolean) : [];
@@ -108,23 +109,17 @@ export default function AirtimePage() {
                 {networks.map((item) => {
                   const active = network === item;
                   return (
-                    <button
+                    <NetworkCard
                       key={item}
-                      type="button"
+                      networkKey={item}
+                      label={item === '9mobile' ? '9mobile' : item.toUpperCase()}
+                      selected={active}
                       onClick={() => setNetwork(item)}
-                      className={cn(
-                        'rounded-2xl border px-4 py-3 text-left text-sm font-medium transition',
-                        active
-                          ? 'border-primary/35 bg-primary/10 text-foreground'
-                          : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
-                      )}
-                    >
-                      {item === '9mobile' ? '9mobile' : item.toUpperCase()}
-                    </button>
+                    />
                   );
                 })}
                 {!networks.length ? (
-                  <div className="rounded-2xl border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground sm:col-span-2 lg:col-span-4">
+                  <div className="rounded-[22px] border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground sm:col-span-2 lg:col-span-4">
                     Network catalog is still loading.
                   </div>
                 ) : null}
@@ -169,60 +164,27 @@ export default function AirtimePage() {
                 ))}
               </div>
             </div>
-
-            <Button onClick={submit} disabled={!canSubmit} className="w-full sm:w-auto">
-              <Smartphone className="h-4 w-4" />
-              {busy ? 'Processing...' : 'Buy Airtime'}
-            </Button>
-
-            {message ? (
-              <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">{message}</div>
-            ) : null}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Order summary</CardTitle>
-            <CardDescription>Live preview before purchase.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border border-border bg-secondary p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-primary">
-                  <Phone className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">Airtime purchase</div>
-                  <div className="text-xs text-muted-foreground">Wallet-funded transaction</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Network</span>
-                <span className="font-medium text-foreground">{network ? (network === '9mobile' ? '9mobile' : network.toUpperCase()) : '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Phone</span>
-                <span className="font-medium text-foreground">{cleanPhone || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-medium text-foreground">₦{Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}</span>
-              </div>
-              <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Wallet balance</span>
-                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
-                    ₦{formatMoney(wallet?.balance || 0)}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="sticky top-6 h-fit">
+          <PremiumReceipt
+            title="Airtime purchase"
+            items={[
+              { label: 'Network', value: network ? (network === '9mobile' ? '9mobile' : network.toUpperCase()) : '—' },
+              { label: 'Phone', value: cleanPhone || '—' },
+              { label: 'Amount', value: `₦${Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}` },
+              { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` }
+            ]}
+            total={Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}
+            totalLabel="Total Cost"
+            buttonText="Buy Airtime"
+            onConfirm={submit}
+            isBusy={busy}
+            disabled={!canSubmit}
+            errorMessage={message}
+          />
+        </div>
       </div>
     </div>
   );

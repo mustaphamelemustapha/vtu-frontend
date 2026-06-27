@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { NetworkCard, PremiumReceipt, PlanCard } from '@/components/service-ui';
 
 const NETWORK_ORDER = ['mtn', 'airtel', 'glo', '9mobile'];
 const NETWORK_TABS = [
@@ -229,52 +230,15 @@ export default function BuyDataPage() {
 
               <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
                 {NETWORK_TABS.map((tab) => {
-                  const group = planGroups.find((item) => item.network === tab.key);
-                  const count = group?.plans.length || 0;
                   const isActive = activeNetwork === tab.key;
-                  const networkTone =
-                    tab.key === 'mtn'
-                      ? 'bg-amber-400 text-slate-950'
-                      : tab.key === 'glo'
-                        ? 'bg-emerald-500 text-foreground'
-                        : tab.key === 'airtel'
-                          ? 'bg-rose-500 text-foreground'
-                          : 'bg-blue-500 text-foreground';
-
                   return (
-                    <button
+                    <NetworkCard
                       key={tab.key}
-                      type="button"
+                      networkKey={tab.key}
+                      label={tab.label}
+                      selected={isActive}
                       onClick={() => setActiveNetwork(tab.key)}
-                      className={cn(
-                        'group rounded-[20px] border px-3 py-4 text-left transition md:rounded-[22px] md:px-4 md:py-5',
-                        isActive
-                          ? 'border-primary/45 bg-primary/12 shadow-[0_0_0_1px_rgba(245,158,11,0.14)]'
-                          : 'border-border bg-secondary hover:border-border hover:bg-secondary'
-                      )}
-                      >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className={cn('flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-secondary p-1 ring-1 ring-border md:h-12 md:w-12', networkTone)}>
-                          <Image
-                            src={networkLogoSrc(tab.key)}
-                            alt={`${tab.label} logo`}
-                            width={44}
-                            height={44}
-                            className="h-full w-full object-contain"
-                            unoptimized
-                          />
-                        </div>
-                        <Badge className="border-border bg-secondary text-muted-foreground">
-                          {count}
-                        </Badge>
-                      </div>
-                      <div className="mt-4 text-sm font-semibold tracking-wide text-foreground">
-                        {tab.label}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        {count ? 'Available now' : 'No plans enabled'}
-                      </div>
-                    </button>
+                    />
                   );
                 })}
               </div>
@@ -331,48 +295,13 @@ export default function BuyDataPage() {
                 <div className="grid grid-cols-2 gap-3.5 md:gap-4 lg:grid-cols-3">
                   {visiblePlans.map((plan) => {
                     const isActive = selected?.plan_code === plan.plan_code;
-                    const isPromo = plan.promo_active;
                     return (
-                      <button
+                      <PlanCard
                         key={plan.plan_code}
-                        type="button"
+                        plan={plan}
+                        selected={isActive}
                         onClick={() => setSelected(plan)}
-                        className={cn(
-                          'group relative flex flex-col items-center justify-center rounded-[28px] border px-4 py-6 text-center transition-all duration-300 min-h-[160px]',
-                          isActive
-                            ? 'border-primary/50 bg-primary/10 shadow-[0_12px_28px_rgba(249,115,22,0.12)] ring-1 ring-primary/30'
-                            : 'border-border/60 bg-card hover:border-primary/30 hover:bg-secondary/40'
-                        )}
-                      >
-                        {/* 1. Capacity / Name */}
-                        <div className="text-lg font-black tracking-tight text-foreground md:text-xl">
-                          {plan.plan_name || plan.data_size}
-                        </div>
-
-                        {/* 2. Price (current + previous line-through) */}
-                        <div className="mt-2 flex items-center justify-center gap-2">
-                          <span className={cn("text-base font-extrabold text-foreground", isActive ? "text-primary" : "")}>
-                            ₦{formatMoney(plan.price || 0)}
-                          </span>
-                          {isPromo && plan.promo_old_price && (
-                            <span className="text-xs text-muted-foreground line-through decoration-muted-foreground/60">
-                              ₦{formatMoney(plan.promo_old_price)}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* 3. Validity & Promo Label row */}
-                        <div className="mt-3.5 flex items-center justify-center gap-1.5 flex-wrap">
-                          <span className="rounded-full border border-border bg-secondary/30 px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                            {plan.validity || '30 days'}
-                          </span>
-                          {isPromo && plan.promo_label && (
-                            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/5 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500">
-                              {plan.promo_label}
-                            </span>
-                          )}
-                        </div>
-                      </button>
+                      />
                     );
                   })}
                 </div>
@@ -381,73 +310,23 @@ export default function BuyDataPage() {
           </CardContent>
         </Card>
 
-        <Card className="h-fit border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-          <CardHeader>
-            <CardTitle className="text-foreground">Order Summary</CardTitle>
-            <CardDescription className="text-muted-foreground">Confirm details before purchase</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="rounded-[22px] border border-border bg-secondary p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white p-1 ring-1 ring-border">
-                  <Image
-                    src={networkLogoSrc(summaryNetwork)}
-                    alt={`${networkLabel(summaryNetwork)} logo`}
-                    width={44}
-                    height={44}
-                    className="h-full w-full object-contain"
-                    unoptimized
-                  />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-foreground">{networkLabel(summaryNetwork)} Data</div>
-                  <div className="text-xs text-muted-foreground">Bundle delivery</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 rounded-[22px] border border-border bg-secondary p-4">
-              {[
-                { label: 'Network', value: networkLabel(summaryNetwork) },
-                { label: 'Plan', value: summaryPlanName },
-                { label: 'Recipient', value: phone.trim() || '—' },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0">
-                  <span className="text-sm text-muted-foreground">{item.label}</span>
-                  <span className="text-sm font-medium text-foreground">{item.value}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-end justify-between gap-4 rounded-[22px] border border-border bg-secondary p-4">
-              <div>
-                <div className="text-sm text-muted-foreground">Total Cost</div>
-                <div className="mt-1 text-2xl font-semibold tracking-tight text-primary">
-                  ₦{formatMoney(summaryPrice || 0)}
-                </div>
-              </div>
-            </div>
-
-            <Button
-              className="h-12 w-full rounded-2xl bg-primary text-primary-foreground shadow-[0_12px_24px_rgba(249,115,22,0.18)] transition hover:bg-primary/90 active:scale-[0.98]"
-              onClick={purchase}
-              disabled={!canSubmit}
-            >
-              {busy ? 'Processing...' : 'Confirm & Purchase'}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-
-            {message ? (
-              <div className="rounded-[18px] border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground break-all">
-                {message}
-              </div>
-            ) : null}
-
-            <div className="text-xs leading-6 text-muted-foreground">
-              All plans are synced directly from our providers. Ensure the recipient number is correct.
-            </div>
-          </CardContent>
-        </Card>
+        <div className="sticky top-6 h-fit">
+          <PremiumReceipt
+            title={`${networkLabel(summaryNetwork)} Data`}
+            items={[
+              { label: 'Network', value: networkLabel(summaryNetwork) },
+              { label: 'Plan', value: summaryPlanName },
+              { label: 'Recipient', value: phone.trim() || '—' },
+            ]}
+            total={formatMoney(summaryPrice || 0)}
+            totalLabel="Total Cost"
+            buttonText="Confirm & Purchase"
+            onConfirm={purchase}
+            isBusy={busy}
+            disabled={!canSubmit}
+            errorMessage={message}
+          />
+        </div>
         </div>
       </div>
 

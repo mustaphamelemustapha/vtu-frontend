@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { cn } from '@/lib/utils';
+import { PremiumReceipt } from '@/components/service-ui';
 
 function normalizePhone(value) {
   return String(value || '').replace(/\D/g, '');
@@ -219,67 +220,28 @@ export default function CableTvPage() {
                 </p>
               </div>
             </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Button variant="secondary" disabled={!lookupReady} className="border-border bg-card text-muted-foreground">
-                Customer lookup (coming soon)
-              </Button>
-              <Button onClick={submit} disabled={!canSubmit}>
-                <Tv2 className="h-4 w-4" />
-                {busy ? 'Processing...' : 'Pay Cable'}
-              </Button>
-            </div>
-
-            {message ? (
-              <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">{message}</div>
-            ) : null}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Order summary</CardTitle>
-            <CardDescription>Live preview before payment.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border border-border bg-secondary p-4">
-              <div className="text-sm font-semibold text-foreground">Cable subscription</div>
-              <div className="mt-1 text-xs text-muted-foreground">Receipts remain available in transaction history.</div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Provider</span>
-                <span className="font-medium text-foreground">{selectedProvider?.name || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Smartcard/IUC</span>
-                <span className="font-medium text-foreground">{cleanCard || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Package</span>
-                <span className="font-medium text-foreground">{cleanPackage || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-medium text-foreground">₦{Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}</span>
-              </div>
-              <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Wallet balance</span>
-                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
-                    ₦{formatMoney(wallet?.balance || 0)}
-                  </Badge>
-                </div>
-              </div>
-              {!packageChoices.length ? (
-                <div className="rounded-2xl border border-dashed border-border bg-card px-3 py-2 text-xs text-muted-foreground">
-                  Package options are not exposed by the API yet. Enter the package code manually.
-                </div>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="sticky top-6 h-fit">
+          <PremiumReceipt
+            title="Cable subscription"
+            items={[
+              { label: 'Provider', value: selectedProvider?.name || '—' },
+              { label: 'Smartcard/IUC', value: cleanCard || '—' },
+              { label: 'Package', value: cleanPackage || '—' },
+              { label: 'Amount', value: `₦${Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}` },
+              { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` }
+            ]}
+            total={Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}
+            totalLabel="Total Cost"
+            buttonText="Pay Cable"
+            onConfirm={submit}
+            isBusy={busy}
+            disabled={!canSubmit}
+            errorMessage={message}
+          />
+        </div>
       </div>
     </div>
   );

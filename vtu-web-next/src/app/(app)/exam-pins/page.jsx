@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { cn } from '@/lib/utils';
+import { PremiumReceipt } from '@/components/service-ui';
 
 function stringifyList(items) {
   return Array.isArray(items) ? items.map((item) => String(item || '').trim()).filter(Boolean) : [];
@@ -152,64 +153,28 @@ export default function ExamPinsPage() {
             <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
               Receipt and purchased PIN details are tracked in your transaction history.
             </div>
-
-            <Button onClick={submit} disabled={!canSubmit} className="w-full sm:w-auto">
-              <GraduationCap className="h-4 w-4" />
-              {busy ? 'Processing...' : 'Buy PIN'}
-            </Button>
-
-            {message ? (
-              <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">{message}</div>
-            ) : null}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Order summary</CardTitle>
-            <CardDescription>Review quantity and payable amount.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border border-border bg-secondary p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-primary">
-                  <ReceiptText className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-foreground">Exam PIN purchase</div>
-                  <div className="text-xs text-muted-foreground">Unit price from backend rules</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Exam body</span>
-                <span className="font-medium text-foreground">{exam ? titleCase(exam) : '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Quantity</span>
-                <span className="font-medium text-foreground">{Number.isFinite(qty) ? qty : '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Unit price</span>
-                <span className="font-medium text-foreground">₦{formatMoney(unitPrice)}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Total</span>
-                <span className="font-semibold text-foreground">₦{formatMoney(total)}</span>
-              </div>
-              <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Wallet balance</span>
-                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
-                    ₦{formatMoney(wallet?.balance || 0)}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="sticky top-6 h-fit">
+          <PremiumReceipt
+            title="Exam PIN purchase"
+            items={[
+              { label: 'Exam body', value: exam ? titleCase(exam) : '—' },
+              { label: 'Quantity', value: Number.isFinite(qty) ? qty : '—' },
+              { label: 'Unit price', value: `₦${formatMoney(unitPrice)}` },
+              { label: 'Total', value: `₦${formatMoney(total)}` },
+              { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` }
+            ]}
+            total={formatMoney(total)}
+            totalLabel="Total Cost"
+            buttonText="Buy PIN"
+            onConfirm={submit}
+            isBusy={busy}
+            disabled={!canSubmit}
+            errorMessage={message}
+          />
+        </div>
       </div>
     </div>
   );

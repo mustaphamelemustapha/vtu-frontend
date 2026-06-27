@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
 import { cn } from '@/lib/utils';
+import { PremiumReceipt } from '@/components/service-ui';
 
 function stringifyList(items) {
   return Array.isArray(items) ? items.map((item) => String(item || '').trim()).filter(Boolean) : [];
@@ -192,62 +193,28 @@ export default function ElectricityPage() {
                 {amountError || 'Enter the bill amount to charge your wallet.'}
               </p>
             </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Button variant="secondary" disabled={!lookupReady} className="border-border bg-card text-muted-foreground">
-                Customer lookup (coming soon)
-              </Button>
-              <Button onClick={submit} disabled={!canSubmit}>
-                <Lightbulb className="h-4 w-4" />
-                {busy ? 'Processing...' : 'Pay Electricity'}
-              </Button>
-            </div>
-
-            {message ? (
-              <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">{message}</div>
-            ) : null}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Order summary</CardTitle>
-            <CardDescription>Review details before payment.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-2xl border border-border bg-secondary p-4">
-              <div className="text-sm font-semibold text-foreground">Electricity bill payment</div>
-              <div className="mt-1 text-xs text-muted-foreground">Token receipts are tracked in history.</div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Disco</span>
-                <span className="font-medium text-foreground">{summaryDisco}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Meter type</span>
-                <span className="font-medium text-foreground">{meterLabel(meterType)}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Meter number</span>
-                <span className="font-medium text-foreground">{cleanMeter || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Amount</span>
-                <span className="font-medium text-foreground">₦{Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}</span>
-              </div>
-              <div className="border-t border-border pt-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Wallet balance</span>
-                  <Badge tone="neutral" className="border-border bg-card text-muted-foreground">
-                    ₦{formatMoney(wallet?.balance || 0)}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="sticky top-6 h-fit">
+          <PremiumReceipt
+            title="Electricity bill payment"
+            items={[
+              { label: 'Disco', value: summaryDisco },
+              { label: 'Meter type', value: meterLabel(meterType) },
+              { label: 'Meter number', value: cleanMeter || '—' },
+              { label: 'Amount', value: `₦${Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}` },
+              { label: 'Wallet balance', value: `₦${formatMoney(wallet?.balance || 0)}` }
+            ]}
+            total={Number.isFinite(parsedAmount) && parsedAmount > 0 ? formatMoney(parsedAmount) : '0.00'}
+            totalLabel="Total Cost"
+            buttonText="Pay Electricity"
+            onConfirm={submit}
+            isBusy={busy}
+            disabled={!canSubmit}
+            errorMessage={message}
+          />
+        </div>
       </div>
     </div>
   );

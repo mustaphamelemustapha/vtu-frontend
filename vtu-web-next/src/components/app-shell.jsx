@@ -244,8 +244,8 @@ export function AppShell({ children }) {
               </Button>
             )}
             <Button
-              variant="secondary"
-              className="w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40"
+              variant="destructive"
+              className="w-full"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
@@ -332,8 +332,8 @@ export function AppShell({ children }) {
               <Sparkles className="h-4 w-4" />
             </Button>
             <Button
-              variant="secondary"
-              className="hidden border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40 md:inline-flex"
+              variant="destructive"
+              className="hidden md:inline-flex"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />
