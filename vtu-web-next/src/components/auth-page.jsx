@@ -1,44 +1,101 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowRight, Eye, EyeOff, Loader2, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { apiFetch, clearAuth, getToken, loginRequest, registerRequest, setAuthTokens, setProfile, warmBackend } from '@/lib/api';
 
-function Field({ label, helper, children }) {
+/* ─── Nigerian states ─── */
+const STATES = [
+  'Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
+  'Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT','Gombe','Imo',
+  'Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa',
+  'Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba',
+  'Yobe','Zamfara'
+];
+
+/* ─── Icon components (inline SVG — no library dependency) ─── */
+const UserIcon = () => (
+  <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+  </svg>
+);
+const PhoneIcon = () => (
+  <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+  </svg>
+);
+const LockIcon = () => (
+  <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+  </svg>
+);
+const EyeIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+const EyeOffIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
+  </svg>
+);
+const MapPinIcon = () => (
+  <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+  </svg>
+);
+const MailIcon = () => (
+  <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+  </svg>
+);
+const LoginIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+  </svg>
+);
+const CreateIcon = () => (
+  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+  </svg>
+);
+
+/* ─── Shared input wrapper with icon ─── */
+function InputField({ icon, children, label }) {
   return (
     <div className="space-y-1.5">
-      <div className="flex items-end justify-between gap-3">
-        <label className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</label>
-        {helper ? <span className="text-[11px] text-muted-foreground">{helper}</span> : null}
+      <label className="text-[13px] font-medium text-slate-300">{label}</label>
+      <div className="relative">
+        <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
+          {icon}
+        </div>
+        {children}
       </div>
-      {children}
     </div>
   );
 }
 
-export function AuthPage({ initialMode = 'login' }) {
+export function AuthPage({ initialMode, refCode: presetRef }) {
   const router = useRouter();
-  const params = useSearchParams();
-  const ref = params.get('ref') || params.get('referral') || '';
-  const [mode, setMode] = useState(initialMode);
+  const searchParams = useSearchParams();
+  const ref = presetRef || searchParams?.get('ref') || '';
+
+  const mode = initialMode || 'login';
+  const isRegister = mode === 'register';
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [persist, setPersist] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [showReferralField, setShowReferralField] = useState(false);
   const [form, setForm] = useState({
     full_name: '',
-    first_name: '',
-    last_name: '',
-    email: '',
     phone_number: '',
+    email: '',
     password: '',
+    state: '',
     referral_code: ref,
   });
 
@@ -47,26 +104,15 @@ export function AuthPage({ initialMode = 'login' }) {
   }, [router]);
 
   useEffect(() => {
-    const id = window.setTimeout(() => setMounted(true), 20);
-    return () => window.clearTimeout(id);
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
   }, []);
 
   useEffect(() => {
-    if (ref) {
-      setForm((prev) => ({ ...prev, referral_code: ref }));
-      setShowReferralField(true);
-    }
+    if (ref) setForm((p) => ({ ...p, referral_code: ref }));
   }, [ref]);
 
-  const isRegister = mode === 'register';
-  const heading = useMemo(() => (isRegister ? 'Create Account' : 'Sign in to MELE DATA'), [isRegister]);
-  const subtitle = useMemo(
-    () =>
-      isRegister
-        ? 'Join MELE DATA'
-        : 'Access your wallet, purchases, and transaction history.',
-    [isRegister]
-  );
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
 
   const submit = async (e) => {
     e.preventDefault();
@@ -75,13 +121,9 @@ export function AuthPage({ initialMode = 'login' }) {
     try {
       await warmBackend();
       if (isRegister) {
-        const full_name =
-          String(form.full_name || '').trim() ||
-          [form.first_name, form.last_name].filter(Boolean).join(' ').trim();
-
         const data = await registerRequest({
-          full_name,
-          email: form.email,
+          full_name: form.full_name.trim(),
+          email: form.email || null,
           phone_number: form.phone_number || null,
           password: form.password,
           referral_code: form.referral_code || null,
@@ -89,20 +131,21 @@ export function AuthPage({ initialMode = 'login' }) {
         const access = data?.access_token || data?.token;
         const refresh = data?.refresh_token;
         if (access) {
-          setAuthTokens(access, refresh, persist);
+          setAuthTokens(access, refresh, true);
           const me = await apiFetch('/auth/me');
           setProfile(me);
           router.push('/dashboard');
           return;
         }
-        const loginData = await loginRequest(form.email, form.password);
-        setAuthTokens(loginData?.access_token || loginData?.token, loginData?.refresh_token, persist);
+        const loginData = await loginRequest(form.phone_number || form.email, form.password);
+        setAuthTokens(loginData?.access_token || loginData?.token, loginData?.refresh_token, true);
         const me = await apiFetch('/auth/me');
         setProfile(me);
         router.push('/dashboard');
       } else {
-        const data = await loginRequest(form.email, form.password);
-        setAuthTokens(data?.access_token || data?.token, data?.refresh_token, persist);
+        const identifier = form.phone_number || form.email;
+        const data = await loginRequest(identifier, form.password);
+        setAuthTokens(data?.access_token || data?.token, data?.refresh_token, true);
         const me = await apiFetch('/auth/me');
         setProfile(me);
         router.push('/dashboard');
@@ -115,193 +158,225 @@ export function AuthPage({ initialMode = 'login' }) {
     }
   };
 
+  /* shared input classes */
+  const inputCls =
+    'w-full h-[46px] rounded-lg border border-slate-700 bg-slate-800/60 pl-10 pr-4 text-[14px] text-slate-100 placeholder:text-slate-500 caret-blue-400 shadow-none outline-none transition-all duration-150 hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20';
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+
+      {/* ─── Minimal navbar (register page only — Amigo style) ─── */}
+      {isRegister ? null : (
+        <header className="border-b border-slate-800/60 bg-slate-900/40 backdrop-blur-md">
+          <div className="mx-auto flex h-12 max-w-md items-center justify-between px-4">
+            <Link href="/" className="text-[15px] font-bold text-white tracking-tight">
+              MELE DATA
+            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-[12px] font-semibold text-white transition-all hover:bg-blue-500 active:scale-[0.97]"
+              >
+                <CreateIcon /> Create account
+              </Link>
+            </div>
+          </div>
+        </header>
+      )}
+
+      {/* ─── Centered form ─── */}
       <div
-        className={`relative mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8 transition-all duration-300 ease-out ${
-          mounted ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-1.5 scale-[0.995]'
+        className={`flex min-h-[calc(100vh-49px)] items-center justify-center px-4 py-10 transition-all duration-200 ease-out ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
         }`}
       >
-        <Card className="w-full max-w-[420px] border border-border bg-card shadow-[0_8px_20px_rgba(0,0,0,0.14)] backdrop-blur-sm">
-          <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-              <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
-            </div>
-            <CardTitle className="text-[1.6rem] font-semibold tracking-[-0.025em] text-foreground">
-              {heading}
-            </CardTitle>
-            <CardDescription className="mx-auto max-w-[300px] text-sm leading-6 text-muted-foreground">
-              {subtitle}
-            </CardDescription>
-          </CardHeader>
+        <div className="w-full max-w-[420px]">
 
-          <CardContent className="space-y-5 px-6 pb-8 sm:px-7">
-            <form onSubmit={submit} className="space-y-5">
+          {/* ─── Card ─── */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-6 py-8 shadow-2xl shadow-black/30 sm:px-8 sm:py-10">
+
+            {/* Logo + heading */}
+            <div className="text-center mb-7">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 ring-1 ring-slate-700">
+                <img src="/brand/axisvtu-icon.png" alt="MELE DATA" className="h-8 w-8 object-contain" />
+              </div>
+              <h1 className="text-[22px] font-semibold text-white tracking-[-0.02em]">
+                {isRegister ? 'Create your account' : 'Welcome back'}
+              </h1>
+              <p className="mt-1 text-[13px] text-slate-400">
+                {isRegister ? "A few details and you're in" : 'Sign in to your MELE DATA account'}
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={submit} className="space-y-4">
+
               {isRegister ? (
                 <>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Field label="First name">
-                      <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                        value={form.first_name}
-                        onChange={(e) => setForm((prev) => ({ ...prev, first_name: e.target.value }))}
-                        placeholder="First name"
-                        autoComplete="given-name"
-                      />
-                    </Field>
-                    <Field label="Last name">
-                      <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                        value={form.last_name}
-                        onChange={(e) => setForm((prev) => ({ ...prev, last_name: e.target.value }))}
-                        placeholder="Last name"
-                        autoComplete="family-name"
-                      />
-                    </Field>
-                  </div>
-
-                  <Field label="Email">
-                    <Input
-                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                      value={form.email}
-                      onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-                      placeholder="you@example.com"
-                      autoComplete="email"
+                  {/* Full name */}
+                  <InputField label="Full name" icon={<UserIcon />}>
+                    <input
+                      className={inputCls}
+                      value={form.full_name}
+                      onChange={set('full_name')}
+                      placeholder="e.g. Rayyan Tilde"
+                      autoComplete="name"
+                      required
                     />
-                  </Field>
+                  </InputField>
 
-                  <Field label="Phone">
-                    <Input
-                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                  {/* Phone */}
+                  <InputField label="Phone number" icon={<PhoneIcon />}>
+                    <input
+                      className={inputCls}
                       value={form.phone_number}
-                      onChange={(e) => setForm((prev) => ({ ...prev, phone_number: e.target.value }))}
-                      placeholder="08012345678"
+                      onChange={set('phone_number')}
+                      placeholder="0803 000 0000"
                       autoComplete="tel"
+                      inputMode="tel"
+                      required
                     />
-                  </Field>
+                  </InputField>
 
-                  <Field label="Password">
-                    <div className="relative">
-                      <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 pr-12 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                        value={form.password}
-                        onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-                        placeholder="Create a secure password"
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete="new-password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </Field>
-
-                  {showReferralField ? (
-                    <Field label="Referral code" helper="Optional">
-                      <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                        value={form.referral_code}
-                        onChange={(e) => setForm((prev) => ({ ...prev, referral_code: e.target.value }))}
-                        placeholder="Enter a friend's code"
-                      />
-                    </Field>
-                  ) : (
+                  {/* Password */}
+                  <InputField label="Password" icon={<LockIcon />}>
+                    <input
+                      className={`${inputCls} !pr-11`}
+                      value={form.password}
+                      onChange={set('password')}
+                      placeholder="At least 6 characters"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      required
+                      minLength={6}
+                    />
                     <button
                       type="button"
-                      onClick={() => setShowReferralField(true)}
-                      className="text-xs text-primary font-medium hover:underline self-start mt-2 inline-flex items-center gap-1 focus:outline-none"
+                      onClick={() => setShowPassword((p) => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
-                      <Plus className="h-3.5 w-3.5" /> Have a referral code?
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                     </button>
-                  )}
+                  </InputField>
+
+                  {/* State */}
+                  <InputField label="State" icon={<MapPinIcon />}>
+                    <select
+                      className={`${inputCls} appearance-none cursor-pointer`}
+                      value={form.state}
+                      onChange={set('state')}
+                    >
+                      <option value="" className="bg-slate-900 text-slate-500">Select your state</option>
+                      {STATES.map((s) => (
+                        <option key={s} value={s} className="bg-slate-900 text-slate-100">{s}</option>
+                      ))}
+                    </select>
+                    {/* Dropdown chevron */}
+                    <svg className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </InputField>
                 </>
               ) : (
                 <>
-                  <Field label="Email">
-                    <Input
-                      className="h-[50px] rounded-[8px] border border-border bg-input px-4 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                      value={form.email}
-                      onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
-                      placeholder="you@example.com"
+                  {/* Phone, username or name */}
+                  <InputField label="Phone, username or name" icon={<UserIcon />}>
+                    <input
+                      className={inputCls}
+                      value={form.phone_number || form.email}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        // If it looks like a number, put it in phone_number, otherwise email
+                        if (/^\d/.test(v)) {
+                          setForm((p) => ({ ...p, phone_number: v, email: '' }));
+                        } else {
+                          setForm((p) => ({ ...p, email: v, phone_number: '' }));
+                        }
+                      }}
+                      placeholder="e.g. 0803... or your name"
                       autoComplete="username"
+                      required
                     />
-                  </Field>
+                  </InputField>
 
-                  <Field label="Password">
-                    <div className="relative">
-                      <Input
-                        className="h-[50px] rounded-[8px] border border-border bg-input px-4 pr-12 text-[0.98rem] text-foreground placeholder:text-muted-foreground/60 caret-foreground shadow-none transition-all duration-200 hover:border-primary/45 focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
-                        value={form.password}
-                        onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-                        placeholder="Your password"
-                        type={showPassword ? 'text' : 'password'}
-                        autoComplete="current-password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </Field>
+                  {/* Password */}
+                  <InputField label="Password" icon={<LockIcon />}>
+                    <input
+                      className={`${inputCls} !pr-11`}
+                      value={form.password}
+                      onChange={set('password')}
+                      placeholder="••••••••"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((p) => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    </button>
+                  </InputField>
+
+                  {/* Trouble signing in */}
+                  <div className="flex items-center justify-between text-[12px]">
+                    <span className="text-slate-500">Trouble signing in?</span>
+                    <Link href="/forgot-password" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">
+                      Forgot password
+                    </Link>
+                  </div>
                 </>
               )}
 
-              {error ? <div className="rounded-[10px] border border-rose-400/15 bg-rose-500/8 px-4 py-3 text-sm text-rose-200">{error}</div> : null}
-
-              <div className={`flex items-start ${isRegister ? 'justify-end' : 'justify-between'} gap-3 pt-1 text-sm`}>
-                {!isRegister ? (
-                  <label className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-muted-foreground">
-                    <input
-                      type="checkbox"
-                      checked={persist}
-                      onChange={(e) => setPersist(e.target.checked)}
-                      className="rounded border-border bg-transparent text-primary accent-primary focus:ring-primary/20"
-                    />
-                    Remember me
-                  </label>
-                ) : (
-                  <span />
-                )}
-
-                <div className={`flex ${isRegister ? 'items-center' : 'items-end'} gap-2 ${isRegister ? '' : 'flex-col'}`}>
-                  {!isRegister ? (
-                    <Link
-                      href="/forgot-password"
-                      className="text-sm font-medium text-primary/90 transition-colors hover:text-primary hover:underline hover:decoration-current hover:underline-offset-4"
-                    >
-                      Forgot password?
-                    </Link>
-                  ) : null}
-                  <Link
-                    href={isRegister ? '/login' : '/register'}
-                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:underline hover:decoration-current hover:underline-offset-4"
-                  >
-                    {isRegister ? 'Already have an account? Sign in' : 'Need an account? Register'}
-                  </Link>
+              {/* Error */}
+              {error && (
+                <div className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-4 py-2.5 text-[13px] text-rose-300">
+                  {error}
                 </div>
-              </div>
+              )}
 
-              <Button
-                className="h-[50px] w-full rounded-[8px] border border-primary/20 bg-primary text-primary-foreground shadow-[0_8px_18px_rgba(249,115,22,0.12)] transition-all duration-200 hover:bg-primary/90 hover:shadow-[0_10px_20px_rgba(249,115,22,0.14)] active:scale-[0.98] active:shadow-[0_6px_14px_rgba(249,115,22,0.10)]"
+              {/* Submit */}
+              <button
                 type="submit"
                 disabled={loading}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 h-[46px] text-[14px] font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-150 hover:bg-blue-500 hover:shadow-blue-500/25 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {loading ? (
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : isRegister ? (
+                  <CreateIcon />
+                ) : (
+                  <LoginIcon />
+                )}
                 {isRegister ? 'Create account' : 'Sign in'}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+              </button>
             </form>
-          </CardContent>
-        </Card>
+
+            {/* Footer text */}
+            <div className="mt-5 text-center text-[12px] text-slate-400 leading-5">
+              {isRegister ? (
+                <>
+                  By creating an account you agree to our{' '}
+                  <Link href="/terms" className="text-blue-400 hover:text-blue-300 transition-colors">terms</Link>.
+                  <br />
+                  Already have one?{' '}
+                  <Link href="/login" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">Sign in</Link>
+                </>
+              ) : (
+                <>
+                  New to MELE DATA?{' '}
+                  <Link href="/register" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">Create an account</Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
