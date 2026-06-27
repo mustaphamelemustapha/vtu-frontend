@@ -254,7 +254,10 @@ function Header() {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-3 sm:flex">
+          <div className="hidden items-center gap-4 sm:flex">
+            <Link href="/developer/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mr-2">
+              For Developers
+            </Link>
             <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card px-5 text-muted-foreground hover:bg-secondary">
               <Link href="/login">Sign In</Link>
             </Button>
@@ -647,6 +650,7 @@ function Footer() {
                 <div><a href="#trust" className="hover:text-white">Why choose us</a></div>
                 <div><a href="#about" className="hover:text-white">About</a></div>
                 <div><a href="#faq" className="hover:text-white">FAQ</a></div>
+                <div><Link href="/developer/docs" className="hover:text-white">Developer Docs</Link></div>
               </div>
             </div>
             <div>

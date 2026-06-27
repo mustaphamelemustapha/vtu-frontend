@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Copy, LogOut } from 'lucide-react';
+import { Copy, LogOut, ShieldCheck, Users } from 'lucide-react';
 import { apiFetch, clearAuth, getProfile, setProfile } from '@/lib/api';
 import { formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/page-header';
+import { Badge } from '@/components/ui/badge';
 import { buildReferralUrl } from '@/lib/site';
 
 export default function ProfilePage() {
@@ -16,19 +17,81 @@ export default function ProfilePage() {
   const [profile, setProfileState] = useState(getProfile());
   const [referrals, setReferrals] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [password, setPassword] = useState({ current_password: '', new_password: '' });
+  const [loading, setLoading] = useState(true);
+
+  const [developerState, setDeveloperState] = useState({
+    is_developer: false,
+    developer_status: 'none',
+    api_public_key: null,
+    has_keys: false
+  });
+  const [devLoading, setDevLoading] = useState(false);
+  const [rawSecretKey, setRawSecretKey] = useState(null);
 
   const load = useCallback(async () => {
-    const [meRes, refRes] = await Promise.allSettled([apiFetch('/auth/me'), apiFetch('/referrals/me')]);
-    if (meRes.status === 'fulfilled') {
-      setProfile(meRes.value);
-      setProfileState(meRes.value);
+    setLoading(true);
+    try {
+      const [meRes, refRes, devRes] = await Promise.allSettled([
+        apiFetch('/auth/me'),
+        apiFetch('/referrals/me'),
+        apiFetch('/developer/status')
+      ]);
+      if (meRes.status === 'fulfilled') {
+        setProfile(meRes.value);
+        setProfileState(meRes.value);
+      }
+      if (refRes.status === 'fulfilled') setReferrals(refRes.value);
+      if (devRes.status === 'fulfilled') setDeveloperState(devRes.value);
+    } finally {
+      setLoading(false);
     }
-    if (refRes.status === 'fulfilled') setReferrals(refRes.value);
   }, []);
 
   useEffect(() => {
     load().catch(() => {});
   }, [load]);
+
+  const applyForDeveloper = async () => {
+    setDevLoading(true);
+    try {
+      const data = await apiFetch('/developer/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ additional_info: '' })
+      });
+      setDeveloperState(data);
+    } finally {
+      setDevLoading(false);
+    }
+  };
+
+  const generateKeys = async () => {
+    setDevLoading(true);
+    try {
+      const data = await apiFetch('/developer/keys/generate', { method: 'POST' });
+      setRawSecretKey(data.api_secret_key);
+      setDeveloperState(prev => ({
+        ...prev,
+        api_public_key: data.api_public_key,
+        has_keys: true
+      }));
+    } finally {
+      setDevLoading(false);
+    }
+  };
+
+  const revokeKeys = async () => {
+    if (!window.confirm("Are you sure you want to revoke your API keys? This will immediately break any active integrations!")) return;
+    setDevLoading(true);
+    try {
+      const data = await apiFetch('/developer/keys/revoke', { method: 'POST' });
+      setDeveloperState(data);
+      setRawSecretKey(null);
+    } finally {
+      setDevLoading(false);
+    }
+  };
 
   const saveDetails = async () => {
     setSaving(true);
@@ -45,6 +108,15 @@ export default function ProfilePage() {
     }
   };
 
+  const changePassword = async () => {
+    await apiFetch('/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(password),
+    });
+    setPassword({ current_password: '', new_password: '' });
+  };
+
   const copyReferral = async () => {
     await navigator.clipboard.writeText(String(buildReferralUrl(referrals?.referral_code || profile?.referral_code || '')));
   };
@@ -55,8 +127,8 @@ export default function ProfilePage() {
     <div className="space-y-6 pb-8">
       <PageHeader
         eyebrow="Profile"
-        title="Account and referral controls"
-        description="Manage your account details and referral status."
+        title="Account, security, and referral controls"
+        description="Everything the operator needs in one calm, desktop-native profile workspace."
         actions={(
           <Button variant="secondary" onClick={() => load()}>
             Reload
@@ -122,19 +194,31 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+      <div className="grid gap-4 xl:grid-cols-[1fr_1fr_1.2fr]">
+        <Card id="security">
+          <CardHeader>
+            <CardTitle>Security</CardTitle>
+            <CardDescription>Password update and account protection.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="axis-label">Current password</div>
+              <Input type="password" value={password.current_password} onChange={(e) => setPassword((prev) => ({ ...prev, current_password: e.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <div className="axis-label">New password</div>
+              <Input type="password" value={password.new_password} onChange={(e) => setPassword((prev) => ({ ...prev, new_password: e.target.value }))} />
+            </div>
+            <Button onClick={changePassword}><ShieldCheck className="h-4 w-4" />Update password</Button>
+          </CardContent>
+        </Card>
+
         <Card id="support">
           <CardHeader>
             <CardTitle>Account actions</CardTitle>
-            <CardDescription>Session and settings shortcuts.</CardDescription>
+            <CardDescription>Session and workspace-level controls.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button variant="secondary" className="w-full" onClick={() => router.push('/security')}>
-              Open security
-            </Button>
-            <Button variant="secondary" className="w-full" onClick={() => router.push('/support')}>
-              Open support
-            </Button>
             <Button
               variant="secondary"
               className="w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
@@ -149,6 +233,83 @@ export default function ProfilePage() {
             <div className="rounded-2xl border border-dashed border-border bg-secondary p-4 text-sm text-muted-foreground">
               Desktop profile surface is intentionally calm so support, security, and referral workflows stay obvious.
             </div>
+          </CardContent>
+        </Card>
+
+        <Card id="developer">
+          <CardHeader>
+            <CardTitle>Developer Portal</CardTitle>
+            <CardDescription>Manage your API keys and developer status.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center py-2 border-b border-border">
+              <span className="text-sm font-medium">Application Status</span>
+              <Badge variant={developerState.developer_status === 'approved' ? 'success' : developerState.developer_status === 'applied' ? 'warning' : 'secondary'}>
+                {developerState.developer_status}
+              </Badge>
+            </div>
+
+            {developerState.developer_status === 'none' && (
+              <div className="text-center py-4 space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Apply for developer API access to automate transactions directly from your code.
+                </p>
+                <Button className="w-full" onClick={applyForDeveloper} disabled={devLoading}>
+                  {devLoading ? 'Applying...' : 'Apply for API Access'}
+                </Button>
+              </div>
+            )}
+
+            {developerState.developer_status === 'applied' && (
+              <div className="rounded-2xl bg-orange-50 border border-orange-200 p-3 text-xs text-orange-800">
+                Your application is currently under review. We will verify and update your status shortly.
+              </div>
+            )}
+
+            {developerState.developer_status === 'approved' && (
+              <div className="space-y-4">
+                {!developerState.has_keys ? (
+                  <div className="text-center py-2 space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      Your application has been approved! Generate your credentials to begin integrations.
+                    </p>
+                    <Button className="w-full" onClick={generateKeys} disabled={devLoading}>
+                      {devLoading ? 'Generating...' : 'Generate API Keys'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <span className="text-xs font-semibold text-muted-foreground">API Public Key</span>
+                      <div className="font-mono text-xs bg-secondary p-2 rounded border border-border select-all break-all">
+                        {developerState.api_public_key}
+                      </div>
+                    </div>
+
+                    {rawSecretKey && (
+                      <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3 space-y-2">
+                        <span className="text-xs font-semibold text-emerald-800 block">API Secret Key (Copy now!)</span>
+                        <div className="font-mono text-xs bg-white p-2 rounded border border-emerald-200 select-all break-all text-emerald-950">
+                          {rawSecretKey}
+                        </div>
+                        <p className="text-[10px] text-emerald-700 leading-normal">
+                          For security reasons, this key will not be shown again. Save it somewhere secure.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button variant="secondary" className="flex-1" onClick={generateKeys} disabled={devLoading}>
+                        Regenerate
+                      </Button>
+                      <Button variant="destructive" className="flex-1" onClick={revokeKeys} disabled={devLoading}>
+                        Revoke
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
