@@ -600,7 +600,7 @@ echo curl_exec($ch);`}
             <h1 className="text-3xl font-extrabold tracking-tight text-white">
               Airtime API
             </h1>
-            <p className="mt-2 text-sm text-slate-400">Mobile airtime top-ups — something Amigo doesn&apos;t even have 😎</p>
+            <p className="mt-2 text-sm text-slate-400">Mobile airtime top-ups</p>
           </section>
 
 
