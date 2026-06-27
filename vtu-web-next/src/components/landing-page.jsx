@@ -676,31 +676,28 @@ function Footer() {
 }
 
 function PricingPreviewSection() {
-  const [activeNetwork, setActiveNetwork] = useState('MTN');
-  
   const mtnPlans = [
-    { id: 1, code: 'MTN_500MB_SME', size: '500MB', days: '30d', price: '₦150' },
-    { id: 2, code: 'MTN_1GB_SME', size: '1GB', days: '30d', price: '₦290' },
-    { id: 3, code: 'MTN_2GB_SME', size: '2GB', days: '30d', price: '₦580' },
-    { id: 4, code: 'MTN_5GB_SME', size: '5GB', days: '30d', price: '₦1,450' },
-    { id: 5, code: 'MTN_10GB_SME', size: '10GB', days: '30d', price: '₦2,900' },
+    { id: 5000, size: '500MB', days: '30d', price: '₦150' },
+    { id: 1881, size: '1GB', days: '30d', price: '₦290' },
+    { id: 6666, size: '2GB', days: '30d', price: '₦580' },
+    { id: 3333, size: '3GB', days: '30d', price: '₦870' },
+    { id: 9999, size: '5GB', days: '30d', price: '₦1,450' },
+    { id: 7777, size: '10GB', days: '30d', price: '₦2,900' },
   ];
   
   const gloPlans = [
-    { id: 6, code: 'GLO_1GB', size: '1GB', days: '30d', price: '₦320' },
-    { id: 7, code: 'GLO_2GB', size: '2GB', days: '30d', price: '₦640' },
-    { id: 8, code: 'GLO_5GB', size: '5GB', days: '30d', price: '₦1,600' },
-    { id: 9, code: 'GLO_10GB', size: '10GB', days: '30d', price: '₦3,200' },
+    { id: 199, size: '1GB', days: '30d', price: '₦320' },
+    { id: 198, size: '2GB', days: '30d', price: '₦640' },
+    { id: 194, size: '5GB', days: '30d', price: '₦1,600' },
+    { id: 195, size: '10GB', days: '30d', price: '₦3,200' },
   ];
 
   const airtelPlans = [
-    { id: 10, code: 'AIRTEL_1GB_SME', size: '1GB', days: '30d', price: '₦280' },
-    { id: 11, code: 'AIRTEL_2GB_SME', size: '2GB', days: '30d', price: '₦560' },
-    { id: 12, code: 'AIRTEL_5GB_SME', size: '5GB', days: '30d', price: '₦1,400' },
-    { id: 13, code: 'AIRTEL_10GB_SME', size: '10GB', days: '30d', price: '₦2,800' },
+    { id: 163, size: '1GB', days: '30d', price: '₦280' },
+    { id: 145, size: '2GB', days: '30d', price: '₦560' },
+    { id: 146, size: '5GB', days: '30d', price: '₦1,400' },
+    { id: 147, size: '10GB', days: '30d', price: '₦2,800' },
   ];
-
-  const plans = activeNetwork === 'MTN' ? mtnPlans : activeNetwork === 'GLO' ? gloPlans : airtelPlans;
 
   return (
     <section id="pricing" className="bg-card px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5">
@@ -711,46 +708,98 @@ function PricingPreviewSection() {
             Mobile data across every Nigerian network
           </h2>
           <p className="mt-4 text-slate-400 text-sm leading-6">
-            Check our live pricing catalog. These are the exact plan rates charged both on the dashboard and via our developer integration API.
+            MTN, Glo, Airtel, 9mobile. Live plan prices below — the same catalog your integration calls. Plans are rated for reliability so you can pick what's safe for production traffic.
           </p>
-          
-          <div className="mt-8 flex justify-center gap-2">
-            {['MTN', 'GLO', 'AIRTEL'].map((net) => (
-              <button
-                key={net}
-                onClick={() => setActiveNetwork(net)}
-                className={`px-6 py-2 rounded-full text-xs font-semibold tracking-wider transition-all border ${
-                  activeNetwork === net
-                    ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-orange-500/10'
-                    : 'bg-secondary border-border text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                {net}
-              </button>
-            ))}
-          </div>
         </div>
 
-        <div className="max-w-4xl mx-auto bg-secondary/35 border border-border rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-border text-sm text-left">
-              <thead className="bg-secondary/80 text-xs uppercase tracking-wider text-slate-400">
-                <tr>
-                  <th className="px-6 py-4 font-mono font-normal">Plan ID</th>
-                  <th className="px-6 py-4 font-mono font-normal">Plan Code</th>
-                  <th className="px-6 py-4 font-semibold">Size</th>
-                  <th className="px-6 py-4">Validity</th>
-                  <th className="px-6 py-4 text-right">Price</th>
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* MTN Column */}
+          <div className="bg-slate-900/60 border border-border rounded-3xl p-6 shadow-xl backdrop-blur-sm">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                <span className="font-bold text-foreground">MTN</span>
+              </div>
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">network 1</span>
+            </div>
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="text-[10px] text-slate-500 uppercase border-b border-border/80 pb-2">
+                  <th className="py-2">Plan ID</th>
+                  <th className="py-2">Size</th>
+                  <th className="py-2">Days</th>
+                  <th className="py-2 text-right">Price</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border text-slate-300 font-medium">
-                {plans.map((p) => (
+              <tbody className="divide-y divide-border/40 text-slate-300 font-medium">
+                {mtnPlans.map((p) => (
                   <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-4 font-mono text-xs text-slate-400 font-bold">{p.id}</td>
-                    <td className="px-6 py-4 font-mono text-xs text-orange-400 select-all">{p.code}</td>
-                    <td className="px-6 py-4 text-foreground">{p.size}</td>
-                    <td className="px-6 py-4 text-slate-400">{p.days}</td>
-                    <td className="px-6 py-4 text-right text-foreground font-semibold">{p.price}</td>
+                    <td className="py-3 font-mono text-slate-500 font-bold">#{p.id}</td>
+                    <td className="py-3 text-foreground">{p.size}</td>
+                    <td className="py-3 text-slate-500">{p.days}</td>
+                    <td className="py-3 text-right text-foreground font-bold">{p.price}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Glo Column */}
+          <div className="bg-slate-900/60 border border-border rounded-3xl p-6 shadow-xl backdrop-blur-sm">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-green-500" />
+                <span className="font-bold text-foreground">GLO</span>
+              </div>
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">network 2</span>
+            </div>
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="text-[10px] text-slate-500 uppercase border-b border-border/80 pb-2">
+                  <th className="py-2">Plan ID</th>
+                  <th className="py-2">Size</th>
+                  <th className="py-2">Days</th>
+                  <th className="py-2 text-right">Price</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40 text-slate-300 font-medium">
+                {gloPlans.map((p) => (
+                  <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                    <td className="py-3 font-mono text-slate-500 font-bold">#{p.id}</td>
+                    <td className="py-3 text-foreground">{p.size}</td>
+                    <td className="py-3 text-slate-500">{p.days}</td>
+                    <td className="py-3 text-right text-foreground font-bold">{p.price}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Airtel Column */}
+          <div className="bg-slate-900/60 border border-border rounded-3xl p-6 shadow-xl backdrop-blur-sm">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-red-500" />
+                <span className="font-bold text-foreground">Airtel</span>
+              </div>
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono">network 4</span>
+            </div>
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="text-[10px] text-slate-500 uppercase border-b border-border/80 pb-2">
+                  <th className="py-2">Plan ID</th>
+                  <th className="py-2">Size</th>
+                  <th className="py-2">Days</th>
+                  <th className="py-2 text-right">Price</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40 text-slate-300 font-medium">
+                {airtelPlans.map((p) => (
+                  <tr key={p.id} className="hover:bg-white/5 transition-colors">
+                    <td className="py-3 font-mono text-slate-500 font-bold">#{p.id}</td>
+                    <td className="py-3 text-foreground">{p.size}</td>
+                    <td className="py-3 text-slate-500">{p.days}</td>
+                    <td className="py-3 text-right text-foreground font-bold">{p.price}</td>
                   </tr>
                 ))}
               </tbody>
