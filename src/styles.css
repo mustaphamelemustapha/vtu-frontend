@@ -377,11 +377,11 @@ a:focus-visible {
   --stroke: #2f3b50;
   --ink: #f5f7fb;
   --muted: #d6dde7;
-  --accent: #35d07f;
-  --accent-2: #60d3ff;
+  --accent: #3b82f6;
+  --accent-2: #60a5fa;
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   --shadow-2: 0 24px 80px rgba(0, 0, 0, 0.62);
-  --ring: rgba(99, 224, 178, 0.35);
+  --ring: rgba(59, 130, 246, 0.35);
 }
 
 .topbar h1 {
