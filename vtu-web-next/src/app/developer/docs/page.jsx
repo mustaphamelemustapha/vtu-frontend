@@ -120,6 +120,15 @@ export default function DevDocs() {
                 <p className="text-slate-400 text-sm">Fetch the current balance of your developer wallet.</p>
               </div>
 
+              {/* Data Plans */}
+              <div id="plans" className="space-y-3 pt-6 border-t border-slate-900 scroll-mt-20">
+                <div className="flex items-center gap-3">
+                  <span className="bg-emerald-500/10 text-emerald-400 text-xs font-semibold px-2 py-1 rounded">GET</span>
+                  <span className="font-mono text-sm text-slate-200">/data/plans</span>
+                </div>
+                <p className="text-slate-400 text-sm">Retrieve a list of all active data plans, including their plan codes and your custom agent pricing.</p>
+              </div>
+
               {/* Data Purchase */}
               <div id="data" className="space-y-3 pt-6 border-t border-slate-900 scroll-mt-20">
                 <div className="flex items-center gap-3">
@@ -147,7 +156,7 @@ export default function DevDocs() {
             {/* Right Tabbed Playground */}
             <div className="space-y-4">
               <div className="flex border-b border-slate-800">
-                {(['data', 'airtime', 'balance']).map((tab) => (
+                {(['data', 'airtime', 'balance', 'plans']).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -247,6 +256,48 @@ export default function DevDocs() {
                     <pre className="p-4 font-mono text-[11px] text-slate-300 overflow-x-auto leading-5">
 {`{
   "balance": 14250.75
+}`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'plans' && (
+                <div className="space-y-4">
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="bg-slate-950 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-400">Request GET /data/plans</span>
+                      <span className="text-xs font-mono text-slate-500">Headers Only</span>
+                    </div>
+                    <pre className="p-4 font-mono text-[11px] text-slate-300 overflow-x-auto leading-5">
+{`Authorization: Bearer MELE_SEC_YOUR_SECRET_KEY`}
+                    </pre>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="bg-slate-950 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-400">Response</span>
+                      <span className="text-xs font-mono text-emerald-400">JSON</span>
+                    </div>
+                    <pre className="p-4 font-mono text-[11px] text-slate-300 overflow-x-auto leading-5">
+{`{
+  "plans": [
+    {
+      "plan_code": "MTN_1GB_SME",
+      "network": "MTN",
+      "plan_name": "MTN SME 1GB",
+      "data_size": "1GB",
+      "validity": "30 days",
+      "price": 290.00
+    },
+    {
+      "plan_code": "GLO_1GB",
+      "network": "GLO",
+      "plan_name": "GLO 1GB",
+      "data_size": "1GB",
+      "validity": "30 days",
+      "price": 320.00
+    }
+  ]
 }`}
                     </pre>
                   </div>
