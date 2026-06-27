@@ -49,7 +49,7 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    load().catch(() => {});
+    load().catch(() => { });
   }, [load]);
 
   const applyForDeveloper = async () => {
@@ -161,10 +161,10 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-          <Card id="referrals">
-            <CardHeader>
-              <CardTitle>Referral status</CardTitle>
-              <CardDescription>Invite-first flow with first-deposit rewards already wired on the backend.</CardDescription>
+        <Card id="referrals">
+          <CardHeader>
+            <CardTitle>Referral status</CardTitle>
+            <CardDescription>Invite-first flow with first-deposit rewards already wired on the backend.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-3xl border border-border bg-secondary p-4">
