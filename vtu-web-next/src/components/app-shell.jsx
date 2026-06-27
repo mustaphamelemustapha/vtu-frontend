@@ -236,14 +236,6 @@ export function AppShell({ children }) {
         </nav>
 
         <div className="mt-auto space-y-4 rounded-3xl border border-border bg-secondary p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-card text-sm font-semibold text-foreground">{initials}</div>
-            <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-foreground">{profile.full_name || profile.email || 'MELE DATA User'}</div>
-              <div className="truncate text-xs text-muted-foreground">{profile.email || 'No email attached'}</div>
-            </div>
-          </div>
-          <Badge tone="neutral" className="w-fit">Premium workspace</Badge>
           <div className="grid gap-2">
             {profile?.role === 'admin' && (
               <Button variant="secondary" className="w-full bg-primary/10 text-primary hover:bg-primary/20 border-primary/20" onClick={() => router.push('/admin')}>
@@ -251,9 +243,6 @@ export function AppShell({ children }) {
                 Admin Dashboard
               </Button>
             )}
-            <Button variant="secondary" className="w-full" onClick={() => router.push('/profile')}>
-              Profile
-            </Button>
             <Button variant="secondary" className="w-full border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18" onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
               Sign out
