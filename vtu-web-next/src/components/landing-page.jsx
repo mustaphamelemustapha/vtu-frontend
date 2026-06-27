@@ -818,31 +818,6 @@ function WorkspaceSection() {
   );
 }
 
-function CtaSloganSection() {
-  return (
-    <section className="bg-card px-4 py-28 sm:px-6 lg:px-8 border-t border-white/5 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-orange-500/5 blur-[120px] pointer-events-none" />
-      <div className="mx-auto max-w-4xl text-center relative z-10">
-        <h2 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl leading-tight">
-          Create an account today.<br />
-          <span className="text-primary font-bold">Ship something</span> tomorrow.
-        </h2>
-        <p className="mt-6 text-slate-400 text-sm leading-7 max-w-xl mx-auto">
-          Sign up takes less than a minute. API tokens are activated immediately. Start testing in seconds with ₦1,000,000 in free test sandbox credits.
-        </p>
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Button asChild className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-12 shadow-lg shadow-orange-500/10 font-medium">
-            <Link href="/register">Create Account</Link>
-          </Button>
-          <Button asChild variant="outline" className="rounded-full border-border bg-transparent hover:bg-secondary text-slate-200 px-8 h-12">
-            <Link href="/developer/docs">Read the Docs</Link>
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -854,7 +829,6 @@ export function LandingPage() {
       <TrustSection />
       <AboutSection />
       <FaqSection />
-      <CtaSloganSection />
       <Footer />
     </div>
   );
