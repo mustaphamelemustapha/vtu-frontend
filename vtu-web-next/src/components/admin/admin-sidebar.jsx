@@ -73,8 +73,8 @@ export function AdminSidebar({ profile, onSignOut, mobile = false, onClose }) {
           </Link>
         </Button>
         <Button
-          variant="danger"
-          className="w-full justify-center"
+          variant="secondary"
+          className="w-full justify-center border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40"
           onClick={onSignOut}
         >
           <LogOut className="h-4 w-4" />

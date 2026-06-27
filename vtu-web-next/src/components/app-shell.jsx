@@ -243,7 +243,11 @@ export function AppShell({ children }) {
                 Admin Dashboard
               </Button>
             )}
-            <Button variant="secondary" className="w-full border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18" onClick={handleSignOut}>
+            <Button
+              variant="secondary"
+              className="w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40"
+              onClick={handleSignOut}
+            >
               <LogOut className="h-4 w-4" />
               Sign out
             </Button>
@@ -329,7 +333,7 @@ export function AppShell({ children }) {
             </Button>
             <Button
               variant="secondary"
-              className="hidden border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18 md:inline-flex"
+              className="hidden border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40 md:inline-flex"
               onClick={handleSignOut}
             >
               <LogOut className="h-4 w-4" />

@@ -221,7 +221,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-3">
             <Button
               variant="secondary"
-              className="w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+              className="w-full border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-900/20 dark:text-rose-400 dark:hover:bg-rose-900/40"
               onClick={() => {
                 clearAuth();
                 router.replace('/');
