@@ -253,6 +253,20 @@ export async function registerRequest(payload) {
   });
 }
 
+export async function forgotPasswordRequest(email) {
+  return apiFetch('/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPasswordRequest(token, password) {
+  return apiFetch('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, new_password: password }),
+  });
+}
+
 function toQuery(params = {}) {
   const search = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
