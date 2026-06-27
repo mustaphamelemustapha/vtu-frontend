@@ -578,6 +578,38 @@ export default function Admin() {
     }
   };
 
+  const approveDeveloper = async (user) => {
+    if (!window.confirm(`Approve developer API access for ${user.email}?`)) return;
+    try {
+      await apiFetch(`/admin/developers/${user.id}/approve`, {
+        method: "POST"
+      });
+      showToast("Developer approved successfully.", "success");
+      await fetchUsers({ page: userState.page || 1 });
+      if (Number(userDetailData?.user?.id) === Number(user.id)) {
+        await fetchUserDetails(user.id, { silent: true });
+      }
+    } catch (err) {
+      showToast(err?.message || "Approval failed.", "error");
+    }
+  };
+
+  const suspendDeveloper = async (user) => {
+    if (!window.confirm(`Suspend developer API access for ${user.email}? This will revoke their API key access!`)) return;
+    try {
+      await apiFetch(`/admin/developers/${user.id}/suspend`, {
+        method: "POST"
+      });
+      showToast("Developer suspended successfully.", "success");
+      await fetchUsers({ page: userState.page || 1 });
+      if (Number(userDetailData?.user?.id) === Number(user.id)) {
+        await fetchUserDetails(user.id, { silent: true });
+      }
+    } catch (err) {
+      showToast(err?.message || "Suspension failed.", "error");
+    }
+  };
+
 
   const txPages = useMemo(() => {
     const total = Number(txState.total || 0);
@@ -1669,6 +1701,40 @@ export default function Admin() {
                             Downgrade to User
                           </button>
                         )}
+
+                        <div style={{ width: '100%', display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: '10px' }}>
+                          <span className="pill" style={{ textTransform: 'uppercase', background: '#e9ecef', color: '#495057', fontSize: '11px', display: 'flex', alignItems: 'center' }}>
+                            API Dev: {userDetailData?.user?.developer_status || 'NONE'}
+                          </span>
+                          
+                          {userDetailData?.user?.developer_status === "applied" && (
+                            <button 
+                              className="ghost success" 
+                              type="button" 
+                              style={{ fontSize: '11px', padding: '4px 8px' }}
+                              onClick={() => approveDeveloper(selectedUser)}>
+                              Approve API
+                            </button>
+                          )}
+                          {userDetailData?.user?.developer_status === "approved" && (
+                            <button 
+                              className="ghost warning" 
+                              type="button" 
+                              style={{ fontSize: '11px', padding: '4px 8px' }}
+                              onClick={() => suspendDeveloper(selectedUser)}>
+                              Suspend API
+                            </button>
+                          )}
+                          {(userDetailData?.user?.developer_status === "none" || userDetailData?.user?.developer_status === "suspended") && (
+                            <button 
+                              className="ghost success" 
+                              type="button" 
+                              style={{ fontSize: '11px', padding: '4px 8px' }}
+                              onClick={() => approveDeveloper(selectedUser)}>
+                              Enable API
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="card admin-user-summary-card">
