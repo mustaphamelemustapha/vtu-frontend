@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import LivePlanCatalog from './LivePlanCatalog';
 
 /* ───────── helpers ───────── */
 const Badge = ({ method }) => {
@@ -434,6 +435,9 @@ echo curl_exec($ch);`}
               <Badge method="GET" />
               <code className="font-mono text-sm text-slate-200">/data/plans</code>
             </div>
+
+            {/* LIVE CATALOG RENDERED HERE */}
+            <LivePlanCatalog />
 
             <div className="mt-4 space-y-4">
               <CodeBlock title="Request" badge="bash">
