@@ -99,9 +99,9 @@ export default function DashboardPage() {
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
   const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
-    { label: 'Wallet balance', value: `₦${formatMoney(wallet.balance || 0)}`, detail: 'Live available balance', icon: CircleDollarSign, tone: 'brand' },
-    { label: 'Rewards earned', value: `₦${formatMoney(referrals?.total_earned ?? 0)}`, detail: 'Referral revenue', icon: Gift, tone: 'violet' },
-  ], [wallet.balance, referrals?.total_earned]);
+    { label: 'Wallet balance', value: loading && !summary ? '₦...' : `₦${formatMoney(wallet.balance || 0)}`, detail: 'Live available balance', icon: CircleDollarSign, tone: 'brand' },
+    { label: 'Rewards earned', value: loading && !referrals ? '₦...' : `₦${formatMoney(referrals?.total_earned ?? 0)}`, detail: 'Referral revenue', icon: Gift, tone: 'violet' },
+  ], [wallet.balance, referrals?.total_earned, loading, summary]);
 
   const copyFundingAccount = useCallback(async () => {
     const accountNumber = primaryFundingAccount?.account_number;
