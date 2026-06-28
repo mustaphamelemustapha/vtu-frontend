@@ -8,6 +8,8 @@ import {
   Bell,
   CircleDollarSign,
   Clock3,
+  Code2,
+  BookOpen,
   GraduationCap,
   Gauge,
   Headphones,
@@ -48,6 +50,8 @@ const mobilePrimaryMenu = [
   { label: 'Wallet', href: '/wallet', icon: CircleDollarSign },
   { label: 'Referrals', href: '/referrals', icon: Users },
   { label: 'Transaction history', href: '/history', icon: Clock3 },
+  { label: 'Developer API', href: '/developer', icon: Code2 },
+  { label: 'Documentation', href: '/developer/docs', icon: BookOpen },
 ];
 
 const mobileSettingsMenu = [
