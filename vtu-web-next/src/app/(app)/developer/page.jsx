@@ -21,7 +21,7 @@ export default function DeveloperPage() {
 
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [rawSecretKey, setRawSecretKey] = useState(null);
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -62,7 +62,6 @@ export default function DeveloperPage() {
     setActionLoading(true);
     try {
       const data = await apiFetch('/developer/keys/generate', { method: 'POST' });
-      setRawSecretKey(data.api_secret_key);
       setDeveloperState(prev => ({
         ...prev,
         api_public_key: data.api_public_key,
@@ -79,7 +78,6 @@ export default function DeveloperPage() {
     try {
       const data = await apiFetch('/developer/keys/revoke', { method: 'POST' });
       setDeveloperState(data);
-      setRawSecretKey(null);
     } finally {
       setActionLoading(false);
     }
@@ -111,8 +109,7 @@ export default function DeveloperPage() {
     return <div className="p-8 text-center text-muted-foreground animate-pulse">Loading developer portal...</div>;
   }
 
-  // Derive sandbox public key by replacing live_ with test_
-  const sandboxPublicKey = developerState.api_public_key ? developerState.api_public_key.replace('live_', 'test_') : null;
+
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -184,7 +181,7 @@ export default function DeveloperPage() {
               ) : (
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium leading-none text-muted-foreground">Public Key</label>
+                    <label className="text-sm font-medium leading-none text-muted-foreground">LIVE API Token</label>
                     <div className="flex gap-2">
                       <Input readOnly value={developerState.api_public_key} className="font-mono text-sm bg-secondary" />
                       <Button variant="secondary" size="icon" onClick={() => copyToClipboard(developerState.api_public_key)}>
@@ -192,26 +189,6 @@ export default function DeveloperPage() {
                       </Button>
                     </div>
                   </div>
-
-                  {rawSecretKey ? (
-                    <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-4 space-y-3">
-                      <label className="text-sm font-medium leading-none text-emerald-400 font-semibold block">Secret Key (Copy now!)</label>
-                      <div className="flex gap-2">
-                        <Input readOnly value={rawSecretKey} className="font-mono text-sm bg-black/40 border-emerald-500/50 text-emerald-300" />
-                        <Button variant="outline" className="border-emerald-500/50 hover:bg-emerald-500/20 text-emerald-300" size="icon" onClick={() => copyToClipboard(rawSecretKey)}>
-                          <Copy className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-xs text-emerald-500 leading-normal font-medium">
-                        For security reasons, this key will not be shown again. Save it somewhere secure.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium leading-none text-muted-foreground">Secret Key</label>
-                      <Input readOnly value="****************************************" className="font-mono text-sm bg-secondary text-muted-foreground" />
-                    </div>
-                  )}
 
                   <div className="flex gap-3 pt-2">
                     <Button variant="secondary" onClick={generateKeys} disabled={actionLoading}>
@@ -228,36 +205,7 @@ export default function DeveloperPage() {
             </CardContent>
           </Card>
 
-          {developerState.has_keys && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Test (Sandbox) Keys</CardTitle>
-                <CardDescription>Use these keys to simulate transactions without being charged. Perfect for testing your integration.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none text-muted-foreground">Test Public Key</label>
-                  <div className="flex gap-2">
-                    <Input readOnly value={sandboxPublicKey} className="font-mono text-sm bg-secondary" />
-                    <Button variant="secondary" size="icon" onClick={() => copyToClipboard(sandboxPublicKey)}>
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none text-muted-foreground">Test Secret Key</label>
-                  <div className="flex gap-2">
-                    <Input readOnly value={rawSecretKey ? rawSecretKey.replace('live_', 'test_') : "****************************************"} className="font-mono text-sm bg-secondary text-muted-foreground" />
-                    {rawSecretKey && (
-                      <Button variant="secondary" size="icon" onClick={() => copyToClipboard(rawSecretKey.replace('live_', 'test_'))}>
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+
 
           <Card>
             <CardHeader>
