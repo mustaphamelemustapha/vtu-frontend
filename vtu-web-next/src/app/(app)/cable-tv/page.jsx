@@ -119,29 +119,33 @@ export default function CableTvPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-28 md:pb-8">
       <PageHeader
         eyebrow="Services"
         title="Cable TV"
         description="Renew DSTV, GOtv, or StarTimes subscriptions through the wallet with clean transaction records."
         actions={
-          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
+          <Button variant="secondary" onClick={load} className="border-white/10 bg-background/50 text-muted-foreground hover:bg-card hover:text-foreground backdrop-blur-sm">
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh
           </Button>
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Pay Cable TV</CardTitle>
-            <CardDescription>Choose provider, enter smartcard details, select package, and submit payment.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-2">
-              <div className="axis-label">Provider</div>
-              <div className="grid gap-2 sm:grid-cols-3">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <Card className="relative overflow-hidden border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[6rem] -z-10 pointer-events-none" />
+          <CardContent className="relative z-10 space-y-6 p-5 md:space-y-8 md:p-8">
+            <section className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Provider</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Choose your cable provider.</div>
+                </div>
+                <Badge className="border-border bg-secondary text-muted-foreground">Live catalog</Badge>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
                 {providers.map((item) => {
                   const active = provider === item.id;
                   return (
@@ -161,38 +165,65 @@ export default function CableTvPage() {
                   );
                 })}
                 {!providers.length ? (
-                  <div className="rounded-2xl border border-dashed border-border bg-secondary px-4 py-3 text-sm text-muted-foreground sm:col-span-3">
+                  <div className="rounded-[22px] border border-dashed border-border/50 bg-secondary/30 px-4 py-3 text-sm text-muted-foreground sm:col-span-3 backdrop-blur-sm">
                     Provider catalog is still loading.
                   </div>
                 ) : null}
               </div>
-            </div>
+            </section>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <div className="axis-label">Smartcard / IUC number</div>
-                <Input value={smartcardNumber} onChange={(e) => setSmartcardNumber(e.target.value)} placeholder="Enter smartcard number" />
-                <p className={cn('text-xs', smartCardError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {smartCardError || 'Use the registered smartcard or IUC number.'}
+            <section className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Smartcard / IUC number</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Enter the smartcard number.</div>
+                </div>
+                <div className="relative group">
+                  <Input 
+                    value={smartcardNumber} 
+                    onChange={(e) => setSmartcardNumber(e.target.value)} 
+                    placeholder="Enter smartcard number" 
+                    className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                  />
+                  <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                </div>
+                <p className={cn('text-xs font-medium', smartCardError ? 'text-rose-400' : 'text-muted-foreground')}>
+                  {smartCardError || 'Registered smartcard or IUC number.'}
                 </p>
               </div>
-              <div className="space-y-2">
-                <div className="axis-label">Phone number</div>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="08012345678" />
-                <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {phoneError || 'Used by provider for transaction updates.'}
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
+                  <div className="mt-2 text-sm text-muted-foreground">For transaction updates.</div>
+                </div>
+                <div className="relative group">
+                  <Input 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)} 
+                    inputMode="tel" 
+                    placeholder="08012345678" 
+                    className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                  />
+                  <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                </div>
+                <p className={cn('text-xs font-medium', phoneError ? 'text-rose-400' : 'text-muted-foreground')}>
+                  {phoneError || 'Used by provider for updates.'}
                 </p>
               </div>
-            </div>
+            </section>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <div className="axis-label">Package code</div>
+            <section className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Package code</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Select your package.</div>
+                </div>
                 {packageChoices.length ? (
                   <select
                     value={packageCode}
                     onChange={(e) => setPackageCode(e.target.value)}
-                    className="flex h-11 w-full rounded-2xl border border-border bg-input px-4 py-2 text-sm text-foreground outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                    className="h-[52px] md:h-14 w-full rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm px-4 py-2 text-lg tracking-wider text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20 appearance-none"
                   >
                     {packageChoices.map((item) => {
                       const code = String(item?.code || item?.id || '').trim();
@@ -205,21 +236,36 @@ export default function CableTvPage() {
                     })}
                   </select>
                 ) : (
-                  <Input value={packageCode} onChange={(e) => setPackageCode(e.target.value)} placeholder="e.g. dstv-padi" />
+                  <div className="relative group">
+                    <Input value={packageCode} onChange={(e) => setPackageCode(e.target.value)} placeholder="e.g. dstv-padi" className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl" />
+                    <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                  </div>
                 )}
-                <p className={cn('text-xs', packageError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {packageError || (packageChoices.length ? 'Package list loaded from the provider catalog.' : 'Use your package code from support or provider docs.')}
+                <p className={cn('text-xs font-medium', packageError ? 'text-rose-400' : 'text-muted-foreground')}>
+                  {packageError || (packageChoices.length ? 'Select package.' : 'Manual package code.')}
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <div className="axis-label">Amount (NGN)</div>
-                <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="5400" />
-                <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {amountError || 'Enter the package amount before checkout.'}
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Amount (NGN)</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Enter the package amount.</div>
+                </div>
+                <div className="relative group">
+                  <Input 
+                    value={amount} 
+                    onChange={(e) => setAmount(e.target.value)} 
+                    inputMode="decimal" 
+                    placeholder="5400" 
+                    className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                  />
+                  <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                </div>
+                <p className={cn('text-xs font-medium', amountError ? 'text-rose-400' : 'text-muted-foreground')}>
+                  {amountError || 'Amount in Naira.'}
                 </p>
               </div>
-            </div>
+            </section>
           </CardContent>
         </Card>
 
@@ -243,6 +289,7 @@ export default function CableTvPage() {
           />
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -157,8 +157,9 @@ export default function DashboardPage() {
           </div>
 
           {primaryFundingAccount ? (
-            <div className="w-full rounded-3xl border border-border bg-card/85 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)] md:min-w-[390px] md:max-w-[520px]">
-              <div className="flex items-start justify-between gap-4">
+            <div className="relative w-full rounded-[2rem] border border-primary/20 bg-card/60 backdrop-blur-3xl p-5 sm:p-6 shadow-[0_24px_50px_rgba(234,115,69,0.06)] overflow-hidden md:min-w-[390px] md:max-w-[520px]">
+              <div className="absolute -top-20 -right-20 w-48 h-48 bg-primary/20 rounded-full blur-[4rem] pointer-events-none" />
+              <div className="relative z-10 flex items-start justify-between gap-4">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account number</div>
                   <div className="mt-2 break-all font-mono text-3xl font-semibold tracking-[0.16em] text-foreground sm:text-4xl">
@@ -202,15 +203,16 @@ export default function DashboardPage() {
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
-        <Card className="overflow-hidden border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
-          <CardHeader className="border-b border-border/50 bg-gradient-to-r from-secondary/50 to-card/50 py-4 px-5">
+        <Card className="relative overflow-hidden border border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[4rem] -z-10" />
+          <CardHeader className="relative z-10 border-b border-white/5 bg-gradient-to-r from-secondary/30 to-transparent py-4 px-5">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <CardTitle className="text-lg font-semibold tracking-tight">Quick Services</CardTitle>
+              <Sparkles className="h-5 w-5 text-primary" />
+              <CardTitle className="text-xl font-bold tracking-tight">Quick Services</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="p-5">
-            <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
+          <CardContent className="relative z-10 p-5">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               {[
                 { label: 'Data', href: '/buy-data', icon: Package2, color: 'text-blue-500 bg-blue-500/10 dark:bg-blue-500/20' },
                 { label: 'Airtime', href: '/airtime', icon: Smartphone, color: 'text-sky-500 bg-sky-500/10 dark:bg-sky-500/20' },
@@ -224,12 +226,13 @@ export default function DashboardPage() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="group flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card/40 p-4 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:bg-card hover:shadow-[0_12px_30px_rgba(0,0,0,0.04)] dark:hover:shadow-[0_12px_30px_rgba(0,0,0,0.2)]"
+                    className="group relative overflow-hidden flex flex-col items-center justify-center rounded-[1.5rem] border border-white/10 bg-background/40 p-5 text-center transition-all duration-400 hover:-translate-y-1 hover:shadow-2xl"
                   >
-                    <div className={`mb-3 flex h-12 w-12 items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110 ${item.color}`}>
-                      <Icon className="h-6 w-6" />
+                    <div className="absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-100 from-white/5 to-transparent" />
+                    <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-[1.2rem] shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 ${item.color}`}>
+                      <Icon className="h-7 w-7 drop-shadow-sm" />
                     </div>
-                    <span className="text-xs font-semibold tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary">
+                    <span className="relative z-10 text-sm font-bold tracking-tight text-foreground/90 transition-colors duration-200 group-hover:text-primary">
                       {item.label}
                     </span>
                   </Link>
@@ -262,27 +265,37 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent activity</CardTitle>
+        <Card className="relative overflow-hidden border border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
+          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-[4rem] -z-10" />
+          <CardHeader className="relative z-10">
+            <CardTitle className="text-xl font-bold tracking-tight">Recent Activity</CardTitle>
             <CardDescription>Latest wallet and service movements.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="relative z-10 space-y-4">
             {loading ? <div className="text-sm text-muted-foreground">Loading transactions...</div> : null}
             {txs.length === 0 && !loading ? <div className="text-sm text-muted-foreground">No recent activity yet.</div> : null}
-            {txs.map((tx) => (
-              <div key={tx.reference || tx.id} className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-secondary p-4">
-                <div>
-                  <div className="text-sm font-medium text-foreground">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
-                  <div className="text-xs text-muted-foreground">{String(tx.reference || '—')}</div>
-                  <div className="text-xs text-muted-foreground">{formatDateTime(tx.created_at)}</div>
+            {txs.map((tx) => {
+              const isSuccess = tx.status === 'success' || tx.status === 'delivered';
+              const isPending = tx.status === 'pending' || tx.status === 'processing';
+              const statusColor = isSuccess ? 'text-emerald-500' : isPending ? 'text-amber-500' : 'text-red-500';
+              const statusBg = isSuccess ? 'bg-emerald-500/10' : isPending ? 'bg-amber-500/10' : 'bg-red-500/10';
+
+              return (
+                <div key={tx.reference || tx.id} className="group relative overflow-hidden flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-background/50 p-4 transition-all hover:bg-background/80 hover:shadow-md">
+                  <div className="relative z-10">
+                    <div className="text-sm font-bold text-foreground/90">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
+                    <div className="text-[11px] font-mono text-muted-foreground mt-0.5">{String(tx.reference || '—')}</div>
+                    <div className="text-[11px] text-muted-foreground/70 mt-1">{formatDateTime(tx.created_at)}</div>
+                  </div>
+                  <div className="relative z-10 text-right">
+                    <div className="text-[15px] font-extrabold tracking-tight text-foreground">₦{formatMoney(tx.amount || 0)}</div>
+                    <div className={`mt-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${statusColor} ${statusBg}`}>
+                      {String(tx.status || 'pending')}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{String(tx.status || 'pending')}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
 

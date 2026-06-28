@@ -83,29 +83,33 @@ export default function AirtimePage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-28 md:pb-8">
       <PageHeader
         eyebrow="Services"
         title="Airtime"
         description="Top up supported Nigerian networks from a clean airtime workspace."
         actions={
-          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
+          <Button variant="secondary" onClick={load} className="border-white/10 bg-background/50 text-muted-foreground hover:bg-card hover:text-foreground backdrop-blur-sm">
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh
           </Button>
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Buy Airtime</CardTitle>
-            <CardDescription>Select network, enter phone number, set amount, and submit.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-2">
-              <div className="axis-label">Network</div>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <Card className="relative overflow-hidden border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[6rem] -z-10 pointer-events-none" />
+          <CardContent className="relative z-10 space-y-6 p-5 md:space-y-8 md:p-8">
+            <section className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Select network</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Choose your network to purchase airtime.</div>
+                </div>
+                <Badge className="border-border bg-secondary text-muted-foreground">Live catalog</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
                 {networks.map((item) => {
                   const active = network === item;
                   return (
@@ -124,33 +128,52 @@ export default function AirtimePage() {
                   </div>
                 ) : null}
               </div>
-            </div>
+            </section>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <div className="axis-label">Phone number</div>
-                <Input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  inputMode="tel"
-                  placeholder="08012345678 or 2348012345678"
-                />
-                <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {phoneError || 'Use 08012345678 or 2348012345678 format.'}
+            <section className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Enter the recipient phone number.</div>
+                </div>
+                <div className="relative group">
+                  <Input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    inputMode="tel"
+                    placeholder="08012345678"
+                    className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                  />
+                  <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                </div>
+                <p className={cn('text-xs font-medium', phoneError ? 'text-rose-400' : 'text-muted-foreground')}>
+                  {phoneError || 'Format: 080... or 234...'}
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <div className="axis-label">Amount (NGN)</div>
-                <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="500" />
-                <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {amountError || 'Enter the airtime amount to charge your wallet.'}
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Amount (NGN)</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Enter the airtime amount to charge.</div>
+                </div>
+                <div className="relative group">
+                  <Input 
+                    value={amount} 
+                    onChange={(e) => setAmount(e.target.value)} 
+                    inputMode="decimal" 
+                    placeholder="500" 
+                    className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                  />
+                  <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                </div>
+                <p className={cn('text-xs font-medium', amountError ? 'text-rose-400' : 'text-muted-foreground')}>
+                  {amountError || 'Enter amount in Naira.'}
                 </p>
               </div>
-            </div>
+            </section>
 
-            <div className="space-y-2">
-              <div className="axis-label">Recent recipients</div>
+            <section className="space-y-4 pt-2">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Recent recipients</div>
               <div className="flex flex-wrap gap-2">
                 {defaultRecentRecipients.map((entry) => (
                   <button
@@ -186,6 +209,7 @@ export default function AirtimePage() {
           />
         </div>
       </div>
+    </div>
     </div>
   );
 }

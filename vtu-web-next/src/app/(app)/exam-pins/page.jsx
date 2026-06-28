@@ -96,33 +96,31 @@ export default function ExamPinsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-28 md:pb-8">
       <PageHeader
         eyebrow="Services"
         title="Exam PINs"
         description="Buy WAEC, NECO, or JAMB PINs from your wallet and keep the purchase record in history."
         actions={
-          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
+          <Button variant="secondary" onClick={load} className="border-white/10 bg-background/50 text-muted-foreground hover:bg-card hover:text-foreground backdrop-blur-sm">
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh
           </Button>
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Buy Exam PIN</CardTitle>
-            <CardDescription>Choose exam body, quantity, and optional phone reference.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <Card className="relative overflow-hidden border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[6rem] -z-10 pointer-events-none" />
+          <CardContent className="relative z-10 space-y-6 p-5 md:space-y-8 md:p-8">
+            <section className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Exam body</div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Exam body</div>
                 <select
                   value={exam}
                   onChange={(e) => setExam(e.target.value)}
-                  className="flex h-11 w-full rounded-2xl border border-border bg-input px-4 py-2 text-sm text-foreground outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                  className="h-[52px] md:h-14 w-full rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm px-4 py-2 text-lg tracking-wider text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20 appearance-none"
                 >
                   {!examTypes.length ? <option value="">Loading exam types...</option> : null}
                   {examTypes.map((item) => (
@@ -133,22 +131,46 @@ export default function ExamPinsPage() {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <div className="axis-label">Quantity</div>
-                <Input value={quantity} onChange={(e) => setQuantity(e.target.value)} inputMode="numeric" placeholder="1" />
-                <p className={cn('text-xs', quantityError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {quantityError || 'Allowed quantity: 1 to 10 PINs.'}
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Quantity</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Number of PINs to generate.</div>
+                </div>
+                <div className="relative group">
+                  <Input 
+                    value={quantity} 
+                    onChange={(e) => setQuantity(e.target.value)} 
+                    inputMode="numeric" 
+                    placeholder="1" 
+                    className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                  />
+                  <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                </div>
+                <p className={cn('text-xs font-medium', quantityError ? 'text-rose-400' : 'text-muted-foreground')}>
+                  {quantityError || '1 to 10 PINs.'}
                 </p>
               </div>
-            </div>
+            </section>
 
-            <div className="space-y-2">
-              <div className="axis-label">Phone number (optional)</div>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="08012345678" />
-              <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                {phoneError || 'Optional, used as a customer reference.'}
+            <section className="space-y-4">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number (optional)</div>
+                <div className="mt-2 text-sm text-muted-foreground">For reference purposes.</div>
+              </div>
+              <div className="relative group">
+                <Input 
+                  value={phone} 
+                  onChange={(e) => setPhone(e.target.value)} 
+                  inputMode="tel" 
+                  placeholder="08012345678" 
+                  className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                />
+                <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+              </div>
+              <p className={cn('text-xs font-medium', phoneError ? 'text-rose-400' : 'text-muted-foreground')}>
+                {phoneError || 'Optional.'}
               </p>
-            </div>
+            </section>
 
             <div className="rounded-2xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground">
               Receipt and purchased PIN details are tracked in your transaction history.
@@ -176,6 +198,7 @@ export default function ExamPinsPage() {
           />
         </div>
       </div>
+    </div>
     </div>
   );
 }

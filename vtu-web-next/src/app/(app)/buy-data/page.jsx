@@ -208,7 +208,7 @@ export default function BuyDataPage() {
           <Button
             variant="secondary"
             onClick={() => load()}
-            className="border-border bg-secondary text-muted-foreground hover:bg-secondary hover:text-foreground"
+            className="border-white/10 bg-background/50 text-muted-foreground hover:bg-card hover:text-foreground backdrop-blur-sm"
           >
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh plans
@@ -216,9 +216,10 @@ export default function BuyDataPage() {
         </div>
       </div>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="overflow-hidden border-border bg-card shadow-[0_20px_60px_rgba(0,0,0,0.28)]">
-          <CardContent className="space-y-6 p-4 md:space-y-8 md:p-7">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <Card className="relative overflow-hidden border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[6rem] -z-10 pointer-events-none" />
+          <CardContent className="relative z-10 space-y-6 p-5 md:space-y-8 md:p-8">
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -249,14 +250,20 @@ export default function BuyDataPage() {
                 <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
                 <div className="mt-2 text-sm text-muted-foreground">Enter the recipient phone number.</div>
               </div>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="08012345678"
-                className="h-[52px] rounded-2xl border-border bg-input text-base text-foreground placeholder:text-muted-foreground focus:border-primary/45 focus:ring-amber-500/10 md:h-12"
-              />
+              <div className="relative group">
+                <Input
+                  type="tel"
+                  placeholder="e.g. 08012345678"
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (message) setMessage('');
+                  }}
+                  disabled={busy}
+                  className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                />
+                <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+              </div>
               {phoneError ? (
                 <p className="text-xs font-medium text-rose-300">{phoneError}</p>
               ) : (

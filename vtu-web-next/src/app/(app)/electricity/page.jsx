@@ -106,33 +106,31 @@ export default function ElectricityPage() {
   const summaryDisco = meterLabel(disco) || '—';
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
+      <div className="space-y-6 pb-28 md:pb-8">
       <PageHeader
         eyebrow="Services"
         title="Electricity"
         description="Pay electricity bills with meter details, amount, and a clean wallet-funded checkout flow."
         actions={
-          <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
+          <Button variant="secondary" onClick={load} className="border-white/10 bg-background/50 text-muted-foreground hover:bg-card hover:text-foreground backdrop-blur-sm">
             <RefreshCw className={cn('h-4 w-4', loading && 'animate-spin')} />
             Refresh
           </Button>
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_340px]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Pay electricity bill</CardTitle>
-            <CardDescription>Select disco, meter type, and payment details before checkout.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <Card className="relative overflow-hidden border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[6rem] -z-10 pointer-events-none" />
+          <CardContent className="relative z-10 space-y-6 p-5 md:space-y-8 md:p-8">
+            <section className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <div className="axis-label">Disco / Provider</div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Disco / Provider</div>
                 <select
                   value={disco}
                   onChange={(e) => setDisco(e.target.value)}
-                  className="flex h-11 w-full rounded-2xl border border-border bg-input px-4 py-2 text-sm text-foreground outline-none transition focus:border-primary/70 focus:ring-2 focus:ring-primary/20"
+                  className="h-[52px] md:h-14 w-full rounded-xl border border-white/10 bg-background/50 backdrop-blur-sm px-4 py-2 text-lg tracking-wider text-foreground outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20 appearance-none"
                 >
                   {!discos.length ? <option value="">Loading providers...</option> : null}
                   {discos.map((item) => (
@@ -143,9 +141,9 @@ export default function ElectricityPage() {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <div className="axis-label">Meter type</div>
-                <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2 pt-1 md:pt-0">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Meter type</div>
+                <div className="grid grid-cols-2 gap-2 h-[52px] md:h-14">
                   {meterTypes.map((item) => {
                     const active = meterType === item;
                     return (
@@ -154,10 +152,10 @@ export default function ElectricityPage() {
                         type="button"
                         onClick={() => setMeterType(item)}
                         className={cn(
-                          'rounded-2xl border px-4 py-3 text-sm font-medium transition',
+                          'rounded-xl border px-4 h-full text-base font-medium transition backdrop-blur-sm',
                           active
-                            ? 'border-primary/35 bg-primary/10 text-foreground'
-                            : 'border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground'
+                            ? 'border-primary/35 bg-primary/10 text-foreground shadow-sm'
+                            : 'border-white/10 bg-background/50 text-muted-foreground hover:bg-secondary hover:text-foreground'
                         )}
                       >
                         {meterLabel(item)}
@@ -166,33 +164,68 @@ export default function ElectricityPage() {
                   })}
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <div className="axis-label">Meter number</div>
-                <Input value={meterNumber} onChange={(e) => setMeterNumber(e.target.value)} placeholder="Enter meter number" />
-                <p className={cn('text-xs', meterError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                  {meterError || 'Use the meter number exactly as registered.'}
+            <section className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Meter number</div>
+                  <div className="mt-2 text-sm text-muted-foreground">Enter your meter number.</div>
+                </div>
+                <div className="relative group">
+                  <Input 
+                    value={meterNumber} 
+                    onChange={(e) => setMeterNumber(e.target.value)} 
+                    placeholder="Enter meter number" 
+                    className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                  />
+                  <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                </div>
+                <p className={cn('text-xs font-medium', meterError ? 'text-rose-400' : 'text-muted-foreground')}>
+                  {meterError || 'Must match the selected Disco.'}
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <div className="axis-label">Phone number</div>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="08012345678" />
-                <p className={cn('text-xs', phoneError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
+              <div className="space-y-4">
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Phone number</div>
+                  <div className="mt-2 text-sm text-muted-foreground">For transaction updates.</div>
+                </div>
+                <div className="relative group">
+                  <Input 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)} 
+                    inputMode="tel" 
+                    placeholder="08012345678" 
+                    className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                  />
+                  <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                </div>
+                <p className={cn('text-xs font-medium', phoneError ? 'text-rose-400' : 'text-muted-foreground')}>
                   {phoneError || 'Used for provider notifications.'}
                 </p>
               </div>
-            </div>
+            </section>
 
-            <div className="space-y-2">
-              <div className="axis-label">Amount (NGN)</div>
-              <Input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="5000" />
-              <p className={cn('text-xs', amountError ? 'text-rose-600 dark:text-rose-300' : 'text-muted-foreground')}>
-                {amountError || 'Enter the bill amount to charge your wallet.'}
+            <section className="space-y-4">
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">Amount (NGN)</div>
+                <div className="mt-2 text-sm text-muted-foreground">Enter the payment amount.</div>
+              </div>
+              <div className="relative group">
+                <Input 
+                  value={amount} 
+                  onChange={(e) => setAmount(e.target.value)} 
+                  inputMode="decimal" 
+                  placeholder="5000" 
+                  className="h-[52px] md:h-14 bg-background/50 backdrop-blur-sm text-lg font-mono tracking-wider border-white/10 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all rounded-xl"
+                />
+                <div className="absolute inset-0 -z-10 bg-primary/5 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+              </div>
+              <p className={cn('text-xs font-medium', amountError ? 'text-rose-400' : 'text-muted-foreground')}>
+                {amountError || 'Amount in Naira.'}
               </p>
-            </div>
+            </section>
           </CardContent>
         </Card>
 
@@ -216,6 +249,7 @@ export default function ElectricityPage() {
           />
         </div>
       </div>
+    </div>
     </div>
   );
 }
