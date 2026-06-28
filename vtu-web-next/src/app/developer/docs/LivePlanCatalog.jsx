@@ -106,8 +106,8 @@ export default function LivePlanCatalog() {
                 <thead>
                   <tr className="border-b border-slate-800 text-[10px] uppercase tracking-widest text-slate-500 bg-black/20">
                     <th className="px-4 py-2.5 font-bold">Plan ID</th>
-                    <th className="px-4 py-2.5 font-bold">Plan Code</th>
-                    <th className="px-4 py-2.5 font-bold">Plan Name</th>
+                    <th className="px-4 py-2.5 font-bold">Capacity</th>
+                    <th className="px-4 py-2.5 font-bold">Validity</th>
                     <th className="px-4 py-2.5 font-bold text-right">Price</th>
                   </tr>
                 </thead>
@@ -115,27 +115,9 @@ export default function LivePlanCatalog() {
                   {group.plans.map(plan => (
                     <tr key={plan.id} className="hover:bg-slate-900/50 transition-colors group">
                       <td className="px-4 py-2.5 font-mono text-xs text-slate-400 group-hover:text-blue-400 transition-colors">{plan.id}</td>
-                      <td className="px-4 py-2.5 font-mono text-[11px] text-slate-500">{plan.plan_code}</td>
-                      <td className="px-4 py-2.5 text-xs font-semibold text-slate-300">
-                        {plan.plan_name}
-                        {plan.promo_active && plan.promo_label && (
-                          <span className="ml-2 inline-flex items-center rounded-sm bg-green-500/20 px-1 py-0.5 text-[8px] font-bold text-green-400 uppercase tracking-wider border border-green-500/30">
-                            {plan.promo_label}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5 text-right text-xs">
-                        <div className="flex flex-col items-end">
-                          <span className="font-bold text-slate-200">
-                            ₦{formatMoney(plan.agent_price != null ? plan.agent_price : plan.price)}
-                          </span>
-                          {plan.promo_active && plan.promo_old_price && (
-                            <span className="text-[10px] text-slate-500 line-through">
-                              ₦{formatMoney(plan.promo_old_price)}
-                            </span>
-                          )}
-                        </div>
-                      </td>
+                      <td className="px-4 py-2.5 text-xs font-semibold text-slate-300">{plan.data_size}</td>
+                      <td className="px-4 py-2.5 text-[11px] text-slate-500">{plan.validity || '30 Days'}</td>
+                      <td className="px-4 py-2.5 text-right text-xs font-bold text-slate-200">₦{formatMoney(plan.price)}</td>
                     </tr>
                   ))}
                 </tbody>
