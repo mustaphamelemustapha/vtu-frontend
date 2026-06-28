@@ -8,6 +8,7 @@ import { formatMoney, formatDateTime } from '@/lib/format';
 import { asMoney, percent, safeList, startCase } from '@/lib/admin-utils';
 import { adminQuickLinks } from '@/lib/admin-nav';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdminMetricCard } from '@/components/admin/admin-metric-card';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
