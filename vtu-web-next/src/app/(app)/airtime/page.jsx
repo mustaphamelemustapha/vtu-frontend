@@ -186,7 +186,7 @@ export default function AirtimePage() {
                   </button>
                 ))}
               </div>
-            </div>
+            </section>
           </CardContent>
         </Card>
 
