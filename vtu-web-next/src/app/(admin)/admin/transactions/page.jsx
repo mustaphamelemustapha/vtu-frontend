@@ -71,8 +71,8 @@ export default function AdminTransactionsPage() {
         q: debouncedQuery || undefined,
         status: status || undefined,
         tx_type: type || undefined,
-        from: fromDate || undefined,
-        to: toDate || undefined,
+        from_date: fromDate || undefined,
+        to_date: toDate || undefined,
         page: page,
         page_size: pageSize,
       };

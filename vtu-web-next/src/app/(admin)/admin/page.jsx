@@ -28,7 +28,7 @@ export default function AdminOverviewPage() {
     try {
       const [analyticsRes, txRes, reportsRes] = await Promise.allSettled([
         adminGetAnalytics(),
-        adminGetTransactions({ page: 1, page_size: 10, from: txDate || undefined, to: txDate || undefined }),
+        adminGetTransactions({ page: 1, page_size: 10, from_date: txDate || undefined, to_date: txDate || undefined }),
         adminGetReports({ page: 1, page_size: 10 }),
       ]);
 
