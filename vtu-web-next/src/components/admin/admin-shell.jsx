@@ -48,12 +48,18 @@ export function AdminShell({ children, profile }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="hidden border-r border-border lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block lg:w-[272px] lg:overflow-y-auto">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background ambient gradients */}
+      <div className="pointer-events-none fixed inset-0 z-0 flex justify-center opacity-30 mix-blend-screen dark:opacity-10">
+        <div className="absolute -left-[20%] top-0 h-[500px] w-[500px] rounded-full bg-brand/30 blur-[120px]" />
+        <div className="absolute right-[10%] top-[20%] h-[400px] w-[400px] rounded-full bg-blue-500/20 blur-[100px]" />
+      </div>
+
+      <div className="hidden border-r border-border/50 lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:block lg:w-[272px] lg:overflow-y-auto bg-background/50 backdrop-blur-xl">
         <AdminSidebar profile={me} onSignOut={handleSignOut} />
       </div>
 
-      <main className="min-w-0 bg-background lg:pl-[272px]">
+      <main className="relative z-10 min-w-0 lg:pl-[272px]">
         <AdminTopbar
           title="Admin workspace"
           onOpenMenu={() => setMobileOpen(true)}
@@ -63,10 +69,10 @@ export function AdminShell({ children, profile }) {
         />
         <motion.div
           key={pathname}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.24, ease: 'easeOut' }}
-          className="px-4 py-5 md:px-6 lg:px-8 xl:px-10"
+          initial={{ opacity: 0, y: 12, scale: 0.99 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="px-4 py-5 md:px-6 lg:px-8 xl:px-10 min-h-[calc(100vh-64px)]"
         >
           {children}
         </motion.div>
@@ -82,12 +88,12 @@ export function AdminShell({ children, profile }) {
           >
             <button
               type="button"
-              className="absolute inset-0 bg-slate-950/50"
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
               aria-label="Close menu"
             />
             <motion.div
-              className="relative h-full w-[72vw] max-w-[320px] border-r border-border bg-card shadow-2xl"
+              className="relative h-full w-[75vw] max-w-[320px] border-r border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl"
               initial={{ x: '-110%' }}
               animate={{ x: 0 }}
               exit={{ x: '-110%' }}

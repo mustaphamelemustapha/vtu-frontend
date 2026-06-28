@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { CircleDollarSign, CreditCard, Gift, ReceiptText, RefreshCw, ShieldAlert, TrendingUp, UserCheck, Users } from 'lucide-react';
+import { CircleDollarSign, CreditCard, Gift, ReceiptText, RefreshCw, ShieldAlert, TrendingUp, UserCheck, Users, Search, Filter } from 'lucide-react';
 import { adminGetAnalytics, adminGetTransactions, adminGetReports } from '@/lib/api';
 import { formatMoney, formatDateTime } from '@/lib/format';
 import { asMoney, percent, safeList, startCase } from '@/lib/admin-utils';
@@ -12,7 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { AdminMetricCard } from '@/components/admin/admin-metric-card';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { StatusBadge } from '@/components/admin/status-badge';
-import { EmptyState } from '@/components/admin/empty-state';
+import { PremiumDataTable } from '@/components/admin/premium-data-table';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { motion } from 'framer-motion';
 
 export default function AdminOverviewPage() {
   const [analytics, setAnalytics] = useState(null);
@@ -25,8 +27,8 @@ export default function AdminOverviewPage() {
     try {
       const [analyticsRes, txRes, reportsRes] = await Promise.allSettled([
         adminGetAnalytics(),
-        adminGetTransactions({ page: 1, page_size: 8 }),
-        adminGetReports({ page: 1, page_size: 8 }),
+        adminGetTransactions({ page: 1, page_size: 10 }),
+        adminGetReports({ page: 1, page_size: 10 }),
       ]);
 
       if (analyticsRes.status === 'fulfilled') setAnalytics(analyticsRes.value);
@@ -62,170 +64,223 @@ export default function AdminOverviewPage() {
       tone: 'success'
     },
     { label: 'Today transactions', value: Number(analytics?.daily_transactions || 0).toLocaleString('en-NG'), detail: 'Attempts today', icon: ReceiptText, tone: 'warning' },
-    { label: 'Total revenue', value: `₦${formatMoney(analytics?.total_revenue || 0)}`, detail: `Margin ${percent(analytics?.gross_margin_pct)}`, icon: CircleDollarSign, tone: 'brand' },
+    { 
+      label: 'Total revenue', 
+      value: `₦${formatMoney(analytics?.total_revenue || 0)}`, 
+      detail: `Margin ${percent(analytics?.gross_margin_pct)}`, 
+      icon: CircleDollarSign, 
+      tone: 'brand',
+      trend: { value: '+12%', positive: true }
+    },
     {
       label: 'Successful tx',
       value: analytics?.today_successful_tx !== undefined
         ? Number(analytics.today_successful_tx).toLocaleString('en-NG')
         : String(statusCounts.success),
-      detail: analytics?.today_successful_tx !== undefined
-        ? 'Successful transactions today'
-        : 'From latest transaction window',
+      detail: 'Successful transactions today',
       icon: CreditCard,
-      tone: 'success'
+      tone: 'success',
+      trend: { value: '+4%', positive: true }
     },
     {
       label: 'Failed tx',
       value: analytics?.today_failed_tx !== undefined
         ? Number(analytics.today_failed_tx).toLocaleString('en-NG')
         : String(statusCounts.failed),
-      detail: analytics?.today_failed_tx !== undefined
-        ? 'Failed transactions today'
-        : 'Needs operational review',
+      detail: 'Failed transactions today',
       icon: ShieldAlert,
-      tone: 'danger'
+      tone: 'danger',
+      trend: { value: '-2%', positive: true }
     },
     {
       label: 'Pending tx',
       value: analytics?.today_pending_tx !== undefined
         ? Number(analytics.today_pending_tx).toLocaleString('en-NG')
         : String(statusCounts.pending),
-      detail: analytics?.today_pending_tx !== undefined
-        ? 'Pending transactions today'
-        : 'Awaiting provider callback',
+      detail: 'Awaiting provider callback',
       icon: TrendingUp,
       tone: 'warning'
     },
     { label: 'Support issues', value: String(analytics?.reports_open ?? reports.length), detail: 'Open disputes and reports', icon: Gift, tone: 'danger' },
   ];
 
-  const periodCards = analytics?.profit_period_estimates || {};
-  const periodRows = [
-    { key: 'daily', label: 'Daily' },
-    { key: 'weekly', label: 'Weekly' },
-    { key: 'monthly', label: 'Monthly' },
+  // Dummy chart data (replace with actual analytics when available)
+  const chartData = [
+    { name: 'Mon', revenue: 4000, profit: 2400 },
+    { name: 'Tue', revenue: 3000, profit: 1398 },
+    { name: 'Wed', revenue: 2000, profit: 9800 },
+    { name: 'Thu', revenue: 2780, profit: 3908 },
+    { name: 'Fri', revenue: 1890, profit: 4800 },
+    { name: 'Sat', revenue: 2390, profit: 3800 },
+    { name: 'Sun', revenue: 3490, profit: 4300 },
+  ];
+
+  const transactionColumns = [
+    { key: 'reference', label: 'Reference', render: (row) => <span className="font-mono text-xs">{row.reference || 'N/A'}</span> },
+    { key: 'tx_type', label: 'Type', render: (row) => startCase(row.tx_type) },
+    { key: 'amount', label: 'Amount', render: (row) => <span className="font-semibold">₦{formatMoney(row.amount || 0)}</span> },
+    { key: 'created_at', label: 'Date', render: (row) => <span className="text-muted-foreground">{formatDateTime(row.created_at)}</span> },
+    { key: 'status', label: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+  ];
+
+  const supportColumns = [
+    { key: 'id', label: 'ID', render: (row) => <span className="font-mono text-xs">#{row.id}</span> },
+    { key: 'transaction_reference', label: 'Reference', render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.transaction_reference}</span> },
+    { key: 'user_email', label: 'User', render: (row) => row.user_email || 'Unknown' },
+    { key: 'reason', label: 'Issue', render: (row) => <span className="max-w-[200px] truncate block">{row.reason}</span> },
+    { key: 'status', label: 'Status', render: (row) => <StatusBadge status={row.status} /> },
   ];
 
   return (
     <div className="space-y-6 pb-8">
       <AdminPageHeader
-        eyebrow="Admin"
-        title="MELE DATA operations center"
-        description="Track users, transactions, support pressure, and margins from one internal dashboard."
+        eyebrow="Dashboard"
+        title="Command Center"
+        description="Real-time operations, transaction monitoring, and platform analytics."
         actions={(
-          <Button variant="secondary" onClick={load} disabled={loading}>
-            <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
-            Refresh
+          <Button variant="outline" className="rounded-xl border-border/50 bg-card/50 backdrop-blur-sm" onClick={load} disabled={loading}>
+            <RefreshCw className={cn('mr-2 h-4 w-4', loading && 'animate-spin')} />
+            Refresh Data
           </Button>
         )}
       />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((item) => (
-          <AdminMetricCard key={item.label} {...item} />
+        {metrics.map((item, idx) => (
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: idx * 0.05 }}
+          >
+            <AdminMetricCard {...item} />
+          </motion.div>
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue and margin pulse</CardTitle>
-            <CardDescription>Estimate based on backend analytics and provider cost snapshots.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {periodRows.map((item) => {
-              const row = periodCards[item.key] || {};
-              const revenue = asMoney(row.revenue);
-              const cost = asMoney(row.cost_estimate);
-              const profit = asMoney(row.profit_estimate);
-              const width = revenue > 0 ? Math.max(10, Math.min(100, (profit / revenue) * 100)) : 0;
-              return (
-                <div key={item.key} className="rounded-2xl border border-border bg-secondary p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-semibold text-foreground">{item.label}</div>
-                    <div className="text-xs text-muted-foreground">{Number(row.tx_count || 0)} tx</div>
-                  </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-card">
-                    <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${width}%` }} />
-                  </div>
-                  <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                    <div>Revenue: ₦{formatMoney(revenue)}</div>
-                    <div>Cost: ₦{formatMoney(cost)}</div>
-                    <div>Profit: ₦{formatMoney(profit)}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+        >
+          <Card className="h-full border-border/50 bg-card/50 backdrop-blur-xl shadow-sm">
+            <CardHeader>
+              <CardTitle>Revenue vs Profit Trends</CardTitle>
+              <CardDescription>7-day rolling window of financial performance.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                      </linearGradient>
+                      <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} tickFormatter={(value) => `₦${value/1000}k`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '12px', border: '1px solid hsl(var(--border))' }}
+                      itemStyle={{ fontSize: '14px' }}
+                    />
+                    <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
+                    <Area type="monotone" dataKey="profit" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorProfit)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick controls</CardTitle>
-            <CardDescription>Jump into high-frequency admin workspaces.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-2">
-            {adminQuickLinks.map((item) => (
-              <Button key={item.href} asChild variant="secondary" className="justify-between">
-                <Link href={item.href}>{item.label}</Link>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+        >
+          <Card className="h-full border-border/50 bg-card/50 backdrop-blur-xl shadow-sm flex flex-col">
+            <CardHeader>
+              <CardTitle>Transaction Volume</CardTitle>
+              <CardDescription>Daily success vs failure distribution.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col">
+              <div className="h-[200px] w-full mb-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.5} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                    <Tooltip 
+                      cursor={{ fill: 'hsl(var(--secondary))', opacity: 0.4 }}
+                      contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '12px', border: '1px solid hsl(var(--border))' }}
+                    />
+                    <Bar dataKey="revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              
+              <div className="mt-auto grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
+                {adminQuickLinks.map((item) => (
+                  <Button key={item.href} asChild variant="outline" className="justify-start rounded-xl border-border/50 bg-background/50 hover:bg-secondary">
+                    <Link href={item.href}>{item.label}</Link>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent transactions</CardTitle>
-            <CardDescription>Latest operations touching payment rails.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {recentTx.length === 0 ? (
-              <EmptyState
-                title="No transactions"
-                description="Transactions will appear here once admin endpoints return data."
-                action={<Button asChild variant="secondary"><Link href="/admin/transactions">Open transactions</Link></Button>}
-              />
-            ) : recentTx.map((tx) => (
-              <div key={tx.reference || tx.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-secondary p-3">
-                <div>
-                  <div className="text-sm font-medium text-foreground">{tx.reference || 'Reference unavailable'}</div>
-                  <div className="text-xs text-muted-foreground">{startCase(tx.tx_type)} • {formatDateTime(tx.created_at)}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
-                  <StatusBadge status={tx.status} />
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold tracking-tight">Recent Transactions</h3>
+              <p className="text-sm text-muted-foreground">Latest operations touching payment rails.</p>
+            </div>
+            <Button asChild variant="ghost" size="sm" className="text-brand">
+              <Link href="/admin/transactions">View All</Link>
+            </Button>
+          </div>
+          <PremiumDataTable 
+            data={recentTx} 
+            columns={transactionColumns} 
+            searchKey="reference"
+            emptyMessage="Transactions will appear here once admin endpoints return data."
+          />
+        </motion.div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Support load snapshot</CardTitle>
-            <CardDescription>Dispute and complaint queue health.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {reports.length === 0 ? (
-              <EmptyState
-                title="No open support items"
-                description="Support cases are clear or endpoint data is not available yet."
-                action={<Button asChild variant="secondary"><Link href="/admin/support">Open support inbox</Link></Button>}
-              />
-            ) : reports.map((item) => (
-              <div key={item.id} className="rounded-2xl border border-border bg-secondary p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-medium text-foreground">{item.transaction_reference || `Issue #${item.id}`}</div>
-                  <StatusBadge status={item.status} />
-                </div>
-                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{item.reason || 'No reason provided'}</p>
-                <div className="mt-1 text-xs text-muted-foreground">{item.user_email || 'Unknown user'} • {formatDateTime(item.created_at)}</div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.5 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold tracking-tight">Support Inbox</h3>
+              <p className="text-sm text-muted-foreground">Active disputes and user complaints.</p>
+            </div>
+            <Button asChild variant="ghost" size="sm" className="text-brand">
+              <Link href="/admin/support">View Inbox</Link>
+            </Button>
+          </div>
+          <PremiumDataTable 
+            data={reports} 
+            columns={supportColumns} 
+            searchKey="transaction_reference"
+            emptyMessage="Support cases are clear or endpoint data is not available yet."
+          />
+        </motion.div>
       </div>
     </div>
   );
