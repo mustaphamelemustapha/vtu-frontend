@@ -67,6 +67,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const profile = getProfile();
   const [summary, setSummary] = useState(null);
+  const [fastWallet, setFastWallet] = useState(null);
   const [referrals, setReferrals] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -74,6 +75,9 @@ export default function DashboardPage() {
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
+
+    apiFetch('/wallet/me').then(setFastWallet).catch(() => {});
+
     try {
       const [dash, refs] = await Promise.allSettled([
         apiFetch('/dashboard/summary'),
@@ -91,7 +95,7 @@ export default function DashboardPage() {
     load().catch(() => {});
   }, [load]);
 
-  const wallet = summary?.wallet || {};
+  const wallet = fastWallet || summary?.wallet || {};
   const txs = emptyOrRows(summary?.transactions).slice(0, 6);
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
   const bankTransfer = summary?.bank_transfer_accounts || {};
