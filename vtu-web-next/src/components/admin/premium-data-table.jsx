@@ -15,6 +15,8 @@ export function PremiumDataTable({
   currentPage = 1,
   onPageChange,
   isLoading = false,
+  serverSearchTerm,
+  onServerSearchChange,
 }) {
   const [clientSearchTerm, setClientSearchTerm] = useState('');
   const [clientCurrentPage, setClientCurrentPage] = useState(1);
@@ -77,9 +79,9 @@ export function PremiumDataTable({
   return (
     <div className="flex flex-col gap-4 relative">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
         {searchKey && !serverPagination && (
-          <div className="relative max-w-sm flex-1">
+          <div className="relative w-full sm:max-w-sm flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               value={clientSearchTerm}
@@ -92,7 +94,18 @@ export function PremiumDataTable({
             />
           </div>
         )}
-        <div className="flex items-center gap-2 ml-auto">
+        {serverPagination && onServerSearchChange !== undefined && (
+          <div className="relative w-full sm:max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={serverSearchTerm || ''}
+              onChange={(e) => onServerSearchChange(e.target.value)}
+              placeholder={searchPlaceholder}
+              className="h-10 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-sm outline-none transition-all focus:border-brand focus:ring-1 focus:ring-brand/50"
+            />
+          </div>
+        )}
+        <div className="flex items-center gap-2 sm:ml-auto w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
           {headerActions}
         </div>
       </div>

@@ -54,61 +54,46 @@ export default function AdminOverviewPage() {
     return initial;
   }, [recentTx]);
 
-  const metrics = [
-    { label: 'Total users', value: Number(analytics?.total_users || 0).toLocaleString('en-NG'), detail: 'Registered accounts', icon: Users, tone: 'brand' },
-    {
-      label: 'Active users',
-      value: Number(analytics?.active_users !== undefined ? analytics.active_users : (analytics?.total_users || 0)).toLocaleString('en-NG'),
-      detail: analytics?.active_users !== undefined ? 'Active accounts' : 'Active-state estimate',
-      icon: UserCheck,
-      tone: 'success'
+  // Extract all time revenue from the newly added endpoint property, or fallback
+  const totalRevenueAllTime = analytics?.profit_period_estimates?.all_time?.revenue || analytics?.total_revenue || 0;
+  const totalProfitAllTime = analytics?.profit_period_estimates?.all_time?.profit_estimate || (analytics?.gross_profit_estimate || 0) + (analytics?.service_profit_estimate || 0);
+
+  const mainMetrics = [
+    { 
+      label: 'Total Platform Revenue', 
+      value: `₦${formatMoney(totalRevenueAllTime)}`, 
+      detail: 'All-time gross revenue across all services', 
+      icon: CircleDollarSign, 
+      tone: 'success' 
     },
-    { label: 'Data revenue', value: `₦${formatMoney(analytics?.data_revenue || 0)}`, detail: 'Total data sales volume', icon: ReceiptText, tone: 'success' },
-    {
-      label: 'Data margin',
-      value: `₦${formatMoney(analytics?.gross_profit_estimate || 0)}`,
-      detail: `~${Number(analytics?.gross_margin_pct || 0).toFixed(1)}% gross margin`,
-      icon: CircleDollarSign,
-      tone: 'success'
+    { 
+      label: 'Estimated Profit', 
+      value: `₦${formatMoney(totalProfitAllTime)}`, 
+      detail: 'All-time gross profit margin', 
+      icon: TrendingUp, 
+      tone: 'brand' 
     },
-    { label: 'Service revenue', value: `₦${formatMoney(analytics?.service_revenue || 0)}`, detail: 'Airtime, Cable, Bills', icon: ReceiptText, tone: 'brand' },
-    { label: 'Service margin', value: `₦${formatMoney(analytics?.service_profit_estimate || 0)}`, detail: 'Est. profit from services', icon: CircleDollarSign, tone: 'brand' },
-    {
-      label: 'Today’s volume',
-      value: String(analytics?.daily_transactions || 0),
-      detail: `${analytics?.today_successful_tx || 0} success, ${analytics?.today_failed_tx || 0} failed`,
-      icon: CreditCard,
-      tone: 'brand'
+    { 
+      label: 'Active Users', 
+      value: Number(analytics?.active_users !== undefined ? analytics.active_users : (analytics?.total_users || 0)).toLocaleString('en-NG'), 
+      detail: `Out of ${Number(analytics?.total_users || 0).toLocaleString('en-NG')} total registered accounts`, 
+      icon: Users, 
+      tone: 'brand' 
     },
-    {
-      label: 'API success rate',
-      value: percent(analytics?.api_success, (analytics?.api_success || 0) + (analytics?.api_failed || 0)),
-      detail: `Out of ${(analytics?.api_success || 0) + (analytics?.api_failed || 0)} calls`,
-      icon: ShieldAlert,
-      tone: (analytics?.api_success || 0) > (analytics?.api_failed || 0) ? 'success' : 'danger'
+    { 
+      label: 'Today\'s Activity', 
+      value: String(analytics?.daily_transactions || 0), 
+      detail: `${analytics?.today_successful_tx || 0} success, ${analytics?.today_failed_tx || 0} failed`, 
+      icon: RefreshCw, 
+      tone: 'warning' 
     },
-    {
-      label: 'Recent tx success',
-      value: String(statusCounts.success),
-      detail: 'Last 10 payload distribution',
-      icon: TrendingUp,
-      tone: 'success'
-    },
-    {
-      label: 'Recent tx failed',
-      value: String(statusCounts.failed),
-      detail: 'Failed or refunded',
-      icon: TrendingUp,
-      tone: 'danger'
-    },
-    {
-      label: 'Recent tx pending',
-      value: String(statusCounts.pending),
-      detail: 'Awaiting provider callback',
-      icon: TrendingUp,
-      tone: 'warning'
-    },
-    { label: 'Support issues', value: String(analytics?.reports_open ?? reports.length), detail: 'Open disputes and reports', icon: Gift, tone: 'danger' },
+  ];
+
+  const secondaryMetrics = [
+    { label: 'Data Revenue', value: `₦${formatMoney(analytics?.data_revenue || 0)}`, detail: 'Current period' },
+    { label: 'Service Revenue', value: `₦${formatMoney(analytics?.service_revenue || 0)}`, detail: 'Current period' },
+    { label: 'API Health', value: percent(analytics?.api_success, (analytics?.api_success || 0) + (analytics?.api_failed || 0)), detail: 'Success rate' },
+    { label: 'Support Issues', value: String(analytics?.reports_open ?? reports.length), detail: 'Open tickets' },
   ];
 
   const transactionColumns = [
@@ -145,8 +130,8 @@ export default function AdminOverviewPage() {
         )}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {metrics.map((item, idx) => (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {mainMetrics.map((item, idx) => (
           <motion.div
             key={item.label}
             initial={{ opacity: 0, y: 20 }}
@@ -154,6 +139,24 @@ export default function AdminOverviewPage() {
             transition={{ duration: 0.3, delay: idx * 0.05 }}
           >
             <AdminMetricCard {...item} />
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-4 px-1">
+        {secondaryMetrics.map((item, idx) => (
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 + (idx * 0.05) }}
+            className="flex items-center justify-between p-3 rounded-2xl border border-border/40 bg-card/30 backdrop-blur-sm"
+          >
+            <div>
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{item.label}</div>
+              <div className="text-sm font-semibold text-foreground mt-0.5">{item.value}</div>
+            </div>
+            <div className="text-[10px] text-muted-foreground text-right w-16 leading-tight">{item.detail}</div>
           </motion.div>
         ))}
       </div>

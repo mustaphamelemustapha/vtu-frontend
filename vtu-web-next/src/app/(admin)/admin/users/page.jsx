@@ -186,18 +186,10 @@ export default function AdminUsersPage() {
             itemsPerPage={pageSize}
             onPageChange={setPage}
             isLoading={loading}
+            serverSearchTerm={query}
+            onServerSearchChange={setQuery}
+            searchPlaceholder="Search by name, email, or phone"
           />
-          <div className="absolute top-0 left-0 w-full max-w-sm">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by name, email, or phone"
-                className="h-10 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-sm outline-none transition-all focus:border-brand focus:ring-1 focus:ring-brand/50"
-              />
-            </div>
-          </div>
         </div>
       </motion.div>
 

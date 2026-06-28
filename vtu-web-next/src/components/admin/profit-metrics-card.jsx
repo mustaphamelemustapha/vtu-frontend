@@ -9,6 +9,7 @@ export function ProfitMetricsCard({ profitData }) {
     { key: 'daily', label: 'Today', description: 'Since 12:00 AM' },
     { key: 'weekly', label: 'This Week', description: 'Since Monday' },
     { key: 'monthly', label: 'This Month', description: 'Since 1st' },
+    { key: 'all_time', label: 'Total Revenue', description: 'Lifetime' },
   ];
 
   return (
@@ -18,7 +19,7 @@ export function ProfitMetricsCard({ profitData }) {
         <CardDescription>Estimated margins across different time periods.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {periods.map((period) => {
             const data = profitData[period.key] || { revenue: 0, profit_estimate: 0, tx_count: 0 };
             return (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ExternalLink, RefreshCw, Calendar as CalendarIcon } from 'lucide-react';
+import { ExternalLink, RefreshCw, Calendar as CalendarIcon, Search } from 'lucide-react';
 import { adminFailAndRefundPending, adminFailAndRefundPendingBulk, adminGetAuditLogs, adminGetTransactionDetails, adminGetTransactions, adminReconcileDelivered, adminReconcileDeliveredBulk } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { startCase } from '@/lib/admin-utils';
@@ -214,7 +214,6 @@ export default function AdminTransactionsPage() {
           <PremiumDataTable 
             data={rows} 
             columns={columns} 
-            searchKey="reference" // Note: the search is custom server-side now but we'll use an input outside if we want, or use the built in.
             emptyMessage={loading ? 'Loading transactions...' : 'No transactions for this filter.'}
             serverPagination={true}
             totalItems={totalRows}
@@ -223,20 +222,10 @@ export default function AdminTransactionsPage() {
             onPageChange={setPage}
             isLoading={loading}
             headerActions={Filters}
+            serverSearchTerm={query}
+            onServerSearchChange={setQuery}
+            searchPlaceholder="Search reference or user email..."
           />
-
-          {/* Since PremiumDataTable uses clientSearchTerm, and we need server search, we'll just float a search input manually for server-side */}
-          <div className="absolute top-0 left-0 w-full max-w-sm">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search reference or user email"
-                className="h-10 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-sm outline-none transition-all focus:border-brand focus:ring-1 focus:ring-brand/50"
-              />
-            </div>
-          </div>
         </div>
       </motion.div>
 
