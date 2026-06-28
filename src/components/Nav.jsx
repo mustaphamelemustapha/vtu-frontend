@@ -54,6 +54,11 @@ const ProfileIcon = () => (
     <path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="1.6" />
   </svg>
 );
+const ApiIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none">
+    <path d="M7 8l-4 4 4 4M17 8l4 4-4 4M13 5l-2 14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
 
 export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
   const { showToast } = useToast();
@@ -96,6 +101,7 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
         <nav className="nav-links">
           <NavLink to="/support" data-testid="nav-desktop-support"><Icon><SupportIcon /></Icon>Support</NavLink>
           <NavLink to="/profile" data-testid="nav-desktop-profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
+          <NavLink to="/developer" data-testid="nav-desktop-developer"><Icon><ApiIcon /></Icon>Developer API</NavLink>
           {isAdmin && <NavLink to="/admin" data-testid="nav-desktop-admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
           <a href="https://whatsapp.com/channel/0029VbCanujEawdvqLAYu83T" target="_blank" rel="noopener noreferrer" className="nav-link"><Icon><SupportIcon /></Icon>WhatsApp Channel</a>
           <a href="https://www.tiktok.com/@meledata_ng" target="_blank" rel="noopener noreferrer" className="nav-link"><Icon><ProfileIcon /></Icon>TikTok Page</a>
