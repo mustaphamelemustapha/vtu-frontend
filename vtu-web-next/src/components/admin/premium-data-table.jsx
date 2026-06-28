@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Filter } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown, Filter, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function PremiumDataTable({ 
@@ -8,11 +8,19 @@ export function PremiumDataTable({
   searchKey = '', 
   searchPlaceholder = 'Search...', 
   itemsPerPage = 10,
-  emptyMessage = 'No data available.'
+  emptyMessage = 'No data available.',
+  headerActions = null,
+  serverPagination = false,
+  totalItems = 0,
+  currentPage = 1,
+  onPageChange,
+  isLoading = false,
 }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
+  const [clientCurrentPage, setClientCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState(null);
+
+  const activePage = serverPagination ? currentPage : clientCurrentPage;
 
   const handleSort = (key) => {
     let direction = 'ascending';
@@ -23,12 +31,14 @@ export function PremiumDataTable({
   };
 
   const filteredData = useMemo(() => {
+    if (serverPagination) return data;
+
     let result = data;
 
     // Filter
-    if (searchTerm && searchKey) {
+    if (clientSearchTerm && searchKey) {
       result = result.filter(item => 
-        String(item[searchKey] || '').toLowerCase().includes(searchTerm.toLowerCase())
+        String(item[searchKey] || '').toLowerCase().includes(clientSearchTerm.toLowerCase())
       );
     }
 
@@ -44,44 +54,63 @@ export function PremiumDataTable({
     }
 
     return result;
-  }, [data, searchTerm, searchKey, sortConfig]);
+  }, [data, clientSearchTerm, searchKey, sortConfig, serverPagination]);
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = serverPagination 
+    ? Math.ceil(totalItems / itemsPerPage) 
+    : Math.ceil(filteredData.length / itemsPerPage);
+
+  const paginatedData = serverPagination 
+    ? filteredData 
+    : filteredData.slice((activePage - 1) * itemsPerPage, activePage * itemsPerPage);
+
+  const handlePageChange = (newPage) => {
+    if (serverPagination && onPageChange) {
+      onPageChange(newPage);
+    } else {
+      setClientCurrentPage(newPage);
+    }
+  };
+
+  const actualTotalItems = serverPagination ? totalItems : filteredData.length;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 relative">
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4">
-        {searchKey && (
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        {searchKey && !serverPagination && (
           <div className="relative max-w-sm flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
-              value={searchTerm}
+              value={clientSearchTerm}
               onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
+                setClientSearchTerm(e.target.value);
+                setClientCurrentPage(1);
               }}
               placeholder={searchPlaceholder}
               className="h-10 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-sm outline-none transition-all focus:border-brand focus:ring-1 focus:ring-brand/50"
             />
           </div>
         )}
-        <Button variant="outline" size="sm" className="h-10 rounded-xl">
-          <Filter className="mr-2 h-4 w-4" />
-          Filter
-        </Button>
+        <div className="flex items-center gap-2 ml-auto">
+          {headerActions}
+        </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="overflow-hidden rounded-2xl border border-border bg-card relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-brand" />
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="bg-secondary/50 text-muted-foreground">
               <tr>
                 {columns.map((col, i) => (
                   <th key={col.key || i} className="whitespace-nowrap px-4 py-3 font-medium">
-                    {col.sortable !== false ? (
+                    {col.sortable !== false && !serverPagination ? (
                       <button
                         onClick={() => handleSort(col.key)}
                         className="flex items-center gap-1 hover:text-foreground transition-colors"
@@ -123,15 +152,15 @@ export function PremiumDataTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div>
-            Showing <span className="font-medium text-foreground">{((currentPage - 1) * itemsPerPage) + 1}</span> to <span className="font-medium text-foreground">{Math.min(currentPage * itemsPerPage, filteredData.length)}</span> of <span className="font-medium text-foreground">{filteredData.length}</span> results
+            Showing <span className="font-medium text-foreground">{((activePage - 1) * itemsPerPage) + 1}</span> to <span className="font-medium text-foreground">{Math.min(activePage * itemsPerPage, actualTotalItems)}</span> of <span className="font-medium text-foreground">{actualTotalItems}</span> results
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-lg"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={activePage === 1 || isLoading}
+              onClick={() => handlePageChange(activePage - 1)}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -139,8 +168,8 @@ export function PremiumDataTable({
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-lg"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={activePage === totalPages || isLoading}
+              onClick={() => handlePageChange(activePage + 1)}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

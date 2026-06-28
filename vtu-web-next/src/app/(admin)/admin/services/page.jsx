@@ -8,8 +8,9 @@ import { formatDateTime } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
-import { AdminTable } from '@/components/admin/admin-table';
+import { PremiumDataTable } from '@/components/admin/premium-data-table';
 import { StatusBadge } from '@/components/admin/status-badge';
+import { motion } from 'framer-motion';
 
 function isEnabled(list) {
   return Array.isArray(list) && list.length > 0;
@@ -105,65 +106,87 @@ export default function AdminServicesPage() {
     ];
   }, [catalog?.airtime_networks, catalog?.cable_providers, catalog?.electricity_discos, catalog?.exam_types, lastSync, plans]);
 
+  const columns = [
+    {
+      key: 'service',
+      label: 'Service',
+      sortable: false,
+      render: (row) => {
+        const Icon = row.icon;
+        return (
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-border/50 bg-secondary/50 text-brand">
+              <Icon className="h-5 w-5" />
+            </span>
+            <span className="font-semibold text-foreground tracking-tight">{row.service}</span>
+          </div>
+        );
+      },
+    },
+    { key: 'enabled', label: 'Enabled/Disabled', sortable: false, render: (row) => <StatusBadge status={row.enabled ? 'enabled' : 'disabled'} /> },
+    { key: 'providerStatus', label: 'Provider Connection', sortable: false, render: (row) => <StatusBadge status={row.providerStatus} /> },
+    { key: 'lastSync', label: 'Last Sync', sortable: false, render: (row) => <span className="text-muted-foreground">{formatDateTime(row.lastSync)}</span> },
+    { key: 'failureRate', label: 'Failure Rate', sortable: false, render: (row) => <span className="font-medium">{row.failureRate}</span> },
+    {
+      key: 'actions',
+      label: 'Actions',
+      sortable: false,
+      render: () => (
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" className="rounded-xl h-8" disabled>Enable/Disable</Button>
+          <Button variant="secondary" size="sm" className="rounded-xl h-8" disabled>Diagnostics</Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="space-y-5 pb-8">
+    <div className="space-y-6 pb-8">
       <AdminPageHeader
-        title="Services management"
+        eyebrow="Integrations"
+        title="Services Management"
         description="Control service states, provider health visibility, and operational sync status."
         actions={(
-          <Button variant="secondary" onClick={load} disabled={loading}>
-            <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
-            Refresh services
+          <Button variant="outline" className="rounded-xl border-border bg-card/50 backdrop-blur-xl hover:bg-secondary" onClick={load} disabled={loading}>
+            <RefreshCw className={loading ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
+            Refresh Services
           </Button>
         )}
       />
 
-      <AdminTable
-        columns={[
-          {
-            key: 'service',
-            label: 'Service',
-            render: (row) => {
-              const Icon = row.icon;
-              return (
-                <div className="flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-border bg-secondary text-primary">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="font-medium text-foreground">{row.service}</span>
-                </div>
-              );
-            },
-          },
-          { key: 'enabled', label: 'Enabled/Disabled', render: (row) => <StatusBadge status={row.enabled ? 'enabled' : 'disabled'} /> },
-          { key: 'providerStatus', label: 'Provider connection', render: (row) => <StatusBadge status={row.providerStatus} /> },
-          { key: 'lastSync', label: 'Last sync', render: (row) => formatDateTime(row.lastSync) },
-          { key: 'failureRate', label: 'Failure rate', render: (row) => row.failureRate },
-          {
-            key: 'actions',
-            label: 'Actions',
-            render: () => (
-              <div className="flex flex-wrap gap-1.5">
-                <Button variant="secondary" size="sm" disabled>Enable/Disable</Button>
-                <Button variant="secondary" size="sm" disabled>Provider diagnostics</Button>
-              </div>
-            ),
-          },
-        ]}
-        rows={rows}
-        empty={loading ? 'Loading service statuses...' : 'No services available.'}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <PremiumDataTable 
+          data={rows} 
+          columns={columns} 
+          emptyMessage={loading ? 'Loading service statuses...' : 'No services available.'}
+          serverPagination={false}
+          hideSearch={true}
+        />
+      </motion.div>
 
-      <Card className="border-amber-300/80 bg-amber-50/70 dark:border-amber-400/30 dark:bg-amber-500/10">
-        <CardContent className="flex items-start gap-3 p-4">
-          <span className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg border border-amber-300 bg-card text-amber-700 dark:border-amber-400/30 dark:text-amber-200">
-            <AlertTriangle className="h-4 w-4" />
-          </span>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Service toggles and hard provider failover controls are intentionally locked in UI until dedicated backend endpoints are exposed.
-          </p>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+        <Card className="rounded-3xl border border-amber-300/80 bg-amber-500/10 backdrop-blur-sm shadow-sm overflow-hidden">
+          <CardContent className="flex items-start gap-4 p-5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-amber-300/50 bg-amber-500/20 text-amber-600">
+              <AlertTriangle className="h-5 w-5" />
+            </span>
+            <div>
+              <h4 className="text-sm font-semibold text-amber-700 dark:text-amber-500">Service Controls Locked</h4>
+              <p className="mt-1 text-sm leading-relaxed text-amber-700/80 dark:text-amber-500/80">
+                Service toggles and hard provider failover controls are intentionally locked in UI until dedicated backend endpoints are exposed.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
