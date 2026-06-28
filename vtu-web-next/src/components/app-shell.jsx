@@ -429,11 +429,11 @@ export function AppShell({ children }) {
 
               <div className="shrink-0 border-t border-border bg-card p-3">
                 <Button
-                  variant="secondary"
-                  className="h-11 w-full justify-center border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-400/30 dark:bg-rose-500/12 dark:text-rose-100 dark:hover:bg-rose-500/18"
+                  variant="destructive"
+                  className="h-11 w-full justify-center"
                   onClick={handleSignOut}
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
               </div>
