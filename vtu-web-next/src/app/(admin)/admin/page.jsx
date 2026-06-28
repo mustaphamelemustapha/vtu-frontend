@@ -98,6 +98,7 @@ export default function AdminOverviewPage() {
 
   const transactionColumns = [
     { key: 'reference', label: 'Reference', render: (row) => <span className="font-mono text-xs">{row.reference || 'N/A'}</span> },
+    { key: 'user', label: 'User', render: (row) => <span className="text-sm">{row.user_email || `User #${row.user_id}`}</span> },
     { key: 'tx_type', label: 'Type', render: (row) => startCase(row.tx_type) },
     { key: 'amount', label: 'Amount', render: (row) => <span className="font-semibold">₦{formatMoney(row.amount || 0)}</span> },
     { key: 'created_at', label: 'Date', render: (row) => <span className="text-muted-foreground">{formatDateTime(row.created_at)}</span> },
