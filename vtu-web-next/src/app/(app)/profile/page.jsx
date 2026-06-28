@@ -20,29 +20,20 @@ export default function ProfilePage() {
   const [password, setPassword] = useState({ current_password: '', new_password: '' });
   const [loading, setLoading] = useState(true);
 
-  const [developerState, setDeveloperState] = useState({
-    is_developer: false,
-    developer_status: 'none',
-    api_public_key: null,
-    has_keys: false
-  });
-  const [devLoading, setDevLoading] = useState(false);
-  const [rawSecretKey, setRawSecretKey] = useState(null);
+
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [meRes, refRes, devRes] = await Promise.allSettled([
+      const [meRes, refRes] = await Promise.allSettled([
         apiFetch('/auth/me'),
-        apiFetch('/referrals/me'),
-        apiFetch('/developer/status')
+        apiFetch('/referrals/me')
       ]);
       if (meRes.status === 'fulfilled') {
         setProfile(meRes.value);
         setProfileState(meRes.value);
       }
       if (refRes.status === 'fulfilled') setReferrals(refRes.value);
-      if (devRes.status === 'fulfilled') setDeveloperState(devRes.value);
     } finally {
       setLoading(false);
     }
@@ -52,46 +43,7 @@ export default function ProfilePage() {
     load().catch(() => {});
   }, [load]);
 
-  const applyForDeveloper = async () => {
-    setDevLoading(true);
-    try {
-      const data = await apiFetch('/developer/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ additional_info: '' })
-      });
-      setDeveloperState(data);
-    } finally {
-      setDevLoading(false);
-    }
-  };
 
-  const generateKeys = async () => {
-    setDevLoading(true);
-    try {
-      const data = await apiFetch('/developer/keys/generate', { method: 'POST' });
-      setRawSecretKey(data.api_secret_key);
-      setDeveloperState(prev => ({
-        ...prev,
-        api_public_key: data.api_public_key,
-        has_keys: true
-      }));
-    } finally {
-      setDevLoading(false);
-    }
-  };
-
-  const revokeKeys = async () => {
-    if (!window.confirm("Are you sure you want to revoke your API keys? This will immediately break any active integrations!")) return;
-    setDevLoading(true);
-    try {
-      const data = await apiFetch('/developer/keys/revoke', { method: 'POST' });
-      setDeveloperState(data);
-      setRawSecretKey(null);
-    } finally {
-      setDevLoading(false);
-    }
-  };
 
   const saveDetails = async () => {
     setSaving(true);
@@ -238,78 +190,16 @@ export default function ProfilePage() {
 
         <Card id="developer">
           <CardHeader>
-            <CardTitle>Developer Portal</CardTitle>
-            <CardDescription>Manage your API keys and developer status.</CardDescription>
+            <CardTitle>Developer API</CardTitle>
+            <CardDescription>Automate purchases by integrating our API.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex justify-between items-center py-2 border-b border-border">
-              <span className="text-sm font-medium">Application Status</span>
-              <Badge variant={developerState.developer_status === 'approved' ? 'success' : developerState.developer_status === 'applied' ? 'warning' : 'secondary'}>
-                {developerState.developer_status}
-              </Badge>
+            <div className="rounded-2xl border border-dashed border-border bg-secondary p-4 text-sm text-muted-foreground">
+              We provide a robust REST API for developers to connect and resell MELE DATA services.
             </div>
-
-            {developerState.developer_status === 'none' && (
-              <div className="text-center py-4 space-y-3">
-                <p className="text-xs text-muted-foreground">
-                  Apply for developer API access to automate transactions directly from your code.
-                </p>
-                <Button className="w-full" onClick={applyForDeveloper} disabled={devLoading}>
-                  {devLoading ? 'Applying...' : 'Apply for API Access'}
-                </Button>
-              </div>
-            )}
-
-            {developerState.developer_status === 'applied' && (
-              <div className="rounded-2xl bg-blue-50 border border-blue-200 p-3 text-xs text-blue-800">
-                Your application is currently under review. We will verify and update your status shortly.
-              </div>
-            )}
-
-            {developerState.developer_status === 'approved' && (
-              <div className="space-y-4">
-                {!developerState.has_keys ? (
-                  <div className="text-center py-2 space-y-3">
-                    <p className="text-xs text-muted-foreground">
-                      Your application has been approved! Generate your credentials to begin integrations.
-                    </p>
-                    <Button className="w-full" onClick={generateKeys} disabled={devLoading}>
-                      {devLoading ? 'Generating...' : 'Generate API Keys'}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <span className="text-xs font-semibold text-muted-foreground">API Public Key</span>
-                      <div className="font-mono text-xs bg-secondary p-2 rounded border border-border select-all break-all">
-                        {developerState.api_public_key}
-                      </div>
-                    </div>
-
-                    {rawSecretKey && (
-                      <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3 space-y-2">
-                        <span className="text-xs font-semibold text-emerald-800 block">API Secret Key (Copy now!)</span>
-                        <div className="font-mono text-xs bg-white p-2 rounded border border-emerald-200 select-all break-all text-emerald-950">
-                          {rawSecretKey}
-                        </div>
-                        <p className="text-[10px] text-emerald-700 leading-normal">
-                          For security reasons, this key will not be shown again. Save it somewhere secure.
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <Button variant="secondary" className="flex-1" onClick={generateKeys} disabled={devLoading}>
-                        Regenerate
-                      </Button>
-                      <Button variant="destructive" className="flex-1" onClick={revokeKeys} disabled={devLoading}>
-                        Revoke
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            <Button className="w-full" variant="outline" onClick={() => router.push('/developer')}>
+              Open Developer Portal
+            </Button>
           </CardContent>
         </Card>
       </div>
