@@ -14,8 +14,8 @@ export default function HistoryPage() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const [txRes, reportRes] = await Promise.allSettled([
         apiFetch('/transactions/me'),
@@ -24,13 +24,25 @@ export default function HistoryPage() {
       if (txRes.status === 'fulfilled') setTransactions(Array.isArray(txRes.value) ? txRes.value : []);
       if (reportRes.status === 'fulfilled') setReports(Array.isArray(reportRes.value) ? reportRes.value : []);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     load().catch(() => {});
   }, [load]);
+
+  // Auto-refresh if there are pending transactions
+  useEffect(() => {
+    const hasPending = transactions.some((tx) => String(tx.status || '').toLowerCase() === 'pending');
+    if (!hasPending) return;
+
+    const interval = setInterval(() => {
+      load(true).catch(() => {});
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [transactions, load]);
 
   const summary = useMemo(() => {
     const success = transactions.filter((item) => String(item.status || '').toLowerCase() === 'success').length;
