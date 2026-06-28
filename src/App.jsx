@@ -30,6 +30,7 @@ const Transactions = lazy(() => import("./pages/Transactions.jsx"));
 const Support = lazy(() => import("./pages/Support.jsx"));
 const Admin = lazy(() => import("./pages/Admin.jsx"));
 const Profile = lazy(() => import("./pages/Profile.jsx"));
+const Developer = lazy(() => import("./pages/Developer.jsx"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin.jsx"));
 
 const NOTIF_ITEMS_KEY = "axisvtu_notif_items";
@@ -1216,6 +1217,7 @@ export default function App() {
                 <Route path="/exam" element={<Exam />} />
                 <Route path="/transactions" element={<Transactions />} />
                 <Route path="/support" element={<Support />} />
+                <Route path="/developer" element={<Developer />} />
                 <Route
                   path="/profile"
                   element={
