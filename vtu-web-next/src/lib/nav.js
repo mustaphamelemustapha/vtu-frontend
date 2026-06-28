@@ -14,6 +14,7 @@ import {
   Zap,
   MessageCircle,
   Code2,
+  BookOpen,
 } from 'lucide-react';
 
 export const appNav = [
@@ -29,6 +30,7 @@ export const appNav = [
   { label: 'Notifications', href: '/notifications', icon: Bell },
   { label: 'History', href: '/history', icon: Clock3 },
   { label: 'Developer API', href: '/developer', icon: Code2 },
+  { label: 'Documentation', href: 'https://meledata.ng/developer/docs', icon: BookOpen },
   { label: 'Profile', href: '/profile', icon: UserCircle2 },
 ];
 
