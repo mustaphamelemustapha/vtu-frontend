@@ -13,6 +13,7 @@ import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { PremiumDataTable } from '@/components/admin/premium-data-table';
 import { ProfitMetricsCard } from '@/components/admin/profit-metrics-card';
+import { AnalyticsChart } from '@/components/admin/analytics-chart';
 import { motion } from 'framer-motion';
 
 export default function AdminOverviewPage() {
@@ -162,13 +163,22 @@ export default function AdminOverviewPage() {
         ))}
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
+          className="h-full"
         >
           <ProfitMetricsCard profitData={analytics?.profit_period_estimates} />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="h-full"
+        >
+          <AnalyticsChart data={analytics?.monthly_trends} />
         </motion.div>
       </div>
 
