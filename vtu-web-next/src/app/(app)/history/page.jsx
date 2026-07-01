@@ -116,8 +116,15 @@ export default function HistoryPage() {
                     const recipient = tx.customer || tx.recipient_phone || meta.recipient_phone || meta.phone_number || meta.phone || meta.smartcard_number || meta.meter_number || '—';
                     
                     let capacity = '—';
-                    if (tType === 'data' || tType === 'cable') capacity = tx.data_plan_code || meta.package_code || '—';
-                    else capacity = `₦${formatMoney(tx.amount || 0)}`;
+                    if (tType === 'data') {
+                      const rawPlan = String(tx.data_plan_code || meta.package_code || '');
+                      const match = rawPlan.match(/(\d+(?:\.\d+)?\s*(?:GB|MB|TB))/i);
+                      capacity = match ? match[1].toUpperCase().replace(/\s/g, '') : (rawPlan || '—');
+                    } else if (tType === 'cable') {
+                      capacity = tx.data_plan_code || meta.package_code || '—';
+                    } else {
+                      capacity = `₦${formatMoney(tx.amount || 0)}`;
+                    }
 
                     const network = (tx.network || meta.network || meta.provider || meta.disco || meta.exam || '—').toString().toUpperCase();
                     let netColor = 'text-foreground';
