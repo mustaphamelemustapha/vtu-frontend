@@ -78,17 +78,47 @@ export default function DashboardPage() {
   const [copiedAccountId, setCopiedAccountId] = useState(null);
 
   const load = useCallback(async (quiet = false) => {
-    if (quiet) setRefreshing(true); else setLoading(true);
+    if (!quiet) {
+      try {
+        const cachedDash = localStorage.getItem('cached_dashboard');
+        const cachedRefs = localStorage.getItem('cached_referrals');
+        const cachedWallet = localStorage.getItem('cached_wallet');
+        let hasCache = false;
+        if (cachedDash) { setSummary(JSON.parse(cachedDash)); hasCache = true; }
+        if (cachedRefs) { setReferrals(JSON.parse(cachedRefs)); }
+        if (cachedWallet) { setFastWallet(JSON.parse(cachedWallet)); hasCache = true; }
+        
+        if (hasCache) {
+          setLoading(false);
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+      } catch (e) {
+        setLoading(true);
+      }
+    } else {
+      setRefreshing(true);
+    }
 
-    apiFetch('/wallet/me').then(setFastWallet).catch(() => {});
+    apiFetch('/wallet/me').then(val => {
+      setFastWallet(val);
+      localStorage.setItem('cached_wallet', JSON.stringify(val));
+    }).catch(() => {});
 
     try {
       const [dash, refs] = await Promise.allSettled([
         apiFetch('/dashboard/summary'),
         apiFetch('/referrals/me'),
       ]);
-      if (dash.status === 'fulfilled') setSummary(dash.value);
-      if (refs.status === 'fulfilled') setReferrals(refs.value);
+      if (dash.status === 'fulfilled') {
+        setSummary(dash.value);
+        localStorage.setItem('cached_dashboard', JSON.stringify(dash.value));
+      }
+      if (refs.status === 'fulfilled') {
+        setReferrals(refs.value);
+        localStorage.setItem('cached_referrals', JSON.stringify(refs.value));
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
