@@ -75,7 +75,7 @@ export default function DashboardPage() {
 
 
   const [refreshing, setRefreshing] = useState(false);
-  const [copiedAccount, setCopiedAccount] = useState(false);
+  const [copiedAccountId, setCopiedAccountId] = useState(null);
 
   const load = useCallback(async (quiet = false) => {
     if (quiet) setRefreshing(true); else setLoading(true);
@@ -118,17 +118,16 @@ export default function DashboardPage() {
     { label: 'Rewards earned', value: loading && !referrals ? '₦...' : `₦${formatMoney(referrals?.total_earned ?? 0)}`, detail: 'Referral revenue', icon: Gift, tone: 'violet' },
   ], [wallet.balance, referrals?.total_earned, loading, referrals]);
 
-  const copyFundingAccount = useCallback(async () => {
-    const accountNumber = primaryFundingAccount?.account_number;
+  const copyFundingAccount = useCallback(async (accountNumber) => {
     if (!accountNumber) return;
     try {
       await navigator.clipboard.writeText(String(accountNumber));
-      setCopiedAccount(true);
-      window.setTimeout(() => setCopiedAccount(false), 1800);
+      setCopiedAccountId(accountNumber);
+      window.setTimeout(() => setCopiedAccountId(null), 1800);
     } catch {
-      setCopiedAccount(false);
+      setCopiedAccountId(null);
     }
-  }, [primaryFundingAccount?.account_number]);
+  }, []);
 
   return (
     <div className="space-y-6 pb-8">
@@ -156,66 +155,46 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <Card className="overflow-hidden border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card shadow-[0_24px_70px_rgba(234,115,69,0.10)]">
-        <CardContent className="grid gap-5 p-5 md:grid-cols-[1fr_auto] md:items-center sm:p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-primary text-primary-foreground shadow-lg shadow-blue-500/20">
-              <Landmark className="h-6 w-6" />
-            </div>
-            <div className="min-w-0">
-              <div className="axis-label text-primary">Fund your wallet</div>
-              <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground md:text-2xl">Dedicated funding account</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Transfer to this account to fund your MELE DATA wallet. Copy the account number and send money from your bank app.
-              </p>
-            </div>
-          </div>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between px-2">
+          <h2 className="text-[17px] font-bold tracking-tight text-foreground">Top-up accounts</h2>
+          <p className="text-xs text-muted-foreground">Transfer to any of these to add funds — your balance updates instantly</p>
+        </div>
 
-          {primaryFundingAccount ? (
-            <div className="relative w-full rounded-[2rem] border border-primary/20 bg-card/60 backdrop-blur-3xl p-5 sm:p-6 shadow-[0_24px_50px_rgba(234,115,69,0.06)] overflow-hidden md:min-w-[390px] md:max-w-[520px]">
-              <div className="absolute -top-20 -right-20 w-48 h-48 bg-primary/20 rounded-full blur-[4rem] pointer-events-none" />
-              <div className="relative z-10 flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Account number</div>
-                  <div className="mt-2 break-all font-mono text-3xl font-semibold tracking-[0.16em] text-foreground sm:text-4xl">
-                    {primaryFundingAccount.account_number}
+        {bankTransfer?.accounts?.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {bankTransfer.accounts.map((acc, i) => (
+              <div key={acc.account_number} className="group relative flex items-center justify-between rounded-[1rem] border border-border/40 bg-card/60 backdrop-blur-xl p-4 transition-all hover:bg-card/80 hover:shadow-md">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-secondary/80 text-foreground font-bold shadow-inner">
+                    {acc.bank_name ? acc.bank_name.substring(0, 2).toUpperCase() : 'BK'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <div className="truncate text-sm font-semibold text-foreground/90">{acc.bank_name || 'Bank'}</div>
+                      {i === 0 && <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 px-1.5 py-0 text-[9px] font-bold tracking-widest shadow-none border-transparent">RECOMMENDED</Badge>}
+                    </div>
+                    <div className="mt-0.5 truncate font-mono text-xs text-muted-foreground">{acc.account_number}</div>
                   </div>
                 </div>
                 <Button
                   variant="secondary"
-                  size="icon"
-                  className="h-11 w-11 shrink-0 border-primary/25 bg-primary/10 text-primary hover:bg-primary/15"
-                  onClick={copyFundingAccount}
-                  aria-label="Copy funding account number"
-                  title="Copy account number"
+                  size="sm"
+                  className="ml-4 shrink-0 rounded-lg h-8 border-border bg-background/50 hover:bg-secondary text-[11px] font-semibold"
+                  onClick={() => copyFundingAccount(acc.account_number)}
                 >
-                  {copiedAccount ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copiedAccountId === acc.account_number ? <Check className="mr-1.5 h-3.5 w-3.5 text-emerald-500" /> : <Copy className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />}
+                  {copiedAccountId === acc.account_number ? 'Copied' : 'Copy'}
                 </Button>
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="min-w-0 rounded-2xl border border-border bg-secondary p-3">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Bank</div>
-                  <div className="mt-1 text-sm font-semibold text-foreground">{primaryFundingAccount.bank_name || 'Bank account'}</div>
-                </div>
-                <div className="min-w-0 rounded-2xl border border-border bg-secondary p-3">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Account name</div>
-                  <div className="mt-1 break-words text-sm font-semibold text-foreground">{primaryFundingAccount.account_name || 'MELE DATA Wallet'}</div>
-                </div>
-              </div>
-              <div className="mt-3 text-xs font-medium text-primary">
-                {copiedAccount ? 'Account number copied.' : 'Tap copy, then transfer from your bank app.'}
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-3xl border border-dashed border-border bg-card/85 p-5 text-sm leading-6 text-muted-foreground md:min-w-[360px]">
-              {bankTransfer?.message || 'Wallet transfer account will appear here once it is available.'}
-              <Button className="mt-4 w-full" onClick={() => router.push('/wallet')}>
-                Open wallet
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-[1rem] border border-dashed border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
+            {bankTransfer?.message || 'No wallet transfer accounts available right now.'}
+          </div>
+        )}
+      </div>
 
       <div className="space-y-6">
         <Card className="relative overflow-hidden border border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
@@ -296,6 +275,7 @@ export default function DashboardPage() {
                       
                       let recipient = tx.customer || tx.recipient_phone || meta.recipient_phone || meta.phone_number || meta.phone || meta.smartcard_number || meta.meter_number || '—';
                       if (tType === 'wallet_fund' || tType === 'fund') recipient = 'Wallet Funding';
+                      if (tType === 'referral_bonus' || tType === 'referral') recipient = 'Referral Bonus';
                       
                       let capacity = '—';
                       if (tType === 'data') {
@@ -310,6 +290,7 @@ export default function DashboardPage() {
 
                       let network = (tx.network || meta.network || meta.provider || meta.disco || meta.exam || '—').toString().toUpperCase();
                       if (tType === 'wallet_fund' || tType === 'fund') network = 'DEPOSIT';
+                      if (tType === 'referral_bonus' || tType === 'referral') network = 'REWARD';
                       let netColor = 'text-foreground';
                       let netDot = 'bg-foreground';
                       if (network === 'MTN') { netColor = 'text-yellow-500'; netDot = 'bg-yellow-500'; }
@@ -317,6 +298,7 @@ export default function DashboardPage() {
                       else if (network === 'AIRTEL') { netColor = 'text-red-500'; netDot = 'bg-red-500'; }
                       else if (network === '9MOBILE') { netColor = 'text-emerald-700'; netDot = 'bg-emerald-700'; }
                       else if (network === 'DEPOSIT') { netColor = 'text-blue-500'; netDot = 'bg-blue-500'; }
+                      else if (network === 'REWARD') { netColor = 'text-violet-500'; netDot = 'bg-violet-500'; }
 
                       const d = new Date(tx.created_at || tx.timestamp);
                       const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString("en-GB").replace(/\//g, '-') : '—';
