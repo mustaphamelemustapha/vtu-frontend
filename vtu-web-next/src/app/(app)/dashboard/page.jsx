@@ -73,12 +73,6 @@ export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  const paginatedTransactions = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return txs.slice(start, start + itemsPerPage);
-  }, [txs, currentPage]);
-
-  const totalPages = Math.ceil(txs.length / itemsPerPage);
 
   const [refreshing, setRefreshing] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
@@ -106,7 +100,14 @@ export default function DashboardPage() {
   }, [load]);
 
   const wallet = fastWallet || summary?.wallet || {};
-  const txs = emptyOrRows(summary?.transactions).slice(0, 6);
+  const txs = emptyOrRows(summary?.transactions);
+  
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return txs.slice(start, start + itemsPerPage);
+  }, [txs, currentPage]);
+
+  const totalPages = Math.ceil(txs.length / itemsPerPage);
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
   const bankTransfer = summary?.bank_transfer_accounts || {};
   const primaryFundingAccount = bankTransfer?.accounts?.[0] || null;
