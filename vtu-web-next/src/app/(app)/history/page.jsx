@@ -13,6 +13,16 @@ export default function HistoryPage() {
   const [transactions, setTransactions] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return transactions.slice(start, start + itemsPerPage);
+  }, [transactions, currentPage]);
+
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -104,7 +114,7 @@ export default function HistoryPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/30">
-                  {transactions.map((tx, idx) => {
+                  {paginatedTransactions.map((tx, idx) => {
                     const isSuccess = tx.status === 'success' || tx.status === 'delivered';
                     const isPending = tx.status === 'pending' || tx.status === 'processing';
                     const statusColor = isSuccess ? 'text-emerald-500' : isPending ? 'text-amber-500' : 'text-red-500';
@@ -117,11 +127,11 @@ export default function HistoryPage() {
                     
                     let capacity = '—';
                     if (tType === 'data') {
-                      const rawPlan = String(tx.data_plan_code || meta.package_code || '');
+                      const rawPlan = String(meta.plan_name || meta.package_name || meta.description || tx.data_plan_code || meta.package_code || '');
                       const match = rawPlan.match(/(\d+(?:\.\d+)?\s*(?:GB|MB|TB))/i);
                       capacity = match ? match[1].toUpperCase().replace(/\s/g, '') : (rawPlan || '—');
                     } else if (tType === 'cable') {
-                      capacity = tx.data_plan_code || meta.package_code || '—';
+                      capacity = meta.plan_name || meta.package_name || tx.data_plan_code || meta.package_code || '—';
                     } else {
                       capacity = `₦${formatMoney(tx.amount || 0)}`;
                     }
@@ -168,6 +178,32 @@ export default function HistoryPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+          
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-border/30 px-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                className="bg-card hover:bg-secondary"
+              >
+                Previous
+              </Button>
+              <div className="text-sm font-medium text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={currentPage === totalPages} 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                className="bg-card hover:bg-secondary"
+              >
+                Next
+              </Button>
             </div>
           )}
         </CardContent>

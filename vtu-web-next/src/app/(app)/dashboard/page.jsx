@@ -274,7 +274,7 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/30">
-                    {txs.map((tx, idx) => {
+                    {txs.slice(0, 15).map((tx, idx) => {
                       const isSuccess = tx.status === 'success' || tx.status === 'delivered';
                       const isPending = tx.status === 'pending' || tx.status === 'processing';
                       const statusColor = isSuccess ? 'text-emerald-500' : isPending ? 'text-amber-500' : 'text-red-500';
@@ -287,11 +287,11 @@ export default function DashboardPage() {
                       
                       let capacity = '—';
                       if (tType === 'data') {
-                        const rawPlan = String(tx.data_plan_code || meta.package_code || '');
+                        const rawPlan = String(meta.plan_name || meta.package_name || meta.description || tx.data_plan_code || meta.package_code || '');
                         const match = rawPlan.match(/(\d+(?:\.\d+)?\s*(?:GB|MB|TB))/i);
                         capacity = match ? match[1].toUpperCase().replace(/\s/g, '') : (rawPlan || '—');
                       } else if (tType === 'cable') {
-                        capacity = tx.data_plan_code || meta.package_code || '—';
+                        capacity = meta.plan_name || meta.package_name || tx.data_plan_code || meta.package_code || '—';
                       } else {
                         capacity = `₦${formatMoney(tx.amount || 0)}`;
                       }
