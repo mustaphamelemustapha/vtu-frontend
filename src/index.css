@@ -1,0 +1,91 @@
+
+/* ====== TRANSACTION TABLE ====== */
+.tx-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px; /* ensure horizontal scrolling on mobile */
+  font-size: 14px;
+}
+
+.tx-table thead {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tx-table th {
+  padding: 16px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.tx-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+  vertical-align: middle;
+}
+
+.tx-table-row {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.tx-table-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tx-table-row:last-child td {
+  border-bottom: none;
+}
+
+.tx-bold {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.tx-muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.tx-when {
+  font-size: 13px;
+}
+
+.network-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: rgba(0,0,0,0.2);
+}
+
+.network-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.net-mtn { color: #FFCC00; border-color: rgba(255, 204, 0, 0.3); }
+.net-glo { color: #009933; border-color: rgba(0, 153, 51, 0.3); }
+.net-airtel { color: #FF0000; border-color: rgba(255, 0, 0, 0.3); }
+.net-9mobile { color: #006600; border-color: rgba(0, 102, 0, 0.3); }
+

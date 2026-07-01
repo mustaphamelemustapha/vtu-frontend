@@ -409,33 +409,80 @@ export default function Transactions() {
       </section>
 
       <section className="section">
-        <div className="card-list">
-          {filtered.map((tx) => (
-            <button className="list-card tx-list-item" key={tx.id} type="button" onClick={() => setSelected(tx)}>
-              <div>
-                <div className="list-title">{typeLabel(tx)}</div>
-                <div className="muted">{tx.customer || tx.recipient_phone || tx.reference}</div>
-                {(tx.customer || tx.recipient_phone) && <div className="muted" style={{ fontSize: '11px', opacity: 0.7 }}>{tx.reference}</div>}
-              </div>
-              <div className="list-meta">
-                <div className="value">₦ {formatAmount(tx.amount)}</div>
-                <div className="tx-pill-stack">
-                  <span className={`pill ${statusKey(tx.status)}`}>{statusLabel(tx.status)}</span>
-                  {getReportForTx(tx) && (
-                    <span className={`pill ${statusKey(getReportForTx(tx)?.status)}`}>
-                      Issue {statusLabel(getReportForTx(tx)?.status)}
-                    </span>
-                  )}
-                  {!getReportForTx(tx) && hasOpenReport(tx) && (
-                    <span className="pill warning">Issue Reported</span>
-                  )}
-                </div>
-              </div>
-            </button>
-          ))}
-          {filtered.length === 0 && (
-            <div className="empty">No transactions found.</div>
-          )}
+        <div className="tx-table-container">
+          <table className="tx-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>PHONE / RECIPIENT</th>
+                <th>CAPACITY / PLAN</th>
+                <th>NETWORK</th>
+                <th>WHEN</th>
+                <th>STATUS</th>
+                <th>TX ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((tx, idx) => {
+                const getRecipient = (tx) => {
+                  return tx.customer || tx.recipient_phone || tx.meta?.recipient_phone || tx.meta?.phone_number || tx.meta?.phone || tx.meta?.smartcard_number || tx.meta?.meter_number || "—";
+                };
+                
+                const getCapacity = (tx) => {
+                  const t = typeKey(tx?.tx_type);
+                  if (t === "data" || t === "cable") return tx.data_plan_code || tx.meta?.package_code || "—";
+                  if (t === "wallet_fund" || t === "airtime" || t === "electricity") return `₦${formatAmount(tx.amount)}`;
+                  return "—";
+                };
+                
+                const getNetwork = (tx) => {
+                  return tx.network || tx.meta?.network || tx.meta?.provider || tx.meta?.disco || tx.meta?.exam || "—";
+                };
+
+                const formatDate = (dateStr) => {
+                  const d = new Date(dateStr);
+                  if (isNaN(d.getTime())) return "—";
+                  const datePart = d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" }).replace(/\//g, '-');
+                  const timePart = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+                  return (
+                    <>
+                      <div>{datePart}</div>
+                      <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '2px' }}>{timePart}</div>
+                    </>
+                  );
+                };
+
+                const netName = getNetwork(tx).toString();
+                const netLabel = (
+                  <span className={`network-badge net-${netName.toLowerCase()}`}>
+                    <span className="dot"></span>
+                    {netName.toUpperCase()}
+                  </span>
+                );
+
+                return (
+                  <tr key={tx.id} onClick={() => setSelected(tx)} className="tx-table-row">
+                    <td>{idx + 1}</td>
+                    <td className="tx-bold">{getRecipient(tx)}</td>
+                    <td className="tx-bold">{getCapacity(tx)}</td>
+                    <td>{netName !== "—" ? netLabel : "—"}</td>
+                    <td className="tx-when">{formatDate(tx.created_at || tx.timestamp)}</td>
+                    <td>
+                      <span className={`pill ${statusKey(tx.status)}`} style={{ padding: '4px 10px', fontSize: '11px' }}>
+                        {statusLabel(tx.status)}
+                      </span>
+                    </td>
+                    <td className="tx-muted">#{tx.reference.substring(0, 8)}...</td>
+                  </tr>
+                );
+              })}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan="7" className="empty">No transactions found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
 
