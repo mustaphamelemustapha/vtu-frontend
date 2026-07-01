@@ -70,6 +70,16 @@ export default function DashboardPage() {
   const [fastWallet, setFastWallet] = useState(null);
   const [referrals, setReferrals] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return txs.slice(start, start + itemsPerPage);
+  }, [txs, currentPage]);
+
+  const totalPages = Math.ceil(txs.length / itemsPerPage);
+
   const [refreshing, setRefreshing] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
 
@@ -274,7 +284,7 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/30">
-                    {txs.slice(0, 15).map((tx, idx) => {
+                    {paginatedTransactions.map((tx, idx) => {
                       const isSuccess = tx.status === 'success' || tx.status === 'delivered';
                       const isPending = tx.status === 'pending' || tx.status === 'processing';
                       const statusColor = isSuccess ? 'text-emerald-500' : isPending ? 'text-amber-500' : 'text-red-500';
@@ -283,7 +293,8 @@ export default function DashboardPage() {
                       const tType = String(tx.tx_type || '').toLowerCase();
                       const meta = tx.meta || {};
                       
-                      const recipient = tx.customer || tx.recipient_phone || meta.recipient_phone || meta.phone_number || meta.phone || meta.smartcard_number || meta.meter_number || '—';
+                      let recipient = tx.customer || tx.recipient_phone || meta.recipient_phone || meta.phone_number || meta.phone || meta.smartcard_number || meta.meter_number || '—';
+                      if (tType === 'wallet_fund' || tType === 'fund') recipient = 'Wallet Funding';
                       
                       let capacity = '—';
                       if (tType === 'data') {
@@ -296,13 +307,15 @@ export default function DashboardPage() {
                         capacity = `₦${formatMoney(tx.amount || 0)}`;
                       }
 
-                      const network = (tx.network || meta.network || meta.provider || meta.disco || meta.exam || '—').toString().toUpperCase();
+                      let network = (tx.network || meta.network || meta.provider || meta.disco || meta.exam || '—').toString().toUpperCase();
+                      if (tType === 'wallet_fund' || tType === 'fund') network = 'DEPOSIT';
                       let netColor = 'text-foreground';
                       let netDot = 'bg-foreground';
                       if (network === 'MTN') { netColor = 'text-yellow-500'; netDot = 'bg-yellow-500'; }
                       else if (network === 'GLO') { netColor = 'text-green-500'; netDot = 'bg-green-500'; }
                       else if (network === 'AIRTEL') { netColor = 'text-red-500'; netDot = 'bg-red-500'; }
                       else if (network === '9MOBILE') { netColor = 'text-emerald-700'; netDot = 'bg-emerald-700'; }
+                      else if (network === 'DEPOSIT') { netColor = 'text-blue-500'; netDot = 'bg-blue-500'; }
 
                       const d = new Date(tx.created_at || tx.timestamp);
                       const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString("en-GB").replace(/\//g, '-') : '—';
