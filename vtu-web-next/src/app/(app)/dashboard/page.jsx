@@ -206,7 +206,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[1.35fr_0.95fr]">
+      <div className="space-y-6">
         <Card className="relative overflow-hidden border border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[4rem] -z-10" />
           <CardHeader className="relative z-10 border-b border-white/5 bg-gradient-to-r from-secondary/30 to-transparent py-4 px-5">
@@ -246,29 +246,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Referral position</CardTitle>
-            <CardDescription>Invite-first deposit rewards, surfaced directly on the dashboard.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-3xl border border-border bg-secondary p-4">
-              <div className="axis-label">Your code</div>
-              <div className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{referralCode}</div>
-              <div className="mt-2 text-sm text-muted-foreground">Share this code with new users to earn rewards after their first deposit.</div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button variant="secondary" onClick={() => router.push('/profile')} className="border-border bg-card text-muted-foreground hover:bg-secondary">
-                View profile
-              </Button>
-              <Button onClick={() => router.push('/referrals')}>Open referrals</Button>
-            </div>
-            {referralLink ? <div className="rounded-2xl border border-border bg-card p-3 text-xs text-muted-foreground break-all">{referralLink}</div> : null}
-          </CardContent>
-        </Card>
-      </div>
+              </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
+      <div className="space-y-6">
         <Card className="relative overflow-hidden border border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
           <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-[4rem] -z-10" />
           <CardHeader className="relative z-10">
@@ -356,23 +336,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Announcements</CardTitle>
-              <CardDescription>Operational updates from the platform.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {announcements.length === 0 ? <div className="text-sm text-muted-foreground">No active announcements.</div> : null}
-              {announcements.map((item) => (
-                <div key={item.id} className="rounded-2xl border border-border bg-secondary p-4">
-                  <div className="text-sm font-medium text-foreground">{item.title || 'Update'}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">{item.message || item.text || ''}</div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
