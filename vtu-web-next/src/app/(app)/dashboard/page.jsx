@@ -275,31 +275,84 @@ export default function DashboardPage() {
             <CardTitle className="text-xl font-bold tracking-tight">Recent Activity</CardTitle>
             <CardDescription>Latest wallet and service movements.</CardDescription>
           </CardHeader>
-          <CardContent className="relative z-10 space-y-4">
-            {loading ? <div className="text-sm text-muted-foreground">Loading transactions...</div> : null}
-            {txs.length === 0 && !loading ? <div className="text-sm text-muted-foreground">No recent activity yet.</div> : null}
-            {txs.map((tx) => {
-              const isSuccess = tx.status === 'success' || tx.status === 'delivered';
-              const isPending = tx.status === 'pending' || tx.status === 'processing';
-              const statusColor = isSuccess ? 'text-emerald-500' : isPending ? 'text-amber-500' : 'text-red-500';
-              const statusBg = isSuccess ? 'bg-emerald-500/10' : isPending ? 'bg-amber-500/10' : 'bg-red-500/10';
+          <CardContent className="relative z-10">
+            {loading ? <div className="text-sm text-muted-foreground p-4">Loading transactions...</div> : null}
+            {txs.length === 0 && !loading ? <div className="text-sm text-muted-foreground p-4">No recent activity yet.</div> : null}
+            
+            {txs.length > 0 && (
+              <div className="w-full overflow-x-auto pb-2">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs uppercase text-muted-foreground border-b border-border/50">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold">#</th>
+                      <th className="px-4 py-3 font-semibold">Phone / Recipient</th>
+                      <th className="px-4 py-3 font-semibold">Capacity / Plan</th>
+                      <th className="px-4 py-3 font-semibold">Network</th>
+                      <th className="px-4 py-3 font-semibold">When</th>
+                      <th className="px-4 py-3 font-semibold">Status</th>
+                      <th className="px-4 py-3 font-semibold">Tx ID</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {txs.map((tx, idx) => {
+                      const isSuccess = tx.status === 'success' || tx.status === 'delivered';
+                      const isPending = tx.status === 'pending' || tx.status === 'processing';
+                      const statusColor = isSuccess ? 'text-emerald-500' : isPending ? 'text-amber-500' : 'text-red-500';
+                      const statusBg = isSuccess ? 'bg-emerald-500/10' : isPending ? 'bg-amber-500/10' : 'bg-red-500/10';
+                      
+                      const tType = String(tx.tx_type || '').toLowerCase();
+                      const meta = tx.meta || {};
+                      
+                      const recipient = tx.customer || tx.recipient_phone || meta.recipient_phone || meta.phone_number || meta.phone || meta.smartcard_number || meta.meter_number || '—';
+                      
+                      let capacity = '—';
+                      if (tType === 'data' || tType === 'cable') capacity = tx.data_plan_code || meta.package_code || '—';
+                      else capacity = `₦${formatMoney(tx.amount || 0)}`;
 
-              return (
-                <div key={tx.reference || tx.id} className="group relative overflow-hidden flex items-center justify-between gap-4 rounded-2xl border border-white/5 bg-background/50 p-4 transition-all hover:bg-background/80 hover:shadow-md">
-                  <div className="relative z-10">
-                    <div className="text-sm font-bold text-foreground/90">{String(tx.tx_type || 'Transaction').replace(/_/g, ' ')}</div>
-                    <div className="text-[11px] font-mono text-muted-foreground mt-0.5">{String(tx.reference || '—')}</div>
-                    <div className="text-[11px] text-muted-foreground/70 mt-1">{formatDateTime(tx.created_at)}</div>
-                  </div>
-                  <div className="relative z-10 text-right">
-                    <div className="text-[15px] font-extrabold tracking-tight text-foreground">₦{formatMoney(tx.amount || 0)}</div>
-                    <div className={`mt-1.5 inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${statusColor} ${statusBg}`}>
-                      {String(tx.status || 'pending')}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                      const network = (tx.network || meta.network || meta.provider || meta.disco || meta.exam || '—').toString().toUpperCase();
+                      let netColor = 'text-foreground';
+                      let netDot = 'bg-foreground';
+                      if (network === 'MTN') { netColor = 'text-yellow-500'; netDot = 'bg-yellow-500'; }
+                      else if (network === 'GLO') { netColor = 'text-green-500'; netDot = 'bg-green-500'; }
+                      else if (network === 'AIRTEL') { netColor = 'text-red-500'; netDot = 'bg-red-500'; }
+                      else if (network === '9MOBILE') { netColor = 'text-emerald-700'; netDot = 'bg-emerald-700'; }
+
+                      const d = new Date(tx.created_at || tx.timestamp);
+                      const dateStr = !isNaN(d.getTime()) ? d.toLocaleDateString("en-GB").replace(/\//g, '-') : '—';
+                      const timeStr = !isNaN(d.getTime()) ? d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }) : '';
+
+                      return (
+                        <tr key={tx.reference || tx.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="px-4 py-4 text-muted-foreground">{idx + 1}</td>
+                          <td className="px-4 py-4 font-bold text-foreground">{recipient}</td>
+                          <td className="px-4 py-4 font-bold text-foreground">{capacity}</td>
+                          <td className="px-4 py-4">
+                            {network !== '—' ? (
+                              <div className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/50 px-2.5 py-0.5 text-xs font-semibold shadow-sm">
+                                <div className={`h-1.5 w-1.5 rounded-full ${netDot}`} />
+                                <span className={netColor}>{network}</span>
+                              </div>
+                            ) : '—'}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="text-foreground">{dateStr}</div>
+                            <div className="text-xs text-muted-foreground">{timeStr}</div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest ${statusColor} ${statusBg}`}>
+                              {String(tx.status || 'pending')}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-xs font-mono text-muted-foreground">
+                            #{String(tx.reference || '').substring(0, 8)}...
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
 
