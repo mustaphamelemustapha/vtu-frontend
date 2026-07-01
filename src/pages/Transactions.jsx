@@ -414,7 +414,8 @@ export default function Transactions() {
             <button className="list-card tx-list-item" key={tx.id} type="button" onClick={() => setSelected(tx)}>
               <div>
                 <div className="list-title">{typeLabel(tx)}</div>
-                <div className="muted">{tx.reference}</div>
+                <div className="muted">{tx.customer || tx.recipient_phone || tx.reference}</div>
+                {(tx.customer || tx.recipient_phone) && <div className="muted" style={{ fontSize: '11px', opacity: 0.7 }}>{tx.reference}</div>}
               </div>
               <div className="list-meta">
                 <div className="value">₦ {formatAmount(tx.amount)}</div>
