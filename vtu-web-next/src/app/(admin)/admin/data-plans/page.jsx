@@ -309,10 +309,14 @@ export default function AdminDataPlansPage() {
             disabled={toggling === row.id || toggling === 'all'}
             onClick={async () => {
               setToggling(row.id);
+              const newStatus = row.is_active === false ? true : false;
+              // Optimistically update the UI to feel instant and avoid race conditions
+              setPlans(prev => prev.map(p => p.id === row.id ? { ...p, is_active: newStatus } : p));
               try {
-                await adminUpdateDataPlan(row.id, { is_active: row.is_active === false ? true : false });
-                await load();
+                await adminUpdateDataPlan(row.id, { is_active: newStatus });
               } catch (err) {
+                // Revert on failure
+                setPlans(prev => prev.map(p => p.id === row.id ? { ...p, is_active: !newStatus } : p));
                 alert(err.message || 'Failed to toggle data plan');
               } finally {
                 setToggling(null);
