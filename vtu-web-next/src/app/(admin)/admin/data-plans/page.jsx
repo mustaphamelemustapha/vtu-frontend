@@ -167,7 +167,7 @@ export default function AdminDataPlansPage() {
     setPromoActiveInput(plan.promo_active ?? false);
     setPromoOldPriceInput(plan.promo_old_price !== null ? String(plan.promo_old_price) : '');
     setPromoLabelInput(plan.promo_label || '');
-    setFallbackProviderInput(plan.fallback_provider || '');
+    setFallbackProviderInput(plan.fallback_provider || 'none');
     setFallbackPlanIdInput(plan.fallback_provider_plan_id || '');
   };
 
