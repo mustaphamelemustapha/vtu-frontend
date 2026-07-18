@@ -77,7 +77,7 @@ export function PremiumDataTable({
   const actualTotalItems = serverPagination ? totalItems : filteredData.length;
 
   return (
-    <div className="flex flex-col gap-4 relative">
+    <div className="flex flex-col gap-4 relative w-full min-w-0">
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
         {searchKey && !serverPagination && (
