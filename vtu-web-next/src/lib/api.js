@@ -281,6 +281,10 @@ export async function adminGetAnalytics() {
   return apiFetch('/admin/analytics');
 }
 
+export async function adminGetProviderBalances() {
+  return apiFetch('/admin/provider-balances');
+}
+
 export async function adminGetUsers(params = {}) {
   return apiFetch(`/admin/users${toQuery(params)}`);
 }

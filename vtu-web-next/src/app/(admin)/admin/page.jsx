@@ -14,6 +14,7 @@ import { StatusBadge } from '@/components/admin/status-badge';
 import { PremiumDataTable } from '@/components/admin/premium-data-table';
 import { ProfitMetricsCard } from '@/components/admin/profit-metrics-card';
 import { AnalyticsChart } from '@/components/admin/analytics-chart';
+import { ProviderBalancesWidget } from '@/components/admin/provider-balances-widget';
 import { motion } from 'framer-motion';
 
 export default function AdminOverviewPage() {
@@ -182,7 +183,7 @@ export default function AdminOverviewPage() {
         </motion.div>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -204,6 +205,14 @@ export default function AdminOverviewPage() {
             emptyMessage="Transactions will appear here once admin endpoints return data."
             headerActions={DateFilter}
           />
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.45 }}
+        >
+          <ProviderBalancesWidget />
         </motion.div>
       </div>
     </div>
