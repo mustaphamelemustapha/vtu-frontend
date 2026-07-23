@@ -37,6 +37,7 @@ export default function AdminDataPlansPage() {
   const [displayPriceInput, setDisplayPriceInput] = useState('');
   const [agentPriceInput, setAgentPriceInput] = useState('');
   const [planNameInput, setPlanNameInput] = useState('');
+  const [dataTypeInput, setDataTypeInput] = useState('');
   const [costPriceInput, setCostPriceInput] = useState('');
   const [dataSizeInput, setDataSizeInput] = useState('');
   const [validityInput, setValidityInput] = useState('');
@@ -159,6 +160,7 @@ export default function AdminDataPlansPage() {
   const handleOpenEditModal = (plan) => {
     setEditingPlan(plan);
     setPlanNameInput(plan.plan_name || '');
+    setDataTypeInput(plan.data_type || '');
     setCostPriceInput(String(plan.base_price || ''));
     setDataSizeInput(plan.data_size || '');
     setValidityInput(plan.validity || '');
@@ -182,6 +184,12 @@ export default function AdminDataPlansPage() {
         validity: validityInput.trim(),
         promo_active: promoActiveInput
       };
+      const dataTypeVal = dataTypeInput.trim();
+      if (dataTypeVal === '') {
+        payload.clear_data_type = true;
+      } else {
+        payload.data_type = dataTypeVal;
+      }
       const val = displayPriceInput.trim();
       if (val === '') {
         payload.clear_display_price = true;
@@ -470,15 +478,33 @@ export default function AdminDataPlansPage() {
                 </Button>
               </CardHeader>
               <CardContent className="pt-6 px-6 space-y-5 max-h-[70vh] overflow-y-auto">
-                <div className="space-y-3">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Plan Display Name</label>
-                  <Input
-                    placeholder="e.g. 1GB - 30 Days"
-                    value={planNameInput}
-                    onChange={(e) => setPlanNameInput(e.target.value)}
-                    disabled={isSavingPlan}
-                    className="h-11 rounded-xl bg-secondary/30"
-                  />
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="space-y-3">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Plan Display Name</label>
+                    <Input
+                      placeholder="e.g. 1GB - 30 Days"
+                      value={planNameInput}
+                      onChange={(e) => setPlanNameInput(e.target.value)}
+                      disabled={isSavingPlan}
+                      className="h-11 rounded-xl bg-secondary/30"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Data Type Category</label>
+                    <select
+                      className="w-full h-11 px-3 rounded-xl bg-secondary/30 border border-input focus:ring-1 focus:ring-brand"
+                      value={dataTypeInput}
+                      onChange={(e) => setDataTypeInput(e.target.value)}
+                      disabled={isSavingPlan}
+                    >
+                      <option value="">None / Uncategorized</option>
+                      <option value="SME">SME</option>
+                      <option value="SME2">SME2</option>
+                      <option value="GIFTING">GIFTING</option>
+                      <option value="CORPORATE GIFTING">CORPORATE GIFTING</option>
+                      <option value="AWOOF DATA">AWOOF DATA</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="space-y-3">
