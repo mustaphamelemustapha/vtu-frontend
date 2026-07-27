@@ -756,6 +756,31 @@ export default function AdminDataPlansPage() {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-2 gap-5">
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">User Price (₦)</label>
+                      <Input 
+                        type="number"
+                        step="0.01"
+                        value={newPlan.user_price}
+                        onChange={(e) => setNewPlan({...newPlan, user_price: e.target.value})}
+                        required
+                        className="h-11 rounded-xl bg-secondary/30"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Agent Price (₦)</label>
+                      <Input 
+                        type="number"
+                        step="0.01"
+                        value={newPlan.agent_price}
+                        onChange={(e) => setNewPlan({...newPlan, agent_price: e.target.value})}
+                        required
+                        className="h-11 rounded-xl bg-secondary/30"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-3">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Data Size</label>
                     <Input 
