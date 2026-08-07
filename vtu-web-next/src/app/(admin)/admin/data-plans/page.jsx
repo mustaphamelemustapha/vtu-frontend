@@ -584,6 +584,7 @@ export default function AdminDataPlansPage() {
                         <option value="amigo">Amigo</option>
                         <option value="smeplug">SMEPlug</option>
                         <option value="clubkonnect">ClubKonnect</option>
+                        <option value="autosync">Autosync</option>
                       </select>
                       <p className="text-[11px] text-muted-foreground leading-relaxed">Provider to try if primary fails.</p>
                     </div>
@@ -694,6 +695,7 @@ export default function AdminDataPlansPage() {
                         <option value="amigo">Amigo</option>
                         <option value="smeplug">SMEPlug</option>
                         <option value="clubkonnect">ClubKonnect</option>
+                        <option value="autosync">Autosync</option>
                       </select>
                     </div>
                   </div>
