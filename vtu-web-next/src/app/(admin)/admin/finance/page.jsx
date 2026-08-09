@@ -3,14 +3,12 @@
 import { useState, useEffect } from 'react';
 import { adminGetFinanceOverview } from '@/lib/api';
 import { 
-  BanknotesIcon, 
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  BuildingLibraryIcon,
-  ScaleIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon
-} from '@heroicons/react/24/outline';
+  Banknote, 
+  Building,
+  Scale,
+  AlertTriangle,
+  Info
+} from 'lucide-react';
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount || 0);
@@ -76,7 +74,7 @@ export default function FinancePage() {
       <div className="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
         <div className="flex">
           <div className="flex-shrink-0">
-            <InformationCircleIcon className="h-5 w-5 text-blue-400" aria-hidden="true" />
+            <Info className="h-5 w-5 text-blue-400" aria-hidden="true" />
           </div>
           <div className="ml-3">
             <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">Data Quality & Estimations</h3>
@@ -97,7 +95,7 @@ export default function FinancePage() {
         <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
           <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
             <h3 className="text-base font-semibold leading-6 text-gray-900 dark:text-white flex items-center">
-              <BanknotesIcon className="mr-2 h-5 w-5 text-gray-400" />
+              <Banknote className="mr-2 h-5 w-5 text-gray-400" />
               Profit & Loss (P&L)
             </h3>
           </div>
@@ -153,7 +151,7 @@ export default function FinancePage() {
         <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
           <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50 flex justify-between items-center">
             <h3 className="text-base font-semibold leading-6 text-gray-900 dark:text-white flex items-center">
-              <ScaleIcon className="mr-2 h-5 w-5 text-gray-400" />
+              <Scale className="mr-2 h-5 w-5 text-gray-400" />
               Financial Position (Balance Sheet)
             </h3>
           </div>
@@ -208,9 +206,9 @@ export default function FinancePage() {
              <div className="flex items-start">
               <div className="flex-shrink-0 mt-0.5">
                 {Math.abs(data.reconciliation_gap) > 1 ? (
-                  <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
+                  <AlertTriangle className="h-5 w-5 text-red-500" />
                 ) : (
-                  <InformationCircleIcon className="h-5 w-5 text-green-500" />
+                  <Info className="h-5 w-5 text-green-500" />
                 )}
               </div>
               <div className="ml-3">
@@ -232,7 +230,7 @@ export default function FinancePage() {
       <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-gray-800">
         <div className="border-b border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-800 dark:bg-gray-800/50">
           <h3 className="text-base font-semibold leading-6 text-gray-900 dark:text-white flex items-center">
-            <BuildingLibraryIcon className="mr-2 h-5 w-5 text-gray-400" />
+            <Building className="mr-2 h-5 w-5 text-gray-400" />
             Company Assets (Provider Balances)
           </h3>
         </div>
