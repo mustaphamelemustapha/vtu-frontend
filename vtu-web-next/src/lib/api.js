@@ -469,3 +469,18 @@ export async function adminGetReferrals(params = {}) {
 export async function adminGetAuditLogs(params = {}) {
   return apiFetch(`/admin/audit-logs${toQuery(params)}`);
 }
+
+export async function adminGetFinanceOverview() {
+  return apiFetch('/admin/finance/overview');
+}
+
+export async function adminGetFinanceLedger(params = {}) {
+  return apiFetch(`/admin/finance/ledger${toQuery(params)}`);
+}
+
+export async function adminCreateFinanceLedgerEntry(payload) {
+  return apiFetch('/admin/finance/ledger', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}

@@ -13,6 +13,7 @@ import {
 
 export const adminNav = [
   { label: 'Overview', href: '/admin', icon: LayoutDashboard },
+  { label: 'Finance', href: '/admin/finance', icon: BadgeDollarSign },
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Transactions', href: '/admin/transactions', icon: ReceiptText },
   { label: 'Wallets', href: '/admin/wallets', icon: CircleDollarSign },
