@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X, Search } from 'lucide-react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   adminActivateUser,
   adminDeleteUser,
@@ -12,21 +13,29 @@ import {
 } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
+import { FilterBar } from '@/components/admin/filter-bar';
+import { AdminTable } from '@/components/admin/admin-table';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
-import { PremiumDataTable } from '@/components/admin/premium-data-table';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AdminUsersPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // URL State
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const search = searchParams.get('search') || '';
+  const role = searchParams.get('role') || 'all';
+  const status = searchParams.get('status') || 'all';
+
+  // Component State
   const [users, setUsers] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [totalRows, setTotalRows] = useState(0);
-  const [query, setQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const pageSize = 50;
-  
+  const [query, setQuery] = useState(search);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedDetails, setSelectedDetails] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
@@ -34,29 +43,50 @@ export default function AdminUsersPage() {
 
   const activeRequestRef = useRef(0);
 
+  // Sync debounced search to URL
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedQuery(query);
-      setPage(1);
-    }, 500);
+      if (query !== search) {
+        updateURL({ search: query, page: 1 });
+      }
+    }, 300);
     return () => clearTimeout(timer);
-  }, [query]);
+  }, [query, search]); // eslint-disable-next-line react-hooks/exhaustive-deps
+
+  const updateURL = useCallback((updates) => {
+    const params = new URLSearchParams(searchParams.toString());
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === '' || value === 'all' || (key === 'page' && value === 1)) {
+        params.delete(key);
+      } else {
+        params.set(key, String(value));
+      }
+    });
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  }, [searchParams, pathname, router]);
 
   const loadUsers = useCallback(async () => {
     const requestId = Date.now();
     activeRequestRef.current = requestId;
     setLoading(true);
     try {
-      const response = await adminGetUsers({ q: debouncedQuery || undefined, page, page_size: pageSize });
+      const response = await adminGetUsers({ 
+        q: search || undefined, 
+        role: role !== 'all' ? role : undefined,
+        status: status !== 'all' ? status : undefined,
+        page, 
+        page_size: 50 
+      });
       if (activeRequestRef.current !== requestId) return;
       setUsers(Array.isArray(response?.items) ? response.items : []);
-      setTotalRows(Number(response?.total || 0));
+      setTotal(response?.total || 0);
     } finally {
       if (activeRequestRef.current === requestId) {
         setLoading(false);
       }
     }
-  }, [debouncedQuery, page]);
+  }, [search, role, status, page]);
 
   useEffect(() => {
     loadUsers().catch(() => setLoading(false));
@@ -107,46 +137,52 @@ export default function AdminUsersPage() {
   }, [confirmAction, loadUsers, selectedUser?.id]);
 
   const columns = useMemo(() => [
-    { key: 'full_name', label: 'Name', sortable: false, render: (row) => <span className="font-medium">{row.full_name}</span> },
-    { key: 'email', label: 'Email', sortable: false },
-    { key: 'phone_number', label: 'Phone', sortable: false },
+    { key: 'full_name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'phone_number', label: 'Phone' },
     {
       key: 'wallet_balance',
       label: 'Wallet balance',
-      sortable: false,
-      render: (row) => <span className="font-semibold text-brand">{selectedDetails?.user?.id === row.id ? `₦${formatMoney(selectedDetails?.wallet?.balance || 0)}` : 'Open user'}</span>,
+      render: (row) => <span className="font-medium">{selectedDetails?.user?.id === row.id ? `₦${formatMoney(selectedDetails?.wallet?.balance || 0)}` : 'Open user'}</span>,
+    },
+    {
+      key: 'total_spending',
+      label: 'Total spending',
+      render: (row) => <span className="font-semibold text-emerald-600">₦{formatMoney(row.total_spending || 0)}</span>,
     },
     {
       key: 'referral_count',
       label: 'Referrals',
-      sortable: false,
-      render: (row) => <span className="text-muted-foreground">{row.referral_count || 0} referred</span>,
+      render: (row) => <span className="font-semibold">{row.referral_count || 0} referred</span>,
     },
-    { key: 'is_active', label: 'Status', sortable: false, render: (row) => <StatusBadge status={row.is_active ? 'active' : 'suspended'} /> },
-    { key: 'created_at', label: 'Joined', sortable: false, render: (row) => <span className="text-muted-foreground">{formatDateTime(row.created_at)}</span> },
+    { key: 'is_active', label: 'Status', render: (row) => <StatusBadge status={row.is_active ? 'active' : 'suspended'} /> },
+    { key: 'created_at', label: 'Joined', render: (row) => <span className="text-muted-foreground">{formatDateTime(row.created_at)}</span> },
     {
       key: 'actions',
       label: 'Actions',
-      sortable: false,
       render: (row) => (
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" className="h-8 rounded-xl" onClick={() => openUser(row)}>
-            <Eye className="mr-1.5 h-3.5 w-3.5" />
+        <div className="flex flex-wrap gap-1.5">
+          <Button variant="secondary" size="sm" onClick={() => openUser(row)}>
+            <Eye className="h-3.5 w-3.5" />
             View
           </Button>
           <Button
             variant="secondary"
             size="sm"
-            className="h-8 rounded-xl"
+            className="border-border"
             onClick={() => setConfirmAction({ type: row.is_active ? 'suspend' : 'activate', user: row })}
           >
-            {row.is_active ? <PauseCircle className="mr-1.5 h-3.5 w-3.5" /> : <PlayCircle className="mr-1.5 h-3.5 w-3.5" />}
+            {row.is_active ? <PauseCircle className="h-3.5 w-3.5" /> : <PlayCircle className="h-3.5 w-3.5" />}
             {row.is_active ? 'Suspend' : 'Activate'}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => openUser(row)}>
+            <Wallet className="h-3.5 w-3.5" />
+            Wallet ledger
           </Button>
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
             onClick={() => setConfirmAction({ type: 'delete', user: row })}
           >
             Delete
@@ -156,214 +192,244 @@ export default function AdminUsersPage() {
     },
   ], [openUser, selectedDetails?.user?.id, selectedDetails?.wallet?.balance]);
 
+  const totalPages = Math.ceil(total / 50);
+
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-5 pb-8">
       <AdminPageHeader
-        eyebrow="Accounts"
-        title="Users Management"
-        description="Review accounts, manage permissions, and track user activity."
+        title="Users management"
+        description="Review accounts, and suspend or re-enable users with confirmation."
         actions={(
-          <Button variant="outline" className="rounded-xl border-border bg-card/50 backdrop-blur-xl hover:bg-secondary" onClick={loadUsers} disabled={loading}>
-            <RefreshCw className={loading ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
+          <Button variant="secondary" onClick={loadUsers} disabled={loading}>
+            <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
             Refresh users
           </Button>
         )}
       />
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+      <FilterBar
+        searchValue={query}
+        onSearchChange={setQuery}
+        searchPlaceholder="Search by name, email, or phone"
       >
-        <div className="relative">
-          <PremiumDataTable 
-            data={users} 
-            columns={columns} 
-            emptyMessage={loading ? 'Loading users...' : 'No users found.'}
-            serverPagination={true}
-            totalItems={totalRows}
-            currentPage={page}
-            itemsPerPage={pageSize}
-            onPageChange={setPage}
-            isLoading={loading}
-            serverSearchTerm={query}
-            onServerSearchChange={setQuery}
-            searchPlaceholder="Search by name, email, or phone"
-          />
-        </div>
-      </motion.div>
+        <select
+          value={role}
+          onChange={(e) => updateURL({ role: e.target.value, page: 1 })}
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <option value="all">All Tiers</option>
+          <option value="user">User</option>
+          <option value="reseller">Reseller / Agent</option>
+          <option value="admin">Admin</option>
+        </select>
+        <select
+          value={status}
+          onChange={(e) => updateURL({ status: e.target.value, page: 1 })}
+          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <option value="all">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="suspended">Suspended</option>
+        </select>
+      </FilterBar>
 
-      <AnimatePresence>
-        {selectedUser && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-          >
-            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedUser(null)} />
-            <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-border/50 bg-card p-6 shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl font-semibold tracking-tight">User Details</h3>
-                  <p className="text-sm text-muted-foreground">Detailed view for {selectedUser.full_name}</p>
-                </div>
-                <Button variant="ghost" className="rounded-xl" onClick={() => setSelectedUser(null)}>
-                  <X className="h-5 w-5" />
-                </Button>
+      <AdminTable columns={columns} rows={users} empty={loading ? 'Loading users...' : 'No users found.'} />
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-2">
+          <p className="text-sm text-muted-foreground">
+            Showing {Math.min((page - 1) * 50 + 1, total)} to {Math.min(page * 50, total)} of {total} users
+          </p>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => updateURL({ page: page - 1 })}
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => updateURL({ page: page + 1 })}
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-card border shadow-xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-card px-5 py-4">
+              <div>
+                <h2 className="text-lg font-semibold">User Details</h2>
+                <p className="text-sm text-muted-foreground">Detailed view for {selectedUser.full_name}</p>
               </div>
-              
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl border border-border/50 bg-secondary/30 p-5">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">{selectedUser.full_name}</h3>
-                    <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
-                    <p className="text-sm text-muted-foreground">{selectedUser.phone_number}</p>
-                  </div>
-                  <div className="text-left sm:text-right space-y-3 w-full sm:w-auto">
-                    <div><StatusBadge status={selectedUser.is_active ? 'active' : 'suspended'} /></div>
-                    <div className="pt-3 border-t border-border/50 flex flex-col gap-3 items-start sm:items-end w-full">
-                      {String(selectedDetails?.user?.role || selectedUser?.role).toLowerCase() !== 'reseller' ? (
+              <Button variant="ghost" size="icon" onClick={() => setSelectedUser(null)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="space-y-6 p-5">
+              <div className="flex items-center justify-between gap-3 rounded-xl border bg-secondary/50 p-4">
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">{selectedUser.full_name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  <p className="text-sm text-muted-foreground">{selectedUser.phone_number}</p>
+                </div>
+                <div className="text-right space-y-2">
+                  <div><StatusBadge status={selectedUser.is_active ? 'active' : 'suspended'} /></div>
+                  <div className="pt-2 flex flex-col gap-2 items-end">
+                    {String(selectedDetails?.user?.role || selectedUser?.role).toLowerCase() !== 'reseller' ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => setConfirmAction({ type: 'upgrade_reseller', user: selectedUser })}
+                      >
+                        Upgrade to Agent
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setConfirmAction({ type: 'downgrade_user', user: selectedUser })}
+                      >
+                        Downgrade to User
+                      </Button>
+                    )}
+
+                    <div className="mt-2 pt-2 border-t border-border w-full flex items-center justify-end gap-2">
+                      <div className="text-right">
+                        <span className="text-[10px] text-muted-foreground block leading-none">Developer API</span>
+                        <span className="font-bold text-foreground uppercase text-[9px] tracking-wider leading-none">
+                          {selectedDetails?.user?.developer_status || selectedUser?.developer_status || 'none'}
+                        </span>
+                      </div>
+                      {(selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'applied' && (
                         <Button
-                          variant="default"
+                          variant="outline"
                           size="sm"
-                          className="bg-brand text-white w-full sm:w-auto rounded-xl"
-                          onClick={() => setConfirmAction({ type: 'upgrade_reseller', user: selectedUser })}
+                          className="text-[10px] border-green-600/30 text-green-500 hover:bg-green-500/10 h-7 px-2"
+                          onClick={() => setConfirmAction({ type: 'approve_developer', user: selectedUser })}
                         >
-                          Upgrade to Agent
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="w-full sm:w-auto rounded-xl"
-                          onClick={() => setConfirmAction({ type: 'downgrade_user', user: selectedUser })}
-                        >
-                          Downgrade to User
+                          Approve API
                         </Button>
                       )}
-
-                      <div className="w-full flex items-center justify-start sm:justify-end gap-3 mt-1">
-                        <div className="text-left sm:text-right">
-                          <span className="text-[10px] text-muted-foreground block leading-none uppercase tracking-wider">API Access</span>
-                          <span className="font-semibold text-foreground uppercase text-xs tracking-wider leading-none mt-1 block">
-                            {selectedDetails?.user?.developer_status || selectedUser?.developer_status || 'none'}
-                          </span>
-                        </div>
-                        {(selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'applied' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs border-green-600/30 text-green-500 hover:bg-green-500/10 rounded-xl h-8"
-                            onClick={() => setConfirmAction({ type: 'approve_developer', user: selectedUser })}
-                          >
-                            Approve API
-                          </Button>
-                        )}
-                        {(selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'approved' && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs border-red-600/30 text-red-500 hover:bg-red-500/10 rounded-xl h-8"
-                            onClick={() => setConfirmAction({ type: 'suspend_developer', user: selectedUser })}
-                          >
-                            Suspend API
-                          </Button>
-                        )}
-                        {((selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'none' || (selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'suspended') && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs border-green-600/30 text-green-500 hover:bg-green-500/10 rounded-xl h-8"
-                            onClick={() => setConfirmAction({ type: 'approve_developer', user: selectedUser })}
-                          >
-                            Enable API
-                          </Button>
-                        )}
-                      </div>
+                      {(selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'approved' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[10px] border-red-600/30 text-red-500 hover:bg-red-500/10 h-7 px-2"
+                          onClick={() => setConfirmAction({ type: 'suspend_developer', user: selectedUser })}
+                        >
+                          Suspend API
+                        </Button>
+                      )}
+                      {((selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'none' || (selectedDetails?.user?.developer_status || selectedUser?.developer_status) === 'suspended') && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[10px] border-green-600/30 text-green-500 hover:bg-green-500/10 h-7 px-2"
+                          onClick={() => setConfirmAction({ type: 'approve_developer', user: selectedUser })}
+                        >
+                          Enable API
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
-
-                {!selectedDetails ? (
-                  <div className="flex items-center justify-center py-12 text-sm text-muted-foreground rounded-2xl border border-border/50 bg-secondary/30">
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Loading complete profile...
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                      {[
-                        { label: 'Wallet Balance', value: `₦${formatMoney(selectedDetails?.wallet?.balance || 0)}` },
-                        { label: 'Referral Code', value: selectedDetails?.user?.referral_code || 'N/A', mono: true },
-                        { label: 'Total Transactions', value: (selectedDetails?.recent_transactions || []).length },
-                        { label: 'Total Referred', value: (selectedDetails?.referred_users || []).length },
-                      ].map((stat, i) => (
-                        <div key={i} className="rounded-2xl border border-border/50 bg-secondary/30 p-4">
-                          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">{stat.label}</div>
-                          <div className={`text-2xl font-semibold tracking-tight text-foreground ${stat.mono ? 'font-mono' : ''}`}>{stat.value}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {selectedDetails?.recent_transactions?.length > 0 && (
-                      <div className="space-y-4">
-                        <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Recent Transactions</h4>
-                        <div className="rounded-2xl border border-border/50 bg-background overflow-hidden">
-                          {selectedDetails.recent_transactions.slice(0, 10).map((tx, idx) => (
-                            <div key={`${tx.reference}-${tx.id}`} className={`flex items-center justify-between gap-4 p-4 ${idx !== 0 ? 'border-t border-border/50' : ''}`}>
-                              <div>
-                                <div className="font-mono text-sm font-medium text-foreground">{tx.reference}</div>
-                                <div className="text-xs text-muted-foreground capitalize mt-1">{tx.tx_type} • {tx.network || 'Wallet'}</div>
-                                <div className="text-[11px] text-muted-foreground mt-0.5">{formatDateTime(tx.created_at)}</div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
-                                <div className="mt-1.5"><StatusBadge status={tx.status} /></div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {selectedDetails?.referred_users?.length > 0 && (
-                      <div className="space-y-4">
-                        <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Referred Users</h4>
-                        <div className="rounded-2xl border border-border/50 bg-background overflow-hidden">
-                          {selectedDetails.referred_users.map((ref, idx) => (
-                            <div key={ref.id} className={`flex items-center justify-between gap-4 p-4 ${idx !== 0 ? 'border-t border-border/50' : ''}`}>
-                              <div>
-                                <div className="text-sm font-medium text-foreground">{ref.referred_name || 'No Name'}</div>
-                                <div className="text-xs text-muted-foreground mt-0.5">{ref.referred_email}</div>
-                                {ref.referred_phone && <div className="text-xs text-muted-foreground mt-0.5">{ref.referred_phone}</div>}
-                                <div className="text-[11px] text-muted-foreground mt-1">Joined {formatDateTime(ref.created_at)}</div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-sm font-semibold text-foreground">₦{formatMoney(ref.reward_amount || 0)}</div>
-                                <div className="mt-1.5">
-                                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${
-                                    ref.status === 'rewarded' ? 'bg-green-500/10 text-green-500' :
-                                    ref.status === 'qualified' ? 'bg-blue-500/10 text-blue-500' :
-                                    'bg-amber-500/10 text-amber-500'
-                                  }`}>
-                                    {ref.status}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
+
+              {!selectedDetails ? (
+                <div className="flex justify-center p-8 text-sm text-muted-foreground">
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Loading user details...
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+                    <div className="rounded-xl border bg-card p-4 shadow-sm">
+                      <div className="text-xs font-medium text-muted-foreground">Wallet Balance</div>
+                      <div className="mt-1 text-2xl font-semibold text-foreground">₦{formatMoney(selectedDetails?.wallet?.balance || 0)}</div>
+                    </div>
+                    <div className="rounded-xl border bg-card p-4 shadow-sm">
+                      <div className="text-xs font-medium text-muted-foreground">Referral Code</div>
+                      <div className="mt-1 text-xl font-semibold text-foreground font-mono">{selectedDetails?.user?.referral_code || 'N/A'}</div>
+                    </div>
+                    <div className="rounded-xl border bg-card p-4 shadow-sm">
+                      <div className="text-xs font-medium text-muted-foreground">Recent Transactions</div>
+                      <div className="mt-1 text-2xl font-semibold text-foreground">{(selectedDetails?.recent_transactions || []).length}</div>
+                    </div>
+                    <div className="rounded-xl border bg-card p-4 shadow-sm">
+                      <div className="text-xs font-medium text-muted-foreground">Total Referred</div>
+                      <div className="mt-1 text-2xl font-semibold text-foreground">{(selectedDetails?.referred_users || []).length}</div>
+                    </div>
+                  </div>
+
+                  {selectedDetails?.recent_transactions?.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm">Recent Transactions (Max 20)</h4>
+                      <div className="space-y-2 rounded-xl border bg-secondary/20 p-3">
+                        {selectedDetails.recent_transactions.map((tx) => (
+                          <div key={`${tx.reference}-${tx.id}`} className="flex items-center justify-between gap-3 border-b border-border/70 pb-3 last:border-0 last:pb-0 pt-2 first:pt-0">
+                            <div className="text-sm">
+                              <div className="font-medium text-foreground">{tx.reference}</div>
+                              <div className="text-xs text-muted-foreground capitalize">{tx.tx_type} • {tx.network || 'Wallet'}</div>
+                              <div className="text-[10px] text-muted-foreground mt-0.5">{formatDateTime(tx.created_at)}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-semibold text-foreground">₦{formatMoney(tx.amount || 0)}</div>
+                              <div className="mt-1"><StatusBadge status={tx.status} /></div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedDetails?.referred_users?.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm">Referred Users ({(selectedDetails?.referred_users || []).length})</h4>
+                      <div className="space-y-2 rounded-xl border bg-secondary/20 p-3">
+                        {selectedDetails.referred_users.map((ref) => (
+                          <div key={ref.id} className="flex items-center justify-between gap-3 border-b border-border/70 pb-3 last:border-0 last:pb-0 pt-2 first:pt-0">
+                            <div className="text-sm">
+                              <div className="font-medium text-foreground">{ref.referred_name || 'No Name'}</div>
+                              <div className="text-xs text-muted-foreground">{ref.referred_email}</div>
+                              {ref.referred_phone && <div className="text-xs text-muted-foreground">{ref.referred_phone}</div>}
+                              <div className="text-[10px] text-muted-foreground mt-0.5">Joined {formatDateTime(ref.created_at)}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-semibold text-foreground">₦{formatMoney(ref.reward_amount || 0)}</div>
+                              <div className="mt-1">
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                                  ref.status === 'rewarded' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                  ref.status === 'qualified' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                }`}>
+                                  {ref.status}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         open={Boolean(confirmAction)}
@@ -373,7 +439,7 @@ export default function AdminUsersPage() {
           confirmAction?.type === 'approve_developer' ? 'Approve Developer API' :
           confirmAction?.type === 'suspend_developer' ? 'Suspend Developer API' :
           'Activate'
-        } User Account`}
+        } user account`}
         description={
           confirmAction?.type === 'delete'
             ? `Are you absolutely sure you want to delete ${confirmAction?.user?.email}? This will suffix their credentials and they will no longer be able to log in. This action is irreversible.`
