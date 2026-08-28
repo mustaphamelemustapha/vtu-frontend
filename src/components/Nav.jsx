@@ -60,7 +60,7 @@ const ApiIcon = () => (
   </svg>
 );
 
-export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
+export default function Nav({ onLogout, isAdmin, isAmbassador, canInstall, onInstall }) {
   const { showToast } = useToast();
 
   const install = async () => {
@@ -102,6 +102,7 @@ export default function Nav({ onLogout, isAdmin, canInstall, onInstall }) {
           <NavLink to="/support" data-testid="nav-desktop-support"><Icon><SupportIcon /></Icon>Support</NavLink>
           <NavLink to="/profile" data-testid="nav-desktop-profile"><Icon><ProfileIcon /></Icon>Profile</NavLink>
           <NavLink to="/developer" data-testid="nav-desktop-developer"><Icon><ApiIcon /></Icon>Developer API</NavLink>
+          {isAmbassador && <NavLink to="/ambassador" data-testid="nav-desktop-ambassador"><Icon><ProfileIcon /></Icon>Ambassador Hub</NavLink>}
           {isAdmin && <NavLink to="/admin" data-testid="nav-desktop-admin"><Icon><AdminIcon /></Icon>Admin</NavLink>}
           <a href="https://whatsapp.com/channel/0029VbCanujEawdvqLAYu83T" target="_blank" rel="noopener noreferrer" className="nav-link"><Icon><SupportIcon /></Icon>WhatsApp Channel</a>
           <a href="https://www.tiktok.com/@meledata_ng" target="_blank" rel="noopener noreferrer" className="nav-link"><Icon><ProfileIcon /></Icon>TikTok Page</a>
