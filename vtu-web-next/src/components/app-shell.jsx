@@ -109,6 +109,31 @@ export function AppShell({ children }) {
   const [profile, setProfileState] = useState(getProfile());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState('light');
+  
+  const isAmbassador = profile?.role === 'ambassador' || profile?.role === 'admin';
+  const desktopNav = useMemo(() => {
+    if (!isAmbassador) return appNav;
+    const nav = [...appNav];
+    const insertIdx = nav.findIndex(n => n.label === 'Referrals');
+    if (insertIdx !== -1) {
+      nav.splice(insertIdx + 1, 0, { label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+    } else {
+      nav.push({ label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+    }
+    return nav;
+  }, [isAmbassador]);
+
+  const mobileNav = useMemo(() => {
+    if (!isAmbassador) return mobilePrimaryMenu;
+    const nav = [...mobilePrimaryMenu];
+    const insertIdx = nav.findIndex(n => n.label === 'Referrals');
+    if (insertIdx !== -1) {
+      nav.splice(insertIdx + 1, 0, { label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+    } else {
+      nav.push({ label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+    }
+    return nav;
+  }, [isAmbassador]);
 
   const handleSignOut = useCallback(() => {
     clearAuth();
@@ -202,7 +227,7 @@ export function AppShell({ children }) {
         </Link>
 
         <nav className="mt-8 space-y-2">
-          {appNav.map((item) => {
+          {desktopNav.map((item) => {
             const Icon = item.icon;
             const active = activePath === item.href || activePath.startsWith(`${item.href}/`);
             if (item.external) {
