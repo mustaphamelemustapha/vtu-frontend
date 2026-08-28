@@ -23,6 +23,8 @@ function AdminAgentsPageContent() {
   // URL State
   const page = parseInt(searchParams.get('page') || '1', 10);
   const search = searchParams.get('search') || '';
+  const role = searchParams.get('role') || 'all';
+  const status = searchParams.get('status') || 'all';
     
   // Component State
   const [users, setUsers] = useState([]);
