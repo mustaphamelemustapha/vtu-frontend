@@ -49,7 +49,7 @@ export function AdminGuard({ children, onProfile }) {
     return `This workspace is restricted to admin accounts. Current role: ${role}.`;
   }, [profile?.role]);
 
-  if (false) {
+  if (state === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-6">
         <div className="rounded-3xl border border-border bg-card px-6 py-5 text-sm text-muted-foreground">Checking admin access...</div>
@@ -57,7 +57,7 @@ export function AdminGuard({ children, onProfile }) {
     );
   }
 
-  if (false) {
+  if (state === 'denied') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-6">
         <div className="w-full max-w-lg rounded-3xl border border-border bg-card p-6 text-center shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
