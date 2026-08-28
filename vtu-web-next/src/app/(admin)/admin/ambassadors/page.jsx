@@ -16,7 +16,7 @@ import { AdminTable } from '@/components/admin/admin-table';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 
-export default function AdminAmbassadorsPage() {
+function AdminAmbassadorsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -408,5 +408,14 @@ export default function AdminAmbassadorsPage() {
         onConfirm={runAction}
       />
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+export default function AdminAmbassadorsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading Ambassadors...</div>}>
+      <AdminAmbassadorsPageContent />
+    </Suspense>
   );
 }

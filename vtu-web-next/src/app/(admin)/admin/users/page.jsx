@@ -20,7 +20,7 @@ import { AdminTable } from '@/components/admin/admin-table';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 
-export default function AdminUsersPage() {
+function AdminUsersPageContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -477,5 +477,14 @@ export default function AdminUsersPage() {
         onConfirm={runAction}
       />
     </div>
+  );
+}
+
+import { Suspense } from 'react';
+export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-sm text-muted-foreground">Loading Users...</div>}>
+      <AdminUsersPageContent />
+    </Suspense>
   );
 }
