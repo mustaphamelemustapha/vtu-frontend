@@ -12,8 +12,8 @@ export function AdminSidebar({ profile, onSignOut, mobile = false, onClose }) {
   const pathname = usePathname();
 
   // Group nav items
-  const mainNav = adminNav.slice(0, 4); // Overview, Users, Transactions, Wallets
-  const configNav = adminNav.slice(4); // Services, Data Plans, Referrals, Support, Settings
+  const mainNav = adminNav.slice(0, 6); // Overview, Finance, Users, Agents, Ambassadors, Transactions
+  const configNav = adminNav.slice(6); // Wallets, Services, Data Plans, Referrals, Support, Settings
 
   const NavGroup = ({ title, items }) => (
     <div className="space-y-1 mb-6">

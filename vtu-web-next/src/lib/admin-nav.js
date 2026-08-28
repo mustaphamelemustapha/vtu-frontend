@@ -9,12 +9,16 @@ import {
   Users,
   ReceiptText,
   Gift,
+  Briefcase,
+  Award,
 } from 'lucide-react';
 
 export const adminNav = [
   { label: 'Overview', href: '/admin', icon: LayoutDashboard },
   { label: 'Finance', href: '/admin/finance', icon: BadgeDollarSign },
   { label: 'Users', href: '/admin/users', icon: Users },
+  { label: 'Agents', href: '/admin/agents', icon: Briefcase },
+  { label: 'Ambassadors', href: '/admin/ambassadors', icon: Award },
   { label: 'Transactions', href: '/admin/transactions', icon: ReceiptText },
   { label: 'Wallets', href: '/admin/wallets', icon: CircleDollarSign },
   { label: 'Services', href: '/admin/services', icon: Activity },

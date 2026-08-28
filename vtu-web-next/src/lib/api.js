@@ -484,3 +484,18 @@ export async function adminCreateFinanceLedgerEntry(payload) {
     body: JSON.stringify(payload || {}),
   });
 }
+
+export async function adminGetAgents(params = {}) {
+  return apiFetch(`/admin/agents${toQuery(params)}`);
+}
+
+export async function adminGetAmbassadors(params = {}) {
+  return apiFetch(`/admin/ambassadors${toQuery(params)}`);
+}
+
+export async function adminPayAmbassadorCommission(payload) {
+  return apiFetch('/admin/ambassadors/pay-commission', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}

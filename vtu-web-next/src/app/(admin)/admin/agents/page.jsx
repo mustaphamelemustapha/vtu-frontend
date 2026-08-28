@@ -4,12 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
-  adminActivateUser,
-  adminDeleteUser,
-  adminGetUserDetails,
-  adminGetUsers,
-  adminSuspendUser,
-  adminUpdateUserRole,
+  adminGetAgents,
 } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -20,7 +15,7 @@ import { AdminTable } from '@/components/admin/admin-table';
 import { StatusBadge } from '@/components/admin/status-badge';
 import { ConfirmDialog } from '@/components/admin/confirm-dialog';
 
-export default function AdminUsersPage() {
+export default function AdminAgentsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -28,9 +23,7 @@ export default function AdminUsersPage() {
   // URL State
   const page = parseInt(searchParams.get('page') || '1', 10);
   const search = searchParams.get('search') || '';
-  const role = searchParams.get('role') || 'all';
-  const status = searchParams.get('status') || 'all';
-
+    
   // Component State
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
@@ -71,10 +64,8 @@ export default function AdminUsersPage() {
     activeRequestRef.current = requestId;
     setLoading(true);
     try {
-      const response = await adminGetUsers({ 
+      const response = await adminGetAgents({ 
         q: search || undefined, 
-        role: role !== 'all' ? role : undefined,
-        status: status !== 'all' ? status : undefined,
         page, 
         page_size: 50 
       });
@@ -86,124 +77,42 @@ export default function AdminUsersPage() {
         setLoading(false);
       }
     }
-  }, [search, role, status, page]);
+  }, [search, page]);
 
   useEffect(() => {
     loadUsers().catch(() => setLoading(false));
   }, [loadUsers]);
 
-  const openUser = useCallback(async (user) => {
-    setSelectedUser(user);
-    setSelectedDetails(null);
-    try {
-      const details = await adminGetUserDetails(user.id);
-      setSelectedDetails(details);
-    } catch {
-      setSelectedDetails({ user, wallet: { balance: 0 }, recent_transactions: [] });
-    }
-  }, []);
-
-  const runAction = useCallback(async () => {
-    if (!confirmAction) return;
-    setBusy(true);
-    try {
-      if (confirmAction.type === 'suspend') {
-        await adminSuspendUser(confirmAction.user.id);
-      } else if (confirmAction.type === 'delete') {
-        await adminDeleteUser(confirmAction.user.id);
-      } else if (['set_customer', 'set_agent', 'set_ambassador'].includes(confirmAction.type)) {
-        const newRole = confirmAction.type.replace('set_', '');
-        await adminUpdateUserRole({ 
-          user_id: confirmAction.user.id, 
-          role: newRole 
-        });
-      } else if (confirmAction.type === 'approve_developer') {
-        const { adminApproveDeveloper } = await import('@/lib/api');
-        await adminApproveDeveloper(confirmAction.user.id);
-      } else if (confirmAction.type === 'suspend_developer') {
-        const { adminSuspendDeveloper } = await import('@/lib/api');
-        await adminSuspendDeveloper(confirmAction.user.id);
-      } else {
-        await adminActivateUser(confirmAction.user.id);
-      }
-      await loadUsers();
-      if (selectedUser?.id === confirmAction.user.id) {
-        const details = await adminGetUserDetails(confirmAction.user.id);
-        setSelectedDetails(details);
-      }
-      setConfirmAction(null);
-    } finally {
-      setBusy(false);
-    }
-  }, [confirmAction, loadUsers, selectedUser?.id]);
-
+  
+  
   const columns = useMemo(() => [
-    { key: 'full_name', label: 'Name' },
+    { key: 'full_name', label: 'Name', render: (row) => row.name },
     { key: 'email', label: 'Email' },
-    { key: 'phone_number', label: 'Phone' },
+    { key: 'phone_number', label: 'Phone', render: (row) => row.phone },
     {
       key: 'wallet_balance',
       label: 'Wallet balance',
-      render: (row) => <span className="font-medium">{selectedDetails?.user?.id === row.id ? `₦${formatMoney(selectedDetails?.wallet?.balance || 0)}` : 'Open user'}</span>,
+      render: (row) => <span className="font-medium">₦{formatMoney(row.wallet_balance || 0)}</span>,
     },
     {
-      key: 'total_spending',
-      label: 'Total spending',
-      render: (row) => <span className="font-semibold text-emerald-600">₦{formatMoney(row.total_spending || 0)}</span>,
+      key: 'cumulative_sales_gb',
+      label: 'Sales Vol (GB)',
+      render: (row) => <span className="font-semibold text-emerald-600">{Number(row.cumulative_sales_gb || 0).toFixed(2)} GB</span>,
     },
-    {
-      key: 'referral_count',
-      label: 'Referrals',
-      render: (row) => <span className="font-semibold">{row.referral_count || 0} referred</span>,
-    },
-    { key: 'is_active', label: 'Status', render: (row) => <StatusBadge status={row.is_active ? 'active' : 'suspended'} /> },
-    { key: 'created_at', label: 'Joined', render: (row) => <span className="text-muted-foreground">{formatDateTime(row.created_at)}</span> },
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => (
-        <div className="flex flex-wrap gap-1.5">
-          <Button variant="secondary" size="sm" onClick={() => openUser(row)}>
-            <Eye className="h-3.5 w-3.5" />
-            View
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="border-border"
-            onClick={() => setConfirmAction({ type: row.is_active ? 'suspend' : 'activate', user: row })}
-          >
-            {row.is_active ? <PauseCircle className="h-3.5 w-3.5" /> : <PlayCircle className="h-3.5 w-3.5" />}
-            {row.is_active ? 'Suspend' : 'Activate'}
-          </Button>
-          <Button variant="secondary" size="sm" onClick={() => openUser(row)}>
-            <Wallet className="h-3.5 w-3.5" />
-            Wallet ledger
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => setConfirmAction({ type: 'delete', user: row })}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
-    },
-  ], [openUser, selectedDetails?.user?.id, selectedDetails?.wallet?.balance]);
+    { key: 'upgraded_at', label: 'Upgraded On', render: (row) => <span className="text-muted-foreground">{formatDateTime(row.upgraded_at)}</span> },
+  ], []);
 
   const totalPages = Math.ceil(total / 50);
 
   return (
     <div className="space-y-5 pb-8">
       <AdminPageHeader
-        title="Users management"
+        title="Agents management"
         description="Review accounts, and suspend or re-enable users with confirmation."
         actions={(
           <Button variant="secondary" onClick={loadUsers} disabled={loading}>
             <RefreshCw className={loading ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} />
-            Refresh users
+            Refresh agents
           </Button>
         )}
       />
@@ -235,7 +144,7 @@ export default function AdminUsersPage() {
         </select>
       </FilterBar>
 
-      <AdminTable columns={columns} rows={users} empty={loading ? 'Loading users...' : 'No users found.'} />
+      <AdminTable columns={columns} rows={users} empty={loading ? 'Loading users...' : 'No agents found.'} />
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
