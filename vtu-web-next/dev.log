@@ -1,0 +1,16 @@
+
+> axisvtu-web-next@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 2.5s
+ ✓ Compiled /src/middleware in 128ms (72 modules)
+ ○ Compiling /admin/users ...
+ ✓ Compiled /admin/users in 1645ms (1442 modules)
+ GET /admin/users 200 in 1797ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1398ms (1481 modules)
