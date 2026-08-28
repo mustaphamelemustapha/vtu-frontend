@@ -5,6 +5,11 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   adminGetAgents,
+  adminActivateUser,
+  adminDeleteUser,
+  adminGetUserDetails,
+  adminSuspendUser,
+  adminUpdateUserRole
 } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -87,6 +92,52 @@ function AdminAgentsPageContent() {
 
   
   
+
+  const openUser = useCallback(async (user) => {
+    setSelectedUser(user);
+    setSelectedDetails(null);
+    try {
+      const details = await adminGetUserDetails(user.id);
+      setSelectedDetails(details);
+    } catch {
+      setSelectedDetails({ user, wallet: { balance: 0 }, recent_transactions: [] });
+    }
+  }, []);
+
+  const runAction = useCallback(async () => {
+    if (!confirmAction) return;
+    setBusy(true);
+    try {
+      if (confirmAction.type === 'suspend') {
+        await adminSuspendUser(confirmAction.user.id);
+      } else if (confirmAction.type === 'delete') {
+        await adminDeleteUser(confirmAction.user.id);
+      } else if (['set_customer', 'set_agent', 'set_ambassador'].includes(confirmAction.type)) {
+        const newRole = confirmAction.type.replace('set_', '');
+        await adminUpdateUserRole({ 
+          user_id: confirmAction.user.id, 
+          role: newRole 
+        });
+      } else if (confirmAction.type === 'approve_developer') {
+        const { adminApproveDeveloper } = await import('@/lib/api');
+        await adminApproveDeveloper(confirmAction.user.id);
+      } else if (confirmAction.type === 'suspend_developer') {
+        const { adminSuspendDeveloper } = await import('@/lib/api');
+        await adminSuspendDeveloper(confirmAction.user.id);
+      } else {
+        await adminActivateUser(confirmAction.user.id);
+      }
+      await loadUsers();
+      if (selectedUser?.id === confirmAction.user.id) {
+        const details = await adminGetUserDetails(confirmAction.user.id);
+        setSelectedDetails(details);
+      }
+      setConfirmAction(null);
+    } finally {
+      setBusy(false);
+    }
+  }, [confirmAction, loadUsers, selectedUser?.id]);
+
   const columns = useMemo(() => [
     { key: 'full_name', label: 'Name', render: (row) => row.name },
     { key: 'email', label: 'Email' },
