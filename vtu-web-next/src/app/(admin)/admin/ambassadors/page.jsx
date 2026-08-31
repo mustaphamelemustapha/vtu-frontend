@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   adminGetAmbassadors,
+  adminGetUserDetails,
   adminPayAmbassadorCommission,
   adminUpdateReferralCode
 } from '@/lib/api';
@@ -86,6 +87,29 @@ function AdminAmbassadorsPageContent() {
   useEffect(() => {
     loadUsers().catch(() => setLoading(false));
   }, [loadUsers]);
+
+  // Fetch detailed user info when a row is selected
+  useEffect(() => {
+    if (!selectedUser) {
+      setSelectedDetails(null);
+      return;
+    }
+    
+    let mounted = true;
+    const fetchDetails = async () => {
+      try {
+        const details = await adminGetUserDetails(selectedUser.id);
+        if (mounted) setSelectedDetails(details);
+      } catch (err) {
+        console.error("Failed to fetch user details:", err);
+      }
+    };
+    fetchDetails();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [selectedUser]);
 
   
   const runAction = useCallback(async () => {
