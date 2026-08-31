@@ -267,6 +267,13 @@ export async function resetPasswordRequest(token, password) {
   });
 }
 
+export async function resetPinRequest(token, pin) {
+  return apiFetch('/security/pin/reset-confirm', {
+    method: 'POST',
+    body: JSON.stringify({ token, new_pin: pin, confirm_pin: pin }),
+  });
+}
+
 function toQuery(params = {}) {
   const search = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
