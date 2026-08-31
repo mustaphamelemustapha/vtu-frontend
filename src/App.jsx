@@ -822,6 +822,11 @@ export default function App() {
       }
 
       localStorage.setItem(NOTIF_SNAPSHOT_KEY, JSON.stringify(currentSnapshot));
+      const scope = getActiveAuthScope();
+      queryClient.setQueryData(queryKeys.walletMe(scope), wallet);
+      queryClient.setQueryData(queryKeys.transactionsMe(scope), txs);
+      queryClient.setQueryData(queryKeys.reportsMe(scope), reports);
+      queryClient.setQueryData(queryKeys.notificationsBroadcast(scope), broadcasts);
       setNotifSyncAt(new Date().toISOString());
     } catch {
       // Keep previous notifications; auto-poll will retry.
