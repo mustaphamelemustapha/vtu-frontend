@@ -33,6 +33,7 @@ const Profile = lazy(() => import("./pages/Profile.jsx"));
 const Developer = lazy(() => import("./pages/Developer.jsx"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin.jsx"));
 const Ambassador = lazy(() => import("./pages/Ambassador.jsx"));
+const Agent = lazy(() => import("./pages/Agent.jsx"));
 
 const NOTIF_ITEMS_KEY = "axisvtu_notif_items";
 const NOTIF_SNAPSHOT_KEY = "axisvtu_notif_snapshot";
@@ -857,6 +858,7 @@ export default function App() {
   }, [fullName]);
   const isAdmin = (profile.role || "").toLowerCase() === "admin";
   const isAmbassador = (profile.role || "").toLowerCase() === "ambassador" || isAdmin;
+  const isAgent = (profile.role || "").toLowerCase() === "agent" || isAmbassador;
   const isDashboardRoute = location.pathname === "/";
   const mobileMenuItems = useMemo(() => {
     const base = [
@@ -870,8 +872,9 @@ export default function App() {
     ];
     if (isAmbassador) base.push({ path: "/ambassador", label: "Ambassador Hub", icon: "profile", group: "manage" });
     if (isAdmin) base.push({ path: "/admin", label: "Admin", icon: "admin", group: "manage" });
+    if (isAgent) base.push({ path: "/agent", label: "Agent Hub", icon: "profile", group: "manage" });
     return base;
-  }, [isAdmin, isAmbassador]);
+  }, [isAdmin, isAmbassador, isAgent]);
 
   const handleLogout = () => {
     clearToken();
@@ -1013,6 +1016,7 @@ export default function App() {
             onLogout={handleLogout}
             isAdmin={isAdmin}
             isAmbassador={isAmbassador}
+            isAgent={isAgent}
             canInstall={canInstall}
             onInstall={handleInstall}
           />
@@ -1228,6 +1232,7 @@ export default function App() {
                 <Route path="/support" element={<Support />} />
                 <Route path="/developer" element={<Developer />} />
                 <Route path="/ambassador" element={<Ambassador />} />
+                <Route path="/agent" element={<Agent />} />
                 <Route
                   path="/profile"
                   element={

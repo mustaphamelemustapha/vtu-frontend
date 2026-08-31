@@ -163,6 +163,37 @@ function getBackendOrigin() {
   }
 }
 
+export async function updateSecurityPreferences(payload) {
+  return apiFetch('/security/preferences', {
+    method: 'PUT',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+// ----------------------------------------------------
+// Agent/Reseller Endpoints
+// ----------------------------------------------------
+
+export async function getAgentDashboard() {
+  return apiFetch('/agent/dashboard');
+}
+
+export async function getAgentCampaigns() {
+  return apiFetch('/agent/campaigns');
+}
+
+export async function getAgentReferrals() {
+  return apiFetch('/agent/referrals');
+}
+
+export async function claimAgentReward(campaign_id) {
+  return apiFetch('/agent/claim-reward', {
+    method: 'POST',
+    body: JSON.stringify({ campaign_id }),
+  });
+}
+
+
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(SESSION_KEY);
 }

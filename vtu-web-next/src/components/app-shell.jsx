@@ -111,29 +111,38 @@ export function AppShell({ children }) {
   const [theme, setTheme] = useState('light');
   
   const isAmbassador = profile?.role === 'ambassador' || profile?.role === 'admin';
+  const isAgent = profile?.role === 'agent' || isAmbassador;
   const desktopNav = useMemo(() => {
-    if (!isAmbassador) return appNav;
     const nav = [...appNav];
     const insertIdx = nav.findIndex(n => n.label === 'Referrals');
-    if (insertIdx !== -1) {
-      nav.splice(insertIdx + 1, 0, { label: 'Ambassador Hub', href: '/ambassador', icon: Users });
-    } else {
-      nav.push({ label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+    if (isAmbassador) {
+      if (insertIdx !== -1) {
+        nav.splice(insertIdx + 1, 0, { label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+      } else {
+        nav.push({ label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+      }
+    }
+    if (isAgent) {
+      nav.push({ label: 'Agent Hub', href: '/agent', icon: Users });
     }
     return nav;
-  }, [isAmbassador]);
+  }, [isAmbassador, isAgent]);
 
   const mobileNav = useMemo(() => {
-    if (!isAmbassador) return mobilePrimaryMenu;
     const nav = [...mobilePrimaryMenu];
     const insertIdx = nav.findIndex(n => n.label === 'Referrals');
-    if (insertIdx !== -1) {
-      nav.splice(insertIdx + 1, 0, { label: 'Ambassador Hub', href: '/ambassador', icon: Users });
-    } else {
-      nav.push({ label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+    if (isAmbassador) {
+      if (insertIdx !== -1) {
+        nav.splice(insertIdx + 1, 0, { label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+      } else {
+        nav.push({ label: 'Ambassador Hub', href: '/ambassador', icon: Users });
+      }
+    }
+    if (isAgent) {
+      nav.push({ label: 'Agent Hub', href: '/agent', icon: Users });
     }
     return nav;
-  }, [isAmbassador]);
+  }, [isAmbassador, isAgent]);
 
   const handleSignOut = useCallback(() => {
     clearAuth();
