@@ -506,3 +506,10 @@ export async function adminPayAmbassadorCommission(payload) {
     body: JSON.stringify(payload || {}),
   });
 }
+
+export async function adminUpdateReferralCode(payload) {
+  return apiFetch('/admin/users/referral-code', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}

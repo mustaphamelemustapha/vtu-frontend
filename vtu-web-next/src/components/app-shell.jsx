@@ -434,7 +434,7 @@ export function AppShell({ children }) {
               <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div className="axis-label mb-2">Menu</div>
                 <nav className="space-y-1">
-                  {mobilePrimaryMenu.map((item) => (
+                  {mobileNav.map((item) => (
                     <MobileMenuLink key={item.label} item={item} activePath={activePath} />
                   ))}
                 </nav>

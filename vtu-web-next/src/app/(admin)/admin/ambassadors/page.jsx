@@ -5,7 +5,8 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   adminGetAmbassadors,
-  adminPayAmbassadorCommission
+  adminPayAmbassadorCommission,
+  adminUpdateReferralCode
 } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -104,6 +105,28 @@ function AdminAmbassadorsPageContent() {
         setBusy(false);
     }
   }, [confirmAction, loadUsers, selectedUser]);
+
+  const handleChangeReferralCode = useCallback(async () => {
+    if (!selectedUser) return;
+    const currentCode = selectedDetails?.user?.referral_code || selectedUser?.referral_code || '';
+    const newCode = window.prompt("Enter new custom referral code for " + selectedUser.name + " (3-16 characters):", currentCode);
+    if (!newCode || newCode === currentCode) return;
+    
+    setBusy(true);
+    try {
+      await adminUpdateReferralCode({ user_id: selectedUser.id, new_code: newCode });
+      await loadUsers();
+      // Temporarily update selected details to show change immediately
+      setSelectedUser(prev => prev ? { ...prev, referral_code: newCode } : prev);
+      if (selectedDetails) {
+         setSelectedDetails(prev => ({ ...prev, user: { ...prev.user, referral_code: newCode } }));
+      }
+    } catch (err) {
+      alert("Failed to update referral code: " + (err.message || "Unknown error"));
+    } finally {
+      setBusy(false);
+    }
+  }, [selectedUser, selectedDetails, loadUsers]);
 
   const columns = useMemo(() => [
     { key: 'full_name', label: 'Name', render: (row) => row.name },
@@ -305,7 +328,10 @@ function AdminAmbassadorsPageContent() {
                     </div>
                     <div className="rounded-xl border bg-card p-4 shadow-sm">
                       <div className="text-xs font-medium text-muted-foreground">Referral Code</div>
-                      <div className="mt-1 text-xl font-semibold text-foreground font-mono">{selectedDetails?.user?.referral_code || 'N/A'}</div>
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="text-xl font-semibold text-foreground font-mono">{selectedDetails?.user?.referral_code || selectedUser?.referral_code || 'N/A'}</div>
+                        <Button variant="outline" size="sm" onClick={handleChangeReferralCode} disabled={busy} className="h-7 text-xs px-2">Change</Button>
+                      </div>
                     </div>
                     <div className="rounded-xl border bg-card p-4 shadow-sm">
                       <div className="text-xs font-medium text-muted-foreground">Recent Transactions</div>
