@@ -141,15 +141,15 @@ export default function AgentPage() {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {campaigns.map((camp) => {
-          const isQualified = camp.progress >= camp.target;
-          const isClaimed = camp.status === 'claimed';
-          const progressPct = Math.min(100, (camp.progress / camp.target) * 100);
+          const isQualified = camp.is_qualified;
+          const isClaimed = camp.is_claimed;
+          const progressPct = Math.min(100, (camp.progress_value / camp.target_value) * 100) || 0;
 
           return (
             <Card key={camp.id} className="flex flex-col">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg">{camp.title}</CardTitle>
-                <CardDescription className="text-xs">{camp.description}</CardDescription>
+                <CardDescription className="text-xs">{camp.description || `Target: ${camp.target_value}`}</CardDescription>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col gap-4">
                 <div className="flex justify-between items-center">
@@ -174,7 +174,7 @@ export default function AgentPage() {
                   <div className="mt-auto pt-4 border-t border-border">
                     <div className="flex justify-between items-center mb-2">
                       <div className="text-xs uppercase tracking-wider text-muted-foreground">Progress</div>
-                      <div className="text-xs font-semibold">{camp.progress} / {camp.target}</div>
+                      <div className="text-xs font-semibold">{camp.progress_value} / {camp.target_value}</div>
                     </div>
                     <div className="h-2 w-full rounded-full bg-secondary border border-border overflow-hidden">
                       <div 

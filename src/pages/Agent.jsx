@@ -131,13 +131,14 @@ export default function Agent() {
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
         {campaigns.map((camp) => {
-          const isQualified = camp.progress >= camp.target;
-          const isClaimed = camp.status === 'claimed';
+          const isQualified = camp.is_qualified;
+          const isClaimed = camp.is_claimed;
+          const progressPct = Math.min(100, (camp.progress_value / camp.target_value) * 100) || 0;
           return (
             <div key={camp.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <h3 style={{ margin: '0 0 0.5rem 0' }}>{camp.title}</h3>
-                <p className="muted" style={{ margin: 0 }}>{camp.description}</p>
+                <p className="muted" style={{ margin: 0 }}>{camp.description || `Target: ${camp.target_value}`}</p>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--success)' }}>
@@ -158,10 +159,10 @@ export default function Agent() {
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '0.25rem' }}>
                     <span className="muted">Progress</span>
-                    <span>{camp.progress} / {camp.target}</span>
+                    <span>{camp.progress_value} / {camp.target_value}</span>
                   </div>
                   <div style={{ height: '6px', background: 'rgba(0,0,0,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${Math.min(100, (camp.progress / camp.target) * 100)}%`, background: isQualified ? 'var(--success)' : 'var(--primary)' }} />
+                    <div style={{ height: '100%', width: `${progressPct}%`, background: isQualified ? 'var(--success)' : 'var(--primary)' }} />
                   </div>
                 </div>
               )}
