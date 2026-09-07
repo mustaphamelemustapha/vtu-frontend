@@ -66,8 +66,8 @@ export default function Electricity() {
     if (phoneNumber.length < 7 || phoneNumber.length> 15) {
       nextErrors.phone_number = "Enter a valid phone number.";
     }
-    if (!Number.isFinite(amount) || amount < 500) {
-      nextErrors.amount = "Minimum electricity amount is ₦500.";
+    if (!Number.isFinite(amount) || amount < 1000) {
+      nextErrors.amount = "Minimum electricity amount is ₦1000.";
     } else if (amount> 500000) {
       nextErrors.amount = "Maximum electricity amount is ₦500,000.";
     }
@@ -435,7 +435,7 @@ export default function Electricity() {
               Amount (₦)
               <input
                 type="number"
-                min="500"
+                min="1000"
                 value={form.amount}
                 onChange={(e) => {
                   setForm({ ...form, amount: e.target.value });
