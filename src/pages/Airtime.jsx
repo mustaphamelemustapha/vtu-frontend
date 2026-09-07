@@ -92,9 +92,9 @@ export default function Airtime() {
     if (inferred && inferred !== network) {
       nextErrors.network = `Detected ${inferred.toUpperCase()} number. Please use ${inferred.toUpperCase()} network.`;
     }
-    if (!Number.isFinite(amount) || amount < 50) {
-      nextErrors.amount = "Minimum airtime amount is ₦50.";
-    } else if (amount> 500000) {
+    if (!Number.isFinite(amount) || amount < 100) {
+      nextErrors.amount = "Minimum airtime amount is ₦100.";
+    } else if (amount > 500000) {
       nextErrors.amount = "Maximum airtime amount is ₦500,000.";
     }
 
@@ -442,7 +442,7 @@ export default function Airtime() {
               Amount (₦)
               <input
                 type="number"
-                min="50"
+                min="100"
                 value={form.amount}
                 onChange={(e) => {
                   setForm({ ...form, amount: e.target.value });
