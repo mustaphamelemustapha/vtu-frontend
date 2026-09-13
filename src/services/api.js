@@ -460,6 +460,13 @@ export async function apiFetch(path, options = {}) {
       }
       throw makeError(message);
     }
+    if (isPurchasePath && res.ok && data?.status !== 'failed') {
+      import("../query/client.js").then(({ queryClient }) => {
+        queryClient.invalidateQueries({ queryKey: ["transactions"] });
+        queryClient.invalidateQueries({ queryKey: ["wallet"] });
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      }).catch(() => {});
+    }
 
     return data;
   }
