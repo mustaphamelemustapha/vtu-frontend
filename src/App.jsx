@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
 import Nav from "./components/Nav.jsx";
 import {
   apiFetch,
@@ -1271,6 +1272,7 @@ export default function App() {
           </main>
         </div>
       )}
+      <Analytics />
     </ToastProvider>
   );
 }
