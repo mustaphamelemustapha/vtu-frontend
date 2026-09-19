@@ -585,6 +585,7 @@ export default function AdminDataPlansPage() {
                         <option value="smeplug">SMEPlug</option>
                         <option value="clubkonnect">ClubKonnect</option>
                         <option value="autosync">Autosync</option>
+                        <option value="mzdata">MZDATA</option>
                       </select>
                       <p className="text-[11px] text-muted-foreground leading-relaxed">Provider to try if primary fails.</p>
                     </div>
@@ -696,6 +697,7 @@ export default function AdminDataPlansPage() {
                         <option value="smeplug">SMEPlug</option>
                         <option value="clubkonnect">ClubKonnect</option>
                         <option value="autosync">Autosync</option>
+                        <option value="mzdata">MZDATA</option>
                       </select>
                     </div>
                   </div>
