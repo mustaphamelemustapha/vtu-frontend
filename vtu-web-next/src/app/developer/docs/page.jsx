@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import LivePlanCatalog from './LivePlanCatalog';
 
 /* ───────── helpers ───────── */
 const Badge = ({ method }) => {
@@ -272,8 +271,7 @@ Authorization: Bearer mele_live_xxxxxxxxxxxxxxxxxxxxxxxx`}
             </p>
             <CodeBlock title="Error envelope" badge="JSON">
 {`{
-  "success": false,
-  "error":   "insufficient_balance",
+  "status": false,
   "message": "Wallet balance is below the order total."
 }`}
             </CodeBlock>
@@ -436,9 +434,6 @@ echo curl_exec($ch);`}
               <code className="font-mono text-sm text-slate-200">/data/plans</code>
             </div>
 
-            {/* LIVE CATALOG RENDERED HERE */}
-            <LivePlanCatalog />
-
             <div className="mt-4 space-y-4">
               <CodeBlock title="Request" badge="bash">
 {`curl "${BASE_URL}/data/plans" \\
@@ -505,18 +500,28 @@ echo curl_exec($ch);`}
               </CodeBlock>
               <CodeBlock title="Response (success)" badge="JSON">
 {`{
-  "status":    "success",
-  "reference": "DEV_DATA_order_001",
-  "amount":    290.00,
-  "message":   "Transaction successful"
+  "status": true,
+  "message": "Transaction successful",
+  "data": {
+    "status": "success",
+    "reference": "order_001",
+    "amount": 290.00,
+    "network": "MTN",
+    "phone_number": "09012345678"
+  }
 }`}
               </CodeBlock>
               <CodeBlock title="Response (failed — auto-refunded)" badge="JSON">
 {`{
-  "status":    "failed",
-  "reference": "DEV_DATA_order_001",
-  "amount":    290.00,
-  "message":   "Provider error: plan temporarily unavailable"
+  "status": false,
+  "message": "Provider error: plan temporarily unavailable",
+  "data": {
+    "status": "failed",
+    "reference": "order_001",
+    "amount": 290.00,
+    "network": "MTN",
+    "phone_number": "09012345678"
+  }
 }`}
               </CodeBlock>
             </div>
@@ -631,10 +636,15 @@ echo curl_exec($ch);`}
               </CodeBlock>
               <CodeBlock title="Response (success)" badge="JSON">
 {`{
-  "status":    "success",
-  "reference": "DEV_AIRTIME_airtime_001",
-  "amount":    485.00,
-  "message":   "Airtime topup succeeded"
+  "status": true,
+  "message": "Airtime topup succeeded",
+  "data": {
+    "status": "success",
+    "reference": "airtime_001",
+    "amount": 485.00,
+    "network": "MTN",
+    "phone_number": "08098765432"
+  }
 }`}
               </CodeBlock>
             </div>
