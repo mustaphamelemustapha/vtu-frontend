@@ -65,6 +65,7 @@ export default function DeveloperPage() {
       setDeveloperState(prev => ({
         ...prev,
         api_public_key: data.api_public_key,
+        api_secret_key: data.api_secret_key, // Capture the one-time secret key
         has_keys: true
       }));
     } finally {
@@ -180,14 +181,31 @@ export default function DeveloperPage() {
                 </div>
               ) : (
                 <div className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium leading-none text-muted-foreground">LIVE API Token</label>
-                    <div className="flex gap-2">
-                      <Input readOnly value={developerState.api_public_key} className="font-mono text-sm bg-secondary" />
-                      <Button variant="secondary" size="icon" onClick={() => copyToClipboard(developerState.api_public_key)}>
-                        <Copy className="w-4 h-4" />
-                      </Button>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium leading-none text-muted-foreground">LIVE API Public Key</label>
+                      <div className="flex gap-2">
+                        <Input readOnly value={developerState.api_public_key} className="font-mono text-sm bg-secondary" />
+                        <Button variant="secondary" size="icon" onClick={() => copyToClipboard(developerState.api_public_key)}>
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
+
+                    {developerState.api_secret_key && (
+                      <div className="space-y-2 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                        <label className="text-sm font-medium leading-none text-emerald-600 dark:text-emerald-400">LIVE API Secret Key (Copy this now!)</label>
+                        <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 pb-1">
+                          For security reasons, this secret key will never be shown again.
+                        </p>
+                        <div className="flex gap-2">
+                          <Input readOnly value={developerState.api_secret_key} className="font-mono text-sm bg-background border-emerald-500/30 text-emerald-600 dark:text-emerald-400" />
+                          <Button variant="outline" className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10" size="icon" onClick={() => copyToClipboard(developerState.api_secret_key)}>
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-3 pt-2">
