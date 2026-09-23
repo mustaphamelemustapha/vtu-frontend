@@ -8,7 +8,8 @@ import {
   adminUpdateReport, 
   adminCreateBroadcast, 
   adminUpdateBroadcast,
-  adminSendPushOnly 
+  adminSendPushOnly,
+  adminUploadBroadcastImage
 } from '@/lib/api';
 import { formatDateTime } from '@/lib/format';
 import { startCase } from '@/lib/admin-utils';
@@ -53,6 +54,8 @@ export default function AdminSupportPage() {
   const [pushMessage, setPushMessage] = useState('');
   const [pushImageUrl, setPushImageUrl] = useState('');
   const [isSendingPush, setIsSendingPush] = useState(false);
+  const [isUploadingPushImage, setIsUploadingPushImage] = useState(false);
+  const fileInputRef = useRef(null);
 
   const activeRequestRef = useRef(0);
 
@@ -162,6 +165,28 @@ export default function AdminSupportPage() {
       alert('Failed to send push notification.');
     } finally {
       setIsSendingPush(false);
+    }
+  };
+
+  const handlePushImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsUploadingPushImage(true);
+    try {
+      const res = await adminUploadBroadcastImage(file);
+      if (res?.image_url) {
+        setPushImageUrl(res.image_url);
+      } else {
+        alert('Upload failed: No image URL returned');
+      }
+    } catch (err) {
+      alert(err.message || 'Image upload failed');
+    } finally {
+      setIsUploadingPushImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -498,15 +523,34 @@ export default function AdminSupportPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1.5 block">Image URL (Optional)</label>
-                <Input
-                  value={pushImageUrl}
-                  onChange={(e) => setPushImageUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="rounded-xl"
-                  maxLength={500}
-                />
-                <p className="text-xs text-muted-foreground mt-1">Paste an image link for rich push notifications.</p>
+                <label className="text-sm font-medium mb-1.5 block">Image (Optional)</label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    value={pushImageUrl}
+                    onChange={(e) => setPushImageUrl(e.target.value)}
+                    placeholder="https://..."
+                    className="rounded-xl flex-1"
+                    maxLength={500}
+                    disabled={isUploadingPushImage}
+                  />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    ref={fileInputRef}
+                    onChange={handlePushImageUpload}
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="rounded-xl whitespace-nowrap"
+                    disabled={isUploadingPushImage}
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {isUploadingPushImage ? 'Uploading...' : 'Upload'}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Upload an image or paste a link.</p>
               </div>
             </div>
 
