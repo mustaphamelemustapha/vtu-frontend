@@ -380,6 +380,13 @@ export async function adminCreateBroadcast(payload) {
   });
 }
 
+export async function adminSendPushOnly(payload) {
+  return apiFetch('/notifications/broadcast/admin/push-only', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
 export async function adminUpdateBroadcast(id, payload) {
   return apiFetch(`/notifications/broadcast/admin/${id}`, {
     method: 'PATCH',

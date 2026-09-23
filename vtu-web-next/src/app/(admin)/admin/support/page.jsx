@@ -7,7 +7,8 @@ import {
   adminGetReports, 
   adminUpdateReport, 
   adminCreateBroadcast, 
-  adminUpdateBroadcast 
+  adminUpdateBroadcast,
+  adminSendPushOnly 
 } from '@/lib/api';
 import { formatDateTime } from '@/lib/format';
 import { startCase } from '@/lib/admin-utils';
@@ -45,6 +46,13 @@ export default function AdminSupportPage() {
   const [newStartsAt, setNewStartsAt] = useState('');
   const [newEndsAt, setNewEndsAt] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Send Push Notification Modal State
+  const [showPushModal, setShowPushModal] = useState(false);
+  const [pushTitle, setPushTitle] = useState('');
+  const [pushMessage, setPushMessage] = useState('');
+  const [pushImageUrl, setPushImageUrl] = useState('');
+  const [isSendingPush, setIsSendingPush] = useState(false);
 
   const activeRequestRef = useRef(0);
 
@@ -128,10 +136,32 @@ export default function AdminSupportPage() {
       setNewEndsAt('');
       setShowCreateModal(false);
       await load();
-    } catch (err) {
-      alert(err.message || 'Failed to create announcement');
+    } catch (e) {
+      alert('Failed to save announcement.');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSendPush = async () => {
+    if (!pushTitle.trim() || !pushMessage.trim()) return;
+    setIsSendingPush(true);
+    try {
+      const payload = {
+        title: pushTitle,
+        message: pushMessage,
+        image_url: pushImageUrl || null,
+      };
+      await adminSendPushOnly(payload);
+      setShowPushModal(false);
+      setPushTitle('');
+      setPushMessage('');
+      setPushImageUrl('');
+      alert('Push notification sent successfully!');
+    } catch (e) {
+      alert('Failed to send push notification.');
+    } finally {
+      setIsSendingPush(false);
     }
   };
 
@@ -238,10 +268,16 @@ export default function AdminSupportPage() {
               <CardTitle className="text-xl">Broadcast Announcements</CardTitle>
               <CardDescription className="mt-1 text-sm text-muted-foreground">Messages sent to all users across the platform.</CardDescription>
             </div>
-            <Button className="rounded-xl" onClick={() => setShowCreateModal(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Announcement
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" className="rounded-xl" onClick={() => setShowPushModal(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Send Push Only
+              </Button>
+              <Button className="rounded-xl" onClick={() => setShowCreateModal(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Announcement
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
             {broadcasts.length === 0 && !loading ? (
@@ -413,6 +449,88 @@ export default function AdminSupportPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Send Push Notification Modal */}
+      {showPushModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => !isSendingPush && setShowPushModal(false)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative w-full max-w-lg bg-card border border-border shadow-2xl rounded-3xl overflow-hidden p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-bold">Send Push Notification</h3>
+                <p className="text-sm text-muted-foreground mt-1">Send a notification to all devices (not saved in app header).</p>
+              </div>
+              <button 
+                onClick={() => setShowPushModal(false)}
+                className="p-2 hover:bg-secondary rounded-full transition-colors"
+                disabled={isSendingPush}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Title</label>
+                <Input
+                  value={pushTitle}
+                  onChange={(e) => setPushTitle(e.target.value)}
+                  placeholder="e.g. GIVEAWAY!"
+                  className="rounded-xl"
+                  maxLength={120}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Message</label>
+                <textarea
+                  value={pushMessage}
+                  onChange={(e) => setPushMessage(e.target.value)}
+                  placeholder="Notification body..."
+                  className="w-full flex min-h-[100px] rounded-xl border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  maxLength={2000}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Image URL (Optional)</label>
+                <Input
+                  value={pushImageUrl}
+                  onChange={(e) => setPushImageUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="rounded-xl"
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground mt-1">Paste an image link for rich push notifications.</p>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowPushModal(false)}
+                disabled={isSendingPush}
+                className="rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSendPush}
+                disabled={isSendingPush || !pushTitle.trim() || !pushMessage.trim()}
+                className="rounded-xl px-8"
+              >
+                {isSendingPush ? 'Sending...' : 'Send Push'}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
     </div>
   );
 }
