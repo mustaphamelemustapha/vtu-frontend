@@ -392,7 +392,7 @@ export async function adminSendPushOnly(payload) {
 export async function adminUploadBroadcastImage(file) {
   const formData = new FormData();
   formData.append('image', file);
-  return apiFetch('/notifications/broadcast/admin/image', {
+  return apiFetch('/notifications/broadcast/admin/upload-image', {
     method: 'POST',
     body: formData,
   });
