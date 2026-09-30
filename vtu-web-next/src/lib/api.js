@@ -349,6 +349,13 @@ export async function adminUpdateReport(reportId, payload) {
   });
 }
 
+export async function adminCreatePromo(payload) {
+  return apiFetch('/promos/admin/create', {
+    method: 'POST',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
 export async function adminGetPricingRules() {
   return apiFetch('/admin/pricing');
 }

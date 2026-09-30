@@ -11,6 +11,7 @@ import {
   Gift,
   Briefcase,
   Award,
+  Ticket,
 } from 'lucide-react';
 
 export const adminNav = [
@@ -24,6 +25,7 @@ export const adminNav = [
   { label: 'Services', href: '/admin/services', icon: Activity },
   { label: 'Data Plans', href: '/admin/data-plans', icon: PackageSearch },
   { label: 'Referrals', href: '/admin/referrals', icon: Gift },
+  { label: 'Promos', href: '/admin/promos', icon: Ticket },
   { label: 'Support', href: '/admin/support', icon: Headset },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
