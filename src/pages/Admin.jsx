@@ -174,6 +174,7 @@ export default function Admin() {
     description: "",
     discount_amount: "",
     is_percentage: false,
+    is_fixed_price: false,
     max_uses_per_user: 1,
     max_total_uses: 100,
     is_active: true
@@ -409,6 +410,7 @@ export default function Admin() {
           description: promoForm.description,
           discount_amount: parseFloat(promoForm.discount_amount),
           is_percentage: promoForm.is_percentage,
+          is_fixed_price: promoForm.is_fixed_price,
           max_uses_per_user: parseInt(promoForm.max_uses_per_user),
           max_total_uses: parseInt(promoForm.max_total_uses),
           is_active: promoForm.is_active
@@ -416,7 +418,7 @@ export default function Admin() {
       });
       showToast("Promo code created successfully!", "success");
       setPromoForm({
-        code: "", description: "", discount_amount: "", is_percentage: false,
+        code: "", description: "", discount_amount: "", is_percentage: false, is_fixed_price: false,
         max_uses_per_user: 1, max_total_uses: 100, is_active: true
       });
     } catch (err) {
@@ -1739,6 +1741,15 @@ export default function Admin() {
                     onChange={(e) => setPromoForm({ ...promoForm, is_percentage: e.target.checked })}
                   />
                   <label htmlFor="promo_is_pct" className="ml">Percentage Discount?</label>
+                </div>
+                <div className="input-group flex-row-align">
+                  <input
+                    type="checkbox"
+                    id="promo_is_fixed"
+                    checked={promoForm.is_fixed_price}
+                    onChange={(e) => setPromoForm({ ...promoForm, is_fixed_price: e.target.checked })}
+                  />
+                  <label htmlFor="promo_is_fixed" className="ml">Fixed Price?</label>
                 </div>
               </div>
               <div className="row-split">
