@@ -17,7 +17,10 @@ export default function AdminPromosPage() {
     is_percentage: false,
     max_uses_per_user: 1,
     max_total_uses: 100,
-    is_active: true
+    is_active: true,
+    applicable_network: 'ALL',
+    applicable_plan_size: 'ALL',
+    target_audience: 'ALL'
   });
   const [busy, setBusy] = useState(false);
 
@@ -37,12 +40,15 @@ export default function AdminPromosPage() {
         is_percentage: promoForm.is_percentage,
         max_uses_per_user: parseInt(promoForm.max_uses_per_user),
         max_total_uses: parseInt(promoForm.max_total_uses),
-        is_active: promoForm.is_active
+        is_active: promoForm.is_active,
+        applicable_network: promoForm.applicable_network,
+        applicable_plan_size: promoForm.applicable_plan_size,
+        target_audience: promoForm.target_audience
       });
       alert("Promo code created successfully!");
       setPromoForm({
-        code: '', description: '', discount_amount: '', is_percentage: false,
-        max_uses_per_user: 1, max_total_uses: 100, is_active: true
+        max_uses_per_user: 1, max_total_uses: 100, is_active: true,
+        applicable_network: 'ALL', applicable_plan_size: 'ALL', target_audience: 'ALL'
       });
     } catch (err) {
       alert(err?.message || "Failed to create promo code.");
@@ -149,6 +155,44 @@ export default function AdminPromosPage() {
                     className="h-11 rounded-xl bg-secondary/30"
                   />
                 </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="space-y-2.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Applicable Network</label>
+                  <select
+                    value={promoForm.applicable_network}
+                    onChange={(e) => setPromoForm({ ...promoForm, applicable_network: e.target.value })}
+                    className="flex h-11 w-full rounded-xl border border-input bg-secondary/30 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="ALL">All Networks</option>
+                    <option value="MTN">MTN</option>
+                    <option value="GLO">GLO</option>
+                    <option value="AIRTEL">Airtel</option>
+                    <option value="9MOBILE">9Mobile</option>
+                  </select>
+                </div>
+                <div className="space-y-2.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Target Audience</label>
+                  <select
+                    value={promoForm.target_audience}
+                    onChange={(e) => setPromoForm({ ...promoForm, target_audience: e.target.value })}
+                    className="flex h-11 w-full rounded-xl border border-input bg-secondary/30 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="ALL">All Users</option>
+                    <option value="NEW_USERS">New Users Only</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Applicable Plan Size</label>
+                <Input
+                  placeholder="e.g. 1GB or ALL"
+                  value={promoForm.applicable_plan_size}
+                  onChange={(e) => setPromoForm({ ...promoForm, applicable_plan_size: e.target.value.toUpperCase() })}
+                  className="h-11 rounded-xl bg-secondary/30"
+                />
               </div>
 
               <div className="flex items-center gap-3 pt-2">
