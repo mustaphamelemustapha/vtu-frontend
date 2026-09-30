@@ -168,6 +168,18 @@ export default function Admin() {
     };
   }, [analytics]);
 
+  // Promos
+  const [promoForm, setPromoForm] = useState({
+    code: "",
+    description: "",
+    discount_amount: "",
+    is_percentage: false,
+    max_uses_per_user: 1,
+    max_total_uses: 100,
+    is_active: true
+  });
+  const [promoBusy, setPromoBusy] = useState(false);
+
   // Pricing
   const [pricingForm, setPricingForm] = useState({ tx_type: "data", provider: "mtn", margin: 0, role: "user" });
   const [pricingBusy, setPricingBusy] = useState(false);
@@ -378,6 +390,39 @@ export default function Admin() {
       showToast(err?.message || "Failed to load announcements.", "error");
     } finally {
       setAnnounceBusy(false);
+    }
+  };
+
+  const submitPromo = async (e) => {
+    e.preventDefault();
+    if (!promoForm.code || !promoForm.discount_amount) {
+      showToast("Code and discount amount are required.", "error");
+      return;
+    }
+    
+    setPromoBusy(true);
+    try {
+      await apiFetch("/promos/admin/create", {
+        method: "POST",
+        body: {
+          code: promoForm.code,
+          description: promoForm.description,
+          discount_amount: parseFloat(promoForm.discount_amount),
+          is_percentage: promoForm.is_percentage,
+          max_uses_per_user: parseInt(promoForm.max_uses_per_user),
+          max_total_uses: parseInt(promoForm.max_total_uses),
+          is_active: promoForm.is_active
+        }
+      });
+      showToast("Promo code created successfully!", "success");
+      setPromoForm({
+        code: "", description: "", discount_amount: "", is_percentage: false,
+        max_uses_per_user: 1, max_total_uses: 100, is_active: true
+      });
+    } catch (err) {
+      showToast(err?.message || "Failed to create promo code.", "error");
+    } finally {
+      setPromoBusy(false);
     }
   };
 
@@ -647,6 +692,7 @@ export default function Admin() {
                 { id: "users", label: "Users" },
                 { id: "pricing", label: "Pricing" },
                 { id: "announcements", label: "Announcements" },
+                { id: "promos", label: "Promos" },
               ].map((t) => (
                 <button
                   key={t.id}
@@ -1640,6 +1686,99 @@ export default function Admin() {
                 {!announceBusy && announceItems.length === 0 && <div className="empty">No announcements yet.</div>}
               </div>
             </div>
+          </div>
+        </section>
+      )}
+
+      {tab === "promos" && (
+        <section className="admin-section fade-in">
+          <div className="section-head">
+            <h2>Promos</h2>
+            <div className="muted">Create and manage promo codes.</div>
+          </div>
+
+          <div className="card form-card">
+            <h3 className="mb">Create Promo Code</h3>
+            <form onSubmit={submitPromo}>
+              <div className="input-group">
+                <label>Code (e.g. LAUNCH20)</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="CODE"
+                  value={promoForm.code}
+                  onChange={(e) => setPromoForm({ ...promoForm, code: e.target.value.toUpperCase() })}
+                />
+              </div>
+              <div className="input-group">
+                <label>Description</label>
+                <input
+                  type="text"
+                  placeholder="Special discount..."
+                  value={promoForm.description}
+                  onChange={(e) => setPromoForm({ ...promoForm, description: e.target.value })}
+                />
+              </div>
+              <div className="row-split">
+                <div className="input-group">
+                  <label>Discount Amount</label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="0.01"
+                    value={promoForm.discount_amount}
+                    onChange={(e) => setPromoForm({ ...promoForm, discount_amount: e.target.value })}
+                  />
+                </div>
+                <div className="input-group flex-row-align">
+                  <input
+                    type="checkbox"
+                    id="promo_is_pct"
+                    checked={promoForm.is_percentage}
+                    onChange={(e) => setPromoForm({ ...promoForm, is_percentage: e.target.checked })}
+                  />
+                  <label htmlFor="promo_is_pct" className="ml">Percentage Discount?</label>
+                </div>
+              </div>
+              <div className="row-split">
+                <div className="input-group">
+                  <label>Max Uses Per User</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={promoForm.max_uses_per_user}
+                    onChange={(e) => setPromoForm({ ...promoForm, max_uses_per_user: e.target.value })}
+                  />
+                </div>
+                <div className="input-group">
+                  <label>Max Total Uses</label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={promoForm.max_total_uses}
+                    onChange={(e) => setPromoForm({ ...promoForm, max_total_uses: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="input-group flex-row-align">
+                <input
+                  type="checkbox"
+                  id="promo_active"
+                  checked={promoForm.is_active}
+                  onChange={(e) => setPromoForm({ ...promoForm, is_active: e.target.checked })}
+                />
+                <label htmlFor="promo_active" className="ml">Active</label>
+              </div>
+
+              <div className="mt">
+                <button type="submit" className="primary btn" disabled={promoBusy}>
+                  {promoBusy ? "Creating..." : "Create Promo Code"}
+                </button>
+              </div>
+            </form>
           </div>
         </section>
       )}
