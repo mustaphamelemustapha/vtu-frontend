@@ -62,20 +62,31 @@ export function ProviderBalancesWidget() {
       ) : (
         <div className="space-y-3">
           {['amigo', 'smeplug', 'clubkonnect'].map((provider) => {
-            const bal = balances?.[provider] ?? 0;
-            const isLow = bal < THRESHOLD;
+            const rawVal = balances?.[provider];
+            const isError = typeof rawVal === 'string' && (rawVal.startsWith('CK Error') || rawVal.startsWith('Error') || isNaN(Number(rawVal)));
+            const bal = isError ? 0 : Number(rawVal ?? 0);
+            const isLow = !isError && bal < THRESHOLD;
             
             return (
               <div key={provider} className="flex items-center justify-between p-3 rounded-xl bg-background/50 border border-border/30">
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "w-2 h-2 rounded-full",
-                    isLow ? "bg-destructive animate-pulse" : "bg-emerald-500"
+                    isError ? "bg-amber-500" : isLow ? "bg-destructive animate-pulse" : "bg-emerald-500"
                   )} />
                   <span className="text-sm font-medium capitalize text-foreground">{provider}</span>
                 </div>
                 {loading && !balances ? (
                   <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                ) : isError ? (
+                  <div className="text-right">
+                    <span 
+                      className="text-[11px] font-medium text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md inline-block max-w-[170px] truncate" 
+                      title={rawVal}
+                    >
+                      {rawVal.replace('CK Error: ', '').replace('Error: ', '')}
+                    </span>
+                  </div>
                 ) : (
                   <div className="text-right">
                     <div className={cn("text-sm font-semibold", isLow ? "text-destructive" : "text-foreground")}>
