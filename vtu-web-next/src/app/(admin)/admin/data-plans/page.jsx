@@ -259,6 +259,12 @@ export default function AdminDataPlansPage() {
       }
 
       await adminUpdateDataPlan(editingPlan.id, payload);
+      setPlans(prev => prev.map(p => p.id === editingPlan.id ? { 
+        ...p, 
+        ...payload,
+        dispatch_count: payload.dispatch_count,
+        dispatch_plan_id: payload.clear_dispatch_plan_id ? null : payload.dispatch_plan_id
+      } : p));
       await load();
       setEditingPlan(null);
     } catch (err) {
