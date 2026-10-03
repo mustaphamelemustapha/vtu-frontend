@@ -47,6 +47,8 @@ export default function AdminDataPlansPage() {
   const [promoLabelInput, setPromoLabelInput] = useState('');
   const [fallbackProviderInput, setFallbackProviderInput] = useState('');
   const [fallbackPlanIdInput, setFallbackPlanIdInput] = useState('');
+  const [dispatchCountInput, setDispatchCountInput] = useState('1');
+  const [dispatchPlanIdInput, setDispatchPlanIdInput] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -116,6 +118,8 @@ export default function AdminDataPlansPage() {
     base_price: '',
     provider: 'amigo',
     provider_plan_id: '',
+    dispatch_count: 1,
+    dispatch_plan_id: '',
     is_active: true
   });
 
@@ -123,7 +127,12 @@ export default function AdminDataPlansPage() {
     e.preventDefault();
     try {
       const { adminCreateDataPlan } = await import('@/lib/api');
-      await adminCreateDataPlan(newPlan);
+      const payload = {
+        ...newPlan,
+        dispatch_count: parseInt(newPlan.dispatch_count, 10) || 1,
+        dispatch_plan_id: newPlan.dispatch_plan_id ? newPlan.dispatch_plan_id.trim() : null
+      };
+      await adminCreateDataPlan(payload);
       setIsAddModalOpen(false);
       setNewPlan({
         network: 'mtn',
@@ -134,6 +143,8 @@ export default function AdminDataPlansPage() {
         base_price: '',
         provider: 'amigo',
         provider_plan_id: '',
+        dispatch_count: 1,
+        dispatch_plan_id: '',
         is_active: true
       });
       alert("Plan created successfully!");
@@ -171,6 +182,8 @@ export default function AdminDataPlansPage() {
     setPromoLabelInput(plan.promo_label || '');
     setFallbackProviderInput(plan.fallback_provider || 'none');
     setFallbackPlanIdInput(plan.fallback_provider_plan_id || '');
+    setDispatchCountInput(plan.dispatch_count ? String(plan.dispatch_count) : '1');
+    setDispatchPlanIdInput(plan.dispatch_plan_id || '');
   };
 
   const handleSavePlan = async () => {
@@ -233,6 +246,16 @@ export default function AdminDataPlansPage() {
         payload.clear_fallback_provider_plan_id = true;
       } else {
         payload.fallback_provider_plan_id = fbPlanIdVal;
+      }
+
+      const dCount = parseInt(dispatchCountInput, 10);
+      payload.dispatch_count = isNaN(dCount) || dCount < 1 ? 1 : dCount;
+
+      const dPlanId = dispatchPlanIdInput.trim();
+      if (dPlanId === '') {
+        payload.clear_dispatch_plan_id = true;
+      } else {
+        payload.dispatch_plan_id = dPlanId;
       }
 
       await adminUpdateDataPlan(editingPlan.id, payload);
@@ -318,6 +341,13 @@ export default function AdminDataPlansPage() {
       <div className="flex flex-col">
         <span className="text-xs font-semibold uppercase text-brand">{row.provider || 'unknown'}</span>
         <span className="font-mono text-[10px] text-muted-foreground mt-0.5 tracking-tight">ID: {row.provider_plan_id || row.plan_code || '—'}</span>
+        {row.dispatch_count && row.dispatch_count > 1 && (
+          <div className="mt-1.5 pt-1.5 border-t border-border/40">
+            <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-500">
+              ⚡ {row.dispatch_count}x Split {row.dispatch_plan_id ? `(${row.dispatch_plan_id})` : ''}
+            </span>
+          </div>
+        )}
         {row.fallback_provider && row.fallback_provider !== 'none' && (
           <div className="mt-1.5 pt-1.5 border-t border-border/40">
             <span className="text-[10px] font-semibold uppercase text-orange-500 block leading-tight">Fallback: {row.fallback_provider}</span>
@@ -604,6 +634,42 @@ export default function AdminDataPlansPage() {
                 </div>
 
                 <div className="border-t border-border/50 pt-5 space-y-4">
+                  <div>
+                    <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                      <span>⚡ Multi-Dispatch / Bundle Splitting</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">Split order into multiple provider requests (e.g. 10GB delivered as 5GB x 2).</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-5">
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dispatch Count (Times)</label>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="10"
+                        placeholder="1 (Default: single delivery)"
+                        value={dispatchCountInput}
+                        onChange={(e) => setDispatchCountInput(e.target.value)}
+                        disabled={isSavingPlan}
+                        className="h-11 rounded-xl bg-secondary/30"
+                      />
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">Number of deliveries to send (e.g. 2 for 2x delivery).</p>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sub-Plan ID (Optional)</label>
+                      <Input
+                        placeholder="e.g. 5GB provider plan ID"
+                        value={dispatchPlanIdInput}
+                        onChange={(e) => setDispatchPlanIdInput(e.target.value)}
+                        disabled={isSavingPlan}
+                        className="h-11 rounded-xl bg-secondary/30"
+                      />
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">Leave blank to use this plan's own Provider Plan ID.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-border/50 pt-5 space-y-4">
                   <div className="flex items-center justify-between rounded-xl bg-brand/5 p-4 border border-brand/10">
                     <div>
                       <div className="text-sm font-semibold text-brand">Enable Promotional Pricing</div>
@@ -793,6 +859,40 @@ export default function AdminDataPlansPage() {
                       onChange={(e) => setNewPlan({...newPlan, data_size: e.target.value})}
                       className="h-11 rounded-xl bg-secondary/30"
                     />
+                  </div>
+
+                  <div className="border-t border-border/50 pt-5 space-y-4">
+                    <div>
+                      <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                        <span>⚡ Multi-Dispatch / Bundle Splitting</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">Split order into multiple provider requests (e.g. 10GB delivered as 5GB x 2).</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-5">
+                      <div className="space-y-3">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dispatch Count</label>
+                        <Input 
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={newPlan.dispatch_count}
+                          onChange={(e) => setNewPlan({...newPlan, dispatch_count: e.target.value})}
+                          placeholder="1 (Default: single delivery)"
+                          className="h-11 rounded-xl bg-secondary/30"
+                        />
+                        <p className="text-[10px] text-muted-foreground">Times to dispatch (default 1)</p>
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sub-Plan ID (Optional)</label>
+                        <Input 
+                          placeholder="e.g. 5GB provider plan ID"
+                          value={newPlan.dispatch_plan_id}
+                          onChange={(e) => setNewPlan({...newPlan, dispatch_plan_id: e.target.value})}
+                          className="h-11 rounded-xl bg-secondary/30"
+                        />
+                        <p className="text-[10px] text-muted-foreground">Leave blank to use Provider Plan ID</p>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end gap-3 border-t border-border/50 p-6 bg-card/50 rounded-b-3xl">
