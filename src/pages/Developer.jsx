@@ -298,11 +298,7 @@ export default function Developer() {
             </Button>
           </div>
 
-          {!rawTestSecret && devState.has_keys ? (
-            <div style={{ textAlign: "center", padding: "30px 0", color: "#94a3b8", fontSize: 14 }}>
-              Your test token is masked. Generate a new live token to reveal the paired test token.
-            </div>
-          ) : !devState.has_keys ? (
+          {!devState.has_keys ? (
             <div style={{ textAlign: "center", padding: "30px 0", color: "#94a3b8", fontSize: 14 }}>
               No test tokens yet.
             </div>
@@ -322,21 +318,23 @@ export default function Developer() {
                   </div>
                 </div>
 
-                {rawTestSecret && (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                      <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#34d399", fontSize: 11, padding: "2px 6px", borderRadius: 4, fontWeight: "bold" }}>SECRET KEY</span>
-                      <span style={{ fontFamily: "monospace", fontSize: 14, color: "#e2e8f0" }}>
-                        {rawTestSecret}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", gap: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#34d399", fontSize: 11, padding: "2px 6px", borderRadius: 4, fontWeight: "bold" }}>SECRET KEY</span>
+                    <span style={{ fontFamily: "monospace", fontSize: 14, color: "#e2e8f0" }}>
+                      {rawTestSecret ? rawTestSecret : "••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••"}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    {rawTestSecret ? (
                       <Button variant="ghost" onClick={() => copyToClipboard(rawTestSecret, 'test')} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#e2e8f0" }}>
                         {copiedTest ? <CheckIcon /> : <CopyIcon />} {copiedTest ? "Copied" : "Copy"}
                       </Button>
-                    </div>
+                    ) : (
+                      <span style={{ fontSize: 13, color: "#94a3b8" }}>Token masked</span>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
           )}
         </div>
