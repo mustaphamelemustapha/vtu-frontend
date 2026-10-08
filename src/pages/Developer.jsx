@@ -41,6 +41,8 @@ export default function Developer() {
   const [webhookInput, setWebhookInput] = useState("");
   const [copiedLive, setCopiedLive] = useState(false);
   const [copiedTest, setCopiedTest] = useState(false);
+  const [copiedLivePub, setCopiedLivePub] = useState(false);
+  const [copiedTestPub, setCopiedTestPub] = useState(false);
 
   useEffect(() => {
     fetchStatus();
@@ -73,7 +75,7 @@ export default function Developer() {
       setDevState(prev => ({ ...prev, ...data }));
       if (data.api_secret_key) {
         setRawSecretKey(data.api_secret_key);
-        setRawTestSecret("mele_test_" + data.api_secret_key.replace("mele_live_", ""));
+        setRawTestSecret(data.test_api_secret_key);
       }
       showToast("Developer API access granted!", "success");
     } catch (err) {
@@ -94,7 +96,7 @@ export default function Developer() {
         has_keys: true
       }));
       setRawSecretKey(data.api_secret_key);
-      setRawTestSecret("mele_test_" + data.api_secret_key.replace("mele_live_", ""));
+      setRawTestSecret(data.test_api_secret_key);
       showToast("Live token generated. Copy it now!", "success");
     } catch (err) {
       showToast(err?.message || "Failed to generate keys.", "error");
@@ -144,15 +146,21 @@ export default function Developer() {
     }
   };
 
-  const copyToClipboard = (text, isTest) => {
+  const copyToClipboard = (text, type) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
-    if (isTest) {
+    if (type === 'test') {
       setCopiedTest(true);
       setTimeout(() => setCopiedTest(false), 2000);
-    } else {
+    } else if (type === 'live') {
       setCopiedLive(true);
       setTimeout(() => setCopiedLive(false), 2000);
+    } else if (type === 'live_pub') {
+      setCopiedLivePub(true);
+      setTimeout(() => setCopiedLivePub(false), 2000);
+    } else if (type === 'test_pub') {
+      setCopiedTestPub(true);
+      setTimeout(() => setCopiedTestPub(false), 2000);
     }
   };
 
@@ -236,23 +244,38 @@ export default function Developer() {
               No active live tokens.
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0", borderTop: "1px solid #334155" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <span style={{ background: "rgba(59, 130, 246, 0.15)", color: "#60a5fa", fontSize: 11, padding: "2px 6px", borderRadius: 4, fontWeight: "bold" }}>LIVE</span>
-                <span style={{ fontFamily: "monospace", fontSize: 14, color: "#e2e8f0" }}>
-                  {rawSecretKey ? rawSecretKey : "••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••"}
-                </span>
-                <span style={{ fontSize: 13, color: "#94a3b8" }}>Primary</span>
+              <div style={{ padding: "16px 0", borderTop: "1px solid #334155" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <span style={{ background: "rgba(59, 130, 246, 0.15)", color: "#60a5fa", fontSize: 11, padding: "2px 6px", borderRadius: 4, fontWeight: "bold" }}>PUBLIC KEY</span>
+                    <span style={{ fontFamily: "monospace", fontSize: 14, color: "#e2e8f0" }}>
+                      {devState.api_public_key}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <Button variant="ghost" onClick={() => copyToClipboard(devState.api_public_key, 'live_pub')} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#e2e8f0" }}>
+                      {copiedLivePub ? <CheckIcon /> : <CopyIcon />} {copiedLivePub ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <span style={{ background: "rgba(59, 130, 246, 0.15)", color: "#60a5fa", fontSize: 11, padding: "2px 6px", borderRadius: 4, fontWeight: "bold" }}>SECRET KEY</span>
+                    <span style={{ fontFamily: "monospace", fontSize: 14, color: "#e2e8f0" }}>
+                      {rawSecretKey ? rawSecretKey : "••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••"}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <Button variant="ghost" onClick={() => copyToClipboard(rawSecretKey || "Token hidden", 'live')} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#e2e8f0" }}>
+                      {copiedLive ? <CheckIcon /> : <CopyIcon />} {copiedLive ? "Copied" : "Copy"}
+                    </Button>
+                    <Button variant="ghost" onClick={revokeKeys} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#ef4444" }}>
+                      <RevokeIcon /> Revoke
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 12 }}>
-                <Button variant="ghost" onClick={() => copyToClipboard(rawSecretKey || "Token hidden", false)} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#e2e8f0" }}>
-                  {copiedLive ? <CheckIcon /> : <CopyIcon />} {copiedLive ? "Copied" : "Copy"}
-                </Button>
-                <Button variant="ghost" onClick={revokeKeys} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#ef4444" }}>
-                  <RevokeIcon /> Revoke
-                </Button>
-              </div>
-            </div>
           )}
           {rawSecretKey && (
             <div style={{ marginTop: 12, padding: 12, background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: 6, color: "#10b981", fontSize: 13 }}>
@@ -284,20 +307,37 @@ export default function Developer() {
               No test tokens yet.
             </div>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 0", borderTop: "1px solid #334155" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#34d399", fontSize: 11, padding: "2px 6px", borderRadius: 4, fontWeight: "bold" }}>TEST</span>
-                <span style={{ fontFamily: "monospace", fontSize: 14, color: "#e2e8f0" }}>
-                  {rawTestSecret}
-                </span>
-                <span style={{ fontSize: 13, color: "#94a3b8" }}>Primary</span>
+              <div style={{ padding: "16px 0", borderTop: "1px solid #334155" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                    <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#34d399", fontSize: 11, padding: "2px 6px", borderRadius: 4, fontWeight: "bold" }}>PUBLIC KEY</span>
+                    <span style={{ fontFamily: "monospace", fontSize: 14, color: "#e2e8f0" }}>
+                      {devState.test_api_public_key}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <Button variant="ghost" onClick={() => copyToClipboard(devState.test_api_public_key, 'test_pub')} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#e2e8f0" }}>
+                      {copiedTestPub ? <CheckIcon /> : <CopyIcon />} {copiedTestPub ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
+                </div>
+
+                {rawTestSecret && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                      <span style={{ background: "rgba(16, 185, 129, 0.15)", color: "#34d399", fontSize: 11, padding: "2px 6px", borderRadius: 4, fontWeight: "bold" }}>SECRET KEY</span>
+                      <span style={{ fontFamily: "monospace", fontSize: 14, color: "#e2e8f0" }}>
+                        {rawTestSecret}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: 12 }}>
+                      <Button variant="ghost" onClick={() => copyToClipboard(rawTestSecret, 'test')} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#e2e8f0" }}>
+                        {copiedTest ? <CheckIcon /> : <CopyIcon />} {copiedTest ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div style={{ display: "flex", gap: 12 }}>
-                <Button variant="ghost" onClick={() => copyToClipboard(rawTestSecret, true)} style={{ fontSize: 13, padding: "4px 12px", border: "1px solid #334155", color: "#e2e8f0" }}>
-                  {copiedTest ? <CheckIcon /> : <CopyIcon />} {copiedTest ? "Copied" : "Copy"}
-                </Button>
-              </div>
-            </div>
           )}
         </div>
       </section>
