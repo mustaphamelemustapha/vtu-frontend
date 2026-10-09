@@ -66,6 +66,8 @@ export default function DeveloperPage() {
         ...prev,
         api_public_key: data.api_public_key,
         api_secret_key: data.api_secret_key, // Capture the one-time secret key
+        test_api_public_key: data.test_api_public_key,
+        test_api_secret_key: data.test_api_secret_key,
         has_keys: true
       }));
     } finally {
@@ -223,8 +225,36 @@ export default function DeveloperPage() {
             </CardContent>
           </Card>
 
-
-
+          {developerState.has_keys && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Test (Sandbox) Keys</CardTitle>
+                <CardDescription>Use these keys to simulate transactions without being charged. Perfect for testing your integration.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none text-muted-foreground">Test Public Key</label>
+                  <div className="flex gap-2">
+                    <Input readOnly value={developerState.test_api_public_key} className="font-mono text-sm bg-secondary" />
+                    <Button variant="secondary" size="icon" onClick={() => copyToClipboard(developerState.test_api_public_key)}>
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium leading-none text-muted-foreground">Test Secret Key</label>
+                  <div className="flex gap-2">
+                    <Input readOnly value={developerState.api_secret_key ? developerState.test_api_secret_key : "****************************************"} className="font-mono text-sm bg-secondary text-muted-foreground" />
+                    {developerState.api_secret_key && (
+                      <Button variant="secondary" size="icon" onClick={() => copyToClipboard(developerState.test_api_secret_key)}>
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardHeader>
               <CardTitle>Webhook Configuration</CardTitle>
