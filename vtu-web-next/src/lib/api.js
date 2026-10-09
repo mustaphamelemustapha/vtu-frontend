@@ -258,7 +258,7 @@ export async function registerRequest(payload) {
 export async function forgotPasswordRequest(email) {
   return apiFetch('/auth/forgot-password', {
     method: 'POST',
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ identifier: email }),
   });
 }
 
