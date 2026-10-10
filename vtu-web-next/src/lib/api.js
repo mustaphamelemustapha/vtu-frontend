@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE = 'https://vtu-backend-8gsi.onrender.com/api/v1';
+const DEFAULT_API_BASE = 'https://api.meledata.ng/api/v1';
 const TOKEN_KEY = 'axisvtu_access_token';
 const REFRESH_KEY = 'axisvtu_refresh_token';
 const PROFILE_KEY = 'axisvtu_profile';

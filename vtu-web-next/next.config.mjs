@@ -1,8 +1,13 @@
-/** @type {import('next').NextConfig} */
+const BACKEND_URL = (process.env.BACKEND_API_URL || 'https://api.meledata.ng').replace(/\/+$/, '');
+
 const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.meledata.ng',
+      },
       {
         protocol: 'https',
         hostname: 'vtu-backend-8gsi.onrender.com',
@@ -36,15 +41,15 @@ const nextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'https://vtu-backend-8gsi.onrender.com/api/v1/:path*',
+        destination: `${BACKEND_URL}/api/v1/:path*`,
       },
       {
         source: '/healthz',
-        destination: 'https://vtu-backend-8gsi.onrender.com/healthz',
+        destination: `${BACKEND_URL}/healthz`,
       },
       {
         source: '/readyz',
-        destination: 'https://vtu-backend-8gsi.onrender.com/readyz',
+        destination: `${BACKEND_URL}/readyz`,
       },
     ];
   },
