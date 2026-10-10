@@ -12,6 +12,7 @@ import {
   Briefcase,
   Award,
   Ticket,
+  Plug,
 } from 'lucide-react';
 
 export const adminNav = [
@@ -26,6 +27,7 @@ export const adminNav = [
   { label: 'Data Plans', href: '/admin/data-plans', icon: PackageSearch },
   { label: 'Referrals', href: '/admin/referrals', icon: Gift },
   { label: 'Promos', href: '/admin/promos', icon: Ticket },
+  { label: 'Integrations', href: '/admin/integrations', icon: Plug },
   { label: 'Support', href: '/admin/support', icon: Headset },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
