@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Copy, RefreshCw, Trash2, Code2 } from 'lucide-react';
+import { getActiveBrand } from '@/lib/brand';
 
 export default function DeveloperPage() {
+  const brand = getActiveBrand();
   const [developerState, setDeveloperState] = useState({
     is_developer: false,
     developer_status: 'none',
@@ -141,7 +143,7 @@ export default function DeveloperPage() {
           <CardContent className="flex flex-col items-center py-10 space-y-4">
             <Code2 className="w-12 h-12 text-muted-foreground/50" />
             <div className="text-center">
-              <h3 className="text-lg font-medium mb-1">Build with MELE DATA API</h3>
+              <h3 className="text-lg font-medium mb-1">Build with {brand.name} API</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
                 Automate your data and airtime purchases by integrating directly with our powerful JSON API.
               </p>
@@ -225,36 +227,55 @@ export default function DeveloperPage() {
             </CardContent>
           </Card>
 
-          {developerState.has_keys && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Test (Sandbox) Keys</CardTitle>
-                <CardDescription>Use these keys to simulate transactions without being charged. Perfect for testing your integration.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none text-muted-foreground">Test Public Key</label>
-                  <div className="flex gap-2">
-                    <Input readOnly value={developerState.test_api_public_key} className="font-mono text-sm bg-secondary" />
-                    <Button variant="secondary" size="icon" onClick={() => copyToClipboard(developerState.test_api_public_key)}>
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium leading-none text-muted-foreground">Test Secret Key</label>
-                  <div className="flex gap-2">
-                    <Input readOnly value={developerState.api_secret_key ? developerState.test_api_secret_key : "****************************************"} className="font-mono text-sm bg-secondary text-muted-foreground" />
-                    {developerState.api_secret_key && (
-                      <Button variant="secondary" size="icon" onClick={() => copyToClipboard(developerState.test_api_secret_key)}>
+          {developerState.has_keys && (() => {
+            const testPublicKey = developerState.test_api_public_key || (developerState.api_public_key ? developerState.api_public_key.replace(/^mele_pub_/, 'mele_test_pub_') : '');
+            const newlyGeneratedTestSecret = developerState.test_api_secret_key || (developerState.api_secret_key ? developerState.api_secret_key.replace(/^mele_live_/, 'mele_test_') : null);
+
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Test (Sandbox) Keys</CardTitle>
+                  <CardDescription>Use these keys to simulate transactions without being charged. Perfect for testing your integration.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium leading-none text-muted-foreground">Test Public Key</label>
+                    <div className="flex gap-2">
+                      <Input readOnly value={testPublicKey} className="font-mono text-sm bg-secondary" />
+                      <Button variant="secondary" size="icon" onClick={() => copyToClipboard(testPublicKey)}>
                         <Copy className="w-4 h-4" />
                       </Button>
-                    )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+
+                  {newlyGeneratedTestSecret ? (
+                    <div className="space-y-2 p-4 bg-sky-500/10 border border-sky-500/20 rounded-lg">
+                      <label className="text-sm font-medium leading-none text-sky-600 dark:text-sky-400">TEST API Secret Key (Copy this now!)</label>
+                      <p className="text-xs text-sky-600/80 dark:text-sky-400/80 pb-1">
+                        Use this in sandbox mode to simulate requests without real wallet debits.
+                      </p>
+                      <div className="flex gap-2">
+                        <Input readOnly value={newlyGeneratedTestSecret} className="font-mono text-sm bg-background border-sky-500/30 text-sky-600 dark:text-sky-400" />
+                        <Button variant="outline" className="border-sky-500/30 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10" size="icon" onClick={() => copyToClipboard(newlyGeneratedTestSecret)}>
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium leading-none text-muted-foreground">Test Secret Key</label>
+                      <div className="flex gap-2">
+                        <Input readOnly value="mele_test_************************" className="font-mono text-sm bg-secondary text-muted-foreground" />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Secret keys are hidden for security. Click "Regenerate Keys" above if you need a fresh key pair.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })()}
           <Card>
             <CardHeader>
               <CardTitle>Webhook Configuration</CardTitle>
