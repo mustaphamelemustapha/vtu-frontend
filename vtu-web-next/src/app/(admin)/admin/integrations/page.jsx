@@ -19,6 +19,8 @@ export default function IntegrationsPage() {
   const [editingProvider, setEditingProvider] = useState(null);
   const [editingGateway, setEditingGateway] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [testingId, setTestingId] = useState(null);
+  const [testResult, setTestResult] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -38,6 +40,30 @@ export default function IntegrationsPage() {
     load().catch(() => setLoading(false));
   }, [load]);
 
+  const handleTestProvider = async (provider) => {
+    setTestingId(provider.id || 'current');
+    setTestResult(null);
+    try {
+      const res = await apiFetch('/admin/integrations/providers/test', {
+        method: 'POST',
+        body: {
+          identifier: provider.identifier,
+          base_url: provider.base_url,
+          api_key: provider.api_key,
+          api_secret: provider.api_secret
+        }
+      });
+      setTestResult(res);
+    } catch (err) {
+      setTestResult({
+        status: false,
+        message: err.message || 'Connection test failed'
+      });
+    } finally {
+      setTestingId(null);
+    }
+  };
+
   const handleSaveProvider = async (e) => {
     e.preventDefault();
     setIsSaving(true);
@@ -46,6 +72,7 @@ export default function IntegrationsPage() {
       const payload = { ...editingProvider };
       delete payload.isNew;
       delete payload.id;
+      delete payload.balance;
       
       await apiFetch(isNew ? '/admin/integrations/providers' : `/admin/integrations/providers/${editingProvider.id}`, {
         method: isNew ? 'POST' : 'PUT',
@@ -53,6 +80,7 @@ export default function IntegrationsPage() {
       });
       await load();
       setEditingProvider(null);
+      setTestResult(null);
     } catch (err) {
       alert(err.message || 'Failed to save provider');
     } finally {
@@ -139,15 +167,53 @@ export default function IntegrationsPage() {
           </Button>
         </CardHeader>
         <CardContent>
+          {testResult && !editingProvider && (
+            <div className={`mb-4 p-3 rounded-lg border text-xs space-y-1 ${testResult.status ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400'}`}>
+              <div className="font-semibold flex items-center justify-between">
+                <span>{testResult.status ? '✓ Connection Verified' : '✕ Connection Error'}</span>
+                {testResult.balance !== undefined && testResult.balance !== null && (
+                  <span className="font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-700 dark:text-emerald-300">
+                    Balance: ₦{Number(testResult.balance).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                  </span>
+                )}
+              </div>
+              <p>{testResult.message}</p>
+              {testResult.raw_response && (
+                <details className="pt-1">
+                  <summary className="cursor-pointer text-muted-foreground hover:underline">View Live API Reply</summary>
+                  <pre className="mt-1 p-2 bg-background/80 rounded border font-mono text-[10px] overflow-auto max-h-32 text-foreground">
+                    {JSON.stringify(testResult.raw_response, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </div>
+          )}
           <AdminTable
             columns={[
               { key: 'name', label: 'Provider Name', render: (r) => <div className="font-medium">{r.name}</div> },
-              { key: 'identifier', label: 'Identifier', render: (r) => <span className="text-muted-foreground">{r.identifier}</span> },
+              { key: 'identifier', label: 'Identifier', render: (r) => <span className="text-muted-foreground font-mono text-xs">{r.identifier}</span> },
               { key: 'base_url', label: 'API URL', render: (r) => r.base_url || '—' },
+              { 
+                key: 'balance', 
+                label: 'Balance', 
+                render: (r) => typeof r.balance === 'number' && r.balance > 0 
+                  ? <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">₦{r.balance.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</span>
+                  : <span className="text-muted-foreground">—</span>
+              },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.is_active ? 'active' : 'inactive'} /> },
               { key: 'actions', label: 'Actions', render: (r) => (
                 <div className="flex gap-2">
-                  <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => setEditingProvider(r)}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 gap-1 text-xs" 
+                    onClick={() => handleTestProvider(r)} 
+                    disabled={testingId === r.id}
+                  >
+                    <RefreshCw className={testingId === r.id ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
+                    Test
+                  </Button>
+                  <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => { setEditingProvider(r); setTestResult(null); }}>
                     <Edit2 className="h-4 w-4" />
                   </Button>
                   <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDeleteProvider(r.id)}>
@@ -246,9 +312,47 @@ export default function IntegrationsPage() {
                   <input type="checkbox" id="prov-active" checked={editingProvider.is_active} onChange={e => setEditingProvider({...editingProvider, is_active: e.target.checked})} />
                   <label htmlFor="prov-active" className="text-sm font-medium">Enable Provider</label>
                 </div>
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="secondary" onClick={() => setEditingProvider(null)}>Cancel</Button>
-                  <Button type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Save'}</Button>
+
+                {testResult && (
+                  <div className={`p-3 rounded-lg border text-xs space-y-1 ${testResult.status ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400'}`}>
+                    <div className="font-semibold flex items-center justify-between">
+                      <span>{testResult.status ? '✓ Connection Verified' : '✕ Connection Error'}</span>
+                      {testResult.balance !== undefined && testResult.balance !== null && (
+                        <span className="font-mono bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-700 dark:text-emerald-300">
+                          Balance: ₦{Number(testResult.balance).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                        </span>
+                      )}
+                    </div>
+                    <p>{testResult.message}</p>
+                    {testResult.raw_response && (
+                      <details className="pt-1">
+                        <summary className="cursor-pointer text-muted-foreground hover:underline">View Live API Reply</summary>
+                        <pre className="mt-1 p-2 bg-background/80 rounded border font-mono text-[10px] overflow-auto max-h-28 text-foreground">
+                          {JSON.stringify(testResult.raw_response, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    disabled={testingId === (editingProvider.id || 'current') || !editingProvider.identifier} 
+                    onClick={() => handleTestProvider(editingProvider)}
+                  >
+                    {testingId === (editingProvider.id || 'current') ? (
+                      <>
+                        <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                        Testing...
+                      </>
+                    ) : 'Test Connection'}
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="secondary" onClick={() => { setEditingProvider(null); setTestResult(null); }}>Cancel</Button>
+                    <Button type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Save'}</Button>
+                  </div>
                 </div>
               </form>
             </CardContent>

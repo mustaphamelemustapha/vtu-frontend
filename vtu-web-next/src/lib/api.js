@@ -192,15 +192,21 @@ export async function apiFetch(path, options = {}) {
   const headers = { ...(options.headers || {}) };
   const token = getToken();
   if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
-  if (options.body && !headers['Content-Type'] && !(options.body instanceof FormData)) {
-    headers['Content-Type'] = 'application/json';
+  let body = options.body;
+  if (body !== undefined && body !== null) {
+    if (typeof body === 'object' && !(body instanceof FormData) && !(body instanceof Blob)) {
+      body = JSON.stringify(body);
+    }
+    if (!headers['Content-Type'] && !(body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
   }
   let res;
   try {
     res = await fetch(`${base}${path}`, {
       method,
       headers,
-      body: options.body,
+      body,
       cache: 'no-store',
       signal: controller.signal,
     });
