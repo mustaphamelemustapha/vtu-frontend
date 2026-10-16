@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Database, RefreshCw, X, Plus, Search } from 'lucide-react';
-import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan, adminDeleteDataPlan } from '@/lib/api';
+import { Database, RefreshCw, X, Plus, Search, Trash2 } from 'lucide-react';
+import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan, adminDeleteDataPlan, adminDeleteAutosyncedPlans, apiFetch } from '@/lib/api';
 import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,9 @@ function asList(value) {
 export default function AdminDataPlansPage() {
   const [plans, setPlans] = useState([]);
   const [pricing, setPricing] = useState([]);
+  const [integratedProviders, setIntegratedProviders] = useState([]);
+  const [fetchingProviderPlans, setFetchingProviderPlans] = useState(false);
+  const [availableProviderPlans, setAvailableProviderPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [toggling, setToggling] = useState(null);
@@ -53,12 +56,16 @@ export default function AdminDataPlansPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [plansRes, pricingRes] = await Promise.allSettled([
+      const [plansRes, pricingRes, providersRes] = await Promise.allSettled([
         adminGetDataPlans(),
         adminGetPricingRules(),
+        apiFetch('/admin/integrations/providers'),
       ]);
       if (plansRes.status === 'fulfilled') setPlans(asList(plansRes.value));
       if (pricingRes.status === 'fulfilled') setPricing(Array.isArray(pricingRes.value?.items) ? pricingRes.value.items : []);
+      if (providersRes.status === 'fulfilled' && Array.isArray(providersRes.value)) {
+        setIntegratedProviders(providersRes.value);
+      }
     } finally {
       setLoading(false);
     }
@@ -93,20 +100,40 @@ export default function AdminDataPlansPage() {
   }, [load]);
 
   const [cleaning, setCleaning] = useState(false);
-  const handleCleanLegacy = useCallback(async () => {
-    if (!window.confirm("This will permanently delete all old 'unknown' or broken data plans from the database. Are you sure?")) return;
+  const handleDeleteAutosynced = useCallback(async (scope = 'autosynced') => {
+    const isAll = scope === 'all';
+    const msg = isAll
+      ? "DANGER: This will permanently DELETE ALL data plans from the database. Are you sure you want to completely clear the entire catalog?"
+      : "This will permanently delete all auto-synced plans (including Talk More voice bundles, Amigo, ClubKonnect, Autosync, and legacy plans) from your database, keeping only your intentional data plans. Proceed?";
+    if (!window.confirm(msg)) return;
     setCleaning(true);
     try {
-      const { adminCleanLegacyDataPlans } = await import('@/lib/api');
-      const res = await adminCleanLegacyDataPlans();
-      alert(res.message || "Legacy plans deleted successfully");
+      const res = await adminDeleteAutosyncedPlans(scope);
+      alert(res.message || `Successfully deleted ${res.deleted_count ?? 0} data plans!`);
       await load();
     } catch (err) {
-      alert(err.message || "Failed to clean legacy plans");
+      alert(err.message || "Failed to delete auto-synced plans");
     } finally {
       setCleaning(false);
     }
   }, [load]);
+
+  const providerOptions = useMemo(() => {
+    const list = [...integratedProviders];
+    const defaults = [
+      { identifier: 'smeplug', name: 'SMEPlug' },
+      { identifier: 'amigo', name: 'Amigo' },
+      { identifier: 'clubkonnect', name: 'ClubKonnect' },
+      { identifier: 'autosync', name: 'Autosync' },
+      { identifier: 'mzdata', name: 'MZDATA' },
+    ];
+    for (const d of defaults) {
+      if (!list.some(p => String(p?.identifier || '').toLowerCase() === d.identifier)) {
+        list.push(d);
+      }
+    }
+    return list;
+  }, [integratedProviders]);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newPlan, setNewPlan] = useState({
@@ -116,12 +143,43 @@ export default function AdminDataPlansPage() {
     data_size: '',
     validity: '30 Days',
     base_price: '',
-    provider: 'amigo',
+    provider: 'smeplug',
     provider_plan_id: '',
     dispatch_count: 1,
     dispatch_plan_id: '',
     is_active: true
   });
+
+  const handlePullProviderPlans = async () => {
+    const prov = String(newPlan.provider || '').trim().toLowerCase();
+    if (!prov) return;
+    setFetchingProviderPlans(true);
+    setAvailableProviderPlans([]);
+    try {
+      const res = await apiFetch(`/admin/integrations/providers/${prov}/plans?network=${newPlan.network}`);
+      if (res?.plans && Array.isArray(res.plans) && res.plans.length > 0) {
+        setAvailableProviderPlans(res.plans);
+      } else {
+        alert(res?.message || `No live catalog returned from ${prov.toUpperCase()} for network ${newPlan.network.toUpperCase()}.`);
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to fetch provider plans');
+    } finally {
+      setFetchingProviderPlans(false);
+    }
+  };
+
+  const handleSelectProviderPlan = (plan) => {
+    setNewPlan(prev => ({
+      ...prev,
+      plan_name: plan.plan_name || prev.plan_name,
+      plan_code: `${prev.provider}:${prev.network}:${plan.provider_plan_id}`,
+      provider_plan_id: String(plan.provider_plan_id || ''),
+      base_price: plan.price ? String(plan.price) : prev.base_price,
+      data_size: plan.data_size || prev.data_size,
+      validity: plan.validity || '30 Days'
+    }));
+  };
 
   const handleCreatePlan = async (e) => {
     e.preventDefault();
@@ -134,6 +192,7 @@ export default function AdminDataPlansPage() {
       };
       await adminCreateDataPlan(payload);
       setIsAddModalOpen(false);
+      setAvailableProviderPlans([]);
       setNewPlan({
         network: 'mtn',
         plan_code: '',
@@ -141,7 +200,7 @@ export default function AdminDataPlansPage() {
         data_size: '',
         validity: '30 Days',
         base_price: '',
-        provider: 'amigo',
+        provider: 'smeplug',
         provider_plan_id: '',
         dispatch_count: 1,
         dispatch_plan_id: '',
@@ -447,13 +506,37 @@ export default function AdminDataPlansPage() {
               <Plus className="mr-2 h-4 w-4" />
               Add Manual Plan
             </Button>
-            <Button variant="destructive" className="rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-600 border-none" onClick={handleCleanLegacy} disabled={cleaning || syncing || toggling === 'all'}>
-              {cleaning ? 'Cleaning...' : 'Clean Old Plans'}
+            <Button 
+              variant="destructive" 
+              className="rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 hover:text-red-600 border border-red-500/20" 
+              onClick={() => handleDeleteAutosynced('autosynced')} 
+              disabled={cleaning || syncing || toggling === 'all'}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {cleaning ? 'Deleting...' : 'Delete Auto-Synced Plans'}
+            </Button>
+            <Button 
+              variant="destructive" 
+              className="rounded-xl bg-red-600/15 text-red-600 hover:bg-red-600/25 border border-red-600/30" 
+              onClick={() => handleDeleteAutosynced('all')} 
+              disabled={cleaning || syncing || toggling === 'all'}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Wipe All Plans
             </Button>
             <Button variant="destructive" className="rounded-xl" onClick={handleDisableAll} disabled={cleaning || syncing || toggling === 'all'}>
               {toggling === 'all' ? 'Disabling...' : 'Disable All Active'}
             </Button>
-            <Button variant="outline" className="rounded-xl bg-card/50 backdrop-blur-xl" onClick={handleSync} disabled={cleaning || syncing || toggling === 'all'}>
+            <Button 
+              variant="outline" 
+              className="rounded-xl bg-card/50 backdrop-blur-xl" 
+              onClick={() => {
+                if (window.confirm("Auto-sync will pull all default plans from upstream providers (Amigo, SMEPlug, ClubKonnect). Continue?")) {
+                  handleSync();
+                }
+              }} 
+              disabled={cleaning || syncing || toggling === 'all'}
+            >
               <RefreshCw className={syncing ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
               {syncing ? 'Syncing...' : 'Sync plans'}
             </Button>
@@ -617,11 +700,11 @@ export default function AdminDataPlansPage() {
                         disabled={isSavingPlan}
                       >
                         <option value="none">None (No Fallback)</option>
-                        <option value="amigo">Amigo</option>
-                        <option value="smeplug">SMEPlug</option>
-                        <option value="clubkonnect">ClubKonnect</option>
-                        <option value="autosync">Autosync</option>
-                        <option value="mzdata">MZDATA</option>
+                        {providerOptions.map((p) => (
+                          <option key={p.id || p.identifier} value={p.identifier}>
+                            {p.name || p.identifier} ({p.identifier}){p.is_active ? ' — Active' : ''}
+                          </option>
+                        ))}
                       </select>
                       <p className="text-[11px] text-muted-foreground leading-relaxed">Provider to try if primary fails.</p>
                     </div>
@@ -750,7 +833,10 @@ export default function AdminDataPlansPage() {
                       <select 
                         className="w-full h-11 px-3 rounded-xl border border-border bg-secondary/30 outline-none focus:ring-1 focus:ring-brand/50 focus:border-brand"
                         value={newPlan.network}
-                        onChange={(e) => setNewPlan({...newPlan, network: e.target.value})}
+                        onChange={(e) => {
+                          setNewPlan({...newPlan, network: e.target.value});
+                          setAvailableProviderPlans([]);
+                        }}
                       >
                         <option value="mtn">MTN</option>
                         <option value="airtel">AIRTEL</option>
@@ -763,15 +849,61 @@ export default function AdminDataPlansPage() {
                       <select 
                         className="w-full h-11 px-3 rounded-xl border border-border bg-secondary/30 outline-none focus:ring-1 focus:ring-brand/50 focus:border-brand"
                         value={newPlan.provider}
-                        onChange={(e) => setNewPlan({...newPlan, provider: e.target.value})}
+                        onChange={(e) => {
+                          setNewPlan({...newPlan, provider: e.target.value});
+                          setAvailableProviderPlans([]);
+                        }}
                       >
-                        <option value="amigo">Amigo</option>
-                        <option value="smeplug">SMEPlug</option>
-                        <option value="clubkonnect">ClubKonnect</option>
-                        <option value="autosync">Autosync</option>
-                        <option value="mzdata">MZDATA</option>
+                        {providerOptions.map((p) => (
+                          <option key={p.id || p.identifier} value={p.identifier}>
+                            {p.name || p.identifier} ({p.identifier}){p.is_active ? ' — Active' : ''}
+                          </option>
+                        ))}
                       </select>
                     </div>
+                  </div>
+
+                  {/* Auto Discovery / Live Catalog Puller */}
+                  <div className="space-y-2 p-3 rounded-2xl bg-secondary/20 border border-border/60">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-medium text-foreground block">Pull Live Catalog</span>
+                        <span className="text-[11px] text-muted-foreground">Auto-populate plans from {String(newPlan.provider || '').toUpperCase()}</span>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={handlePullProviderPlans} 
+                        disabled={fetchingProviderPlans}
+                        className="h-8 gap-1.5 text-xs border-brand/40 text-brand hover:bg-brand/10 shrink-0"
+                      >
+                        <RefreshCw className={fetchingProviderPlans ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
+                        {fetchingProviderPlans ? "Fetching..." : `Pull ${newPlan.network.toUpperCase()} Plans`}
+                      </Button>
+                    </div>
+
+                    {availableProviderPlans.length > 0 && (
+                      <div className="pt-2 space-y-1.5 border-t border-border/40">
+                        <label className="text-xs font-semibold text-brand block">Select a Live Plan to Autofill:</label>
+                        <select 
+                          className="w-full h-10 px-3 rounded-xl border border-brand/30 bg-background text-xs outline-none focus:ring-1 focus:ring-brand"
+                          onChange={(e) => {
+                            const selected = availableProviderPlans.find(p => String(p.provider_plan_id) === e.target.value);
+                            if (selected) handleSelectProviderPlan(selected);
+                          }}
+                          defaultValue=""
+                        >
+                          <option value="" disabled>-- Found {availableProviderPlans.length} live plans on {newPlan.provider.toUpperCase()} --</option>
+                          {availableProviderPlans.map((p, idx) => (
+                            <option key={p.provider_plan_id || idx} value={p.provider_plan_id}>
+                              {p.plan_name} — ₦{Number(p.price || 0).toLocaleString()} (Provider Plan ID: {p.provider_plan_id})
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-[10px] text-muted-foreground">Picking a live plan automatically sets the display name, provider plan ID, system code, and wholesale cost.</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-3">
