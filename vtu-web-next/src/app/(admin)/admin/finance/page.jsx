@@ -1,13 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { adminGetFinanceOverview } from '@/lib/api';
+import { adminGetFinanceOverview, adminGetLeakAudit } from '@/lib/api';
 import { 
   Banknote, 
   Building,
   Scale,
   AlertTriangle,
-  Info
+  Info,
+  ShieldAlert,
+  Users,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 function formatCurrency(amount) {
@@ -16,8 +20,11 @@ function formatCurrency(amount) {
 
 export default function FinancePage() {
   const [data, setData] = useState(null);
+  const [leakData, setLeakData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('overspent');
+  const [showLeakDetails, setShowLeakDetails] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -26,9 +33,18 @@ export default function FinancePage() {
   async function fetchData() {
     try {
       setLoading(true);
-      const res = await adminGetFinanceOverview();
-      setData(res);
-      setError(null);
+      const [financeRes, leakRes] = await Promise.allSettled([
+        adminGetFinanceOverview(),
+        adminGetLeakAudit()
+      ]);
+      if (financeRes.status === 'fulfilled') {
+        setData(financeRes.value);
+      } else {
+        setError(financeRes.reason?.message || 'Failed to load finance data');
+      }
+      if (leakRes.status === 'fulfilled') {
+        setLeakData(leakRes.value);
+      }
     } catch (err) {
       setError(err.message || 'Failed to load finance data');
     } finally {
@@ -89,6 +105,149 @@ export default function FinancePage() {
           </div>
         </div>
       </div>
+
+      {/* CASH LEAKAGE & ANOMALY AUDIT SECTION */}
+      {leakData?.summary && (
+        <div className="overflow-hidden rounded-xl bg-card border border-red-200 dark:border-red-900/50 shadow-sm">
+          <div className="border-b border-red-200 bg-red-50/70 px-6 py-4 dark:border-red-900/40 dark:bg-red-950/20 flex flex-wrap justify-between items-center gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400">
+                <ShieldAlert className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-red-950 dark:text-red-200">
+                  Cash Leakage & Anomaly Audit
+                </h3>
+                <p className="text-xs text-red-700 dark:text-red-400">
+                  Forensic audit tracking provider duplicate deliveries, overspent accounts, and phantom wallet credits.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowLeakDetails(!showLeakDetails)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-300 dark:border-red-800 bg-white dark:bg-gray-800 text-xs font-medium text-red-800 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+            >
+              {showLeakDetails ? 'Hide Account Breakdown' : 'View Account Breakdown'}
+              {showLeakDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+          </div>
+
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl border border-border/60 bg-secondary/30 p-4">
+                <div className="text-xs font-medium text-muted-foreground">Cash Lost (Over-deliveries)</div>
+                <div className="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">
+                  {formatCurrency(leakData.summary.total_real_cash_lost)}
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">Delivered data exceeding user deposits</div>
+              </div>
+
+              <div className="rounded-xl border border-border/60 bg-secondary/30 p-4">
+                <div className="text-xs font-medium text-muted-foreground">Phantom Balance in Wallets</div>
+                <div className="mt-1 text-2xl font-bold text-amber-600 dark:text-amber-400">
+                  {formatCurrency(leakData.summary.total_phantom_balance_in_wallets)}
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">Unearned credit awaiting future orders</div>
+              </div>
+
+              <div className="rounded-xl border border-border/60 bg-secondary/30 p-4">
+                <div className="text-xs font-medium text-muted-foreground">Total Leakage Exposure</div>
+                <div className="mt-1 text-2xl font-bold text-foreground">
+                  {formatCurrency(leakData.summary.total_leakage)}
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">Combined loss + vulnerable balance</div>
+              </div>
+
+              <div className="rounded-xl border border-border/60 bg-secondary/30 p-4">
+                <div className="text-xs font-medium text-muted-foreground">Affected User Accounts</div>
+                <div className="mt-1 text-2xl font-bold text-foreground">
+                  {leakData.summary.overspent_users_count.toLocaleString()}
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">{leakData.summary.phantom_balance_users_count} holding surplus credits</div>
+              </div>
+            </div>
+
+            {showLeakDetails && (
+              <div className="mt-6 border-t border-border/70 pt-6">
+                <div className="flex gap-2 border-b border-border/70 pb-3">
+                  <button
+                    onClick={() => setActiveTab('overspent')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      activeTab === 'overspent'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-secondary text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Top Overspent Accounts ({leakData.top_overspent_users?.length || 0})
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('phantom')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      activeTab === 'phantom'
+                        ? 'bg-amber-600 text-white'
+                        : 'bg-secondary text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Top Phantom Balances to Reclaim ({leakData.top_phantom_balance_users?.length || 0})
+                  </button>
+                </div>
+
+                <div className="mt-4 overflow-x-auto">
+                  {activeTab === 'overspent' ? (
+                    <table className="w-full text-left text-xs">
+                      <thead className="border-b border-border text-muted-foreground">
+                        <tr>
+                          <th className="pb-2 font-medium">User</th>
+                          <th className="pb-2 font-medium">Phone / Email</th>
+                          <th className="pb-2 font-medium text-right">Lifetime Funded</th>
+                          <th className="pb-2 font-medium text-right">Lifetime Delivered</th>
+                          <th className="pb-2 font-medium text-right">Net Real Loss</th>
+                          <th className="pb-2 font-medium text-right">Current Wallet</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/50">
+                        {(leakData.top_overspent_users || []).map((u) => (
+                          <tr key={u.user_id} className="hover:bg-muted/40">
+                            <td className="py-2.5 font-medium">{u.full_name || `User #${u.user_id}`}</td>
+                            <td className="py-2.5 text-muted-foreground">{u.phone_number || u.email}</td>
+                            <td className="py-2.5 text-right">{formatCurrency(u.funded)}</td>
+                            <td className="py-2.5 text-right font-medium">{formatCurrency(u.spent)}</td>
+                            <td className="py-2.5 text-right font-semibold text-red-600 dark:text-red-400">-{formatCurrency(u.overspent)}</td>
+                            <td className="py-2.5 text-right">{formatCurrency(u.current_balance)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <table className="w-full text-left text-xs">
+                      <thead className="border-b border-border text-muted-foreground">
+                        <tr>
+                          <th className="pb-2 font-medium">User</th>
+                          <th className="pb-2 font-medium">Phone / Email</th>
+                          <th className="pb-2 font-medium text-right">Current Balance</th>
+                          <th className="pb-2 font-medium text-right">True Net Balance</th>
+                          <th className="pb-2 font-medium text-right">Phantom Surplus</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/50">
+                        {(leakData.top_phantom_balance_users || []).map((u) => (
+                          <tr key={u.user_id} className="hover:bg-muted/40">
+                            <td className="py-2.5 font-medium">{u.full_name || `User #${u.user_id}`}</td>
+                            <td className="py-2.5 text-muted-foreground">{u.phone_number || u.email}</td>
+                            <td className="py-2.5 text-right font-semibold">{formatCurrency(u.current_balance)}</td>
+                            <td className="py-2.5 text-right text-muted-foreground">{formatCurrency(u.expected_balance)}</td>
+                            <td className="py-2.5 text-right font-semibold text-amber-600 dark:text-amber-400">+{formatCurrency(u.phantom_balance)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* P&L SECTION */}
