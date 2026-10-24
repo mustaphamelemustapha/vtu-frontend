@@ -39,6 +39,7 @@ export default function AdminDataPlansPage() {
   const [editingPlan, setEditingPlan] = useState(null);
   const [displayPriceInput, setDisplayPriceInput] = useState('');
   const [agentPriceInput, setAgentPriceInput] = useState('');
+  const [apiPriceInput, setApiPriceInput] = useState('');
   const [planNameInput, setPlanNameInput] = useState('');
   const [dataTypeInput, setDataTypeInput] = useState('');
   const [costPriceInput, setCostPriceInput] = useState('');
@@ -143,6 +144,9 @@ export default function AdminDataPlansPage() {
     data_size: '',
     validity: '30 Days',
     base_price: '',
+    user_price: '',
+    agent_price: '',
+    api_price: '',
     provider: 'smeplug',
     provider_plan_id: '',
     dispatch_count: 1,
@@ -187,6 +191,9 @@ export default function AdminDataPlansPage() {
       const { adminCreateDataPlan } = await import('@/lib/api');
       const payload = {
         ...newPlan,
+        display_price: newPlan.user_price ? parseFloat(newPlan.user_price) : null,
+        agent_price: newPlan.agent_price ? parseFloat(newPlan.agent_price) : null,
+        api_price: newPlan.api_price ? parseFloat(newPlan.api_price) : null,
         dispatch_count: parseInt(newPlan.dispatch_count, 10) || 1,
         dispatch_plan_id: newPlan.dispatch_plan_id ? newPlan.dispatch_plan_id.trim() : null
       };
@@ -200,6 +207,9 @@ export default function AdminDataPlansPage() {
         data_size: '',
         validity: '30 Days',
         base_price: '',
+        user_price: '',
+        agent_price: '',
+        api_price: '',
         provider: 'smeplug',
         provider_plan_id: '',
         dispatch_count: 1,
@@ -236,6 +246,7 @@ export default function AdminDataPlansPage() {
     setValidityInput(plan.validity || '');
     setDisplayPriceInput(plan.display_price !== null ? String(plan.display_price) : '');
     setAgentPriceInput(plan.agent_price !== null && plan.agent_price !== undefined ? String(plan.agent_price) : '');
+    setApiPriceInput(plan.api_price !== null && plan.api_price !== undefined ? String(plan.api_price) : '');
     setPromoActiveInput(plan.promo_active ?? false);
     setPromoOldPriceInput(plan.promo_old_price !== null ? String(plan.promo_old_price) : '');
     setPromoLabelInput(plan.promo_label || '');
@@ -276,6 +287,14 @@ export default function AdminDataPlansPage() {
       } else {
         payload.agent_price = parseFloat(agentVal);
         if (isNaN(payload.agent_price) || payload.agent_price < 0) throw new Error('Invalid Agent price value');
+      }
+
+      const apiVal = apiPriceInput.trim();
+      if (apiVal === '') {
+        payload.clear_api_price = true;
+      } else {
+        payload.api_price = parseFloat(apiVal);
+        if (isNaN(payload.api_price) || payload.api_price < 0) throw new Error('Invalid Developer API price value');
       }
 
       const promoOldPriceVal = promoOldPriceInput.trim();
@@ -397,6 +416,23 @@ export default function AdminDataPlansPage() {
             <>
               <span className="font-medium text-muted-foreground">—</span>
               <span className="text-[9px] text-muted-foreground tracking-widest uppercase mt-0.5">Margin</span>
+            </>
+          )}
+        </div>
+      );
+    }},
+    { key: 'api_price', label: 'Developer Price', sortable: false, render: (row) => {
+      return (
+        <div className="flex flex-col">
+          {row.api_price !== null && row.api_price !== undefined ? (
+            <>
+              <span className="font-medium text-blue-500">₦{formatMoney(row.api_price)}</span>
+              <span className="text-[9px] text-blue-500 font-medium tracking-widest uppercase mt-0.5">Explicit</span>
+            </>
+          ) : (
+            <>
+              <span className="font-medium text-muted-foreground">—</span>
+              <span className="text-[9px] text-muted-foreground tracking-widest uppercase mt-0.5">User Price</span>
             </>
           )}
         </div>
@@ -662,7 +698,7 @@ export default function AdminDataPlansPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-3">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">User Price (₦)</label>
                     <Input
@@ -673,7 +709,7 @@ export default function AdminDataPlansPage() {
                       disabled={isSavingPlan}
                       className="h-11 rounded-xl bg-secondary/30"
                     />
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">Overrides the dynamic margin logic for regular users.</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">Overrides dynamic margin for regular users.</p>
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Agent Price (₦)</label>
@@ -685,7 +721,22 @@ export default function AdminDataPlansPage() {
                       disabled={isSavingPlan}
                       className="h-11 rounded-xl bg-secondary/30"
                     />
-                    <p className="text-[11px] text-muted-foreground leading-relaxed">Overrides the dynamic margin logic for resellers.</p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">Overrides dynamic margin for resellers.</p>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <span>API / Dev Price (₦)</span>
+                      <span className="inline-flex items-center rounded-full bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-blue-500">API</span>
+                    </label>
+                    <Input
+                      type="number"
+                      placeholder="Leave empty for User price"
+                      value={apiPriceInput}
+                      onChange={(e) => setApiPriceInput(e.target.value)}
+                      disabled={isSavingPlan}
+                      className="h-11 rounded-xl bg-secondary/30"
+                    />
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">Overrides price for developers using your API.</p>
                   </div>
                 </div>
 
@@ -964,7 +1015,7 @@ export default function AdminDataPlansPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="space-y-3">
                       <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">User Price (₦)</label>
                       <Input 
@@ -984,6 +1035,17 @@ export default function AdminDataPlansPage() {
                         value={newPlan.agent_price}
                         onChange={(e) => setNewPlan({...newPlan, agent_price: e.target.value})}
                         required
+                        className="h-11 rounded-xl bg-secondary/30"
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">API / Dev Price (₦)</label>
+                      <Input 
+                        type="number"
+                        step="0.01"
+                        placeholder="Optional"
+                        value={newPlan.api_price || ''}
+                        onChange={(e) => setNewPlan({...newPlan, api_price: e.target.value})}
                         className="h-11 rounded-xl bg-secondary/30"
                       />
                     </div>
