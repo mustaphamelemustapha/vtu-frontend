@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Database, RefreshCw, X, Plus, Search, Trash2 } from 'lucide-react';
-import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan, adminDeleteDataPlan, adminDeleteAutosyncedPlans, apiFetch } from '@/lib/api';
+import { adminGetDataPlans, adminGetPricingRules, adminSyncDataPlans, adminUpdateDataPlan, adminDeleteDataPlan, adminDeleteAutosyncedPlans, adminDeletePlansByNetwork, apiFetch } from '@/lib/api';
 import { filterAllowedAmigoPlans } from '@/lib/amigo-plan-policy';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
@@ -118,6 +118,25 @@ export default function AdminDataPlansPage() {
       setCleaning(false);
     }
   }, [load]);
+
+  const [deletingNetwork, setDeletingNetwork] = useState(null);
+  const handleDeleteNetwork = useCallback(async (network) => {
+    if (!network) return;
+    const clean = network.toLowerCase();
+    const count = byNetwork[clean] || 0;
+    const msg = `WARNING: Are you sure you want to PERMANENTLY DELETE ALL ${count} data plans for ${clean.toUpperCase()}?\n\nThis action cannot be undone.`;
+    if (!window.confirm(msg)) return;
+    setDeletingNetwork(clean);
+    try {
+      const res = await adminDeletePlansByNetwork(clean);
+      alert(res.message || `Successfully deleted ${clean.toUpperCase()} data plans!`);
+      await load();
+    } catch (err) {
+      alert(err.message || `Failed to delete ${clean.toUpperCase()} plans`);
+    } finally {
+      setDeletingNetwork(null);
+    }
+  }, [byNetwork, load]);
 
   const providerOptions = useMemo(() => {
     const list = [...integratedProviders];
@@ -560,6 +579,17 @@ export default function AdminDataPlansPage() {
               <Trash2 className="mr-2 h-4 w-4" />
               Wipe All Plans
             </Button>
+            {activeNetwork && (
+              <Button
+                variant="destructive"
+                className="rounded-xl bg-red-600 text-white hover:bg-red-700 border border-red-700"
+                onClick={() => handleDeleteNetwork(activeNetwork)}
+                disabled={cleaning || syncing || deletingNetwork === activeNetwork}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {deletingNetwork === activeNetwork ? `Deleting ${activeNetwork.toUpperCase()}...` : `Delete All ${activeNetwork.toUpperCase()} Plans`}
+              </Button>
+            )}
             <Button variant="destructive" className="rounded-xl" onClick={handleDisableAll} disabled={cleaning || syncing || toggling === 'all'}>
               {toggling === 'all' ? 'Disabling...' : 'Disable All Active'}
             </Button>
@@ -581,22 +611,40 @@ export default function AdminDataPlansPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {['mtn', 'airtel', 'glo', '9mobile'].map((network, idx) => (
-          <motion.div
-            key={network}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: idx * 0.05 }}
-          >
-            <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm">
-              <CardContent className="p-5">
-                <div className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">{network}</div>
-                <div className="mt-2 text-3xl font-bold tracking-tight text-foreground">{byNetwork[network] || 0}</div>
-                <div className="mt-1 text-xs text-muted-foreground">Plans available</div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+        {['mtn', 'airtel', 'glo', '9mobile'].map((network, idx) => {
+          const count = byNetwork[network] || 0;
+          return (
+            <motion.div
+              key={network}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: idx * 0.05 }}
+            >
+              <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">{network}</div>
+                    {count > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-[11px] font-medium text-red-500 hover:bg-red-500/10 hover:text-red-600 rounded-lg"
+                        disabled={deletingNetwork === network}
+                        onClick={() => handleDeleteNetwork(network)}
+                        title={`Delete all ${network.toUpperCase()} plans`}
+                      >
+                        <Trash2 className="mr-1 h-3 w-3" />
+                        {deletingNetwork === network ? 'Deleting...' : 'Delete all'}
+                      </Button>
+                    )}
+                  </div>
+                  <div className="mt-2 text-3xl font-bold tracking-tight text-foreground">{count}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">Plans available</div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
       <motion.div

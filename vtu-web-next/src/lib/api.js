@@ -506,6 +506,12 @@ export async function adminDeleteDataPlan(planId) {
   });
 }
 
+export async function adminDeletePlansByNetwork(network) {
+  return apiFetch(`/admin/data-plans/by-network/${encodeURIComponent(network)}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function adminGetReferrals(params = {}) {
   return apiFetch(`/admin/referrals${toQuery(params)}`);
 }
