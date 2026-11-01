@@ -200,11 +200,18 @@ export default function DashboardPage() {
                     {acc.bank_name ? acc.bank_name.substring(0, 2).toUpperCase() : 'BK'}
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <div className="truncate text-sm font-semibold text-foreground/90">{acc.bank_name || 'Bank'}</div>
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Bank Name</div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="text-sm font-bold text-foreground/90">{acc.bank_name || 'Bank'}</div>
                       {i === 0 && <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 px-1.5 py-0 text-[9px] font-bold tracking-widest shadow-none border-transparent">RECOMMENDED</Badge>}
                     </div>
-                    <div className="mt-0.5 truncate font-mono text-xs text-muted-foreground">{acc.account_number}</div>
+                    <div className="mt-1 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Account Number</div>
+                    <div className="font-mono text-sm font-bold text-foreground tracking-wider">{acc.account_number}</div>
+                    {acc.account_name && (
+                      <div className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground">
+                        Name: <span className="font-semibold text-foreground/80">{acc.account_name}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <Button

@@ -131,12 +131,18 @@ export default function WalletPage() {
             {activeAccount ? (
               <div className="rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6 transition-all duration-300 hover:scale-[1.01] shadow-[0_12px_28px_rgba(234,115,69,0.12)] dark:shadow-[0_16px_36px_rgba(234,115,69,0.18)]">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-extrabold tracking-widest text-primary uppercase">{activeAccount.bank_name}</div>
+                  <div>
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Bank Name</div>
+                    <div className="text-sm font-extrabold tracking-wide text-primary uppercase">{activeAccount.bank_name}</div>
+                  </div>
                   <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-emerald-500">
                     Active
                   </span>
                 </div>
-                <div className="mt-4 text-3xl font-bold tracking-[0.16em] text-foreground font-mono">{activeAccount.account_number}</div>
+                <div className="mt-4">
+                  <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Account Number</div>
+                  <div className="text-3xl font-bold tracking-[0.16em] text-foreground font-mono">{activeAccount.account_number}</div>
+                </div>
                 <div className="mt-4 text-[11px] font-black text-foreground/80 uppercase tracking-widest">ACCOUNT NAME: {String(activeAccount.account_name || 'MELE DATA Wallet').toUpperCase()}</div>
                 <Button variant="secondary" className="mt-6 w-full rounded-2xl h-12 bg-background/50 hover:bg-background border-white/10" onClick={() => copy(activeAccount.account_number)}>
                   <Copy className="h-4 w-4 mr-2" />
