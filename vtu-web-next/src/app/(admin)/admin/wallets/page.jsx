@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AlertTriangle, RefreshCw, Wallet2, Search } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Wallet2, Search, Users, ShieldCheck, User, Briefcase, Layers, TrendingUp } from 'lucide-react';
 import { adminGetTransactions, adminGetWallets, adminReconcileDelivered, adminAdjustWallet } from '@/lib/api';
 import { ADMIN_NOTES } from '@/lib/admin-placeholders';
 import { formatDateTime, formatMoney } from '@/lib/format';
@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 export default function AdminWalletsPage() {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all'); // 'all' | 'customer' | 'admin' | 'agent'
   const [walletRows, setWalletRows] = useState([]);
   const [totalWallets, setTotalWallets] = useState(0);
   const [page, setPage] = useState(1);
@@ -26,6 +27,10 @@ export default function AdminWalletsPage() {
   
   const [loading, setLoading] = useState(true);
   const [aggregateBalance, setAggregateBalance] = useState(0);
+  const [usersBalance, setUsersBalance] = useState(0);
+  const [adminsBalance, setAdminsBalance] = useState(0);
+  const [totalUsersCount, setTotalUsersCount] = useState(0);
+  const [totalAdminsCount, setTotalAdminsCount] = useState(0);
   
   const [adjustForm, setAdjustForm] = useState({
     userId: '',
@@ -61,8 +66,13 @@ export default function AdminWalletsPage() {
     setLoading(true);
     try {
       const [walletsRes, ledgerRes] = await Promise.allSettled([
-        adminGetWallets({ page, page_size: pageSize, q: debouncedQuery || undefined }),
-        adminGetTransactions({ page: 1, page_size: 10 })
+        adminGetWallets({
+          page,
+          page_size: pageSize,
+          q: debouncedQuery || undefined,
+          role: roleFilter !== 'all' ? roleFilter : undefined,
+        }),
+        adminGetTransactions({ page: 1, page_size: 10 }),
       ]);
 
       if (activeRequestRef.current !== requestId) return;
@@ -76,6 +86,8 @@ export default function AdminWalletsPage() {
             full_name: item.full_name,
             email: item.email,
             phone_number: item.phone_number,
+            role: item.role || 'customer',
+            isAdmin: Boolean(item.is_admin || item.role === 'admin'),
             balance: Number(item.wallet_balance || 0),
             status: item.is_active ? 'active' : 'suspended',
             updated_at: item.wallet_updated_at,
@@ -83,6 +95,10 @@ export default function AdminWalletsPage() {
         );
         setTotalWallets(Number(data?.total || 0));
         setAggregateBalance(Number(data?.aggregate_balance || 0));
+        setUsersBalance(Number(data?.users_balance || 0));
+        setAdminsBalance(Number(data?.admins_balance || 0));
+        setTotalUsersCount(Number(data?.total_users_count || 0));
+        setTotalAdminsCount(Number(data?.total_admins_count || 0));
       }
 
       if (ledgerRes.status === 'fulfilled') {
@@ -95,7 +111,7 @@ export default function AdminWalletsPage() {
         setLoading(false);
       }
     }
-  }, [debouncedQuery, page]);
+  }, [debouncedQuery, roleFilter, page]);
 
   useEffect(() => {
     load().catch(() => setLoading(false));
@@ -103,20 +119,67 @@ export default function AdminWalletsPage() {
 
   const columns = [
     { key: 'id', label: 'User ID', sortable: false, render: (row) => <span className="font-mono text-muted-foreground">{row.id}</span> },
-    { key: 'full_name', label: 'User', sortable: false, render: (row) => <span className="font-medium text-foreground">{row.full_name}</span> },
-    { key: 'email', label: 'Email', sortable: false },
+    {
+      key: 'full_name',
+      label: 'Account Holder',
+      sortable: false,
+      render: (row) => (
+        <div className="flex flex-col">
+          <span className="font-medium text-foreground">{row.full_name}</span>
+          <span className="text-xs text-muted-foreground font-mono">{row.email}</span>
+        </div>
+      ),
+    },
+    {
+      key: 'role',
+      label: 'Account Type',
+      sortable: false,
+      render: (row) => {
+        if (row.isAdmin || row.role === 'admin') {
+          return (
+            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              ADMIN
+            </span>
+          );
+        }
+        if (row.role === 'agent') {
+          return (
+            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              <Briefcase className="h-3.5 w-3.5" />
+              AGENT
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
+            <User className="h-3 w-3" />
+            CUSTOMER
+          </span>
+        );
+      },
+    },
     { key: 'phone_number', label: 'Phone', sortable: false },
-    { key: 'balance', label: 'Wallet Balance', sortable: false, render: (row) => <span className="font-semibold text-brand">₦{formatMoney(row.balance || 0)}</span> },
+    {
+      key: 'balance',
+      label: 'Wallet Balance',
+      sortable: false,
+      render: (row) => (
+        <span className={`font-semibold ${row.isAdmin ? 'text-purple-600 dark:text-purple-400' : 'text-brand'}`}>
+          ₦{formatMoney(row.balance || 0)}
+        </span>
+      ),
+    },
     { key: 'status', label: 'Status', sortable: false, render: (row) => <StatusBadge status={row.status} /> },
-    { key: 'updated_at', label: 'Updated', sortable: false, render: (row) => <span className="text-muted-foreground">{formatDateTime(row.updated_at)}</span> },
+    { key: 'updated_at', label: 'Last Activity', sortable: false, render: (row) => <span className="text-xs text-muted-foreground">{formatDateTime(row.updated_at)}</span> },
   ];
 
   return (
     <div className="space-y-6 pb-8">
       <AdminPageHeader
-        eyebrow="Financials"
-        title="Wallets & Ledger"
-        description="Monitor user balances, funding inflow, and execute manual wallet operations."
+        eyebrow="Financials & Vault"
+        title="Wallets & Financial Ledger"
+        description="Monitor user balances, admin vault floats, funding inflow, and execute manual wallet operations."
         actions={(
           <Button variant="outline" className="rounded-xl border-border bg-card/50 backdrop-blur-xl hover:bg-secondary" onClick={load} disabled={loading}>
             <RefreshCw className={loading ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
@@ -125,31 +188,131 @@ export default function AdminWalletsPage() {
         )}
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      {/* Financial Breakdown Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Customer Balances */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
             <CardContent className="p-5">
-              <div className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Tracked Wallets</div>
-              <div className="mt-2 text-3xl font-bold tracking-tight text-foreground">{totalWallets}</div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Total Customer Balances</span>
+                <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                  Liabilities
+                </span>
+              </div>
+              <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">₦{formatMoney(usersBalance)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Across {totalUsersCount} customer/agent wallets
+              </p>
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Admin Float / Balances */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.05 }}>
-          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500" />
             <CardContent className="p-5">
-              <div className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Aggregate Balance</div>
-              <div className="mt-2 text-3xl font-bold tracking-tight text-foreground">₦{formatMoney(aggregateBalance)}</div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Total Admin Balances</span>
+                <span className="inline-flex items-center rounded-full bg-purple-500/10 px-2 py-0.5 text-[10px] font-bold text-purple-600 dark:text-purple-400">
+                  Admin Float
+                </span>
+              </div>
+              <div className="mt-2 text-2xl font-bold tracking-tight text-purple-600 dark:text-purple-400">₦{formatMoney(adminsBalance)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Across {totalAdminsCount} admin accounts
+              </p>
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Combined System Aggregate */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
-          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm">
+          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
             <CardContent className="p-5">
-              <div className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Total Ledger Events</div>
-              <div className="mt-2 text-3xl font-bold tracking-tight text-foreground">{ledgerTotal}</div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Grand Total Balance</span>
+                <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  System Total
+                </span>
+              </div>
+              <div className="mt-2 text-2xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">₦{formatMoney(aggregateBalance)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Users (₦{formatMoney(usersBalance)}) + Admin (₦{formatMoney(adminsBalance)})
+              </p>
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Tracked Accounts & Ledger */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }}>
+          <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold tracking-wider uppercase text-muted-foreground">Tracked Accounts</span>
+                <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                  {ledgerTotal} Events
+                </span>
+              </div>
+              <div className="mt-2 text-2xl font-bold tracking-tight text-foreground">{totalWallets}</div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {totalUsersCount} Customers • {totalAdminsCount} Admins
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Account Type Filter Tabs */}
+      <div className="flex flex-wrap items-center gap-2 pt-2">
+        <button
+          type="button"
+          onClick={() => { setRoleFilter('all'); setPage(1); }}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            roleFilter === 'all'
+              ? 'bg-foreground text-background shadow-sm'
+              : 'bg-card/60 text-muted-foreground hover:bg-card hover:text-foreground border border-border/50'
+          }`}
+        >
+          All Accounts ({totalUsersCount + totalAdminsCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => { setRoleFilter('customer'); setPage(1); }}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            roleFilter === 'customer'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-card/60 text-muted-foreground hover:bg-card hover:text-foreground border border-border/50'
+          }`}
+        >
+          Customers Only ({totalUsersCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => { setRoleFilter('admin'); setPage(1); }}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            roleFilter === 'admin'
+              ? 'bg-purple-600 text-white shadow-sm'
+              : 'bg-card/60 text-muted-foreground hover:bg-card hover:text-foreground border border-border/50'
+          }`}
+        >
+          Admins Only ({totalAdminsCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => { setRoleFilter('agent'); setPage(1); }}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            roleFilter === 'agent'
+              ? 'bg-amber-600 text-white shadow-sm'
+              : 'bg-card/60 text-muted-foreground hover:bg-card hover:text-foreground border border-border/50'
+          }`}
+        >
+          Agents Only
+        </button>
       </div>
 
       <motion.div
@@ -181,7 +344,7 @@ export default function AdminWalletsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.3 }}
         >
-          <Card className="h-full border-amber-300/80 bg-amber-500/5 dark:border-amber-400/30 dark:bg-amber-500/10 backdrop-blur-xl shadow-sm">
+          <Card className="h-full border-amber-300/80 bg-amber-50/60 dark:border-amber-400/30 dark:bg-amber-500/10 backdrop-blur-xl shadow-sm">
             <CardContent className="p-6">
               <div className="flex flex-col gap-5">
                 <div className="flex items-start gap-4">
