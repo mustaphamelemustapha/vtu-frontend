@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Copy, RefreshCw, Wallet2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Check, Copy, RefreshCw, Wallet2, ChevronLeft, ChevronRight, Landmark } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import { formatDateTime, formatMoney } from '@/lib/format';
+import { formatDateTime, formatMoney, formatBankDisplayName, getBankAppSearchHint, formatAccountNumber, sortFundingAccounts, getBankStyle } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/page-header';
@@ -39,11 +39,17 @@ export default function WalletPage() {
     load().catch(() => {});
   }, [load]);
 
-  const copy = async (value) => {
-    await navigator.clipboard.writeText(String(value || ''));
-  };
+  const [copied, setCopied] = useState(false);
 
-  const activeAccount = accounts[activeIndex] || accounts[0];
+  const sortedAccounts = useMemo(() => sortFundingAccounts(accounts), [accounts]);
+  const activeAccount = sortedAccounts[activeIndex] || sortedAccounts[0];
+
+  const copy = async (value) => {
+    if (!value) return;
+    await navigator.clipboard.writeText(String(value));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
 
   return (
     <div className="-mx-4 -my-5 min-h-[calc(100vh-40px)] bg-background px-4 py-5 text-foreground md:-mx-6 md:-my-5 md:px-6 lg:-mx-8 lg:px-8 xl:-mx-10 xl:px-10">
@@ -96,31 +102,31 @@ export default function WalletPage() {
 
         <Card className="relative overflow-hidden border border-border/40 bg-card/40 backdrop-blur-2xl shadow-xl">
           <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-primary/10 rounded-full blur-[4rem] pointer-events-none" />
-          <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="relative z-10 flex flex-row items-center justify-between space-y-0 pb-3">
             <div>
-              <CardTitle>Funding details</CardTitle>
-              <CardDescription>Dedicated top-up accounts.</CardDescription>
+              <CardTitle>Instant Funding Accounts</CardTitle>
+              <CardDescription>Automated 24/7 dedicated transfer accounts.</CardDescription>
             </div>
-            {accounts.length > 1 && (
+            {sortedAccounts.length > 1 && (
               <div className="flex items-center gap-1.5 rounded-full border border-border bg-background p-1">
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 rounded-full"
                   disabled={activeIndex === 0}
-                  onClick={() => setActiveIndex((prev) => Math.max(0, prev - 1))}
+                  onClick={() => { setActiveIndex((prev) => Math.max(0, prev - 1)); setCopied(false); }}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <span className="text-xs font-semibold px-1 select-none">
-                  {activeIndex + 1}/{accounts.length}
+                  {activeIndex + 1}/{sortedAccounts.length}
                 </span>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7 rounded-full"
-                  disabled={activeIndex === accounts.length - 1}
-                  onClick={() => setActiveIndex((prev) => Math.min(accounts.length - 1, prev + 1))}
+                  disabled={activeIndex === sortedAccounts.length - 1}
+                  onClick={() => { setActiveIndex((prev) => Math.min(sortedAccounts.length - 1, prev + 1)); setCopied(false); }}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -128,28 +134,99 @@ export default function WalletPage() {
             )}
           </CardHeader>
           <CardContent className="relative z-10 space-y-4">
-            {activeAccount ? (
-              <div className="rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6 transition-all duration-300 hover:scale-[1.01] shadow-[0_12px_28px_rgba(234,115,69,0.12)] dark:shadow-[0_16px_36px_rgba(234,115,69,0.18)]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Bank Name</div>
-                    <div className="text-sm font-extrabold tracking-wide text-primary uppercase">{activeAccount.bank_name}</div>
-                  </div>
-                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-emerald-500">
-                    Active
-                  </span>
-                </div>
-                <div className="mt-4">
-                  <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Account Number</div>
-                  <div className="text-3xl font-bold tracking-[0.16em] text-foreground font-mono">{activeAccount.account_number}</div>
-                </div>
-                <div className="mt-4 text-[11px] font-black text-foreground/80 uppercase tracking-widest">ACCOUNT NAME: {String(activeAccount.account_name || 'MELE DATA Wallet').toUpperCase()}</div>
-                <Button variant="secondary" className="mt-6 w-full rounded-2xl h-12 bg-background/50 hover:bg-background border-white/10" onClick={() => copy(activeAccount.account_number)}>
-                  <Copy className="h-4 w-4 mr-2" />
-                  Copy Account Number
-                </Button>
+            {/* Quick Bank Tabs */}
+            {sortedAccounts.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {sortedAccounts.map((acc, idx) => {
+                  const style = getBankStyle(acc.bank_name);
+                  const isSelected = activeIndex === idx;
+                  return (
+                    <button
+                      key={acc.account_number}
+                      type="button"
+                      onClick={() => { setActiveIndex(idx); setCopied(false); }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 border ${
+                        isSelected
+                          ? `${style.badgeBg} ${style.borderAccent} shadow-sm ring-1 ring-primary/30`
+                          : 'border-border/60 bg-secondary/40 text-muted-foreground hover:bg-secondary/70'
+                      }`}
+                    >
+                      <span className={`h-2 w-2 rounded-full ${isSelected ? 'bg-primary' : 'bg-muted-foreground/40'}`} />
+                      {style.shortName}
+                    </button>
+                  );
+                })}
               </div>
-            ) : (
+            )}
+
+            {activeAccount ? (() => {
+              const bankName = formatBankDisplayName(activeAccount.bank_name);
+              const searchHint = getBankAppSearchHint(activeAccount.bank_name);
+              const formattedAccNum = formatAccountNumber(activeAccount.account_number);
+              const style = getBankStyle(activeAccount.bank_name);
+
+              return (
+                <div className="rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/5 via-card/70 to-transparent p-6 transition-all duration-300 shadow-[0_12px_28px_rgba(234,115,69,0.12)] dark:shadow-[0_16px_36px_rgba(234,115,69,0.18)]">
+                  {/* Bank Name Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-inner font-bold ${style.iconBg}`}>
+                        <Landmark className="h-5 w-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">Bank Name</div>
+                        <div className="text-lg font-black tracking-tight text-foreground leading-snug">
+                          {bankName}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                      Active
+                    </span>
+                  </div>
+
+                  {/* Bank App Search Hint for Local Users */}
+                  <div className="mt-4 rounded-xl bg-secondary/60 px-3 py-2 text-xs font-semibold text-foreground/80 flex items-center gap-2 border border-border/50">
+                    <span className="text-primary font-bold">ℹ️</span>
+                    <span>{searchHint}</span>
+                  </div>
+
+                  {/* Big Readable Account Number */}
+                  <div className="mt-5">
+                    <div className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">Account Number</div>
+                    <div className="mt-1 text-3xl sm:text-4xl font-black tracking-[0.14em] text-foreground font-mono select-all">
+                      {formattedAccNum}
+                    </div>
+                  </div>
+
+                  {/* Account Name */}
+                  <div className="mt-3 text-[11px] font-black text-foreground/80 uppercase tracking-widest">
+                    ACCOUNT NAME: <span className="text-primary">{String(activeAccount.account_name || 'Digital Wallet').toUpperCase()}</span>
+                  </div>
+
+                  {/* Copy Account Button */}
+                  <Button
+                    variant={copied ? "default" : "secondary"}
+                    className={`mt-6 w-full rounded-2xl h-12 font-bold text-sm transition-all border-white/10 ${
+                      copied ? 'bg-emerald-600 hover:bg-emerald-600 text-white' : 'bg-background/70 hover:bg-background'
+                    }`}
+                    onClick={() => copy(activeAccount.account_number)}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        Copied to Clipboard!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Account Number
+                      </>
+                    )}
+                  </Button>
+                </div>
+              );
+            })() : (
               <div className="rounded-[1.5rem] border border-dashed border-border/50 bg-secondary/30 p-6 text-sm text-muted-foreground text-center backdrop-blur-sm">
                 Dedicated accounts will appear here once generated.
               </div>
@@ -157,7 +234,7 @@ export default function WalletPage() {
             <div className="mt-4 p-5 border border-primary/10 rounded-[1.5rem] bg-primary/5 text-[11px] text-foreground/80 leading-relaxed flex gap-3 items-start backdrop-blur-sm">
               <span className="text-base select-none mt-0.5">🔒</span>
               <span>
-                <strong>Privacy Guarantee:</strong> MELE DATA does <strong>NOT</strong> store or keep your BVN or NIN. This identity verification is securely routed directly to our central CBN-licensed payment partner (Monnify) to automatically generate your personalized funding accounts.
+                <strong>Privacy Guarantee:</strong> We do <strong>NOT</strong> store or keep your BVN or NIN. Identity verification is securely routed directly to our CBN-licensed banking partners to automatically generate your personalized funding accounts.
               </span>
             </div>
           </CardContent>

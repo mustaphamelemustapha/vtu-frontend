@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Check, CircleDollarSign, Copy, Gift, Landmark, Package2, RefreshCw, Sparkles, Smartphone, Zap, Tv2, GraduationCap } from 'lucide-react';
 import { apiFetch, getProfile } from '@/lib/api';
-import { formatDateTime, formatMoney } from '@/lib/format';
+import { formatDateTime, formatMoney, formatBankDisplayName, getBankAppSearchHint, formatAccountNumber, sortFundingAccounts, getBankStyle } from '@/lib/format';
 import { quickActions } from '@/lib/nav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +28,7 @@ const actionDetails = {
   },
   '/services': {
     kicker: 'Catalog',
-    description: 'Browse available MELE DATA services from one organized page.',
+    description: 'Browse available VTU services from one organized page.',
     cta: 'Open services',
     tone: 'from-sky-500/14 via-sky-500/7 to-transparent border-sky-300/70',
     iconTone: 'bg-sky-500 text-white shadow-sky-500/20',
@@ -140,7 +140,8 @@ export default function DashboardPage() {
   const totalPages = Math.ceil(txs.length / itemsPerPage);
   const announcements = emptyOrRows(summary?.announcements).slice(0, 3);
   const bankTransfer = summary?.bank_transfer_accounts || {};
-  const primaryFundingAccount = bankTransfer?.accounts?.[0] || null;
+  const sortedFundingAccounts = useMemo(() => sortFundingAccounts(bankTransfer?.accounts || []), [bankTransfer?.accounts]);
+  const primaryFundingAccount = sortedFundingAccounts[0] || null;
   const referralCode = referrals?.referral_code || profile?.referral_code || '—';
   const referralLink = buildReferralUrl(referrals?.referral_code || profile?.referral_code || '');
   const quickStats = useMemo(() => [
@@ -164,7 +165,7 @@ export default function DashboardPage() {
       <PageHeader
         eyebrow="Dashboard"
         title={`Good to see you, ${String(profile?.full_name || profile?.email || 'User').split(' ')[0]}`}
-        description="A calm command center for MELE DATA operations, balances, and referral activity."
+        description="A calm command center for your operations, balances, and referral activity."
         actions={(
           <>
             <Button variant="secondary" onClick={() => load(true)} className="border-border bg-card text-muted-foreground hover:bg-secondary">
@@ -187,48 +188,110 @@ export default function DashboardPage() {
 
       <div className="space-y-4">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between px-2">
-          <h2 className="text-[17px] font-bold tracking-tight text-foreground">Top-up accounts</h2>
-          <p className="text-xs text-muted-foreground">Transfer to any of these to add funds — your balance updates instantly</p>
+          <div>
+            <h2 className="text-[17px] font-bold tracking-tight text-foreground">Instant Top-up Accounts</h2>
+            <p className="text-xs text-muted-foreground">Transfer to any of these dedicated bank accounts from your banking app or POS — your balance updates automatically within seconds.</p>
+          </div>
+          <Link href="/wallet" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 self-start sm:self-auto">
+            Wallet &amp; Ledger <ArrowRight className="h-3 w-3" />
+          </Link>
         </div>
 
-        {bankTransfer?.accounts?.length > 0 ? (
+        {sortedFundingAccounts.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {bankTransfer.accounts.map((acc, i) => (
-              <div key={acc.account_number} className="group relative flex items-center justify-between rounded-[1rem] border border-border/40 bg-card/60 backdrop-blur-xl p-4 transition-all hover:bg-card/80 hover:shadow-md">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.8rem] bg-secondary/80 text-foreground font-bold shadow-inner">
-                    {acc.bank_name ? acc.bank_name.substring(0, 2).toUpperCase() : 'BK'}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Bank Name</div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <div className="text-sm font-bold text-foreground/90">{acc.bank_name || 'Bank'}</div>
-                      {i === 0 && <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 px-1.5 py-0 text-[9px] font-bold tracking-widest shadow-none border-transparent">RECOMMENDED</Badge>}
+            {sortedFundingAccounts.map((acc, i) => {
+              const bankName = formatBankDisplayName(acc.bank_name);
+              const searchHint = getBankAppSearchHint(acc.bank_name);
+              const formattedAccNum = formatAccountNumber(acc.account_number);
+              const style = getBankStyle(acc.bank_name);
+              const isCopied = copiedAccountId === acc.account_number;
+
+              return (
+                <div
+                  key={acc.account_number}
+                  className="group relative flex flex-col justify-between rounded-[1.25rem] border border-border/50 bg-gradient-to-br from-card/85 via-card/50 to-card/30 backdrop-blur-xl p-5 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+                >
+                  {/* Bank Header */}
+                  <div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-bold shadow-inner ${style.iconBg}`}>
+                          <Landmark className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Bank Name</div>
+                          <div className="text-[15px] font-extrabold text-foreground tracking-tight leading-tight">
+                            {bankName}
+                          </div>
+                        </div>
+                      </div>
+                      {i === 0 ? (
+                        <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-black tracking-wider px-2 py-0.5 shadow-none">
+                          RECOMMENDED
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] font-bold text-muted-foreground border-border/60">
+                          AUTOMATED
+                        </Badge>
+                      )}
                     </div>
-                    <div className="mt-1 text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Account Number</div>
-                    <div className="font-mono text-sm font-bold text-foreground tracking-wider">{acc.account_number}</div>
+
+                    {/* Local Bank App Search Hint */}
+                    <div className="mt-3 rounded-lg bg-secondary/50 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground flex items-center gap-1.5 border border-border/40">
+                      <span className="text-primary font-bold">ℹ️</span>
+                      <span className="truncate">{searchHint}</span>
+                    </div>
+
+                    {/* Account Number */}
+                    <div className="mt-4">
+                      <div className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Account Number</div>
+                      <div className="mt-1 font-mono text-2xl font-black tracking-[0.14em] text-foreground select-all">
+                        {formattedAccNum}
+                      </div>
+                    </div>
+
+                    {/* Account Name */}
                     {acc.account_name && (
-                      <div className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground">
-                        Name: <span className="font-semibold text-foreground/80">{acc.account_name}</span>
+                      <div className="mt-2 text-[11px] text-muted-foreground">
+                        Account Name: <span className="font-bold text-foreground/90">{acc.account_name}</span>
                       </div>
                     )}
                   </div>
+
+                  {/* Actions & Instant Badge */}
+                  <div className="mt-5 pt-3 border-t border-border/40 flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Instant Auto-Credit
+                    </span>
+                    <Button
+                      variant={isCopied ? "default" : "secondary"}
+                      size="sm"
+                      className={`rounded-xl px-4 h-9 font-bold text-xs transition-all ${
+                        isCopied ? 'bg-emerald-600 hover:bg-emerald-600 text-white' : 'hover:bg-primary hover:text-primary-foreground'
+                      }`}
+                      onClick={() => copyFundingAccount(acc.account_number)}
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="mr-1.5 h-3.5 w-3.5" />
+                          Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="mr-1.5 h-3.5 w-3.5" />
+                          Copy Number
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="ml-4 shrink-0 rounded-lg h-8 border-border bg-background/50 hover:bg-secondary text-[11px] font-semibold"
-                  onClick={() => copyFundingAccount(acc.account_number)}
-                >
-                  {copiedAccountId === acc.account_number ? <Check className="mr-1.5 h-3.5 w-3.5 text-emerald-500" /> : <Copy className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />}
-                  {copiedAccountId === acc.account_number ? 'Copied' : 'Copy'}
-                </Button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
-          <div className="rounded-[1rem] border border-dashed border-border bg-card/50 p-6 text-center text-sm text-muted-foreground">
-            {bankTransfer?.message || 'No wallet transfer accounts available right now.'}
+          <div className="rounded-[1.25rem] border border-dashed border-border/60 bg-card/40 p-8 text-center text-sm text-muted-foreground">
+            {bankTransfer?.message || 'No wallet transfer accounts available right now. Tap to refresh or contact support.'}
           </div>
         )}
       </div>
