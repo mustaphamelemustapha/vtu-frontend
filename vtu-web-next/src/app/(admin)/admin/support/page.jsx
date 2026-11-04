@@ -155,7 +155,7 @@ export default function AdminSupportPage() {
     setIsSendingPush(true);
     try {
       const activeBrand = getActiveBrand();
-      const resolvedBrand = pushTargetBrand || activeBrand?.key || 'kullomadata';
+      const resolvedBrand = pushTargetBrand || activeBrand?.key || 'meledata';
       const payload = {
         title: pushTitle,
         message: pushMessage,
@@ -512,7 +512,7 @@ export default function AdminSupportPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setPushTargetBrand(getActiveBrand()?.key || 'kullomadata')}
+                    onClick={() => setPushTargetBrand(getActiveBrand()?.key || 'meledata')}
                     className={`px-3 py-2.5 text-xs font-semibold rounded-xl border transition-all ${
                       (!pushTargetBrand || pushTargetBrand === getActiveBrand()?.key)
                         ? 'bg-primary text-primary-foreground border-primary shadow-sm'

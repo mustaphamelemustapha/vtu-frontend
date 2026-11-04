@@ -2,8 +2,8 @@ import { Suspense } from 'react';
 import { ResetPinPage } from '@/components/reset-pin-page';
 
 export const metadata = {
-  title: 'Reset Transaction PIN | KULLOMA DATA',
-  description: 'Create a new transaction PIN for your KULLOMA DATA account.',
+  title: 'Reset Transaction PIN | MELE DATA',
+  description: 'Create a new transaction PIN for your MELE DATA account.',
 };
 
 export default function Page() {

@@ -1,16 +1,16 @@
 import { LandingPage } from '@/components/landing-page';
 
 export const metadata = {
-  title: 'KULLOMA DATA | Fast, Reliable Airtime & Utility Top-Ups',
-  description: 'Fast, reliable VTU payments for data bundles, airtime, wallet funding, and everyday utility services.',
+  title: 'MELE DATA | Instant VTU, Airtime & Utility Bills',
+  description: 'Fast, reliable VTU payments for data, airtime, wallet funding, and everyday utility services.',
   alternates: {
-    canonical: 'https://www.kullomadata.com',
+    canonical: 'https://meledata.ng',
   },
   openGraph: {
-    title: 'KULLOMA DATA',
-    description: 'KULLOMA DATA helps users buy data, airtime, fund wallets, and track transactions from one secure workspace.',
-    url: 'https://www.kullomadata.com',
-    siteName: 'KULLOMA DATA',
+    title: 'MELE DATA',
+    description: 'MELE DATA helps users buy data, airtime, fund wallets, and track transactions from one secure workspace.',
+    url: 'https://meledata.ng',
+    siteName: 'MELE DATA',
     type: 'website',
   },
 };

@@ -57,25 +57,24 @@ export const BRANDS = {
 
 /**
  * Resolves the active brand either from client hostname or SSR environment.
- * In master-vtu-script (which powers www.kullomadata.com), defaults directly to KULLOMA DATA.
+ * Defaults to MELE DATA.
  */
 export function getActiveBrand() {
   if (typeof window !== 'undefined' && window.location?.hostname) {
     const host = window.location.hostname.toLowerCase();
-    if (host.includes('meledata') || host.includes('axisvtu')) {
-      return BRANDS.meleData;
+    if (host.includes('kulloma')) {
+      return BRANDS.kullomaData;
     }
     if (host.includes('mzdata')) {
       return BRANDS.mzData;
     }
-    // Any other domain including kullomadata.com and master-vtu-script
-    return BRANDS.kullomaData;
+    return BRANDS.meleData;
   }
 
   const envBrand = (process.env.NEXT_PUBLIC_APP_BRAND || '').toLowerCase();
-  if (envBrand.includes('mele')) return BRANDS.meleData;
+  if (envBrand.includes('kulloma')) return BRANDS.kullomaData;
   if (envBrand.includes('mz')) return BRANDS.mzData;
 
-  // Default to Kulloma Data for master-vtu-script
-  return BRANDS.kullomaData;
+  // Default to Mele Data
+  return BRANDS.meleData;
 }
