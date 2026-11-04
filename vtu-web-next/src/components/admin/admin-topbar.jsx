@@ -3,8 +3,10 @@
 import { Bell, Menu, Search, ShieldCheck, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { getActiveBrand } from '@/lib/brand';
 
 export function AdminTopbar({ title = 'Admin', onOpenMenu, theme = 'light', onToggleTheme, onOpenSupport }) {
+  const brand = getActiveBrand();
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/92 backdrop-blur-xl">
       <div className="flex items-center gap-2 px-4 py-3 md:px-6 lg:px-8">
@@ -17,7 +19,7 @@ export function AdminTopbar({ title = 'Admin', onOpenMenu, theme = 'light', onTo
             <ShieldCheck className="h-4 w-4 text-primary" />
             <span className="truncate">{title}</span>
           </div>
-          <div className="hidden text-xs text-muted-foreground md:block">MELE DATA internal operations dashboard</div>
+          <div className="hidden text-xs text-muted-foreground md:block">{brand.name} internal operations dashboard</div>
         </div>
 
         <label className="relative hidden w-full max-w-xl items-center md:flex">

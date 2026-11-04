@@ -1,3 +1,5 @@
+import { getActiveBrand } from './brand';
+
 const DEFAULT_API_BASE = 'https://api.meledata.ng/api/v1';
 const TOKEN_KEY = 'axisvtu_access_token';
 const REFRESH_KEY = 'axisvtu_refresh_token';
@@ -190,6 +192,14 @@ export async function apiFetch(path, options = {}) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   const headers = { ...(options.headers || {}) };
+  if (!headers['X-App-Brand']) {
+    try {
+      const activeBrand = getActiveBrand();
+      if (activeBrand?.key) {
+        headers['X-App-Brand'] = activeBrand.key;
+      }
+    } catch {}
+  }
   const token = getToken();
   if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
   let body = options.body;
@@ -377,6 +387,23 @@ export async function adminUpdatePricingRule(payload) {
 export const adminGetServiceMargins = adminGetPricingRules;
 export const adminSetServiceMargin = adminUpdatePricingRule;
 
+export async function adminGetCommissionSettings() {
+  return apiFetch('/admin/settings/commissions');
+}
+
+export async function adminUpdateCommissionSettings(payload) {
+  return apiFetch('/admin/settings/commissions', {
+    method: 'PUT',
+    body: JSON.stringify(payload || {}),
+  });
+}
+
+export async function adminReconcileAgentCommissions() {
+  return apiFetch('/admin/settings/commissions/reconcile-agents', {
+    method: 'POST',
+  });
+}
+
 export async function adminFundWallet(payload) {
   return apiFetch('/admin/fund-wallet', {
     method: 'POST',
@@ -556,6 +583,7 @@ export async function adminGetFinanceLedger(params = {}) {
 export async function adminCreateFinanceLedgerEntry(payload) {
   return apiFetch('/admin/finance/ledger', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload || {}),
   });
 }

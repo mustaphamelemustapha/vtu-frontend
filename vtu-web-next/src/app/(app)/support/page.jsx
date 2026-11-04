@@ -4,18 +4,16 @@ import { Mail, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/page-header';
-
-const SUPPORT_EMAIL = 'mmtechglobe@gmail.com';
-const WHATSAPP_NUMBER = '08141114647';
-const WHATSAPP_LINK = 'https://wa.me/2348141114647';
+import { getActiveBrand } from '@/lib/brand';
 
 export default function SupportPage() {
+  const brand = getActiveBrand();
   return (
     <div className="space-y-6 pb-8">
       <PageHeader
         eyebrow="Personal settings"
         title="Support"
-        description="Reach MELE DATA support through email or WhatsApp."
+        description={`Reach ${brand.name} support through email or WhatsApp.`}
       />
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -26,10 +24,10 @@ export default function SupportPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-2xl border border-border bg-secondary p-4 text-sm text-foreground">
-              {SUPPORT_EMAIL}
+              {brand.supportEmail}
             </div>
             <Button asChild className="w-full">
-              <a href={`mailto:${SUPPORT_EMAIL}`}>
+              <a href={`mailto:${brand.supportEmail}`}>
                 <Mail className="h-4 w-4" />
                 Open email
               </a>
@@ -44,10 +42,10 @@ export default function SupportPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-2xl border border-border bg-secondary p-4 text-sm text-foreground">
-              {WHATSAPP_NUMBER}
+              {brand.supportPhone}
             </div>
             <Button asChild variant="secondary" className="w-full">
-              <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
+              <a href={brand.whatsappLink} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="h-4 w-4" />
                 Open WhatsApp
               </a>

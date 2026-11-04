@@ -63,7 +63,7 @@ export default function AmbassadorPage() {
       <PageHeader
         eyebrow="Growth"
         title="Ambassador Hub"
-        description="Track your referred vendors, 10% commission, and 50GB milestone bonuses."
+        description="Track your referred vendors and 10% onboarding commissions."
         actions={
           <Button variant="secondary" onClick={load} className="border-border bg-card text-muted-foreground hover:bg-secondary">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />

@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { apiFetch } from '@/lib/api';
+import { getActiveBrand } from '@/lib/brand';
 
 export function AuthForgotPasswordPage() {
+  const brand = getActiveBrand();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,7 +43,7 @@ export function AuthForgotPasswordPage() {
         <Card className="w-full max-w-[420px] border border-border bg-card/95 shadow-[0_10px_24px_rgba(0,0,0,0.18)] backdrop-blur-sm">
           <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
             <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-              <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
+              <img src={brand.icon} alt={`${brand.name} logo`} className="h-full w-full object-contain" />
             </div>
             <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/35 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
               Password recovery

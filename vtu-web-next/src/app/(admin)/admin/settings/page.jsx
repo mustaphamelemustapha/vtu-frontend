@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, RefreshCw, ShieldCheck, X, Plus } from 'lucide-react';
-import { adminGetAnalytics, adminGetPricingRules, adminGetServiceToggles, adminUpdatePricingRule, adminUpdateServiceToggle, apiFetch, getProfile } from '@/lib/api';
+import { AlertTriangle, RefreshCw, ShieldCheck, X, Plus, Award, CheckCircle2, Sparkles, UserCheck } from 'lucide-react';
+import { adminGetAnalytics, adminGetPricingRules, adminGetServiceToggles, adminUpdatePricingRule, adminUpdateServiceToggle, adminGetCommissionSettings, adminUpdateCommissionSettings, adminReconcileAgentCommissions, apiFetch, getProfile } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +21,18 @@ export default function AdminSettingsPage() {
   const [serviceToggles, setServiceToggles] = useState({});
   const [toggling, setToggling] = useState(false);
   
+  // Commission Settings State
+  const [commissionConfig, setCommissionConfig] = useState({
+    brand: '',
+    ambassador_deposit_percent: 5.0,
+    agent_data_commission_percent: 2.0,
+    enable_agent_data_commission: true,
+  });
+  const [savingCommission, setSavingCommission] = useState(false);
+  const [commissionSavedMsg, setCommissionSavedMsg] = useState('');
+  const [reconciling, setReconciling] = useState(false);
+  const [reconcileMsg, setReconcileMsg] = useState('');
+
   // Margin Edit State
   const [editingMarginFor, setEditingMarginFor] = useState(null);
   const [marginInput, setMarginInput] = useState('');
@@ -30,20 +42,57 @@ export default function AdminSettingsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [pricingRes, catalogRes, analyticsRes, togglesRes] = await Promise.allSettled([
+      const [pricingRes, catalogRes, analyticsRes, togglesRes, commRes] = await Promise.allSettled([
         adminGetPricingRules(),
         apiFetch('/services/catalog'),
         adminGetAnalytics(),
         adminGetServiceToggles(),
+        adminGetCommissionSettings(),
       ]);
       if (pricingRes.status === 'fulfilled') setPricingRules(Array.isArray(pricingRes.value?.items) ? pricingRes.value.items : []);
       if (catalogRes.status === 'fulfilled') setCatalog(catalogRes.value || {});
       if (analyticsRes.status === 'fulfilled') setAnalytics(analyticsRes.value || {});
       if (togglesRes.status === 'fulfilled') setServiceToggles(togglesRes.value || {});
+      if (commRes.status === 'fulfilled' && commRes.value) {
+        setCommissionConfig(commRes.value);
+      }
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const handleSaveCommission = async () => {
+    setSavingCommission(true);
+    setCommissionSavedMsg('');
+    try {
+      const res = await adminUpdateCommissionSettings({
+        ambassador_deposit_percent: parseFloat(commissionConfig.ambassador_deposit_percent),
+        agent_data_commission_percent: parseFloat(commissionConfig.agent_data_commission_percent),
+        enable_agent_data_commission: Boolean(commissionConfig.enable_agent_data_commission),
+      });
+      setCommissionConfig(res);
+      setCommissionSavedMsg('Commission settings updated successfully!');
+      setTimeout(() => setCommissionSavedMsg(''), 4000);
+    } catch (err) {
+      alert(err?.message || 'Failed to update commission settings');
+    } finally {
+      setSavingCommission(false);
+    }
+  };
+
+  const handleReconcileCommissions = async () => {
+    setReconciling(true);
+    setReconcileMsg('');
+    try {
+      const res = await adminReconcileAgentCommissions();
+      setReconcileMsg(`Credited ${res.count || 0} missing agent cashback!`);
+      setTimeout(() => setReconcileMsg(''), 5000);
+    } catch (err) {
+      alert(err?.message || 'Failed to reconcile agent commissions');
+    } finally {
+      setReconciling(false);
+    }
+  };
 
   useEffect(() => {
     load().catch(() => setLoading(false));
@@ -116,6 +165,137 @@ export default function AdminSettingsPage() {
           </Button>
         }
       />
+
+      {/* Role & Commission Configuration Card (Ambassador & Agent) */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-sm rounded-3xl overflow-hidden">
+          <CardHeader className="border-b border-border/50 bg-secondary/20 pb-4 pt-5 px-6 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20">
+                <Award className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle className="text-lg">Role & Commission Configuration</CardTitle>
+                <CardDescription className="mt-0.5 text-xs">
+                  Automated onboarding commissions for Ambassadors and transaction cashback for Agents.
+                </CardDescription>
+              </div>
+            </div>
+            {commissionConfig.brand && (
+              <span className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-primary">
+                {commissionConfig.brand}
+              </span>
+            )}
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Ambassador Settings */}
+              <div className="rounded-2xl border border-border/60 bg-background/50 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-amber-500" />
+                    <span className="font-bold text-sm text-foreground">Ambassador Referral Reward</span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-amber-500">1st Deposit %</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Percentage granted to the Ambassador immediately upon the referred user&apos;s first wallet funding.
+                </p>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="100"
+                    value={commissionConfig.ambassador_deposit_percent ?? ''}
+                    onChange={(e) => setCommissionConfig({ ...commissionConfig, ambassador_deposit_percent: e.target.value })}
+                    className="h-11 font-bold text-base rounded-xl pr-8"
+                  />
+                  <span className="absolute right-3 top-3 text-sm font-bold text-muted-foreground">%</span>
+                </div>
+              </div>
+
+              {/* Agent Settings */}
+              <div className="rounded-2xl border border-border/60 bg-background/50 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <UserCheck className="h-4 w-4 text-emerald-500" />
+                    <span className="font-bold text-sm text-foreground">Agent Data Purchase Commission</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={commissionConfig.enable_agent_data_commission ? 'default' : 'secondary'}
+                    size="sm"
+                    className="h-7 text-xs rounded-lg font-bold"
+                    onClick={() => setCommissionConfig({
+                      ...commissionConfig,
+                      enable_agent_data_commission: !commissionConfig.enable_agent_data_commission,
+                    })}
+                  >
+                    {commissionConfig.enable_agent_data_commission ? 'Active' : 'Disabled'}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Instant cashback credited back to the agent&apos;s wallet automatically on every successful data transaction.
+                </p>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    max="100"
+                    disabled={!commissionConfig.enable_agent_data_commission}
+                    value={commissionConfig.agent_data_commission_percent ?? ''}
+                    onChange={(e) => setCommissionConfig({ ...commissionConfig, agent_data_commission_percent: e.target.value })}
+                    className="h-11 font-bold text-base rounded-xl pr-8"
+                  />
+                  <span className="absolute right-3 top-3 text-sm font-bold text-muted-foreground">%</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-border/40">
+              <div className="flex flex-col gap-1">
+                {commissionSavedMsg ? (
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    {commissionSavedMsg}
+                  </div>
+                ) : reconcileMsg ? (
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    {reconcileMsg}
+                  </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">
+                    Saved settings persist in the database and override code defaults for this tenant.
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleReconcileCommissions}
+                  disabled={reconciling}
+                  className="rounded-xl h-10 px-4 text-xs font-bold border-border/70 hover:bg-secondary"
+                  title="Scan recent data transactions by agents and award any missing 2% cashback"
+                >
+                  {reconciling ? 'Scanning...' : 'Reconcile Past Agent Cashback'}
+                </Button>
+                <Button
+                  onClick={handleSaveCommission}
+                  disabled={savingCommission}
+                  className="rounded-xl h-10 px-5 font-bold shadow-sm"
+                >
+                  {savingCommission ? 'Saving...' : 'Save Commission Rules'}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
 
       <div className="grid gap-6 xl:grid-cols-2">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
@@ -220,6 +400,7 @@ export default function AdminSettingsPage() {
           </CardContent>
         </Card>
       </motion.div>
+
 
       <div className="grid gap-6 xl:grid-cols-2">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>

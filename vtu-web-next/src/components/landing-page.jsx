@@ -27,6 +27,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { getActiveBrand } from '@/lib/brand';
 
 const navLinks = [
   { label: 'What you can do', href: '#services' },
@@ -142,10 +143,11 @@ const motionFadeUp = {
 };
 
 function BrandLogo({ className = '' }) {
+  const brand = getActiveBrand();
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`.trim()}>
-      <img src="/brand/axisvtu-logo.png" alt="MELE DATA logo" className="h-10 w-10 rounded-2xl object-contain" />
-      <span className="text-lg font-semibold tracking-tight text-foreground">MELE DATA</span>
+      <img src={brand.logo} alt={`${brand.name} logo`} className="h-10 w-10 rounded-2xl object-cover shadow-sm" />
+      <span className="text-lg font-semibold tracking-tight text-foreground">{brand.name}</span>
     </span>
   );
 }
@@ -281,6 +283,7 @@ function Header() {
 }
 
 function Hero() {
+  const brand = getActiveBrand();
   return (
     <section className="bg-background relative overflow-hidden">
       {/* Background Glow */}
@@ -297,7 +300,7 @@ function Hero() {
               className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-card/80 backdrop-blur-md px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary shadow-sm"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              MELE DATA for everyday payments
+              {brand.name} for everyday payments
             </motion.div>
 
             <motion.h1
@@ -317,7 +320,7 @@ function Hero() {
               custom={0.16}
               className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl"
             >
-              Top up any network, fund your wallet, and manage everyday payments with a simple, reliable MELE DATA account.
+              Top up any network, fund your wallet, and manage everyday payments with a simple, reliable {brand.name} account.
             </motion.p>
 
             <motion.div
@@ -336,38 +339,42 @@ function Hero() {
               <Button asChild variant="secondary" className="h-14 rounded-full border-border bg-card/50 backdrop-blur-md px-8 text-lg text-muted-foreground hover:bg-secondary transition-all hover:scale-105">
                 <Link href="/login">Log in</Link>
               </Button>
-              <a
-                href="https://play.google.com/store/apps/details?id=com.mmtech.axisvtu&pcampaignid=web_share"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-14 items-center justify-center rounded-full border border-border bg-card/50 backdrop-blur-md px-6 hover:border-blue-300 hover:bg-secondary/80 transition duration-200"
-              >
-                <div className="flex items-center gap-2.5 text-left">
-                  <svg className="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M5.002 3c-.116 0-.23.018-.342.049L13.882 12 4.66 20.951c.112.03.226.049.342.049.278 0 .546-.076.784-.216l12.44-7.108c.556-.317.9-.9.9-1.547 0-.647-.344-1.23-.9-1.547L5.786 3.216a1.564 1.564 0 0 0-.784-.216zm-1.042.825V20.18L13.06 12 3.96 3.825z" />
-                  </svg>
-                  <div>
-                    <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">Get it on</div>
-                    <div className="text-sm font-bold text-foreground leading-tight mt-0.5">Google Play</div>
+              {brand.playStoreLink && (
+                <a
+                  href={brand.playStoreLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-14 items-center justify-center rounded-full border border-border bg-card/50 backdrop-blur-md px-6 hover:border-blue-300 hover:bg-secondary/80 transition duration-200"
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <svg className="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M5.002 3c-.116 0-.23.018-.342.049L13.882 12 4.66 20.951c.112.03.226.049.342.049.278 0 .546-.076.784-.216l12.44-7.108c.556-.317.9-.9.9-1.547 0-.647-.344-1.23-.9-1.547L5.786 3.216a1.564 1.564 0 0 0-.784-.216zm-1.042.825V20.18L13.06 12 3.96 3.825z" />
+                    </svg>
+                    <div>
+                      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">Get it on</div>
+                      <div className="text-sm font-bold text-foreground leading-tight mt-0.5">Google Play</div>
+                    </div>
                   </div>
-                </div>
-              </a>
-              <a
-                href="https://apps.apple.com/ng/app/mele-data/id6779367547"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-14 items-center justify-center rounded-full border border-border bg-card/50 backdrop-blur-md px-6 hover:border-blue-300 hover:bg-secondary/80 transition duration-200"
-              >
-                <div className="flex items-center gap-2.5 text-left">
-                  <svg className="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z" />
-                  </svg>
-                  <div>
-                    <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">Download on the</div>
-                    <div className="text-sm font-bold text-foreground leading-tight mt-0.5">App Store</div>
+                </a>
+              )}
+              {brand.appStoreLink && (
+                <a
+                  href={brand.appStoreLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-14 items-center justify-center rounded-full border border-border bg-card/50 backdrop-blur-md px-6 hover:border-blue-300 hover:bg-secondary/80 transition duration-200"
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <svg className="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.58 2.95-1.39z" />
+                    </svg>
+                    <div>
+                      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground leading-none">Download on the</div>
+                      <div className="text-sm font-bold text-foreground leading-tight mt-0.5">App Store</div>
+                    </div>
                   </div>
-                </div>
-              </a>
+                </a>
+              )}
             </motion.div>
 
             <motion.div
@@ -417,7 +424,7 @@ function Hero() {
             {/* Woman Image */}
             <img 
               src="/brand/hero_woman.png" 
-              alt="Woman using MELE DATA" 
+              alt={`Customer using ${brand.name}`} 
               className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[110%] w-auto object-contain object-bottom drop-shadow-2xl z-10"
             />
           </motion.div>
@@ -428,11 +435,12 @@ function Hero() {
 }
 
 function ServicesSection() {
+  const brand = getActiveBrand();
   return (
     <section id="services" className="bg-card px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <PageSection
-          eyebrow="What you can do with MELE DATA"
+          eyebrow={`What you can do with ${brand.name}`}
           title="The actions are clear, familiar, and easy to scan"
           description="A visitor should understand the product in a few seconds and know exactly where to begin."
         />
@@ -470,6 +478,7 @@ function ServicesSection() {
 }
 
 function TrustSection() {
+  const brand = getActiveBrand();
   return (
     <section id="trust" className="bg-background px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -478,7 +487,7 @@ function TrustSection() {
             <PageSection
               eyebrow="Why choose us"
               title="A calmer VTU experience for everyday use"
-              description="MELE DATA is built for people who want speed without confusion, and structure without a crowded interface."
+              description={`${brand.name} is built for people who want speed without confusion, and structure without a crowded interface.`}
             />
             <div className="mt-6 grid gap-3">
               {aboutBullets.map((bullet) => (
@@ -523,16 +532,17 @@ function TrustSection() {
 }
 
 function AboutSection() {
+  const brand = getActiveBrand();
   return (
     <section id="about" className="bg-card px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
         <motion.div variants={motionFadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} custom={0}>
-          <div className="axis-label text-primary">About MELE DATA</div>
+          <div className="axis-label text-primary">About {brand.name}</div>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             A simple platform for airtime, data, wallet funding, and utility payments
           </h2>
           <p className="mt-5 text-lg leading-8 text-muted-foreground">
-            MELE DATA is a Nigerian VTU and payments platform designed to help people handle ordinary account tasks without friction. It brings top-ups, wallet funding, receipts, and transaction history into one clear web experience.
+            {brand.name} is a Nigerian VTU and payments platform designed to help people handle ordinary account tasks without friction. It brings top-ups, wallet funding, receipts, and transaction history into one clear web experience.
           </p>
           <p className="mt-5 text-lg leading-8 text-muted-foreground">
             The goal is straightforward: keep the interface human, the flow reliable, and the account details easy to understand.
@@ -572,6 +582,7 @@ function AboutSection() {
 }
 
 function FaqSection() {
+  const brand = getActiveBrand();
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
@@ -637,7 +648,7 @@ function FaqSection() {
               </div>
               <div className="flex flex-wrap gap-3">
                 <Button asChild className="h-11 rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90">
-                  <a href="mailto:mmtechglobe@gmail.com">Email Support</a>
+                  <a href={`mailto:${brand.supportEmail}`}>Email Support</a>
                 </Button>
                 <Button asChild variant="secondary" className="h-11 rounded-full border-border bg-card px-5 text-muted-foreground hover:bg-secondary">
                   <Link href="/login">Log in</Link>
@@ -652,6 +663,7 @@ function FaqSection() {
 }
 
 function Footer() {
+  const brand = getActiveBrand();
   return (
     <footer className="border-t border-white/10 bg-black px-4 py-16 text-slate-300 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -659,17 +671,17 @@ function Footer() {
           <div>
             <BrandLogo className="[&_span]:text-white" />
             <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300">
-              MELE DATA helps users buy airtime, data, and everyday utility services while keeping wallet funding and transaction records clear.
+              {brand.name} helps users buy airtime, data, and everyday utility services while keeping wallet funding and transaction records clear.
             </p>
             <div className="mt-5 flex items-center gap-3 text-sm text-slate-200">
               <span className="h-2 w-2 rounded-full bg-primary" />
-              <a href="mailto:mmtechglobe@gmail.com" className="hover:text-white">mmtechglobe@gmail.com</a>
+              <a href={`mailto:${brand.supportEmail}`} className="hover:text-white">{brand.supportEmail}</a>
             </div>
           </div>
 
           <div className="grid gap-8 sm:grid-cols-2">
             <div>
-              <div className="text-sm font-semibold text-white">MELE DATA</div>
+              <div className="text-sm font-semibold text-white">{brand.name}</div>
               <div className="mt-4 space-y-3 text-sm">
                 <div><a href="#services" className="hover:text-white">What you can do</a></div>
                 <div><a href="#trust" className="hover:text-white">Why choose us</a></div>
@@ -689,7 +701,7 @@ function Footer() {
         </div>
         <Separator className="my-10 bg-white/10" />
         <div className="flex flex-col gap-4 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
-          <div>© 2026 MELE DATA. Powered by MMTECHGLOBE.</div>
+          <div>© 2026 {brand.name}. Powered by {brand.publisher}.</div>
           <div className="flex gap-4">
             <span>Official web platform</span>
             <span>Nigerian VTU services</span>
@@ -837,6 +849,7 @@ function PricingPreviewSection() {
 }
 
 function WorkspaceSection() {
+  const brand = getActiveBrand();
   return (
     <section className="bg-background px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5">
       <div className="mx-auto max-w-7xl">
@@ -846,7 +859,7 @@ function WorkspaceSection() {
             Whether you are building it or buying it
           </h2>
           <p className="mt-4 text-slate-400 text-sm leading-6">
-            MELE DATA serves as both a beautiful web application for everyday Nigerians and a robust infrastructure platform for developers.
+            {brand.name} serves as both a beautiful web application for everyday Nigerians and a robust infrastructure platform for developers.
           </p>
         </div>
 

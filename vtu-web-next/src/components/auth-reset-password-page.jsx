@@ -8,8 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { apiFetch } from '@/lib/api';
+import { getActiveBrand } from '@/lib/brand';
 
 export function AuthResetPasswordPage() {
+  const brand = getActiveBrand();
   const params = useSearchParams();
   const token = useMemo(() => params.get('token') || '', [params]);
 
@@ -61,11 +63,11 @@ export function AuthResetPasswordPage() {
         <Card className="w-full max-w-[420px] border border-border bg-card shadow-[0_8px_20px_rgba(0,0,0,0.14)] backdrop-blur-sm">
           <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
             <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-              <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
+              <img src={brand.icon} alt={brand.name} className="h-full w-full object-contain rounded-xl" />
             </div>
             <CardTitle className="text-[1.6rem] font-semibold tracking-[-0.025em] text-foreground">Reset password</CardTitle>
             <CardDescription className="mx-auto max-w-[300px] text-sm leading-6 text-muted-foreground">
-              Set a new password for your MELE DATA account.
+              Set a new password for your {brand.name} account.
             </CardDescription>
           </CardHeader>
 

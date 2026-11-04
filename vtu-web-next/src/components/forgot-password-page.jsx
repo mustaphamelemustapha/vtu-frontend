@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { forgotPasswordRequest, warmBackend } from '@/lib/api';
+import { getActiveBrand } from '@/lib/brand';
 
 function Field({ label, helper, children }) {
   return (
@@ -58,7 +59,7 @@ export function ForgotPasswordPage() {
         <Card className="w-full max-w-[420px] border border-border bg-card shadow-[0_8px_20px_rgba(0,0,0,0.14)] backdrop-blur-sm">
           <CardHeader className="space-y-3 px-6 pb-6 pt-8 text-center sm:px-7">
             <div className="mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-              <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
+              <img src={getActiveBrand().icon} alt={getActiveBrand().name} className="h-full w-full object-contain rounded-xl" />
             </div>
             <CardTitle className="text-[1.6rem] font-semibold tracking-[-0.025em] text-foreground">
               Reset Password

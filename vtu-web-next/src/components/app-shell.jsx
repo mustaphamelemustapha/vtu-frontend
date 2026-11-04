@@ -32,13 +32,15 @@ import { clearAuth, apiFetch, getProfile, getToken, setProfile } from '@/lib/api
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { getActiveBrand } from '@/lib/brand';
 import { BrandLoader } from '@/components/brand-loader';
 
 function brandInitials(profile) {
-  const name = String(profile?.full_name || profile?.email || 'MELE DATA').trim();
+  const brand = getActiveBrand();
+  const name = String(profile?.full_name || profile?.email || brand.name).trim();
   const parts = name.split(/\s+/).filter(Boolean);
   const letters = parts.slice(0, 2).map((part) => part[0]).join('');
-  return (letters || 'AX').toUpperCase();
+  return (letters || 'KD').toUpperCase();
 }
 
 const mobilePrimaryMenu = [
@@ -58,9 +60,8 @@ const mobilePrimaryMenu = [
 const mobileSettingsMenu = [
   { label: 'Profile', href: '/profile', icon: UserCircle2 },
   { label: 'Security', href: '/profile#security', icon: ShieldCheck },
-  { label: 'Support', href: 'mailto:mmtechglobe@gmail.com', icon: Headphones, external: true },
+  { label: 'Support', href: '/support', icon: Headphones },
   { label: 'WhatsApp Channel', href: 'https://whatsapp.com/channel/0029VbCanujEawdvqLAYu83T', icon: Headphones, external: true },
-  { label: 'TikTok Page', href: 'https://www.tiktok.com/@meledata_ng', icon: Tv2, external: true },
 ];
 
 function MobileMenuLink({ item, activePath }) {
@@ -211,10 +212,12 @@ export function AppShell({ children }) {
     });
   }, []);
 
+  const brand = getActiveBrand();
+
   if (!ready) {
     return (
       <BrandLoader
-        message="Loading MELE DATA"
+        message={`Loading ${brand.name}`}
         subtitle="Synchronizing your account and wallet balance..."
       />
     );
@@ -227,11 +230,11 @@ export function AppShell({ children }) {
       <aside className="hidden border-r border-border bg-card p-5 text-card-foreground lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-y-auto">
         <Link href="/dashboard" className="flex items-center gap-3 rounded-2xl border border-border bg-secondary px-4 py-3">
           <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-card ring-1 ring-border">
-            <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
+            <img src={brand.icon} alt={brand.name} className="h-full w-full object-contain rounded-xl" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-foreground">MELE DATA</div>
-            <div className="text-xs text-muted-foreground">Fintech dashboard</div>
+            <div className="text-sm font-semibold text-foreground">{brand.name}</div>
+            <div className="text-xs text-muted-foreground">{brand.tagline}</div>
           </div>
         </Link>
 
@@ -313,10 +316,10 @@ export function AppShell({ children }) {
             </Button>
             <div className="min-w-0 flex-1 md:hidden">
               <div className="truncate text-sm font-semibold text-foreground">
-                {activePage?.label || 'MELE DATA'}
+                {activePage?.label || brand.name}
               </div>
               <div className="truncate text-[11px] text-muted-foreground">
-                MELE DATA
+                {brand.name}
               </div>
             </div>
             <div className="hidden h-11 flex-1 items-center gap-3 rounded-2xl border border-border bg-card px-4 md:flex">
@@ -412,10 +415,10 @@ export function AppShell({ children }) {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-card ring-1 ring-border">
-                        <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain" />
+                        <img src={brand.icon} alt={brand.name} className="h-full w-full object-contain rounded-xl" />
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold tracking-tight text-foreground">MELE DATA</div>
+                        <div className="truncate text-sm font-semibold tracking-tight text-foreground">{brand.name}</div>
                         <div className="truncate text-[11px] text-muted-foreground">{profile.full_name || profile.email || 'Wallet workspace'}</div>
                       </div>
                     </div>

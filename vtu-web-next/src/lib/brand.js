@@ -1,4 +1,22 @@
 export const BRANDS = {
+  kullomaData: {
+    key: 'kullomadata',
+    name: 'KULLOMA DATA',
+    tagline: 'Fast, Reliable Airtime & Utility Top-Ups',
+    description: 'Instant VTU airtime, SME data bundles, electricity tokens, and cable subscriptions with instant automated delivery.',
+    domain: 'kullomadata.com',
+    url: 'https://www.kullomadata.com',
+    supportEmail: 'kullomadata@gmail.com',
+    supportPhone: '+234 814 111 4647',
+    whatsappLink: 'https://wa.me/2348141114647',
+    logo: '/brand/kullomadata-logo.png',
+    icon: '/brand/kullomadata-icon.png',
+    primaryColor: '#5B21B6',
+    secondaryColor: '#F59E0B',
+    publisher: 'MMTECHGLOBE',
+    playStoreLink: null,
+    appStoreLink: null,
+  },
   meleData: {
     key: 'meledata',
     name: 'MELE DATA',
@@ -14,6 +32,8 @@ export const BRANDS = {
     primaryColor: '#0B4FD2',
     secondaryColor: '#00C6FF',
     publisher: 'MMTECHGLOBE',
+    playStoreLink: 'https://play.google.com/store/apps/details?id=com.mmtech.axisvtu&pcampaignid=web_share',
+    appStoreLink: 'https://apps.apple.com/ng/app/mele-data/id6779367547',
   },
   mzData: {
     key: 'mzdata',
@@ -22,39 +42,40 @@ export const BRANDS = {
     description: 'Corporate SME data and airtime vending portal for modern enterprises and resellers.',
     domain: 'mzdata.org',
     url: 'https://www.mzdata.org',
-    supportEmail: 'mmtechglobe@gmail.com',
-    supportPhone: '+234 814 111 4647',
-    whatsappLink: 'https://wa.me/2348141114647',
+    supportEmail: 'mzdatamzdata2@gmail.com',
+    supportPhone: '09067054672',
+    whatsappLink: 'https://wa.me/2349067054672',
     logo: '/brand/mzdata-logo.jpg',
     icon: '/brand/mzdata-icon.png',
     primaryColor: '#0A2540',
     secondaryColor: '#10B981',
     publisher: 'MMTECHGLOBE',
-  },
-  kullomaData: {
-    key: 'kullomadata',
-    name: 'KULLOMA DATA',
-    tagline: 'Fast, Reliable Airtime & Utility Top-Ups',
-    description: 'Instant VTU airtime, SME data bundles, electricity tokens, and cable subscriptions.',
-    domain: 'kullomadata.com',
-    url: 'https://www.kullomadata.com',
-    supportEmail: 'kullomadata@gmail.com',
-    supportPhone: '+234 814 111 4647',
-    whatsappLink: 'https://wa.me/2348141114647',
-    logo: '/brand/kullomadata-logo.png',
-    icon: '/brand/kullomadata-icon.png',
-    primaryColor: '#5B21B6',
-    secondaryColor: '#F59E0B',
-    publisher: 'MMTECHGLOBE',
+    playStoreLink: null,
+    appStoreLink: null,
   },
 };
 
+/**
+ * Resolves the active brand either from client hostname or SSR environment.
+ * In master-vtu-script (which powers www.kullomadata.com), defaults directly to KULLOMA DATA.
+ */
 export function getActiveBrand() {
   if (typeof window !== 'undefined' && window.location?.hostname) {
     const host = window.location.hostname.toLowerCase();
-    if (host.includes('kulloma')) return BRANDS.kullomaData;
-    if (host.includes('mzdata')) return BRANDS.mzData;
-    return BRANDS.meleData;
+    if (host.includes('meledata') || host.includes('axisvtu')) {
+      return BRANDS.meleData;
+    }
+    if (host.includes('mzdata')) {
+      return BRANDS.mzData;
+    }
+    // Any other domain including kullomadata.com and master-vtu-script
+    return BRANDS.kullomaData;
   }
-  return BRANDS.meleData;
+
+  const envBrand = (process.env.NEXT_PUBLIC_APP_BRAND || '').toLowerCase();
+  if (envBrand.includes('mele')) return BRANDS.meleData;
+  if (envBrand.includes('mz')) return BRANDS.mzData;
+
+  // Default to Kulloma Data for master-vtu-script
+  return BRANDS.kullomaData;
 }

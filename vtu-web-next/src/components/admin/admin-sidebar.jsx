@@ -7,9 +7,11 @@ import { adminNav } from '@/lib/admin-nav';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { getActiveBrand } from '@/lib/brand';
 
 export function AdminSidebar({ profile, onSignOut, mobile = false, onClose }) {
   const pathname = usePathname();
+  const brand = getActiveBrand();
 
   // Group nav items
   const mainNav = adminNav.slice(0, 6); // Overview, Finance, Users, Agents, Ambassadors, Transactions
@@ -55,10 +57,10 @@ export function AdminSidebar({ profile, onSignOut, mobile = false, onClose }) {
         <div className="flex items-center justify-between gap-2">
           <Link href="/admin" className="flex min-w-0 items-center gap-3 group">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-tr from-brand/20 to-brand/5 ring-1 ring-brand/30 transition-transform group-hover:scale-105">
-              <img src="/brand/axisvtu-icon.png" alt="MELE DATA logo" className="h-full w-full object-contain p-1" />
+              <img src={brand.icon} alt={brand.name} className="h-full w-full object-contain p-1" />
             </div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold text-foreground tracking-tight">MELE DATA Admin</div>
+              <div className="truncate text-sm font-bold text-foreground tracking-tight">{brand.name} Admin</div>
               <div className="truncate text-xs text-muted-foreground font-medium">Command Center</div>
             </div>
           </Link>

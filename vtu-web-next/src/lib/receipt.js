@@ -1,5 +1,6 @@
 import { formatMoney } from '@/lib/format';
 import { sanitizeProviderMessage } from '@/lib/transaction-status';
+import { getActiveBrand } from './brand';
 
 function timestampLabel(date) {
   try {
@@ -24,7 +25,7 @@ export function buildTransactionReceipt({
 }) {
   return {
     id: `receipt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    service: service || 'MELE DATA Transaction',
+    service: service || `${getActiveBrand().name} Transaction`,
     status: ['success', 'failed', 'pending', 'refunded'].includes(status) ? status : 'pending',
     message: sanitizeProviderMessage(message || ''),
     amount: Number.isFinite(Number(amount)) ? Number(amount) : 0,
@@ -36,9 +37,10 @@ export function buildTransactionReceipt({
 }
 
 export function receiptShareText(receipt) {
+  const brand = getActiveBrand();
   const amountLine = `₦${formatMoney(receipt.amount || 0)}`;
   const lines = [
-    'MELE DATA Transaction Receipt',
+    `${brand.name} Transaction Receipt`,
     `Amount: ${amountLine}`,
     `Service: ${receipt.service}`,
     `Ref: ${receipt.reference}`,
@@ -124,7 +126,8 @@ export async function downloadReceipt(receipt, sourceNode) {
       const url = window.URL.createObjectURL(blob);
       window.location.assign(url);
     } else {
-      pdf.save(`MELE DATA-Receipt-${safeFileName(receipt.reference)}.pdf`);
+      const brand = getActiveBrand();
+      pdf.save(`${brand.name}-Receipt-${safeFileName(receipt.reference)}.pdf`);
     }
     return { ok: true };
   } catch (error) {
@@ -141,13 +144,14 @@ export async function shareReceipt(receipt, sourceNode) {
       const canvas = await renderReceiptCanvas(sourceNode);
       const imageBlob = canvas ? await canvasToBlob(canvas, 'image/png', 1) : null;
       if (imageBlob) {
+        const brand = getActiveBrand();
         const file = new File(
           [imageBlob],
-          `MELE DATA-Receipt-${safeFileName(receipt.reference)}.png`,
+          `${brand.name}-Receipt-${safeFileName(receipt.reference)}.png`,
           { type: 'image/png' }
         );
         const payload = {
-          title: 'MELE DATA Transaction Receipt',
+          title: `${brand.name} Transaction Receipt`,
           text,
           files: [file],
         };
@@ -163,8 +167,9 @@ export async function shareReceipt(receipt, sourceNode) {
 
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
+      const brand = getActiveBrand();
       await navigator.share({
-        title: 'MELE DATA Transaction Receipt',
+        title: `${brand.name} Transaction Receipt`,
         text,
       });
       return { mode: 'share' };

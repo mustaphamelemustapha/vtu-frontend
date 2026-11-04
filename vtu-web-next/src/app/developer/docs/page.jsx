@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { getActiveBrand } from '@/lib/brand';
 
 /* ───────── helpers ───────── */
 const Badge = ({ method }) => {
@@ -61,9 +62,10 @@ const SideLink = ({ href, children, isNew }) => (
 
 /* ───────── main ───────── */
 export default function DevDocs() {
+  const brand = getActiveBrand();
   const [codeLang, setCodeLang] = useState('curl');
 
-  const BASE_URL = 'https://meledata.ng/api/v1/developer';
+  const BASE_URL = `${brand.apiBaseUrl}/developer`;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-blue-500 selection:text-white font-sans">
@@ -73,7 +75,7 @@ export default function DevDocs() {
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6">
             <Link href="/" className="text-lg font-bold tracking-tight text-white hover:text-blue-500 transition-colors">
-              MELE DATA <span className="text-blue-500">Developers</span>
+              {brand.name} <span className="text-blue-500">Developers</span>
             </Link>
             <nav className="hidden md:flex items-center gap-4 text-sm text-slate-400">
               <a href="#getting-started" className="hover:text-white transition-colors">Getting started</a>
@@ -128,7 +130,7 @@ export default function DevDocs() {
               Get started
             </h1>
             <p className="mt-4 text-base text-slate-400 leading-7 max-w-2xl">
-              The MELE DATA API lets you sell mobile-data top-ups and airtime across every Nigerian network — MTN, Glo, Airtel, and 9mobile — straight from your backend. Token auth, idempotent retries, and a shared wallet that any of your apps can debit.
+              The {brand.name} API lets you sell mobile-data top-ups and airtime across every Nigerian network — MTN, Glo, Airtel, and 9mobile — straight from your backend. Token auth, idempotent retries, and a shared wallet that any of your apps can debit.
             </p>
 
             {/* Feature cards */}
@@ -168,7 +170,7 @@ export default function DevDocs() {
           <section id="overview" className="scroll-mt-20">
             <h2 className="text-2xl font-bold text-white border-b border-slate-800 pb-2">Overview</h2>
             <p className="mt-4 text-sm text-slate-400 leading-7">
-              MELE DATA Developers gives you two product APIs:
+              {brand.name} Developers gives you two product APIs:
             </p>
             <ul className="mt-3 space-y-2 text-sm text-slate-400 list-disc list-inside leading-7">
               <li><strong className="text-white">Data API</strong> — buy mobile data on MTN, Glo, Airtel, and 9mobile. Per-plan pricing, idempotent retries.</li>
@@ -196,7 +198,7 @@ Authorization: Token mele_live_xxxxxxxxxxxxxxxxxxxxxxxx
 Authorization: Bearer mele_live_xxxxxxxxxxxxxxxxxxxxxxxx`}
             </CodeBlock>
             <p className="mt-4 text-sm text-slate-400 leading-7">
-              Each token belongs to a single MELE DATA user. The token identifies whose wallet gets debited.
+              Each token belongs to a single {brand.name} user. The token identifies whose wallet gets debited.
             </p>
             <div className="mt-4 bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
               <p className="text-xs text-amber-400 font-semibold">⚠️ Security</p>
@@ -659,7 +661,7 @@ echo curl_exec($ch);`}
             <div className="mt-4 bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
               <p className="text-xs text-blue-400 font-semibold">💡 Reseller discounts</p>
               <p className="text-xs text-slate-400 mt-1 leading-5">
-                As a MELE DATA developer, you get reseller-tier pricing on airtime. The <code className="font-mono text-blue-400">amount</code> in the response reflects your discounted charge — not the face value sent to the customer.
+                As a {brand.name} developer, you get reseller-tier pricing on airtime. The <code className="font-mono text-blue-400">amount</code> in the response reflects your discounted charge — not the face value sent to the customer.
               </p>
             </div>
           </section>
@@ -669,13 +671,13 @@ echo curl_exec($ch);`}
           <footer className="border-t border-slate-800 pt-8 mt-16 pb-12">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-bold text-white">MELE DATA Developers</p>
+                <p className="text-sm font-bold text-white">{brand.name} Developers</p>
                 <p className="text-xs text-slate-500 mt-1">Data, airtime, and wallet APIs for Nigerian builders.</p>
               </div>
               <div className="flex gap-4 text-xs text-slate-400">
                 <Link href="/register" className="hover:text-blue-500 transition-colors">Create account</Link>
                 <Link href="/login" className="hover:text-blue-500 transition-colors">Login</Link>
-                <Link href="/" className="hover:text-blue-500 transition-colors">MELE DATA home</Link>
+                <Link href="/" className="hover:text-blue-500 transition-colors">{brand.name} home</Link>
               </div>
             </div>
           </footer>

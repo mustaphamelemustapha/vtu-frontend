@@ -11,6 +11,7 @@ import {
   adminSendPushOnly,
   adminUploadBroadcastImage
 } from '@/lib/api';
+import { getActiveBrand } from '@/lib/brand';
 import { formatDateTime } from '@/lib/format';
 import { startCase } from '@/lib/admin-utils';
 import { Button } from '@/components/ui/button';
@@ -53,6 +54,7 @@ export default function AdminSupportPage() {
   const [pushTitle, setPushTitle] = useState('');
   const [pushMessage, setPushMessage] = useState('');
   const [pushImageUrl, setPushImageUrl] = useState('');
+  const [pushTargetBrand, setPushTargetBrand] = useState('');
   const [isSendingPush, setIsSendingPush] = useState(false);
   const [isUploadingPushImage, setIsUploadingPushImage] = useState(false);
   const fileInputRef = useRef(null);
@@ -116,11 +118,13 @@ export default function AdminSupportPage() {
     }
     setIsSaving(true);
     try {
+      const activeBrand = getActiveBrand();
       const payload = {
         title: newTitle.trim(),
         message: newMessage.trim(),
         level: newLevel,
         is_active: newIsActive,
+        brand: activeBrand?.key || 'all',
       };
       if (newStartsAt) {
         payload.starts_at = new Date(newStartsAt).toISOString();
@@ -150,17 +154,20 @@ export default function AdminSupportPage() {
     if (!pushTitle.trim() || !pushMessage.trim()) return;
     setIsSendingPush(true);
     try {
+      const activeBrand = getActiveBrand();
+      const resolvedBrand = pushTargetBrand || activeBrand?.key || 'kullomadata';
       const payload = {
         title: pushTitle,
         message: pushMessage,
         image_url: pushImageUrl || null,
+        target_brand: resolvedBrand,
       };
-      await adminSendPushOnly(payload);
+      const res = await adminSendPushOnly(payload);
       setShowPushModal(false);
       setPushTitle('');
       setPushMessage('');
       setPushImageUrl('');
-      alert('Push notification sent successfully!');
+      alert(res?.message || 'Push notification sent successfully!');
     } catch (e) {
       alert('Failed to send push notification.');
     } finally {
@@ -500,6 +507,39 @@ export default function AdminSupportPage() {
             </div>
 
             <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Target Audience</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPushTargetBrand(getActiveBrand()?.key || 'kullomadata')}
+                    className={`px-3 py-2.5 text-xs font-semibold rounded-xl border transition-all ${
+                      (!pushTargetBrand || pushTargetBrand === getActiveBrand()?.key)
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                        : 'bg-secondary/40 text-muted-foreground border-border hover:bg-secondary/70'
+                    }`}
+                  >
+                    🎯 {getActiveBrand()?.name || 'Current Brand'} Only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPushTargetBrand('all')}
+                    className={`px-3 py-2.5 text-xs font-semibold rounded-xl border transition-all ${
+                      pushTargetBrand === 'all'
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                        : 'bg-secondary/40 text-muted-foreground border-border hover:bg-secondary/70'
+                    }`}
+                  >
+                    🌐 All Platform Brands
+                  </button>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {(!pushTargetBrand || pushTargetBrand === getActiveBrand()?.key)
+                    ? `Strictly delivers to ${getActiveBrand()?.name || 'this brand'} devices.`
+                    : 'Dispatches across all brand applications.'}
+                </p>
+              </div>
+
               <div>
                 <label className="text-sm font-medium mb-1.5 block">Title</label>
                 <Input

@@ -84,7 +84,7 @@ const services = [
   },
   {
     title: 'Refer & Earn',
-    description: 'Invite your friends to MELE DATA and earn commission on their transactions.',
+    description: 'Invite your friends and earn commission on their transactions.',
     icon: Gift,
     href: '/referrals',
     color: 'from-violet-500/20 via-violet-500/5 to-transparent',

@@ -1,3 +1,5 @@
+import { getActiveBrand } from './brand';
+
 function normalizeBase(raw) {
   return String(raw || '').trim().replace(/\/+$/, '');
 }
@@ -10,7 +12,7 @@ export function getSiteOrigin() {
   const env = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL);
   if (env) return env;
 
-  return 'https://meledata.ng';
+  return getActiveBrand().url;
 }
 
 export function buildReferralUrl(code) {

@@ -3,16 +3,16 @@ import { LegacyCacheCleanup } from '@/components/legacy-cache-cleanup';
 
 export const metadata = {
   title: {
-    default: 'MELE DATA',
-    template: '%s | MELE DATA',
+    default: 'KULLOMA DATA | Fast, Reliable Airtime & Utility Top-Ups',
+    template: '%s | KULLOMA DATA',
   },
-  description: 'Premium fintech dashboard for MELE DATA',
-  applicationName: 'MELE DATA',
-  metadataBase: new URL('https://axisvtu.com'),
+  description: 'Fast, reliable VTU payments for data bundles, airtime, wallet funding, and utility services.',
+  applicationName: 'KULLOMA DATA',
+  metadataBase: new URL('https://www.kullomadata.com'),
   icons: {
-    icon: '/brand/axisvtu-icon.png',
-    shortcut: '/brand/axisvtu-icon.png',
-    apple: '/brand/axisvtu-icon.png',
+    icon: '/brand/kullomadata-icon.png',
+    shortcut: '/brand/kullomadata-icon.png',
+    apple: '/brand/kullomadata-icon.png',
   },
 };
 

@@ -2,8 +2,8 @@ import { Suspense } from 'react';
 import { ResetPasswordPage } from '@/components/reset-password-page';
 
 export const metadata = {
-  title: 'Reset Password | MELE DATA',
-  description: 'Create a new password for your MELE DATA account.',
+  title: 'Reset Password | KULLOMA DATA',
+  description: 'Create a new password for your KULLOMA DATA account.',
 };
 
 export default function Page() {

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch, clearAuth, getToken, loginRequest, registerRequest, setAuthTokens, setProfile, warmBackend } from '@/lib/api';
+import { getActiveBrand } from '@/lib/brand';
 
 /* ─── Nigerian states ─── */
 const STATES = [
@@ -162,6 +163,8 @@ export function AuthPage({ initialMode, refCode: presetRef }) {
   const inputCls =
     'w-full h-[46px] rounded-lg border border-slate-700 bg-slate-800/60 pl-10 pr-4 text-[14px] text-slate-100 placeholder:text-slate-500 caret-blue-400 shadow-none outline-none transition-all duration-150 hover:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20';
 
+  const brand = getActiveBrand();
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
 
@@ -170,7 +173,7 @@ export function AuthPage({ initialMode, refCode: presetRef }) {
         <header className="border-b border-slate-800/60 bg-slate-900/40 backdrop-blur-md">
           <div className="mx-auto flex h-12 max-w-md items-center justify-between px-4">
             <Link href="/" className="text-[15px] font-bold text-white tracking-tight">
-              MELE DATA
+              {brand.name}
             </Link>
             <div className="flex items-center gap-2">
               <Link
@@ -197,14 +200,14 @@ export function AuthPage({ initialMode, refCode: presetRef }) {
 
             {/* Logo + heading */}
             <div className="text-center mb-7">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 ring-1 ring-slate-700">
-                <img src="/brand/axisvtu-icon.png" alt="MELE DATA" className="h-8 w-8 object-contain" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 ring-1 ring-slate-700 overflow-hidden">
+                <img src={brand.icon} alt={brand.name} className="h-8 w-8 object-contain rounded-lg" />
               </div>
               <h1 className="text-[22px] font-semibold text-white tracking-[-0.02em]">
                 {isRegister ? 'Create your account' : 'Welcome back'}
               </h1>
               <p className="mt-1 text-[13px] text-slate-400">
-                {isRegister ? "A few details and you're in" : 'Sign in to your MELE DATA account'}
+                {isRegister ? "A few details and you're in" : `Sign in to your ${brand.name} account`}
               </p>
             </div>
 
@@ -379,14 +382,16 @@ export function AuthPage({ initialMode, refCode: presetRef }) {
               {isRegister ? (
                 <>
                   By creating an account you agree to our{' '}
-                  <Link href="/terms" className="text-blue-400 hover:text-blue-300 transition-colors">terms</Link>.
+                  <Link href="/terms" className="text-blue-400 hover:text-blue-300 transition-colors">Terms</Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" className="text-blue-400 hover:text-blue-300 transition-colors">Privacy Policy</Link>.
                   <br />
                   Already have one?{' '}
                   <Link href="/login" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">Sign in</Link>
                 </>
               ) : (
                 <>
-                  New to MELE DATA?{' '}
+                  New to {brand.name}?{' '}
                   <Link href="/register" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">Create an account</Link>
                 </>
               )}

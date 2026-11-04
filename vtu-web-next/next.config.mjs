@@ -44,6 +44,14 @@ const nextConfig = {
         destination: `${BACKEND_URL}/api/v1/:path*`,
       },
       {
+        source: '/developer/:path*',
+        destination: `${BACKEND_URL}/developer/:path*`,
+      },
+      {
+        source: '/webhooks/:path*',
+        destination: `${BACKEND_URL}/webhooks/:path*`,
+      },
+      {
         source: '/healthz',
         destination: `${BACKEND_URL}/healthz`,
       },

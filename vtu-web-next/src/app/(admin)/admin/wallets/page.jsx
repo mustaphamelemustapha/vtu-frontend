@@ -344,7 +344,7 @@ export default function AdminWalletsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.3 }}
         >
-          <Card className="h-full border-amber-300/80 bg-amber-50/60 dark:border-amber-400/30 dark:bg-amber-500/10 backdrop-blur-xl shadow-sm">
+          <Card className="h-full border-amber-300/80 bg-amber-500/5 dark:border-amber-400/30 dark:bg-amber-500/10 backdrop-blur-xl shadow-sm">
             <CardContent className="p-6">
               <div className="flex flex-col gap-5">
                 <div className="flex items-start gap-4">

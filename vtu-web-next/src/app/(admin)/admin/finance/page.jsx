@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { adminGetFinanceOverview, adminGetLeakAudit } from '@/lib/api';
+import { adminGetFinanceOverview, adminGetLeakAudit, adminCreateFinanceLedgerEntry } from '@/lib/api';
 import { 
   Banknote, 
   Building,
@@ -11,7 +11,11 @@ import {
   ShieldAlert,
   Users,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Plus,
+  X,
+  CheckCircle2,
+  Loader2
 } from 'lucide-react';
 
 function formatCurrency(amount) {
@@ -25,6 +29,19 @@ export default function FinancePage() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overspent');
   const [showLeakDetails, setShowLeakDetails] = useState(false);
+
+  // Record Capital / Ledger Entry Modal State
+  const [showLedgerModal, setShowLedgerModal] = useState(false);
+  const [ledgerSubmitting, setLedgerSubmitting] = useState(false);
+  const [ledgerError, setLedgerError] = useState('');
+  const [ledgerSuccess, setLedgerSuccess] = useState('');
+  const [ledgerForm, setLedgerForm] = useState({
+    category: 'owner_capital',
+    entry_type: 'credit',
+    amount: '',
+    party: '',
+    description: '',
+  });
 
   useEffect(() => {
     fetchData();
@@ -52,6 +69,65 @@ export default function FinancePage() {
     }
   }
 
+  function handleCategoryChange(cat) {
+    let entryType = 'credit';
+    if (cat === 'owner_withdrawal' || cat === 'receivable') {
+      entryType = 'debit';
+    } else {
+      entryType = 'credit';
+    }
+    setLedgerForm(prev => ({
+      ...prev,
+      category: cat,
+      entry_type: entryType,
+    }));
+  }
+
+  async function handleCreateLedger(e) {
+    e.preventDefault();
+    setLedgerError('');
+    setLedgerSuccess('');
+
+    const amt = parseFloat(ledgerForm.amount);
+    if (isNaN(amt) || amt <= 0) {
+      setLedgerError('Please enter a valid positive amount.');
+      return;
+    }
+    if (!ledgerForm.party?.trim()) {
+      setLedgerError('Please provide a party (e.g. Owner name, bank, or lender).');
+      return;
+    }
+
+    try {
+      setLedgerSubmitting(true);
+      await adminCreateFinanceLedgerEntry({
+        category: ledgerForm.category,
+        entry_type: ledgerForm.entry_type,
+        amount: amt,
+        party: ledgerForm.party.trim(),
+        description: ledgerForm.description?.trim() || undefined,
+      });
+
+      setLedgerSuccess('Ledger entry recorded successfully!');
+      setTimeout(() => {
+        setShowLedgerModal(false);
+        setLedgerSuccess('');
+        setLedgerForm({
+          category: 'owner_capital',
+          entry_type: 'credit',
+          amount: '',
+          party: '',
+          description: '',
+        });
+        fetchData();
+      }, 1200);
+    } catch (err) {
+      setLedgerError(err.message || 'Failed to record ledger entry');
+    } finally {
+      setLedgerSubmitting(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -74,16 +150,32 @@ export default function FinancePage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Financial Position</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Strict accounting overview separating revenue, operating costs, and liabilities.
+            Strict double-entry accounting overview separating revenue, operating costs, commissions, and liabilities.
           </p>
         </div>
-        <button onClick={fetchData} className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700">
-          Refresh
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setLedgerError('');
+              setLedgerSuccess('');
+              setShowLedgerModal(true);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Record Capital / Debt
+          </button>
+          <button 
+            onClick={fetchData} 
+            className="rounded-lg bg-white px-3.5 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-gray-700"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* DATA QUALITY WARNING */}
@@ -93,13 +185,14 @@ export default function FinancePage() {
             <Info className="h-5 w-5 text-blue-400" aria-hidden="true" />
           </div>
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">Data Quality & Estimations</h3>
+            <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">Data Quality & Accounting Metrics</h3>
             <div className="mt-2 text-sm text-blue-700 dark:text-blue-200">
               <ul className="list-disc space-y-1 pl-5">
-                <li>Historical COGS: <strong>{data.cogs.is_estimated ? 'ESTIMATED' : 'ACTUAL'}</strong> (Uses current DataPlan.base_price and assumed Airtime discount)</li>
-                <li>Payment Fees: <strong>{data.payment_fees.is_estimated ? 'ESTIMATED' : 'ACTUAL'}</strong> (Calculated from wallet funds)</li>
-                <li>Wallet Liability: <strong>ACTUAL</strong> (Live sum of user wallets)</li>
-                <li>Provider Balances: <strong>LIVE</strong> (Fetched from external APIs)</li>
+                <li>Historical COGS: <strong>{data.cogs.is_estimated ? 'ESTIMATED' : 'ACTUAL'}</strong> (Uses current DataPlan base_price & wholesale provider rates)</li>
+                <li>Payment Fees: <strong>{data.payment_fees.is_estimated ? 'ESTIMATED' : 'ACTUAL'}</strong> (Calculated strictly on external customer deposits, excluding internal credits)</li>
+                <li>Agent Commissions: <strong>ACTUAL</strong> (Live sum of 2% agent data purchase cashbacks)</li>
+                <li>Wallet Liability: <strong>ACTUAL</strong> (Live sum of all user wallets)</li>
+                <li>Provider Balances: <strong>LIVE</strong> (Fetched in real-time from external APIs)</li>
               </ul>
             </div>
           </div>
@@ -200,6 +293,7 @@ export default function FinancePage() {
                           <th className="pb-2 font-medium">User</th>
                           <th className="pb-2 font-medium">Phone / Email</th>
                           <th className="pb-2 font-medium text-right">Lifetime Funded</th>
+                          <th className="pb-2 font-medium text-right">Earned Cashback</th>
                           <th className="pb-2 font-medium text-right">Lifetime Delivered</th>
                           <th className="pb-2 font-medium text-right">Net Real Loss</th>
                           <th className="pb-2 font-medium text-right">Current Wallet</th>
@@ -211,6 +305,7 @@ export default function FinancePage() {
                             <td className="py-2.5 font-medium">{u.full_name || `User #${u.user_id}`}</td>
                             <td className="py-2.5 text-muted-foreground">{u.phone_number || u.email}</td>
                             <td className="py-2.5 text-right">{formatCurrency(u.funded)}</td>
+                            <td className="py-2.5 text-right text-emerald-600 dark:text-emerald-400">+{formatCurrency(u.commission_earned || 0)}</td>
                             <td className="py-2.5 text-right font-medium">{formatCurrency(u.spent)}</td>
                             <td className="py-2.5 text-right font-semibold text-red-600 dark:text-red-400">-{formatCurrency(u.overspent)}</td>
                             <td className="py-2.5 text-right">{formatCurrency(u.current_balance)}</td>
@@ -225,6 +320,7 @@ export default function FinancePage() {
                           <th className="pb-2 font-medium">User</th>
                           <th className="pb-2 font-medium">Phone / Email</th>
                           <th className="pb-2 font-medium text-right">Current Balance</th>
+                          <th className="pb-2 font-medium text-right">Earned Cashback</th>
                           <th className="pb-2 font-medium text-right">True Net Balance</th>
                           <th className="pb-2 font-medium text-right">Phantom Surplus</th>
                         </tr>
@@ -235,6 +331,7 @@ export default function FinancePage() {
                             <td className="py-2.5 font-medium">{u.full_name || `User #${u.user_id}`}</td>
                             <td className="py-2.5 text-muted-foreground">{u.phone_number || u.email}</td>
                             <td className="py-2.5 text-right font-semibold">{formatCurrency(u.current_balance)}</td>
+                            <td className="py-2.5 text-right text-emerald-600 dark:text-emerald-400">+{formatCurrency(u.commission_earned || 0)}</td>
                             <td className="py-2.5 text-right text-muted-foreground">{formatCurrency(u.expected_balance)}</td>
                             <td className="py-2.5 text-right font-semibold text-amber-600 dark:text-amber-400">+{formatCurrency(u.phantom_balance)}</td>
                           </tr>
@@ -278,12 +375,16 @@ export default function FinancePage() {
               </div>
               
               <div className="flex justify-between pt-4">
-                <dt className="text-gray-500 dark:text-gray-400">Promotional Rewards (Agent)</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Promotional Rewards (Agent Milestones)</dt>
                 <dd className="text-red-600 dark:text-red-400 font-medium">-{formatCurrency(data.promotional_expense)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-500 dark:text-gray-400">Referral Rewards</dt>
+                <dt className="text-gray-500 dark:text-gray-400">Referral Rewards (Ambassador First Deposit)</dt>
                 <dd className="text-red-600 dark:text-red-400 font-medium">-{formatCurrency(data.referral_expense)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-500 dark:text-gray-400">Agent Commissions (2% Data Cashback)</dt>
+                <dd className="text-red-600 dark:text-red-400 font-medium">-{formatCurrency(data.agent_commission_expense || 0)}</dd>
               </div>
               <div className="flex justify-between border-b border-gray-100 pb-4 dark:border-gray-800">
                 <dt className="text-gray-500 dark:text-gray-400 flex items-center">
@@ -297,7 +398,7 @@ export default function FinancePage() {
                 <dt className="text-green-600 dark:text-green-400 font-bold text-lg flex flex-col">
                   Net Profit
                   {data.is_net_profit_estimated && (
-                    <span className="text-xs font-normal text-gray-500 mt-1">Includes estimated costs</span>
+                    <span className="text-xs font-normal text-gray-500 mt-1">Includes estimated costs & live cashbacks</span>
                   )}
                 </dt>
                 <dd className="text-green-600 dark:text-green-400 font-bold text-lg">{formatCurrency(data.net_profit)}</dd>
@@ -376,7 +477,7 @@ export default function FinancePage() {
                 </h3>
                 {Math.abs(data.reconciliation_gap) > 1 && (
                   <p className="mt-1 text-xs text-red-700 dark:text-red-300">
-                    Difference between observed assets and expected assets. Causes: missing historical expenses, unrecorded capital/withdrawals, or COGS estimation errors.
+                    Difference between observed assets and expected balance sheet liabilities + equity. Record initial provider capital or loans using &apos;Record Capital / Debt&apos; above to balance the books.
                   </p>
                 )}
               </div>
@@ -394,24 +495,144 @@ export default function FinancePage() {
           </h3>
         </div>
         <ul role="list" className="divide-y divide-gray-100 dark:divide-gray-800">
-          {data.company_assets.providers.map((provider, index) => (
-            <li key={index} className="flex items-center justify-between gap-x-6 px-6 py-4">
-              <div className="min-w-0">
-                <div className="flex items-start gap-x-3">
-                  <p className="text-sm font-semibold leading-6 text-gray-900 dark:text-white">{provider.name}</p>
-                  <p className={`rounded-md whitespace-nowrap mt-0.5 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset ${provider.type === 'ERROR' ? 'bg-red-50 text-red-700 ring-red-600/20' : 'bg-green-50 text-green-700 ring-green-600/20'}`}>
-                    {provider.type}
-                  </p>
-                </div>
-                {provider.error && <p className="mt-1 truncate text-xs leading-5 text-red-500">{provider.error}</p>}
-              </div>
-              <div className="flex flex-none items-center gap-x-4">
-                <p className="text-sm font-medium leading-6 text-gray-900 dark:text-white">{formatCurrency(provider.balance)}</p>
-              </div>
+          {(data.company_assets.providers || []).filter(p => p.type !== 'ERROR' && !p.error).length === 0 ? (
+            <li className="px-6 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+              No active providers are currently enabled.
             </li>
-          ))}
+          ) : (
+            data.company_assets.providers
+              .filter(p => p.type !== 'ERROR' && !p.error)
+              .map((provider, index) => (
+                <li key={index} className="flex items-center justify-between gap-x-6 px-6 py-4">
+                  <div className="min-w-0">
+                    <div className="flex items-start gap-x-3">
+                      <p className="text-sm font-semibold leading-6 text-gray-900 dark:text-white">{provider.name}</p>
+                      <p className="rounded-md whitespace-nowrap mt-0.5 px-1.5 py-0.5 text-xs font-medium ring-1 ring-inset bg-green-50 text-green-700 ring-green-600/20">
+                        {provider.type}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-none items-center gap-x-4">
+                    <p className="text-sm font-medium leading-6 text-gray-900 dark:text-white">{formatCurrency(provider.balance)}</p>
+                  </div>
+                </li>
+              ))
+          )}
         </ul>
       </div>
+
+      {/* RECORD CAPITAL / DEBT MODAL */}
+      {showLedgerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Record Balance Sheet Entry</h3>
+              <button
+                onClick={() => setShowLedgerModal(false)}
+                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateLedger} className="p-6 space-y-4">
+              {ledgerError && (
+                <div className="rounded-lg bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                  {ledgerError}
+                </div>
+              )}
+              {ledgerSuccess && (
+                <div className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  {ledgerSuccess}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Accounting Category
+                </label>
+                <select
+                  value={ledgerForm.category}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="owner_capital">Owner Capital (Equity Inflow)</option>
+                  <option value="owner_withdrawal">Owner Withdrawal (Drawings Outflow)</option>
+                  <option value="business_debt">Business Debt / Loan (Liability Inflow)</option>
+                  <option value="receivable">Receivable (Asset / Inflow Expected)</option>
+                </select>
+                <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+                  {ledgerForm.category === 'owner_capital' && 'Increases Owner Equity to match initial funds deposited into provider wallets.'}
+                  {ledgerForm.category === 'owner_withdrawal' && 'Decreases Owner Equity when capital is drawn out of the company.'}
+                  {ledgerForm.category === 'business_debt' && 'Increases Liabilities for loans or borrowed operational funds.'}
+                  {ledgerForm.category === 'receivable' && 'Increases Assets for funds owed to the business.'}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Amount (₦)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  placeholder="e.g. 50000"
+                  value={ledgerForm.amount}
+                  onChange={(e) => setLedgerForm({ ...ledgerForm, amount: e.target.value })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Party (Owner / Bank / Lender)
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Mustapha Mele"
+                  value={ledgerForm.party}
+                  onChange={(e) => setLedgerForm({ ...ledgerForm, party: e.target.value })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Description / Reference Note (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Initial SMEPlug balance funding"
+                  value={ledgerForm.description}
+                  onChange={(e) => setLedgerForm({ ...ledgerForm, description: e.target.value })}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowLedgerModal(false)}
+                  className="rounded-lg border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={ledgerSubmitting}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors"
+                >
+                  {ledgerSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Save Entry
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );
