@@ -94,7 +94,15 @@ export default function AdminOverviewPage() {
   const secondaryMetrics = [
     { label: 'Data Revenue', value: `₦${formatMoney(analytics?.data_revenue || 0)}`, detail: 'Current period' },
     { label: 'Service Revenue', value: `₦${formatMoney(analytics?.service_revenue || 0)}`, detail: 'Current period' },
-    { label: 'API Health', value: percent(analytics?.api_success, (analytics?.api_success || 0) + (analytics?.api_failed || 0)), detail: 'Success rate' },
+    { 
+      label: 'API Health', 
+      value: percent(
+        ((analytics?.api_success || 0) + (analytics?.api_failed || 0)) > 0
+          ? ((analytics?.api_success || 0) / ((analytics?.api_success || 0) + (analytics?.api_failed || 0))) * 100
+          : 100
+      ), 
+      detail: 'Success rate' 
+    },
     { label: 'Support Issues', value: String(analytics?.reports_open ?? reports.length), detail: 'Open tickets' },
   ];
 
