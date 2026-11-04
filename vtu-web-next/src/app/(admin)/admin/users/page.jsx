@@ -196,7 +196,7 @@ function AdminUsersPageContent() {
     {
       key: 'wallet_balance',
       label: 'Wallet balance',
-      render: (row) => <span className="font-medium">{selectedDetails?.user?.id === row.id ? `₦${formatMoney(selectedDetails?.wallet?.balance || 0)}` : 'Open user'}</span>,
+      render: (row) => <span className="font-medium">₦{formatMoney(row.wallet_balance !== undefined ? row.wallet_balance : (selectedDetails?.user?.id === row.id ? selectedDetails?.wallet?.balance || 0 : 0))}</span>,
     },
     {
       key: 'total_spending',
