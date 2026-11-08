@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { Eye, PauseCircle, PlayCircle, RefreshCw, Wallet, X, ChevronLeft, ChevronRight, Trash2, Edit3, Tag, Check } from 'lucide-react';
 import {
   adminActivateUser,
   adminDeleteUser,
@@ -10,9 +10,11 @@ import {
   adminGetUsers,
   adminSuspendUser,
   adminUpdateUserRole,
+  adminUpdateReferralCode,
 } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { AdminPageHeader } from '@/components/admin/admin-page-header';
 import { FilterBar } from '@/components/admin/filter-bar';
@@ -44,6 +46,13 @@ function AdminUsersPageContent() {
   const [pricingOverrides, setPricingOverrides] = useState([]);
   const [overrideForm, setOverrideForm] = useState({ data_plan_id: '', custom_price: '' });
   const [overrideBusy, setOverrideBusy] = useState(false);
+
+  // Referral Code Edit State
+  const [editingReferralUser, setEditingReferralUser] = useState(null);
+  const [referralCodeInput, setReferralCodeInput] = useState('');
+  const [referralError, setReferralError] = useState('');
+  const [savingReferral, setSavingReferral] = useState(false);
+  const [referralSuccessMsg, setReferralSuccessMsg] = useState('');
 
   const activeRequestRef = useRef(0);
 
@@ -189,10 +198,99 @@ function AdminUsersPageContent() {
     }
   }, [confirmAction, loadUsers, selectedUser?.id]);
 
+  const handleOpenReferralModal = useCallback((user) => {
+    if (!user) return;
+    setEditingReferralUser(user);
+    setReferralCodeInput(user.referral_code || selectedDetails?.user?.referral_code || '');
+    setReferralError('');
+    setReferralSuccessMsg('');
+  }, [selectedDetails?.user?.referral_code]);
+
+  const handleSaveReferralCode = async (e) => {
+    if (e) e.preventDefault();
+    if (!editingReferralUser) return;
+    const cleanCode = (referralCodeInput || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (!cleanCode || cleanCode.length < 3) {
+      setReferralError('Referral code must be at least 3 characters.');
+      return;
+    }
+    if (cleanCode.length > 16) {
+      setReferralError('Referral code cannot exceed 16 characters.');
+      return;
+    }
+    if (!/^[A-Za-z0-9]+$/.test(cleanCode)) {
+      setReferralError('Referral code must contain letters and numbers only.');
+      return;
+    }
+
+    setSavingReferral(true);
+    setReferralError('');
+    try {
+      const res = await adminUpdateReferralCode({
+        user_id: editingReferralUser.id,
+        new_code: cleanCode,
+      });
+
+      const updatedCode = res?.referral_code || cleanCode;
+
+      // Update in users table list
+      setUsers((prev) =>
+        prev.map((u) => (u.id === editingReferralUser.id ? { ...u, referral_code: updatedCode } : u))
+      );
+
+      // Update selectedUser & selectedDetails if open
+      if (selectedUser?.id === editingReferralUser.id) {
+        setSelectedUser((prev) => (prev ? { ...prev, referral_code: updatedCode } : null));
+      }
+      if (selectedDetails?.user?.id === editingReferralUser.id) {
+        setSelectedDetails((prev) =>
+          prev
+            ? {
+                ...prev,
+                user: { ...prev.user, referral_code: updatedCode },
+              }
+            : null
+        );
+      }
+
+      setReferralSuccessMsg(`Referral code updated to "${updatedCode}" successfully!`);
+      setTimeout(() => {
+        setEditingReferralUser(null);
+        setReferralSuccessMsg('');
+      }, 1200);
+    } catch (err) {
+      setReferralError(err?.message || 'Failed to update referral code');
+    } finally {
+      setSavingReferral(false);
+    }
+  };
+
   const columns = useMemo(() => [
     { key: 'full_name', label: 'Name' },
     { key: 'email', label: 'Email' },
     { key: 'phone_number', label: 'Phone' },
+    {
+      key: 'referral_code',
+      label: 'Referral Code',
+      render: (row) => (
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-md bg-secondary/80 border border-border/60 text-foreground">
+            {row.referral_code || '—'}
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenReferralModal(row);
+            }}
+            className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-secondary transition-colors"
+            title="Edit referral code"
+          >
+            <Edit3 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ),
+    },
     {
       key: 'wallet_balance',
       label: 'Wallet balance',
@@ -222,6 +320,15 @@ function AdminUsersPageContent() {
           <Button
             variant="secondary"
             size="sm"
+            onClick={() => handleOpenReferralModal(row)}
+            title="Edit user's referral code"
+          >
+            <Tag className="h-3.5 w-3.5" />
+            Edit Code
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             className="border-border"
             onClick={() => setConfirmAction({ type: row.is_active ? 'suspend' : 'activate', user: row })}
           >
@@ -243,7 +350,7 @@ function AdminUsersPageContent() {
         </div>
       ),
     },
-  ], [openUser, selectedDetails?.user?.id, selectedDetails?.wallet?.balance]);
+  ], [openUser, selectedDetails?.user?.id, selectedDetails?.wallet?.balance, handleOpenReferralModal]);
 
   const totalPages = Math.ceil(total / 50);
 
@@ -433,9 +540,24 @@ function AdminUsersPageContent() {
                       <div className="text-xs font-medium text-muted-foreground">Wallet Balance</div>
                       <div className="mt-1 text-2xl font-semibold text-foreground">₦{formatMoney(selectedDetails?.wallet?.balance || 0)}</div>
                     </div>
-                    <div className="rounded-xl border bg-card p-4 shadow-sm">
-                      <div className="text-xs font-medium text-muted-foreground">Referral Code</div>
-                      <div className="mt-1 text-xl font-semibold text-foreground font-mono">{selectedDetails?.user?.referral_code || 'N/A'}</div>
+                    <div className="rounded-xl border bg-card p-4 shadow-sm relative group">
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-medium text-muted-foreground">Referral Code</div>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenReferralModal(selectedDetails?.user || selectedUser)}
+                          className="text-xs flex items-center gap-1 text-primary hover:underline font-semibold"
+                          title="Edit Referral Code"
+                        >
+                          <Edit3 className="h-3 w-3" />
+                          Edit
+                        </button>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between">
+                        <span className="text-xl font-bold text-foreground font-mono tracking-wider">
+                          {selectedDetails?.user?.referral_code || selectedUser?.referral_code || 'N/A'}
+                        </span>
+                      </div>
                     </div>
                     <div className="rounded-xl border bg-card p-4 shadow-sm">
                       <div className="text-xs font-medium text-muted-foreground">Recent Transactions</div>
@@ -578,6 +700,115 @@ function AdminUsersPageContent() {
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Referral Code Modal */}
+      {editingReferralUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-border/60 bg-secondary/30 px-5 py-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                  <Tag className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Edit Referral Code</h3>
+                  <p className="text-xs text-muted-foreground">{editingReferralUser.full_name || editingReferralUser.email}</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-lg"
+                onClick={() => {
+                  setEditingReferralUser(null);
+                  setReferralError('');
+                  setReferralSuccessMsg('');
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <form onSubmit={handleSaveReferralCode} className="p-5 space-y-4">
+              <div className="space-y-1.5 rounded-xl border border-border/50 bg-secondary/20 p-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground font-medium">User Email</span>
+                  <span className="font-semibold text-foreground truncate max-w-[200px]">{editingReferralUser.email}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-border/40">
+                  <span className="text-muted-foreground font-medium">Current Code</span>
+                  <span className="font-mono font-bold text-muted-foreground bg-secondary/60 px-2 py-0.5 rounded">
+                    {editingReferralUser.referral_code || selectedDetails?.user?.referral_code || 'None'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-foreground block">
+                  New Referral Code
+                </label>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    maxLength={16}
+                    value={referralCodeInput}
+                    onChange={(e) => {
+                      setReferralCodeInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
+                      setReferralError('');
+                    }}
+                    placeholder="e.g. KULLOMA01"
+                    className="h-11 font-mono font-bold text-base uppercase rounded-xl tracking-wider pl-3 pr-16 bg-background border-border"
+                    autoFocus
+                    disabled={savingReferral}
+                  />
+                  <span className="absolute right-3 top-3 text-xs font-mono text-muted-foreground">
+                    {referralCodeInput.length}/16
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Referral code must be 3–16 characters (letters and numbers only). It will automatically be formatted in uppercase.
+                </p>
+              </div>
+
+              {referralError && (
+                <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-3 text-xs font-semibold text-destructive">
+                  {referralError}
+                </div>
+              )}
+
+              {referralSuccessMsg && (
+                <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                  <Check className="h-4 w-4" />
+                  {referralSuccessMsg}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditingReferralUser(null);
+                    setReferralError('');
+                    setReferralSuccessMsg('');
+                  }}
+                  disabled={savingReferral}
+                  className="rounded-xl h-10 px-4 text-xs font-bold"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={savingReferral || !referralCodeInput.trim()}
+                  className="rounded-xl h-10 px-5 text-xs font-bold shadow-sm"
+                >
+                  {savingReferral ? 'Updating...' : 'Save Referral Code'}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

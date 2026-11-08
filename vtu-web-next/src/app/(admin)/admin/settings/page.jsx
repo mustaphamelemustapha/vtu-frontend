@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, RefreshCw, ShieldCheck, X, Plus, Award, CheckCircle2, Sparkles, UserCheck } from 'lucide-react';
 import { adminGetAnalytics, adminGetPricingRules, adminGetServiceToggles, adminUpdatePricingRule, adminUpdateServiceToggle, adminGetCommissionSettings, adminUpdateCommissionSettings, adminReconcileAgentCommissions, apiFetch, getProfile } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
+import { getActiveBrand } from '@/lib/brand';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -65,12 +66,16 @@ export default function AdminSettingsPage() {
     setSavingCommission(true);
     setCommissionSavedMsg('');
     try {
+      const parsedAmb = parseFloat(commissionConfig.ambassador_deposit_percent);
+      const parsedAgent = parseFloat(commissionConfig.agent_data_commission_percent);
       const res = await adminUpdateCommissionSettings({
-        ambassador_deposit_percent: parseFloat(commissionConfig.ambassador_deposit_percent),
-        agent_data_commission_percent: parseFloat(commissionConfig.agent_data_commission_percent),
+        ambassador_deposit_percent: isNaN(parsedAmb) ? 0.0 : parsedAmb,
+        agent_data_commission_percent: isNaN(parsedAgent) ? 0.0 : parsedAgent,
         enable_agent_data_commission: Boolean(commissionConfig.enable_agent_data_commission),
       });
-      setCommissionConfig(res);
+      if (res) {
+        setCommissionConfig(res);
+      }
       setCommissionSavedMsg('Commission settings updated successfully!');
       setTimeout(() => setCommissionSavedMsg(''), 4000);
     } catch (err) {
@@ -181,11 +186,9 @@ export default function AdminSettingsPage() {
                 </CardDescription>
               </div>
             </div>
-            {commissionConfig.brand && (
-              <span className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-primary">
-                {commissionConfig.brand}
-              </span>
-            )}
+            <span className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-primary">
+              {typeof window !== 'undefined' ? getActiveBrand()?.name : (commissionConfig.brand || 'MELE DATA')}
+            </span>
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid gap-6 md:grid-cols-2">
@@ -201,17 +204,45 @@ export default function AdminSettingsPage() {
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Percentage granted to the Ambassador immediately upon the referred user&apos;s first wallet funding.
                 </p>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="100"
-                    value={commissionConfig.ambassador_deposit_percent ?? ''}
-                    onChange={(e) => setCommissionConfig({ ...commissionConfig, ambassador_deposit_percent: e.target.value })}
-                    className="h-11 font-bold text-base rounded-xl pr-8"
-                  />
-                  <span className="absolute right-3 top-3 text-sm font-bold text-muted-foreground">%</span>
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      max="100"
+                      placeholder="e.g. 10.0"
+                      value={commissionConfig.ambassador_deposit_percent ?? ''}
+                      onChange={(e) => setCommissionConfig({ ...commissionConfig, ambassador_deposit_percent: e.target.value })}
+                      className="h-11 font-bold text-base rounded-xl pr-8 bg-background border-border"
+                    />
+                    <span className="absolute right-3 top-3 text-sm font-bold text-muted-foreground">%</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[11px] font-medium text-muted-foreground mr-1">Presets:</span>
+                    {[2.5, 5.0, 7.5, 10.0, 15.0].map((preset) => {
+                      const isSelected = parseFloat(commissionConfig.ambassador_deposit_percent) === preset;
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => {
+                            setCommissionConfig({
+                              ...commissionConfig,
+                              ambassador_deposit_percent: preset,
+                            });
+                          }}
+                          className={`text-xs px-2.5 py-0.5 rounded-lg font-bold transition-all ${
+                            isSelected
+                              ? 'bg-amber-600 text-white shadow-sm'
+                              : 'bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/50'
+                          }`}
+                        >
+                          {preset}%
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
@@ -238,18 +269,54 @@ export default function AdminSettingsPage() {
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Instant cashback credited back to the agent&apos;s wallet automatically on every successful data transaction.
                 </p>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="0.5"
-                    min="0"
-                    max="100"
-                    disabled={!commissionConfig.enable_agent_data_commission}
-                    value={commissionConfig.agent_data_commission_percent ?? ''}
-                    onChange={(e) => setCommissionConfig({ ...commissionConfig, agent_data_commission_percent: e.target.value })}
-                    className="h-11 font-bold text-base rounded-xl pr-8"
-                  />
-                  <span className="absolute right-3 top-3 text-sm font-bold text-muted-foreground">%</span>
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="100"
+                      placeholder="e.g. 2.0"
+                      value={commissionConfig.agent_data_commission_percent ?? ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const num = parseFloat(val);
+                        setCommissionConfig({
+                          ...commissionConfig,
+                          agent_data_commission_percent: val,
+                          enable_agent_data_commission: !isNaN(num) && num > 0 ? true : commissionConfig.enable_agent_data_commission,
+                        });
+                      }}
+                      className="h-11 font-bold text-base rounded-xl pr-8 bg-background border-border"
+                    />
+                    <span className="absolute right-3 top-3 text-sm font-bold text-muted-foreground">%</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    <span className="text-[11px] font-medium text-muted-foreground mr-1">Presets:</span>
+                    {[1.0, 1.5, 2.0, 2.5, 3.0, 5.0].map((preset) => {
+                      const isSelected = parseFloat(commissionConfig.agent_data_commission_percent) === preset;
+                      return (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => {
+                            setCommissionConfig({
+                              ...commissionConfig,
+                              agent_data_commission_percent: preset,
+                              enable_agent_data_commission: true,
+                            });
+                          }}
+                          className={`text-xs px-2.5 py-0.5 rounded-lg font-bold transition-all ${
+                            isSelected
+                              ? 'bg-emerald-600 text-white shadow-sm'
+                              : 'bg-secondary/70 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/50'
+                          }`}
+                        >
+                          {preset}%
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -279,7 +346,7 @@ export default function AdminSettingsPage() {
                   onClick={handleReconcileCommissions}
                   disabled={reconciling}
                   className="rounded-xl h-10 px-4 text-xs font-bold border-border/70 hover:bg-secondary"
-                  title="Scan recent data transactions by agents and award any missing 2% cashback"
+                  title={`Scan recent data transactions by agents and award any missing ${commissionConfig.agent_data_commission_percent || 2}% cashback`}
                 >
                   {reconciling ? 'Scanning...' : 'Reconcile Past Agent Cashback'}
                 </Button>
