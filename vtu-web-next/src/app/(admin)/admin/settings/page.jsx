@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, RefreshCw, ShieldCheck, X, Plus, Award, CheckCircle2, Sparkles, UserCheck } from 'lucide-react';
-import { adminGetAnalytics, adminGetPricingRules, adminGetServiceToggles, adminUpdatePricingRule, adminUpdateServiceToggle, adminGetCommissionSettings, adminUpdateCommissionSettings, adminReconcileAgentCommissions, apiFetch, getProfile } from '@/lib/api';
+import { AlertTriangle, RefreshCw, ShieldCheck, X, Plus, Award, CheckCircle2, Sparkles, UserCheck, Gift } from 'lucide-react';
+import { adminGetAnalytics, adminGetPricingRules, adminGetServiceToggles, adminUpdatePricingRule, adminUpdateServiceToggle, adminGetCommissionSettings, adminUpdateCommissionSettings, adminReconcileAgentCommissions, adminReconcileWelcomeBonuses, apiFetch, getProfile } from '@/lib/api';
 import { formatDateTime, formatMoney } from '@/lib/format';
 import { getActiveBrand } from '@/lib/brand';
 import { Button } from '@/components/ui/button';
@@ -28,11 +28,16 @@ export default function AdminSettingsPage() {
     ambassador_deposit_percent: 5.0,
     agent_data_commission_percent: 2.0,
     enable_agent_data_commission: true,
+    enable_welcome_data_bonus: false,
+    welcome_data_bonus_amount: 300,
+    welcome_data_bonus_min_gb: 2.0,
   });
   const [savingCommission, setSavingCommission] = useState(false);
   const [commissionSavedMsg, setCommissionSavedMsg] = useState('');
   const [reconciling, setReconciling] = useState(false);
   const [reconcileMsg, setReconcileMsg] = useState('');
+  const [reconcilingWelcome, setReconcilingWelcome] = useState(false);
+  const [reconcileWelcomeMsg, setReconcileWelcomeMsg] = useState('');
 
   // Margin Edit State
   const [editingMarginFor, setEditingMarginFor] = useState(null);
@@ -68,15 +73,20 @@ export default function AdminSettingsPage() {
     try {
       const parsedAmb = parseFloat(commissionConfig.ambassador_deposit_percent);
       const parsedAgent = parseFloat(commissionConfig.agent_data_commission_percent);
+      const parsedWelcomeAmt = parseFloat(commissionConfig.welcome_data_bonus_amount);
+      const parsedWelcomeMinGb = parseFloat(commissionConfig.welcome_data_bonus_min_gb);
       const res = await adminUpdateCommissionSettings({
         ambassador_deposit_percent: isNaN(parsedAmb) ? 0.0 : parsedAmb,
         agent_data_commission_percent: isNaN(parsedAgent) ? 0.0 : parsedAgent,
         enable_agent_data_commission: Boolean(commissionConfig.enable_agent_data_commission),
+        enable_welcome_data_bonus: Boolean(commissionConfig.enable_welcome_data_bonus),
+        welcome_data_bonus_amount: isNaN(parsedWelcomeAmt) ? 300.0 : parsedWelcomeAmt,
+        welcome_data_bonus_min_gb: isNaN(parsedWelcomeMinGb) ? 2.0 : parsedWelcomeMinGb,
       });
       if (res) {
         setCommissionConfig(res);
       }
-      setCommissionSavedMsg('Commission settings updated successfully!');
+      setCommissionSavedMsg('Commission & marketing campaign settings updated successfully!');
       setTimeout(() => setCommissionSavedMsg(''), 4000);
     } catch (err) {
       alert(err?.message || 'Failed to update commission settings');
@@ -96,6 +106,20 @@ export default function AdminSettingsPage() {
       alert(err?.message || 'Failed to reconcile agent commissions');
     } finally {
       setReconciling(false);
+    }
+  };
+
+  const handleReconcileWelcomeBonuses = async () => {
+    setReconcilingWelcome(true);
+    setReconcileWelcomeMsg('');
+    try {
+      const res = await adminReconcileWelcomeBonuses();
+      setReconcileWelcomeMsg(`Awarded ₦300 welcome gift to ${res.count || 0} qualifying users!`);
+      setTimeout(() => setReconcileWelcomeMsg(''), 5000);
+    } catch (err) {
+      alert(err?.message || 'Failed to reconcile welcome bonuses');
+    } finally {
+      setReconcilingWelcome(false);
     }
   };
 
@@ -191,7 +215,7 @@ export default function AdminSettingsPage() {
             </span>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 xl:grid-cols-3 md:grid-cols-2 grid-cols-1">
               {/* Ambassador Settings */}
               <div className="rounded-2xl border border-border/60 bg-background/50 p-5 space-y-3">
                 <div className="flex items-center justify-between">
@@ -319,6 +343,102 @@ export default function AdminSettingsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Welcome 2GB Marketing Gift Campaign */}
+              <div className="rounded-2xl border border-border/60 bg-background/50 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Gift className="h-4 w-4 text-purple-500" />
+                    <span className="font-bold text-sm text-foreground">Welcome Data Bonus Campaign</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={commissionConfig.enable_welcome_data_bonus ? 'default' : 'secondary'}
+                    size="sm"
+                    className="h-7 text-xs rounded-lg font-bold"
+                    onClick={() => setCommissionConfig({
+                      ...commissionConfig,
+                      enable_welcome_data_bonus: !commissionConfig.enable_welcome_data_bonus,
+                    })}
+                  >
+                    {commissionConfig.enable_welcome_data_bonus ? 'Active' : 'Disabled'}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Gifts ₦{commissionConfig.welcome_data_bonus_amount || 300} to user&apos;s wallet when they deposit &amp; reach {commissionConfig.welcome_data_bonus_min_gb || 2.0}GB cumulative data (e.g. 1GB + 1GB).
+                </p>
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-muted-foreground">Reward (₦)</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="50"
+                        min="0"
+                        placeholder="300"
+                        value={commissionConfig.welcome_data_bonus_amount ?? ''}
+                        onChange={(e) => setCommissionConfig({
+                          ...commissionConfig,
+                          welcome_data_bonus_amount: e.target.value,
+                        })}
+                        className="h-10 font-bold text-sm rounded-xl pl-6 bg-background border-border"
+                      />
+                      <span className="absolute left-2.5 top-2.5 text-xs font-bold text-muted-foreground">₦</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1">
+                      {[200, 300, 500, 1000].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setCommissionConfig({ ...commissionConfig, welcome_data_bonus_amount: preset })}
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-all ${
+                            parseFloat(commissionConfig.welcome_data_bonus_amount) === preset
+                              ? 'bg-purple-600 text-white shadow-sm'
+                              : 'bg-secondary/70 hover:bg-secondary text-muted-foreground'
+                          }`}
+                        >
+                          ₦{preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-muted-foreground">Milestone (GB)</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="0.5"
+                        min="0.5"
+                        placeholder="2.0"
+                        value={commissionConfig.welcome_data_bonus_min_gb ?? ''}
+                        onChange={(e) => setCommissionConfig({
+                          ...commissionConfig,
+                          welcome_data_bonus_min_gb: e.target.value,
+                        })}
+                        className="h-10 font-bold text-sm rounded-xl pr-8 bg-background border-border"
+                      />
+                      <span className="absolute right-2.5 top-2.5 text-xs font-bold text-muted-foreground">GB</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1">
+                      {[1.0, 2.0, 3.0, 5.0].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setCommissionConfig({ ...commissionConfig, welcome_data_bonus_min_gb: preset })}
+                          className={`text-[10px] px-1.5 py-0.5 rounded font-bold transition-all ${
+                            parseFloat(commissionConfig.welcome_data_bonus_min_gb) === preset
+                              ? 'bg-purple-600 text-white shadow-sm'
+                              : 'bg-secondary/70 hover:bg-secondary text-muted-foreground'
+                          }`}
+                        >
+                          {preset}G
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-border/40">
@@ -327,6 +447,11 @@ export default function AdminSettingsPage() {
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 className="h-4 w-4" />
                     {commissionSavedMsg}
+                  </div>
+                ) : reconcileWelcomeMsg ? (
+                  <div className="flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    {reconcileWelcomeMsg}
                   </div>
                 ) : reconcileMsg ? (
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
@@ -339,13 +464,23 @@ export default function AdminSettingsPage() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleReconcileWelcomeBonuses}
+                  disabled={reconcilingWelcome}
+                  className="rounded-xl h-10 px-3.5 text-xs font-bold border-purple-500/30 text-purple-500 hover:bg-purple-500/10"
+                  title="Scan users who met the 2GB cumulative purchase milestone and award missing ₦300 welcome gifts"
+                >
+                  {reconcilingWelcome ? 'Scanning...' : 'Reconcile Past 2GB Welcome Gifts'}
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleReconcileCommissions}
                   disabled={reconciling}
-                  className="rounded-xl h-10 px-4 text-xs font-bold border-border/70 hover:bg-secondary"
+                  className="rounded-xl h-10 px-3.5 text-xs font-bold border-border/70 hover:bg-secondary"
                   title={`Scan recent data transactions by agents and award any missing ${commissionConfig.agent_data_commission_percent || 2}% cashback`}
                 >
                   {reconciling ? 'Scanning...' : 'Reconcile Past Agent Cashback'}

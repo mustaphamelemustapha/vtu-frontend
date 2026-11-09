@@ -404,6 +404,12 @@ export async function adminReconcileAgentCommissions() {
   });
 }
 
+export async function adminReconcileWelcomeBonuses() {
+  return apiFetch('/admin/settings/commissions/reconcile-welcome-bonus', {
+    method: 'POST',
+  });
+}
+
 export async function adminFundWallet(payload) {
   return apiFetch('/admin/fund-wallet', {
     method: 'POST',
