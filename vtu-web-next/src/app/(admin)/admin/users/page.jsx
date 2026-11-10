@@ -759,7 +759,7 @@ function AdminUsersPageContent() {
                       setReferralCodeInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
                       setReferralError('');
                     }}
-                    placeholder="e.g. KULLOMA01"
+                    placeholder="e.g. MELE01"
                     className="h-11 font-mono font-bold text-base uppercase rounded-xl tracking-wider pl-3 pr-16 bg-background border-border"
                     autoFocus
                     disabled={savingReferral}

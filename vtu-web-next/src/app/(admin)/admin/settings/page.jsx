@@ -60,7 +60,13 @@ export default function AdminSettingsPage() {
       if (analyticsRes.status === 'fulfilled') setAnalytics(analyticsRes.value || {});
       if (togglesRes.status === 'fulfilled') setServiceToggles(togglesRes.value || {});
       if (commRes.status === 'fulfilled' && commRes.value) {
-        setCommissionConfig(commRes.value);
+        const val = commRes.value;
+        setCommissionConfig({
+          ...val,
+          brand: 'meledata',
+          agent_data_commission_percent: val.agent_data_commission_percent != null && val.agent_data_commission_percent > 0 ? val.agent_data_commission_percent : 2.0,
+          enable_agent_data_commission: val.enable_agent_data_commission ?? true,
+        });
       }
     } finally {
       setLoading(false);
@@ -211,7 +217,7 @@ export default function AdminSettingsPage() {
               </div>
             </div>
             <span className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-primary">
-              {getActiveBrand()?.name || 'MELE DATA'}
+              MELE DATA
             </span>
           </CardHeader>
           <CardContent className="p-6">
