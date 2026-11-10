@@ -13,6 +13,7 @@ import {
   Award,
   Ticket,
   Plug,
+  Code2,
 } from 'lucide-react';
 
 export const adminNav = [
@@ -21,6 +22,7 @@ export const adminNav = [
   { label: 'Users', href: '/admin/users', icon: Users },
   { label: 'Agents', href: '/admin/agents', icon: Briefcase },
   { label: 'Ambassadors', href: '/admin/ambassadors', icon: Award },
+  { label: 'API Resellers', href: '/admin/developers', icon: Code2 },
   { label: 'Transactions', href: '/admin/transactions', icon: ReceiptText },
   { label: 'Wallets', href: '/admin/wallets', icon: CircleDollarSign },
   { label: 'Services', href: '/admin/services', icon: Activity },
@@ -34,6 +36,7 @@ export const adminNav = [
 
 export const adminQuickLinks = [
   { label: 'Users', href: '/admin/users' },
+  { label: 'API Resellers', href: '/admin/developers' },
   { label: 'Transactions', href: '/admin/transactions' },
   { label: 'Support Inbox', href: '/admin/support' },
   { label: 'Settings', href: '/admin/settings' },
