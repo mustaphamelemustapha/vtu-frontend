@@ -371,11 +371,13 @@ function AdminDevelopersPageContent() {
   const columns = useMemo(
     () => [
       {
+        key: 'reseller',
+        label: 'API Reseller',
         header: 'API Reseller',
         render: (row) => (
           <div className="flex items-center gap-3 py-1">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 text-primary font-bold text-sm">
-              {row.full_name ? row.full_name.charAt(0).toUpperCase() : row.email.charAt(0).toUpperCase()}
+              {row.full_name ? row.full_name.charAt(0).toUpperCase() : (row.email ? row.email.charAt(0).toUpperCase() : 'U')}
             </div>
             <div className="min-w-0">
               <div className="font-semibold text-foreground truncate max-w-[200px]">{row.full_name || 'No Name'}</div>
@@ -386,6 +388,8 @@ function AdminDevelopersPageContent() {
         ),
       },
       {
+        key: 'api_public_key',
+        label: 'API Public Key',
         header: 'API Public Key',
         render: (row) => (
           <div className="space-y-1">
@@ -420,6 +424,8 @@ function AdminDevelopersPageContent() {
         ),
       },
       {
+        key: 'wallet_balance',
+        label: 'Wallet Balance',
         header: 'Wallet Balance',
         render: (row) => (
           <div>
@@ -431,6 +437,8 @@ function AdminDevelopersPageContent() {
         ),
       },
       {
+        key: 'data_sold',
+        label: 'Data Sold (API)',
         header: 'Data Sold (API)',
         render: (row) => (
           <div>
@@ -445,6 +453,8 @@ function AdminDevelopersPageContent() {
         ),
       },
       {
+        key: 'api_orders',
+        label: 'API Orders',
         header: 'API Orders',
         render: (row) => (
           <div>
@@ -461,6 +471,8 @@ function AdminDevelopersPageContent() {
         ),
       },
       {
+        key: 'status',
+        label: 'Status',
         header: 'Status',
         render: (row) => {
           const isApproved = row.developer_status === 'approved' || (row.is_developer && row.developer_status !== 'suspended');
@@ -490,6 +502,8 @@ function AdminDevelopersPageContent() {
         },
       },
       {
+        key: 'actions',
+        label: 'Actions',
         header: 'Actions',
         align: 'right',
         render: (row) => {
@@ -684,9 +698,10 @@ function AdminDevelopersPageContent() {
           ) : (
             <AdminTable
               columns={columns}
+              rows={developers}
               data={developers}
               loading={loading}
-              emptyMessage="No API resellers found matching your criteria."
+              empty="No API resellers found matching your criteria."
             />
           )}
         </CardContent>
