@@ -156,18 +156,19 @@ function AdminDevelopersPageContent() {
           const appliedUsers = appsRes.status === 'fulfilled' && Array.isArray(appsRes.value) ? appsRes.value : [];
           const appliedIds = new Set(appliedUsers.map((a) => a.id));
 
-          // Filter users in Mele Data who are developers, have developer status, or applied
+          // Filter users who are strictly authorized and actively permitted to vend data
           const matched = allUsers.filter((u) => {
             const devStatus = String(u.developer_status || '').toLowerCase();
             const role = String(u.role || '').toLowerCase();
-            const isDev = Boolean(u.is_developer) || role === 'developer' || devStatus === 'approved' || devStatus === 'suspended' || devStatus === 'applied' || appliedIds.has(u.id);
-            if (!isDev) return false;
+            const isApproved = Boolean(u.is_developer) || role === 'developer' || devStatus === 'approved';
+            const isSuspended = devStatus === 'suspended';
+            const isApplied = devStatus === 'applied' || appliedIds.has(u.id);
 
-            if (status === 'approved' && devStatus !== 'approved' && !u.is_developer) return false;
-            if (status === 'suspended' && devStatus !== 'suspended') return false;
-            if (status === 'applied' && devStatus !== 'applied' && !appliedIds.has(u.id)) return false;
-
-            return true;
+            if (status === 'suspended') return isSuspended;
+            if (status === 'applied') return isApplied;
+            if (status === 'approved') return isApproved && !isSuspended;
+            // Default "all": Strictly authorized and actively permitted developers only
+            return isApproved && !isSuspended;
           });
 
           devItems = matched.map((u) => {
@@ -648,13 +649,12 @@ function AdminDevelopersPageContent() {
           )}
         </div>
 
-        {/* Status Filter Tabs (Mele Data only) */}
+        {/* Status Filter Tabs */}
         <div className="flex items-center rounded-xl border border-border/60 bg-secondary/30 p-1">
           {[
-            { key: 'all', label: 'All' },
-            { key: 'approved', label: 'Approved' },
+            { key: 'all', label: 'All Authorized' },
+            { key: 'applied', label: 'Pending Approval' },
             { key: 'suspended', label: 'Suspended' },
-            { key: 'applied', label: 'Applied' },
           ].map((st) => (
             <button
               key={st.key}
