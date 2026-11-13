@@ -141,6 +141,7 @@ export default function AdminDataPlansPage() {
   const providerOptions = useMemo(() => {
     const list = [...integratedProviders];
     const defaults = [
+      { identifier: 'telecom_abode', name: 'Telecom Abode' },
       { identifier: 'smeplug', name: 'SMEPlug' },
       { identifier: 'amigo', name: 'Amigo' },
       { identifier: 'clubkonnect', name: 'ClubKonnect' },
